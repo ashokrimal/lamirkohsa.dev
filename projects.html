@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - Ashok Rimal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F5F5F7; color: #1d1d1f; }
+        .glass-nav { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(209, 213, 219, 0.3); }
+        .project-card { background: white; border: 1px solid #e5e7eb; transition: transform 0.3s, box-shadow 0.3s; }
+        .project-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+        .mobile-menu { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
+        .mobile-menu.open { transform: translateX(0); }
+    </style>
+</head>
+<body class="leading-relaxed tracking-wide">
+    <!-- Header -->
+    <header class="fixed w-full z-30 top-0">
+        <nav class="glass-nav mt-4 mx-4 md:mx-auto max-w-5xl rounded-lg">
+            <div class="max-w-7xl mx-auto px-5 sm:px-6">
+                <div class="flex items-center justify-between h-16">
+                    <a href="index.html" class="text-xl font-bold text-gray-800 hover:text-blue-600 transition tracking-tighter">lamirkohsa</a>
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="about.html" class="text-gray-600 hover:text-black">About</a>
+                        <a href="skills.html" class="text-gray-600 hover:text-black">Skills</a>
+                        <a href="projects.html" class="text-black font-semibold">Projects</a>
+                        <a href="contact.html" class="text-gray-600 hover:text-black">Contact</a>
+                        <a href="/resume.pdf" download="Ashok-Rimal-Resume.pdf" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition">Resume</a>
+                    </div>
+                    <div class="flex md:hidden"><button id="hamburger" class="text-gray-800"><i data-feather="menu"></i></button></div>
+                </div>
+            </div>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-screen w-2/3 glass-nav p-5 md:hidden">
+            <button id="close-menu" class="absolute top-6 right-5"><i data-feather="x"></i></button>
+            <ul class="flex flex-col items-center justify-center h-full space-y-8 text-lg">
+                 <li><a href="about.html" class="mobile-nav-link text-gray-800 hover:text-blue-600">About</a></li>
+                 <li><a href="skills.html" class="mobile-nav-link text-gray-800 hover:text-blue-600">Skills</a></li>
+                 <li><a href="projects.html" class="mobile-nav-link text-blue-600 font-bold">Projects</a></li>
+                 <li><a href="contact.html" class="mobile-nav-link text-gray-800 hover:text-blue-600">Contact</a></li>
+                 <li><a href="/resume.pdf" download="Ashok-Rimal-Resume.pdf" class="mobile-nav-link bg-blue-600 text-white px-6 py-2 rounded-md">Resume</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main class="pt-24">
+        <section class="py-20 md:py-32">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h1 class="text-4xl md:text-6xl font-black text-gray-900">My Work.</h1>
+                    <p class="text-lg text-gray-500 mt-4">A selection of projects that I'm proud of.</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <!-- Project Card 1 -->
+                    <div class="project-card rounded-2xl overflow-hidden flex flex-col">
+                        <img src="https://placehold.co/600x400/e2e8f0/334155?text=E-commerce+Site" alt="E-commerce project screenshot" class="w-full h-48 object-cover">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="font-bold text-xl mb-2">E-commerce Platform</h3>
+                            <p class="text-gray-600 text-sm mb-4 flex-grow">A full-stack e-commerce website with product listings, a shopping cart, and a checkout process.</p>
+                            <div class="mb-4">
+                                <span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">React</span>
+                                <span class="inline-block bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Node.js</span>
+                                <span class="inline-block bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">MongoDB</span>
+                            </div>
+                            <div class="mt-auto flex space-x-4">
+                                <a href="https://github.com/ashokrimal" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="github"></i></a>
+                                <a href="#" class="text-gray-500 hover:text-black"><i data-feather="external-link"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Project Card 2 -->
+                    <div class="project-card rounded-2xl overflow-hidden flex flex-col">
+                        <img src="https://placehold.co/600x400/e2e8f0/334155?text=Task+Manager" alt="Task Manager project screenshot" class="w-full h-48 object-cover">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="font-bold text-xl mb-2">Task Management App</h3>
+                            <p class="text-gray-600 text-sm mb-4 flex-grow">A web application to create, manage, and track your daily tasks. Features drag-and-drop functionality.</p>
+                            <div class="mb-4">
+                                <span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">JavaScript</span>
+                                <span class="inline-block bg-purple-100 text-purple-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Express</span>
+                                <span class="inline-block bg-teal-100 text-teal-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Tailwind</span>
+                            </div>
+                             <div class="mt-auto flex space-x-4">
+                                <a href="https://github.com/ashokrimal" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="github"></i></a>
+                                <a href="#" class="text-gray-500 hover:text-black"><i data-feather="external-link"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Project Card 3 -->
+                    <div class="project-card rounded-2xl overflow-hidden flex flex-col">
+                        <img src="https://placehold.co/600x400/e2e8f0/334155?text=Personal+Portfolio" alt="Portfolio project screenshot" class="w-full h-48 object-cover">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="font-bold text-xl mb-2">Personal Portfolio</h3>
+                            <p class="text-gray-600 text-sm mb-4 flex-grow">The website you are currently viewing. Designed to be clean, modern, and fully responsive.</p>
+                            <div class="mb-4">
+                                <span class="inline-block bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">HTML5</span>
+                                <span class="inline-block bg-teal-100 text-teal-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Tailwind CSS</span>
+                            </div>
+                            <div class="mt-auto flex space-x-4">
+                                <a href="https://github.com/ashokrimal" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="github"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="py-10 bg-gray-200">
+        <div class="container mx-auto px-6 text-center text-gray-500">
+             <div class="flex justify-center space-x-6 mb-6">
+                <a href="https://github.com/ashokrimal" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="github"></i></a>
+                <a href="https://www.linkedin.com/in/ashokrimal/" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="linkedin"></i></a>
+                <a href="https://twitter.com/ashokrimal24" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="twitter"></i></a>
+                <a href="https://www.instagram.com/lamirkohsa/" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="instagram"></i></a>
+            </div>
+            <p>&copy; <span id="year"></span> Ashok Rimal. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        feather.replace();
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const closeMenu = document.getElementById('close-menu');
+        hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
+        closeMenu.addEventListener('click', () => mobileMenu.classList.remove('open'));
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', () => mobileMenu.classList.remove('open'));
+        });
+    </script>
+</body>
+</html>
+

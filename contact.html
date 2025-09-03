@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - Ashok Rimal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F5F5F7; color: #1d1d1f; }
+        .glass-nav { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(209, 213, 219, 0.3); }
+        .mobile-menu { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
+        .mobile-menu.open { transform: translateX(0); }
+        .form-container { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(15px) saturate(180%); border: 1px solid rgba(209, 213, 219, 0.4); }
+    </style>
+</head>
+<body class="leading-relaxed tracking-wide">
+    <!-- Header -->
+    <header class="fixed w-full z-30 top-0">
+        <nav class="glass-nav mt-4 mx-4 md:mx-auto max-w-5xl rounded-lg">
+            <div class="max-w-7xl mx-auto px-5 sm:px-6">
+                <div class="flex items-center justify-between h-16">
+                    <a href="index.html" class="flex-shrink-0 text-xl font-bold text-gray-800 hover:text-blue-600 transition tracking-tighter">lamirkohsa</a>
+                    <div class="hidden lg:flex items-center space-x-8">
+                        <a href="about.html" class="text-gray-600 hover:text-black">About</a>
+                        <a href="skills.html" class="text-gray-600 hover:text-black">Skills</a>
+                        <a href="projects.html" class="text-gray-600 hover:text-black">Projects</a>
+                        <a href="contact.html" class="text-black font-semibold">Contact</a>
+                        <a href="/resume.pdf" download="Ashok-Rimal-Resume.pdf" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition">Resume</a>
+                    </div>
+                    <div class="flex lg:hidden"><button id="hamburger" class="text-gray-800"><i data-feather="menu"></i></button></div>
+                </div>
+            </div>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-screen w-2/3 glass-nav p-5 md:hidden">
+            <button id="close-menu" class="absolute top-6 right-5"><i data-feather="x"></i></button>
+            <ul class="flex flex-col items-center justify-center h-full space-y-8 text-lg">
+                 <li><a href="about.html" class="mobile-nav-link text-gray-800 hover:text-blue-600">About</a></li>
+                 <li><a href="skills.html" class="mobile-nav-link text-gray-800 hover:text-blue-600">Skills</a></li>
+                 <li><a href="projects.html" class="mobile-nav-link text-gray-800 hover:text-blue-600">Projects</a></li>
+                 <li><a href="contact.html" class="mobile-nav-link text-blue-600 font-bold">Contact</a></li>
+                 <li><a href="/resume.pdf" download="Ashok-Rimal-Resume.pdf" class="mobile-nav-link bg-blue-600 text-white px-6 py-2 rounded-md">Resume</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main class="pt-24">
+        <section class="py-20 md:py-32">
+            <div class="container mx-auto px-6">
+                <div class="max-w-3xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h1 class="text-4xl md:text-6xl font-black text-gray-900">Let's Connect.</h1>
+                        <p class="text-lg text-gray-500 mt-4">I'm always open to discussing new projects, creative ideas, or opportunities to be part of an amazing team.</p>
+                    </div>
+                    
+                    <div class="form-container p-8 md:p-12 rounded-2xl shadow-sm">
+                         <form id="contact-form" class="space-y-8">
+                            <div class="grid md:grid-cols-2 gap-8">
+                                <!-- First Name Input -->
+                                <div class="relative">
+                                    <input type="text" id="first-name" name="first-name" class="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-3 pl-11 text-gray-900 placeholder-transparent focus:border-blue-600 focus:outline-none focus:ring-0" placeholder="First Name" required />
+                                    <label for="first-name" class="pointer-events-none absolute left-11 top-1/2 -translate-y-1/2 text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:scale-75 peer-focus:text-blue-600 peer-focus:bg-white peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:-translate-y-1/2 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:bg-white px-1">First Name</label>
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><i data-feather="user" class="h-5 w-5 text-gray-400"></i></div>
+                                </div>
+                                <!-- Last Name Input -->
+                                <div class="relative">
+                                    <input type="text" id="last-name" name="last-name" class="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-3 pl-11 text-gray-900 placeholder-transparent focus:border-blue-600 focus:outline-none focus:ring-0" placeholder="Last Name" required />
+                                    <label for="last-name" class="pointer-events-none absolute left-11 top-1/2 -translate-y-1/2 text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:scale-75 peer-focus:text-blue-600 peer-focus:bg-white peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:-translate-y-1/2 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:bg-white px-1">Last Name</label>
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><i data-feather="user" class="h-5 w-5 text-gray-400"></i></div>
+                                </div>
+                            </div>
+                             <!-- Email Input -->
+                            <div class="relative">
+                                <input type="email" id="email" name="email" class="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-3 pl-11 text-gray-900 placeholder-transparent focus:border-blue-600 focus:outline-none focus:ring-0" placeholder="Email Address" required />
+                                <label for="email" class="pointer-events-none absolute left-11 top-1/2 -translate-y-1/2 text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:scale-75 peer-focus:text-blue-600 peer-focus:bg-white peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:-translate-y-1/2 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:bg-white px-1">Email Address</label>
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><i data-feather="mail" class="h-5 w-5 text-gray-400"></i></div>
+                            </div>
+                             <!-- Message Textarea -->
+                            <div class="relative">
+                                <textarea id="message" name="message" rows="5" class="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-gray-900 placeholder-transparent focus:border-blue-600 focus:outline-none focus:ring-0" placeholder="Your Message" required></textarea>
+                                <label for="message" class="pointer-events-none absolute left-4 top-4 text-gray-500 duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:scale-75 peer-focus:text-blue-600 peer-focus:bg-white peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:-translate-y-1/2 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:bg-white px-1">Your Message</label>
+                            </div>
+                            <div>
+                                <button type="submit" class="w-full mt-4 flex items-center justify-center bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                                    <i data-feather="send" class="mr-2 h-5 w-5"></i> Send Message
+                                </button>
+                            </div>
+                        </form>
+                        <div id="success-message" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">
+                            <p>Thank you! Your message has been sent successfully.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="py-10 bg-gray-200">
+        <div class="container mx-auto px-6 text-center text-gray-500">
+             <div class="flex justify-center space-x-6 mb-6">
+                <a href="https://github.com/ashokrimal" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="github"></i></a>
+                <a href="https://www.linkedin.com/in/ashokrimal/" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="linkedin"></i></a>
+                <a href="https://twitter.com/ashokrimal24" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="twitter"></i></a>
+                <a href="https://www.instagram.com/lamirkohsa/" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="instagram"></i></a>
+            </div>
+            <p>&copy; <span id="year"></span> Ashok Rimal. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        feather.replace();
+        
+        // Mobile Menu
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const closeMenu = document.getElementById('close-menu');
+        hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
+        closeMenu.addEventListener('click', () => mobileMenu.classList.remove('open'));
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', () => mobileMenu.classList.remove('open'));
+        });
+
+        // Contact Form
+        const contactForm = document.getElementById('contact-form');
+        const successMessage = document.getElementById('success-message');
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            // In a real application, you would handle form submission here (e.g., via AJAX).
+            // For this demo, we'll just show the success message.
+            contactForm.reset();
+            successMessage.classList.remove('hidden');
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 5000); // Hide after 5 seconds
+        });
+    </script>
+</body>
+</html>
+

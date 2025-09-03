@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Ashok Rimal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F5F5F7; color: #1d1d1f; }
+        .glass-nav { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(209, 213, 219, 0.3); }
+        .fade-in-up { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fade-in-up.visible { opacity: 1; transform: translateY(0); }
+        .mobile-menu { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
+        .mobile-menu.open { transform: translateX(0); }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 6px;
+            width: 1rem;
+            height: 1rem;
+            background-color: #d1d5db;
+            border-radius: 9999px;
+            border: 3px solid #f5f5f7;
+        }
+    </style>
+</head>
+<body class="leading-relaxed tracking-wide">
+    <!-- Header -->
+    <header class="fixed w-full z-30 top-0">
+        <nav class="glass-nav mt-4 mx-4 md:mx-auto max-w-5xl rounded-lg">
+            <div class="max-w-7xl mx-auto px-5 sm:px-6">
+                <div class="flex items-center justify-between h-16">
+                    <a href="index.html" class="text-xl font-bold text-gray-800 hover:text-blue-600 transition tracking-tighter">lamirkohsa</a>
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="about.html" class="text-black font-semibold">About</a>
+                        <a href="skills.html" class="text-gray-600 hover:text-black">Skills</a>
+                        <a href="projects.html" class="text-gray-600 hover:text-black">Projects</a>
+                        <a href="contact.html" class="text-gray-600 hover:text-black">Contact</a>
+                        <a href="/resume.pdf" download="Ashok-Rimal-Resume.pdf" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition">Resume</a>
+                    </div>
+                    <div class="flex md:hidden"><button id="hamburger" class="text-gray-800"><i data-feather="menu"></i></button></div>
+                </div>
+            </div>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-screen w-2/3 glass-nav p-5 md:hidden">
+            <button id="close-menu" class="absolute top-6 right-5"><i data-feather="x"></i></button>
+            <ul class="flex flex-col items-center justify-center h-full space-y-8 text-lg">
+                 <li><a href="about.html" class="mobile-nav-link text-blue-600 font-bold">About</a></li>
+                 <li><a href="skills.html" class="mobile-nav-link text-gray-800 hover:text-blue-600">Skills</a></li>
+                 <li><a href="projects.html" class="mobile-nav-link text-gray-800 hover:text-blue-600">Projects</a></li>
+                 <li><a href="contact.html" class="mobile-nav-link text-gray-800 hover:text-blue-600">Contact</a></li>
+                 <li><a href="/resume.pdf" download="Ashok-Rimal-Resume.pdf" class="mobile-nav-link bg-blue-600 text-white px-6 py-2 rounded-md">Resume</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main class="pt-24">
+        <section class="py-20 md:py-32">
+            <div class="container mx-auto px-6">
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-20">
+                        <!-- <img src="https://github.com/ashokrimal.png" alt="Ashok Rimal" class="w-36 h-36 rounded-full mx-auto mb-6 border-4 border-white shadow-lg"> -->
+                         <h1 class="text-4xl md:text-6xl font-black text-gray-900">My Journey.</h1>
+                         <p class="text-lg text-gray-500 mt-4">A student passionate about building for the web.</p>
+                    </div>
+
+                    <!-- Experience Section -->
+                    <div class="mb-20 fade-in-up">
+                        <h2 class="text-3xl font-bold mb-8">Experience</h2>
+                        <div class="relative border-l-2 border-gray-200 pl-8 space-y-12">
+                            <!-- Timeline Item -->
+                            <div class="relative timeline-item">
+                                <h3 class="text-xl font-bold">Freelance Web Developer</h3>
+                                <p class="text-gray-500 font-medium">Self-Employed | 2023 - Present</p>
+                                <p class="mt-2 text-gray-700">Developed and maintained websites for small businesses, focusing on responsive design and performance. Gained practical experience with client communication and project management.</p>
+                            </div>
+                            <!-- Timeline Item -->
+                            <div class="relative timeline-item">
+                                <h3 class="text-xl font-bold">Open Source Contributor</h3>
+                                <p class="text-gray-500 font-medium">GitHub | 2022 - Present</p>
+                                <p class="mt-2 text-gray-700">Contributed to various open-source projects, focusing on bug fixes and documentation improvements. This helped me understand large codebases and collaborative workflows.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Education Section -->
+                    <div class="mb-20 fade-in-up">
+                        <h2 class="text-3xl font-bold mb-8">Education</h2>
+                         <div class="relative border-l-2 border-gray-200 pl-8">
+                            <div class="relative timeline-item">
+                                <h3 class="text-xl font-bold">Bachelor of Engineering in Computer Engineering</h3>
+                                <p class="text-gray-500 font-medium">Tribhuvan University, IOE | 2021 - 2025 (Expected)</p>
+                                <p class="mt-2 text-gray-700">Studying core concepts of computer science including data structures, algorithms, database management, and software engineering principles.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training & Certificates Section -->
+                    <div class="fade-in-up">
+                        <h2 class="text-3xl font-bold mb-8">Training & Certificates</h2>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <!-- Certificate Card -->
+                            <div class="bg-white p-6 rounded-xl border border-gray-200">
+                                <h3 class="font-bold text-lg">MERN Stack Bootcamp</h3>
+                                <p class="text-gray-500">Udemy</p>
+                            </div>
+                            <!-- Certificate Card -->
+                            <div class="bg-white p-6 rounded-xl border border-gray-200">
+                                <h3 class="font-bold text-lg">Responsive Web Design</h3>
+                                <p class="text-gray-500">freeCodeCamp</p>
+                            </div>
+                            <!-- Certificate Card -->
+                            <div class="bg-white p-6 rounded-xl border border-gray-200">
+                                <h3 class="font-bold text-lg">JavaScript Algorithms and Data Structures</h3>
+                                <p class="text-gray-500">freeCodeCamp</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="py-10 bg-gray-200">
+        <div class="container mx-auto px-6 text-center text-gray-500">
+            <div class="flex justify-center space-x-6 mb-6">
+                <a href="https://github.com/ashokrimal" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="github"></i></a>
+                <a href="https://www.linkedin.com/in/ashokrimal/" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="linkedin"></i></a>
+                <a href="https://twitter.com/ashokrimal24" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="twitter"></i></a>
+                <a href="https://www.instagram.com/lamirkohsa/" target="_blank" class="text-gray-500 hover:text-black"><i data-feather="instagram"></i></a>
+            </div>
+            <p>&copy; <span id="year"></span> Ashok Rimal. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        feather.replace();
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const closeMenu = document.getElementById('close-menu');
+        hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
+        closeMenu.addEventListener('click', () => mobileMenu.classList.remove('open'));
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', () => mobileMenu.classList.remove('open'));
+        });
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
+
