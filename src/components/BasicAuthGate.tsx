@@ -26,13 +26,15 @@ export default function BasicAuthGate({ render }: BasicAuthGateProps) {
     }
   };
 
+  // Move useMemo to the top level
+  const authHeader = useMemo(() => {
+    if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
+      return `Basic ${window.btoa(`${ADMIN_EMAIL}:${ADMIN_PASSWORD}`)}`;
+    }
+    return `Basic ${Buffer.from(`${ADMIN_EMAIL}:${ADMIN_PASSWORD}`).toString('base64')}`;
+  }, []);
+
   if (isAuthenticated) {
-    const authHeader = useMemo(() => {
-      if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
-        return `Basic ${window.btoa(`${ADMIN_EMAIL}:${ADMIN_PASSWORD}`)}`;
-      }
-      return `Basic ${Buffer.from(`${ADMIN_EMAIL}:${ADMIN_PASSWORD}`).toString('base64')}`;
-    }, []);
     return <>{render(authHeader)}</>;
   }
 
