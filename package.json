@@ -9,12 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "jsonfile": "^6.1.0",
     "lucide-react": "^0.441.0",
     "next": "14.2.5",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "three": "^0.164.1",
-    "jsonfile": "^6.1.0"
+    "sharp": "^0.34.5",
+    "three": "^0.164.1"
   },
   "devDependencies": {
     "@types/node": "20.14.10",
