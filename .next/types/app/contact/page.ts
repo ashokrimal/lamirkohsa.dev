@@ -1,4 +1,4 @@
-// File: /Users/lamirkohsa/.Trash/lamirkohsa.dev/src/app/contact/page.tsx
+// File: /Users/lamirkohsa/Documents/Projects/Personal Projects/Web Projects/lamirkohsa.dev/src/app/contact/page.tsx
 import * as entry from '../../../../src/app/contact/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
