@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import ScrollObserver from '@/components/ScrollObserver';
-import ProjectsShowcase from '@/components/ProjectsShowcase';
+import ProjectsContent from '@/components/pages/ProjectsContent';
 
 type ProjectCategory = 'Web' | 'Mobile';
 
@@ -78,19 +77,20 @@ export const metadata: Metadata = {
 
 export default function ProjectsPage() {
   return (
-    <div className="py-20 md:py-32">
-      <ScrollObserver />
-      <div className="container mx-auto px-6">
-        <header className="max-w-3xl mx-auto text-center mb-16">
+    <ProjectsContent
+      projects={projects}
+      filters={filters}
+      heading={
+        <>
           <p className="text-sm uppercase tracking-[0.3em] text-blue-500">Selected Case Studies</p>
           <h1 className="mt-4 text-4xl md:text-5xl font-black text-gray-900">Proof that I can ship ideas end-to-end.</h1>
-          <p className="mt-6 text-lg text-gray-600">
-            From discovery to deployment, here are the projects where I balanced UX thinking, technical execution, and measurable outcomes. Filter by web or mobile to find what matters most to you.
-          </p>
-        </header>
-
-        <ProjectsShowcase projects={projects} filters={filters} />
-      </div>
-    </div>
+        </>
+      }
+      description={
+        <p className="mt-6 text-lg text-gray-600">
+          From discovery to deployment, here are the projects where I balanced UX thinking, technical execution, and measurable outcomes. Filter by web or mobile to find what matters most to you.
+        </p>
+      }
+    />
   );
 }

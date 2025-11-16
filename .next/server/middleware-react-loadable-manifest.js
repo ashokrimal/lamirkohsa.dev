@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST="{\"components/pages/HomeContent.tsx -> @/components/ThreeHero\":{\"id\":\"components/pages/HomeContent.tsx -> @/components/ThreeHero\",\"files\":[\"static/chunks/_app-pages-browser_src_components_ThreeHero_tsx.js\"]}}"

@@ -2,9 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 import './globals.css';
-import SiteHeader from '@/components/SiteHeader';
-import SiteFooter from '@/components/SiteFooter';
-import WorkInProgressNotice from '@/components/WorkInProgressNotice';
+import LayoutShell from '@/components/LayoutShell';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '700', '900'] });
 
@@ -35,10 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.className} leading-relaxed tracking-wide bg-bg-light text-text-dark`}>
-        <SiteHeader />
-        <WorkInProgressNotice />
-        <main className="pt-24 md:pt-28">{children}</main>
-        <SiteFooter />
+        <LayoutShell>{children}</LayoutShell>
       </body>
     </html>
   );

@@ -1,14 +1,18 @@
-import type { Metadata } from 'next';
+'use client';
+
+import { Suspense, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import ScrollObserver from '@/components/ScrollObserver';
+import ErrorBoundary from '@/components/ErrorBoundaryWrapper';
+import { Loading } from '@/components/Loading';
+import { useDevMode } from '@/contexts/DevModeContext';
+import DevSection from '@/components/devmode/DevSection';
 
-const highlights = [
-  'Bachelor of Computer Applications student at Crimson College of Technology (Batch 2022).',
-  'Currently mastering Swift for iOS, Kotlin for Android, and the MERN stack for full-stack web.',
-  'Hands-on learner who prototypes ideas with code, AI-assisted workflows, and rapid iterations.',
-  'Actively open to internships and entry-level roles to apply emerging cross-platform skills.',
-];
+const PAGE_KEY = 'about';
+const DEFAULT_SECTIONS = ['profile', 'skills', 'experience', 'education', 'focus', 'certifications'] as const;
+
+type SectionId = (typeof DEFAULT_SECTIONS)[number];
 
 const strengths = [
   'Focused learning path across Swift, Kotlin, and the MERN stack keeps me aligned with industry needs.',
@@ -73,44 +77,32 @@ const certifications = [
   { title: 'JavaScript Algorithms & Data Structures', org: 'freeCodeCamp' },
 ];
 
-export const metadata: Metadata = {
-  title: 'About - Ashok Rimal',
-  description: 'Get to know Ashok Rimal—the developer behind the projects, his journey, skills, and credentials.',
-};
-
-export default function AboutPage() {
+function ClassicAboutContent() {
   return (
     <div className="py-20 md:py-32">
       <ScrollObserver />
       <div className="container mx-auto px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="grid gap-10 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center mb-20">
-            <div className="fade-in-up">
-              <Image
-                src="https://github.com/ashokrimal.png"
-                alt="Ashok Rimal portrait"
-                width={600}
-                height={600}
-                priority
-                className="mx-auto w-56 md:w-72 rounded-3xl border border-gray-200 shadow-lg"
-              />
+          <section className="flex flex-col md:flex-row gap-10 items-start mb-20">
+            <div className="w-full md:w-1/3 lg:w-2/5 fade-in-up">
+              <div className="relative w-full" style={{ paddingBottom: '100%' }}>
+                <Image
+                  src="https://github.com/ashokrimal.png"
+                  alt="Ashok Rimal portrait"
+                  fill
+                  priority
+                  className="rounded-3xl border border-gray-200 shadow-lg object-cover"
+                />
+              </div>
             </div>
-            <div className="fade-in-up" style={{ transitionDelay: '120ms' }}>
+            <div className="w-full md:w-2/3 lg:w-3/5 fade-in-up" style={{ transitionDelay: '120ms' }}>
               <h1 className="text-4xl md:text-5xl font-black text-gray-900">Builder. Problem-solver. Lifelong learner.</h1>
               <p className="mt-6 text-lg text-gray-600">
-                I&apos;m Ashok Rimal, a Bachelor of Computer Applications student at Crimson College of Technology, where I&apos;m turning classroom fundamentals into real-world software. I thrive on learning by doing—whether that&apos;s crafting polished interfaces or architecting the systems that power them.
+                I&apos;m Ashok Rimal, a Bachelor of Computer Applications student at Crimson College of Technology, where I&apos;m turning classroom fundamentals into real-world software. I thrive on learning by doing, whether that&apos;s crafting polished interfaces or architecting the systems that power them.
               </p>
               <p className="mt-4 text-lg text-gray-600">
                 Right now I&apos;m deep-diving into Swift for iOS, Kotlin for Android, and the MERN stack so I can build seamless experiences across devices. AI-assisted development helps me prototype ideas quickly, document my lessons, and iterate toward production-quality solutions.
               </p>
-              <ul className="mt-6 space-y-3 text-gray-700">
-                {highlights.map((highlight, index) => (
-                  <li key={highlight} className="flex items-start gap-3" style={{ transitionDelay: `${index * 80}ms` }}>
-                    <span className="mt-1 h-2 w-2 rounded-full bg-blue-500" aria-hidden />
-                    <span>{highlight}</span>
-                  </li>
-                ))}
-              </ul>
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/projects"
@@ -127,7 +119,7 @@ export default function AboutPage() {
                 </a>
               </div>
             </div>
-          </div>
+          </section>
 
           <section className="fade-in-up mb-20">
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Skills at a glance</h2>
@@ -216,5 +208,67 @@ export default function AboutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function DevAboutContent() {
+  return (
+    <div className="py-20 md:py-32 bg-slate-950 text-slate-100">
+      <ScrollObserver />
+      <div className="container mx-auto px-6 space-y-12">
+        <DevSection
+          pageKey={PAGE_KEY}
+          sectionId="profile"
+          label="Profile"
+          fallbackAccent="#2563eb"
+          className="border border-slate-700 bg-slate-900 p-6"
+        >
+          <div className="flex flex-col md:flex-row gap-10 items-start">
+            <div className="relative aspect-square w-full md:w-60 overflow-hidden rounded-3xl border border-slate-700">
+              <Image
+                src="/images/ashok.jpg"
+                alt="Ashok Rimal"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+            <div className="flex-1 space-y-4">
+              <h1 className="text-3xl font-black text-white">
+                ~/about — dev mode
+              </h1>
+              <p className="text-sm text-slate-200">
+                Use the CLI to explore sections and view information.
+              </p>
+              <p className="font-mono text-sm text-emerald-300">
+                gh issue list --state open
+              </p>
+            </div>
+          </div>
+        </DevSection>
+
+        <DevSection
+          pageKey={PAGE_KEY}
+          sectionId="skills"
+          label="Skills"
+          fallbackAccent="#9333ea"
+          className="bg-slate-900 border border-slate-700 p-6"
+        >
+          <ClassicAboutContent />
+        </DevSection>
+      </div>
+    </div>
+  );
+}
+
+export default function AboutPage() {
+  const { mode } = useDevMode();
+
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<Loading />}>
+        {mode === 'classic' ? <ClassicAboutContent /> : <DevAboutContent />}
+      </Suspense>
+    </ErrorBoundary>
   );
 }
