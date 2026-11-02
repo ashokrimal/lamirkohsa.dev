@@ -73,8 +73,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 700px) {
   .shell-width { width: min(100% - 34px, 1200px); }
-  .hero-section { min-height: 720px; padding-top: 105px; }
-  .hero-grid, .statement-grid { grid-template-columns: 1fr; gap: 45px; padding-block: 70px; }
+  .hero-section { min-height: auto; padding-top: 105px; padding-bottom: 28px; }
+  .hero-grid, .statement-grid { grid-template-columns: 1fr; gap: 45px; padding-block: 48px 58px; }
   .hero-aside { display: none; }
   .hero-heading { font-size: clamp(3.4rem, 15vw, 5rem); }
   .hero-meta span:nth-child(2) { display: none; }
