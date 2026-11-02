@@ -37,10 +37,30 @@ export default function HomeContent() {
         </div>
       </section>
 
+      <section className="proof-section shell-width" aria-label="At a glance">
+        <div className="proof-grid">
+          <div><strong>03+</strong><span>Selected projects</span></div>
+          <div><strong>04</strong><span>Core disciplines</span></div>
+          <div><strong>2026</strong><span>Graduating soon</span></div>
+          <div><strong>100%</strong><span>Curiosity driven</span></div>
+        </div>
+      </section>
+
       <section className="work-section" aria-labelledby="work-heading">
         <div className="shell-width">
           <div className="section-heading"><div><p className="section-label">Selected work</p><h2 id="work-heading">A few things<br />I&apos;ve made.</h2></div><Link className="text-link" href="/projects">View all projects <ArrowUpRight size={15} aria-hidden="true" /></Link></div>
           <div className="project-list">{projects.map((project) => <article className="project-row" key={project.title}><span className="project-number">{project.number}</span><div className="project-main"><p className="project-type">{project.type}</p><h3>{project.title}</h3><p className="project-description">{project.description}</p><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><ArrowUpRight className="text-[var(--accent)]" size={20} aria-hidden="true" /></article>)}</div>
+        </div>
+      </section>
+
+      <section className="experience-section" aria-labelledby="experience-heading">
+        <div className="shell-width">
+          <div className="section-heading"><div><p className="section-label">How I work</p><h2 id="experience-heading">Curious by<br /><em>default.</em></h2></div><p className="experience-intro">I bring a practical engineering mindset to every project: understand the problem, make the simplest useful thing, then keep improving it.</p></div>
+          <div className="principles-grid">
+            <article><span>01</span><h3>Start with clarity</h3><p>Good questions make better products. I take time to understand the people, constraints, and outcome before reaching for a solution.</p></article>
+            <article><span>02</span><h3>Build with intention</h3><p>Small details compound. I care about accessible interfaces, dependable systems, and code that stays easy to change.</p></article>
+            <article><span>03</span><h3>Share the process</h3><p>Learning in public keeps the work honest. I document decisions, invite feedback, and leave things clearer than I found them.</p></article>
+          </div>
         </div>
       </section>
 
