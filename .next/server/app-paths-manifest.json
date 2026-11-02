@@ -1,15 +1,4 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/about/page": "app/about/page.js",
-  "/api/messages/route": "app/api/messages/route.js",
-  "/certificates/page": "app/certificates/page.js",
-  "/education/page": "app/education/page.js",
   "/page": "app/page.js",
-  "/gallery/page": "app/gallery/page.js",
-  "/experience/page": "app/experience/page.js",
-  "/resume/page": "app/resume/page.js",
-  "/contact/page": "app/contact/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/projects/page": "app/projects/page.js",
-  "/skills/page": "app/skills/page.js"
+  "/_not-found/page": "app/_not-found/page.js"
 }
