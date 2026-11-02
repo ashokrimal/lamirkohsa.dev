@@ -1,26 +1,5 @@
-import { Suspense } from 'react';
 import { PageLayout } from '@/components/layouts/PageLayout';
-import { Loading } from '@/components/Loading';
-import udemyLogo from './logos/udemy.webp';
-import courseraLogo from './logos/coursera.webp';
-import ciscoLogo from './logos/cisco.svg';
-import dynamic from 'next/dynamic';
-
-// Import types first
-import type { 
-  FeaturedProject, 
-  Certificate,
-  HomeContentProps 
-} from '@/components/pages/HomeContent';
-
-// Then the dynamic import
-const HomeContent = dynamic(
-  () => import('@/components/pages/HomeContent'),
-  { 
-    ssr: false,
-    loading: () => <Loading variant="page" />
-  }
-) as React.ComponentType<HomeContentProps>;
+import HomeContent from '@/components/pages/HomeContent';
 
 const featuredProjects: FeaturedProject[] = [
   {
