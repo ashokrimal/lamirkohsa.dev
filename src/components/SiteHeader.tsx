@@ -31,7 +31,7 @@ export default function SiteHeader() {
           <div className="flex items-center justify-between h-16">
             <Link
               href="/"
-              className="text-xl font-bold text-gray-800 hover:text-blue-600 transition tracking-tighter"
+              className="text-xl font-semibold text-[#f2f1ed] hover:text-[#b9e769] transition tracking-tighter"
               onClick={() => setIsOpen(false)}
             >
               lamirkohsa
@@ -43,8 +43,8 @@ export default function SiteHeader() {
                   href={link.href}
                   className={
                     isCurrent(link.href)
-                      ? 'text-black font-semibold'
-                      : 'text-gray-600 hover:text-black'
+                      ? 'text-[#b9e769] font-semibold'
+                      : 'text-[#9a9d99] hover:text-[#f2f1ed]'
                   }
                 >
                   {link.label}
@@ -53,7 +53,7 @@ export default function SiteHeader() {
             </div>
             <button
               type="button"
-              className="md:hidden text-gray-800"
+              className="md:hidden text-[#f2f1ed]"
               onClick={() => setIsOpen(prev => !prev)}
               aria-label="Toggle navigation menu"
             >
@@ -80,8 +80,8 @@ export default function SiteHeader() {
                 className={
                   `mobile-nav-link ${
                     isCurrent(link.href)
-                      ? 'text-blue-600 font-bold'
-                      : 'text-gray-800 hover:text-blue-600'
+                      ? 'text-[#b9e769] font-bold'
+                      : 'text-[#f2f1ed] hover:text-[#b9e769]'
                   }`
                 }
                 onClick={() => setIsOpen(false)}
