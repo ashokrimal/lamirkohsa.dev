@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'messages.json');
 const ADMIN_EMAIL = 'admin@lamirkohsa.dev';
-const ADMIN_PASSWORD = 'ashokrimal#9847177515';
+const ADMIN_PASSWORD = 'ashokrimal9847177515';
 
 async function readMessages() {
   try {

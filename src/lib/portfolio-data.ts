@@ -1,24 +1,30 @@
 export const profile = {
   name: 'Ashok Rimal',
   headline: 'Developer · Designer · Learner',
-  location: 'Kathmandu, Nepal',
-  summary: 'A computer engineering student and full-stack developer focused on thoughtful interfaces, useful products, and the details that make software feel human.',
+  location: 'Butwal, Nepal',
+  summary: 'A Bachelor of Computer Applications student and developer focused on thoughtful interfaces, useful products, and the details that make software feel human.',
 };
 
 export const experience = [
-  { period: '2025 — Present', title: 'AI & Robotics Instructor', organization: 'Dursikshya Education', description: 'Teaching students to turn curiosity into practical experiments across AI, robotics, and creative technology.' },
+  { period: 'Approximately six months', title: 'AI and Robotics Instructor', organization: 'Dursikshya Education', description: 'Teaching students to turn curiosity into practical experiments across AI, robotics, and creative technology.' },
 ];
 
 export const education = [
-  { period: 'In progress', title: 'Bachelor of Computer Applications', organization: 'Crimson College of Technology', description: 'Building a strong foundation in software engineering, systems, and product development.' },
+  { period: 'Current', title: 'Bachelor of Computer Applications', organization: 'Crimson College of Technology', description: 'An affiliated college of Pokhara University.' },
   { period: 'Completed', title: '+2', organization: 'Tilottama College', description: 'Higher secondary education.' },
   { period: 'Completed', title: 'Secondary Education', organization: 'Rampur English Boarding Secondary School', description: 'Secondary school education.' },
 ];
 
 export const skills = [
-  { category: 'Frontend', items: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS'] },
-  { category: 'Backend', items: ['Node.js', 'Express', 'REST APIs', 'Firebase'] },
-  { category: 'Interests', items: ['AI / ML', 'Robotics', 'Product design', 'Creative technology'] },
+  { category: 'Frontend Development', items: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS'] },
+  { category: 'Backend Development', items: ['Node.js', 'Express', 'REST APIs'] },
+  { category: 'Programming Languages', items: ['TypeScript', 'JavaScript', 'Python'] },
+  { category: 'Database', items: ['PostgreSQL', 'Firebase'] },
+  { category: 'Mobile Development', items: ['React Native'] },
+  { category: 'AI and Emerging Technologies', items: ['AI / ML', 'Robotics'] },
+  { category: 'UI/UX', items: ['Product design', 'Accessible interfaces'] },
+  { category: 'Tools and Technologies', items: ['Git', 'Figma', 'REST'] },
+  { category: 'Soft Skills', items: ['Communication', 'Teaching', 'Problem solving'] },
 ];
 
 export const projects = [

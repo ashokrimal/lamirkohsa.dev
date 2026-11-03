@@ -1,3 +1,2 @@
-import MediaDetailPage from '@/components/media/MediaDetailPage'
-export const dynamic = 'force-dynamic'
-export default function AnimePage() { return <MediaDetailPage category="anime" /> }
+import { redirect } from 'next/navigation'
+export default function LegacyAnimePage() { redirect('/media/anime') }

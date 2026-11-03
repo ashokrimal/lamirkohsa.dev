@@ -15,7 +15,7 @@ export default function CatalogImportForm() {
       const result = await importAnimeManga(formData)
       setMessage(`${result.imported} ${result.kind} entries imported.`)
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Import failed.')
+      setMessage('Import failed. Please try again.')
     } finally {
       setPending(false)
     }

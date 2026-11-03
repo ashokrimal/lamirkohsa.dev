@@ -18,7 +18,7 @@ export default function HomeContent() {
         <div className="hero-editorial">
           <div className="hero-vertical"><span>Computer engineering student</span><span>2026</span></div>
           <div className="hero-copy-block"><div className="hero-stats"><span><strong>03+</strong><small>Projects shipped</small></span><span><strong>04</strong><small>Core disciplines</small></span></div><p className="eyebrow">Developer · designer · learner</p><h1 id="hero-heading" className="hero-heading">Hello<span>.</span></h1><p className="hero-subtitle">I&apos;m Ashok, a developer building calm, useful digital experiences.</p></div>
-          <div className="hero-portrait"><div className="portrait-frame"><span className="portrait-initials" aria-hidden="true">AR</span></div><p>Kathmandu, Nepal<br />Available for thoughtful collaborations</p></div>
+          <div className="hero-portrait"><div className="portrait-frame"><span className="portrait-initials" aria-hidden="true">AR</span></div><p>Butwal, Nepal<br />Available for thoughtful collaborations</p></div>
         </div>
         <div className="hero-meta"><span>Scroll to explore ↓</span><span>Selected work · 01 / 07</span></div>
       </section>
