@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -32,15 +33,15 @@ export default function SiteHeader() {
               </Link>
             ))}
           </div>
-          <button type="button" className="text-[var(--ink)] lg:hidden" onClick={() => setIsOpen((open) => !open)} aria-expanded={isOpen} aria-controls="mobile-navigation" aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}>
+          <Button type="button" variant="ghost" size="sm" className="text-[var(--ink)] lg:hidden" onClick={() => setIsOpen((open) => !open)} aria-expanded={isOpen} aria-controls="mobile-navigation" aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}>
             {isOpen ? <X size={21} /> : <Menu size={21} />}
-          </button>
+          </Button>
         </div>
       </nav>
       <div id="mobile-navigation" className={`mobile-menu fixed inset-y-0 right-0 z-40 w-[min(86vw,360px)] p-7 lg:hidden ${isOpen ? 'open' : ''}`}>
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold tracking-[-0.04em]">Navigation</span>
-          <button type="button" onClick={() => setIsOpen(false)} aria-label="Close navigation menu"><X size={21} /></button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setIsOpen(false)} aria-label="Close navigation menu"><X size={21} /></Button>
         </div>
         <ul className="mt-20 space-y-7">
           {navLinks.map((link) => (
