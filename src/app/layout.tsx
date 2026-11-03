@@ -1,10 +1,7 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 import './globals.css';
 import LayoutShell from '@/components/LayoutShell';
-
-const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '700', '900'] });
 
 export const metadata: Metadata = {
   title: {
@@ -32,7 +29,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${inter.className} leading-relaxed tracking-wide`}>
+      <body className="leading-relaxed tracking-wide">
         <LayoutShell>{children}</LayoutShell>
       </body>
     </html>

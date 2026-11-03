@@ -343,7 +343,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .media-page { padding-block: 150px 120px; }
 .media-header { display: flex; justify-content: space-between; align-items: end; gap: 32px; padding-bottom: 54px; border-bottom: 1px solid var(--line); }
 .media-header h1 { font-size: clamp(4rem, 10vw, 9rem); line-height: .88; letter-spacing: -.09em; font-weight: 500; margin: 18px 0 24px; }
-.media-header h1 em, .media-card h2 em, .profile-settings-form h2 em { color: var(--accent-blue); font-style: normal; }
+.media-header h1 em, .media-card h2 em, .profile-settings-form h2 em, .accent-text { color: var(--accent-blue); font-style: normal; }
+em, .accent-text { font-style: normal; }
 .media-header > div > p:last-child { color: var(--muted); max-width: 420px; line-height: 1.6; }
 .media-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding-top: 32px; }
 .media-card { border: 1px solid var(--line); background: var(--surface); padding: 30px; min-height: 250px; }
@@ -489,7 +490,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .about-bio { max-width: 640px; margin: 24px 0 0; color: var(--muted); font-size: 1rem; line-height: 1.7; }
 .profile-section { padding-block: 78px; border-top: 1px solid var(--line); }
-.timeline-list { display: grid; gap: 0; margin-top: 40px; }
+.about-page .timeline-list { position: relative; display: grid; gap: 0; margin-top: 40px; padding-left: 34px; }
+.about-page .timeline-list::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.about-page .timeline-item { position: relative; }
+.about-page .timeline-item::before { content: ''; position: absolute; left: -30px; top: 34px; width: 9px; height: 9px; border: 2px solid var(--accent-blue); border-radius: 50%; background: var(--background); }
 .timeline-item { display: grid; grid-template-columns: minmax(220px, .7fr) 1.3fr; gap: 32px; padding: 28px 0; border-top: 1px solid var(--line); }
 .timeline-item h3 { margin: 8px 0 4px; font-size: 1.5rem; }
 .timeline-item p { margin: 0; color: var(--muted); line-height: 1.6; }
