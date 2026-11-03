@@ -224,6 +224,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .auth-card form { display: flex; flex-direction: column; gap: 18px; }
 .auth-card button { width: 100%; margin-top: 8px; }
 .form-error { color: var(--accent); font-size: 12px; }
+.auth-secondary-link { display: block; margin-top: 18px; color: var(--muted); font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
+.auth-message { color: var(--muted); line-height: 1.6; font-size: 14px; margin: 20px 0; }
 .media-page { padding-block: 150px 120px; }
 .media-header { display: flex; justify-content: space-between; align-items: end; gap: 32px; padding-bottom: 54px; border-bottom: 1px solid var(--line); }
 .media-header h1 { font-size: clamp(4rem, 10vw, 9rem); line-height: .88; letter-spacing: -.09em; font-weight: 500; margin: 18px 0 24px; }
