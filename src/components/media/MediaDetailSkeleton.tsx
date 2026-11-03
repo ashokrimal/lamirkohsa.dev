@@ -1,0 +1,2 @@
+import { Skeleton, SkeletonCard } from '@/components/Skeleton'
+export default function MediaDetailSkeleton() { return <main className="detail-page shell-width"><div className="space-y-4"><Skeleton className="h-3 w-28" /><Skeleton className="h-20 w-2/3" /><Skeleton className="h-5 w-1/2" /></div><div className="detail-shelf-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div></main> }
