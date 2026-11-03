@@ -1,8 +1,8 @@
 {
   "/page": "app/page.js",
   "/media/page": "app/media/page.js",
-  "/gallery/page": "app/gallery/page.js",
   "/about/page": "app/about/page.js",
   "/sign-in/page": "app/sign-in/page.js",
-  "/forgot-password/page": "app/forgot-password/page.js"
+  "/forgot-password/page": "app/forgot-password/page.js",
+  "/api/auth/[...all]/route": "app/api/auth/[...all]/route.js"
 }
