@@ -6,13 +6,13 @@ export const profile = {
 };
 
 export const experience = [
-  { period: 'Approximately six months', title: 'AI and Robotics Instructor', organization: 'Dursikshya Education', description: 'Teaching students to turn curiosity into practical experiments across AI, robotics, and creative technology.' },
+  { period: 'March 2024 - August 2024', title: 'AI and Robotics Instructor', organization: 'Dursikshya Education', description: 'Teaching students to turn curiosity into practical experiments across AI, robotics, and creative technology.' },
 ];
 
 export const education = [
-  { period: 'Current', title: 'Bachelor of Computer Applications', organization: 'Crimson College of Technology', description: 'An affiliated college of Pokhara University.' },
-  { period: 'Completed', title: '+2', organization: 'Tilottama College', description: 'Higher secondary education.' },
-  { period: 'Completed', title: 'Secondary Education', organization: 'Rampur English Boarding Secondary School', description: 'Secondary school education.' },
+  { period: '2022 - Present', title: 'Bachelor of Computer Applications', organization: 'Crimson College of Technology', description: 'An affiliated college of Pokhara University.' },
+  { period: '2020 - 2022', title: '+2', organization: 'Tilottama College', description: 'Higher secondary education.' },
+  { period: '2018 - 2020', title: 'Secondary Education', organization: 'Rampur English Boarding Secondary School', description: 'Secondary school education.' },
 ];
 
 export const skills = [

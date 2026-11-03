@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowUpRight, Check, Download, Mail, MapPin } from 'lucide-react';
+import { Check, Download, Mail, MapPin } from 'lucide-react';
 import { education, experience, profile, projects, skills } from '@/lib/portfolio-data';
 import EmptyCollectionState from '@/components/EmptyCollectionState';
 
@@ -23,8 +23,8 @@ export default function PublicCollectionPage({ type }: { type: Collection }) {
     {type === 'experience' && <Timeline items={experience} />}
     {type === 'education' && <Timeline items={education} />}
     {type === 'skills' && <div className="skill-grid">{skills.map((group) => <section className="skill-group" key={group.category}><p className="project-type">{group.category}</p>{group.items.map((item) => <div className="skill-item" key={item}><span>{item}</span><span className="skill-check"><Check size={13} /></span></div>)}</section>)}</div>}
-    {type === 'projects' && <div className="collection-projects">{projects.map((project, index) => <article className="project-row" key={project.title}><span className="project-number">0{index + 1}</span><div className="project-main"><p className="project-type">{project.category} · {project.status}</p><h2>{project.title}</h2><p className="project-description">{project.description}</p><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><ArrowUpRight size={20} /></article>)}</div>}
-    {(type === 'certificates' || type === 'gallery') && <EmptyCollectionState eyebrow={`${content.eyebrow} / Empty`} title="The collection is taking shape." description="This section is ready for verified records and media to be added through the private owner dashboard." action={{ label: 'Have something to share', href: '/contact' }} />}
+    {type === 'projects' && <div className="collection-projects">{projects.map((project, index) => <article className="project-row" key={project.title}><span className="project-number">0{index + 1}</span><div className="project-main"><p className="project-type">{project.category} · {project.status}</p><h2>{project.title}</h2><p className="project-description">{project.description}</p><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div>{'>'}</article>)}</div>}
+    {(type === 'certificates' || type === 'gallery') && <EmptyCollectionState eyebrow={`${content.eyebrow} / Empty`} title="The collection is taking shape." description="This section is ready for verified records and media to be added through the private owner dashboard."  />}
   </main>;
 }
 
