@@ -19,17 +19,17 @@ export class AppError extends Error {
 }
 
 export function handleError(error: unknown): { message: string; statusCode: number } {
-  if (error instanceof AppError) {
+if (error instanceof AppError) {
     return {
       message: error.message,
       statusCode: error.statusCode,
     };
   }
-  
+
   if (error instanceof Error) {
-    console.error('Unexpected error:', error);
+    console.error('[v0] Unexpected error:', error);
     return {
-      message: 'An unexpected error occurred',
+      message: 'Something went wrong. Please try again.',
       statusCode: 500,
     };
   }

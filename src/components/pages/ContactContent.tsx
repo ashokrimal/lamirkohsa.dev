@@ -61,7 +61,7 @@ function TerminalSection() {
           <span className="ml-4 text-xs text-slate-400">dev@lamirkohsa — zsh</span>
         </div>
         <div className="rounded-b-2xl bg-slate-950/70 p-6 font-mono text-sm leading-relaxed">
-          <p className="text-emerald-300">last login: Sat Nov 15 08:03:45 on console</p>
+          <p className="text-emerald-300">Available for thoughtful collaborations</p>
           <p className="text-slate-100">You have mail.</p>
           <p className="mt-4 text-white">
             <span className="text-emerald-300">lamirkohsa@portfolio</span>

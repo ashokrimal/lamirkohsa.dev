@@ -17,10 +17,10 @@ export const handleApiError = (error: unknown) => {
   }
   
   if (error instanceof Error) {
-    return new AppError(error.message || 'An error occurred');
+    console.error('[v0] API error:', error);
   }
-  
-  return new AppError('An unknown error occurred');
+
+  return new AppError('Something went wrong. Please try again.');
 };
 
 export const handleNotFound = (message: string = 'Resource not found') => {
