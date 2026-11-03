@@ -23,7 +23,7 @@ export async function getAdminContent() {
     db.select().from(galleryItem).where(eq(galleryItem.userId, userId)).orderBy(desc(galleryItem.createdAt)),
     db.select().from(portfolioProject).where(eq(portfolioProject.userId, userId)).orderBy(desc(portfolioProject.createdAt)),
     db.select().from(musicTrack).where(eq(musicTrack.userId, userId)).orderBy(musicTrack.sortOrder, desc(musicTrack.createdAt)),
-    db.select({ id: cmsContent.id, collection: cmsContent.collection, title: cmsContent.title, status: cmsContent.status }).from(cmsContent).where(eq(cmsContent.userId, userId)).orderBy(cmsContent.sortOrder, desc(cmsContent.createdAt)),
+    db.select({ id: cmsContent.id, collection: cmsContent.collection, title: cmsContent.title, payload: cmsContent.payload, status: cmsContent.status }).from(cmsContent).where(eq(cmsContent.userId, userId)).orderBy(cmsContent.sortOrder, desc(cmsContent.createdAt)),
   ])
   return { gallery, projects, music, cms }
 }
