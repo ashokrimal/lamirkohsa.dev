@@ -117,6 +117,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .media-section-heading h2 em, .media-section-heading h3 em { color: var(--accent-blue); font-style: normal; }
 .media-section-heading > p { color: var(--muted); max-width: 290px; line-height: 1.55; font-size: 13px; }
 .gallery-preview-section { padding-top: 32px; }
+.media-data-skeleton .media-section { display: block; }
+.media-data-skeleton .skeleton-card { min-height: 220px; border: 1px solid var(--line); border-radius: 1rem; }
+
 .media-gallery-intro { max-width: 34rem; margin: 1.25rem 0 2rem; color: var(--muted); }
 .media-gallery-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1rem; }
 .media-gallery-card { position: relative; display: block; min-height: 170px; grid-column: span 3; overflow: hidden; background: var(--surface); }

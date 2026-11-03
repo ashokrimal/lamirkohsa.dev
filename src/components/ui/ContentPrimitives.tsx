@@ -7,6 +7,10 @@ export function Label({ children, className }: { children: ReactNode; className?
   return <p className={cn('section-label', className)}>{children}</p>
 }
 
+export function ActionButton({ children, className, type = 'button' }: { children: ReactNode; className?: string; type?: 'button' | 'submit' | 'reset' }) {
+  return <button type={type} className={cn('button button-quiet', className)}>{children}</button>
+}
+
 export function ActionLink({ href, children, className }: { href: string; children: ReactNode; className?: string }) {
   return <Link href={href} className={cn('text-link inline-flex items-center gap-1', className)}>{children}<ArrowUpRight size={14} aria-hidden="true" /></Link>
 }
