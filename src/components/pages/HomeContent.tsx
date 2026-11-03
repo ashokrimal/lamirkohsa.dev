@@ -1,54 +1,13 @@
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import SkeletonReveal from '@/components/SkeletonReveal';
-import { Section } from '@/components/ui/Section';
 
 const projects = [
-  { number: '01', title: 'KaryaMantra', type: 'Productivity platform', description: 'A focused workspace for students to organize assignments and make progress visible.', tags: ['React', 'Firebase'] },
-  { number: '02', title: 'BuyNepal', type: 'Commerce experience', description: 'A considered marketplace experience connecting local makers with modern shoppers.', tags: ['Next.js', 'Node.js'] },
-  { number: '03', title: 'InsightHub', type: 'Knowledge platform', description: 'A data exchange product helping people and teams unlock the value of their knowledge.', tags: ['React Native', 'Express'] },
+  { number: '01', title: 'KaryaMantra', type: 'Productivity platform', description: 'A focused workspace that helps students turn scattered assignments into visible progress.', tags: ['React', 'Firebase'] },
+  { number: '02', title: 'BuyNepal', type: 'Commerce experience', description: 'A marketplace concept connecting local makers with a more considered online shopping experience.', tags: ['Next.js', 'Node.js'] },
+  { number: '03', title: 'InsightHub', type: 'Knowledge platform', description: 'A product for making shared knowledge easier to discover, use, and build on.', tags: ['React Native', 'Express'] },
 ];
 
 export default function HomeContent() {
-  return (
-    <SkeletonReveal variant="home">
-      <div className="portfolio-home">
-      <section className="hero-section shell-width" aria-labelledby="hero-heading">
-        
-        <div className="hero-editorial">
-          <div className="hero-vertical"><span>Computer engineering student</span><span>2026</span></div>
-          <div className="hero-copy-block"><div className="hero-stats"><span><strong>03+</strong><small>Projects shipped</small></span><span><strong>04</strong><small>Core disciplines</small></span></div><p className="eyebrow">Developer · designer · learner</p><h1 id="hero-heading" className="hero-heading">Hello<span>.</span></h1><p className="hero-subtitle">I&apos;m Ashok, a developer building calm, useful digital experiences.</p></div>
-          <div className="hero-portrait"><div className="portrait-frame"><span className="portrait-initials" aria-hidden="true">AR</span></div><p>Butwal, Nepal<br />Available for thoughtful collaborations</p></div>
-        </div>
-        <div className="hero-meta"><span>Scroll to explore ↓</span><span>Selected work · 01 / 07</span></div>
-      </section>
-
-      <Section className="statement-section" aria-labelledby="statement-heading">
-        <div className="statement-grid shell-width">
-          <h2 id="statement-heading">Good work is quiet, <span>clear,</span> and useful.</h2>
-          <div><p>My work sits between design and engineering. I enjoy turning a loose idea into a calm, reliable digital experience that feels obvious to use.</p><Link className="text-link" href="/about">More about my approach <ArrowUpRight size={15} aria-hidden="true" /></Link></div>
-        </div>
-      </Section>
-
-      <section className="proof-section shell-width" aria-label="At a glance">
-        <div className="proof-intro"><p className="section-label">A small dashboard of facts</p><p>Interfaces, systems, and experiments shaped by curiosity and care.</p></div>
-        <div className="proof-grid">
-          <div><strong>03+</strong><span>Selected projects</span></div>
-          <div><strong>04</strong><span>Core disciplines</span></div>
-          <div><strong>2026</strong><span>Graduating soon</span></div>
-          <div><strong>100%</strong><span>Curiosity driven</span></div>
-        </div>
-      </section>
-
-      <section className="work-section" aria-labelledby="work-heading">
-        <div className="shell-width">
-          <div className="section-heading"><div><p className="section-label">Selected work</p><h2 id="work-heading">A few things<br />I&apos;ve made.</h2></div><Link className="text-link" href="/projects">View all projects <ArrowUpRight size={15} aria-hidden="true" /></Link></div>
-          <div className="project-list project-bento">{projects.map((project, index) => <article className={`project-row project-card project-card-${index + 1}`} key={project.title}><span className="project-number">{project.number}</span><div className="project-main"><p className="project-type">{project.type}</p><h3>{project.title}</h3><p className="project-description">{project.description}</p><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><ArrowUpRight className="text-[var(--accent)]" size={20} aria-hidden="true" /></article>)}</div>
-        </div>
-      </section>
-
-      <section className="media-sneak-peek-section shell-width" aria-labelledby="media-sneak-peek-heading"><div className="section-heading"><div><p className="section-label">Media / Sneak peek</p><h2 id="media-sneak-peek-heading">A little of<br /><em>everything.</em></h2></div><Link className="text-link" href="/media">View all <ArrowUpRight size={15} aria-hidden="true" /></Link></div><div className="media-sneak-peek-grid"><Link href="/gallery" className="home-media-card"><span className="section-label">Gallery</span><strong>Frames, places, and quiet details.</strong><span>View all <ArrowUpRight size={15} /></span></Link><Link href="/music" className="home-media-card"><span className="section-label">Music</span><strong>What is in rotation right now.</strong><span>View all <ArrowUpRight size={15} /></span></Link><Link href="/anime" className="home-media-card"><span className="section-label">Anime / manga</span><strong>Stories currently being watched and read.</strong><span>View all <ArrowUpRight size={15} /></span></Link><Link href="/github" className="home-media-card"><span className="section-label">GitHub</span><strong>Code, activity, and momentum.</strong><span>View all <ArrowUpRight size={15} /></span></Link></div></section>
-      </div>
-    </SkeletonReveal>
-  );
+  return <SkeletonReveal variant="home"><div className="portfolio-home home-redesign"><section className="hero-section shell-width" aria-labelledby="hero-heading"><div className="hero-editorial"><div className="hero-vertical"><span>BCA student</span><span>Portfolio</span></div><div className="hero-copy-block"><div className="hero-stats"><span><strong>03+</strong><small>Selected projects</small></span><span><strong>04</strong><small>Creative disciplines</small></span></div><p className="eyebrow">Developer · designer · learner</p><h1 id="hero-heading" className="hero-heading">Hello<span>.</span></h1><p className="hero-subtitle">I&apos;m Ashok, a developer building calm, useful digital experiences.</p></div><div className="hero-portrait"><div className="portrait-frame"><span className="portrait-initials" aria-hidden="true">AR</span></div><p>Butwal, Nepal<br />Available for thoughtful collaborations</p></div></div><div className="hero-meta"><span>Scroll to explore ↓</span><span>Selected work · 01 / 07</span></div></section><section className="home-introduction shell-width" aria-labelledby="intro-heading"><div><p className="section-label">A point of view</p><h2 id="intro-heading">Useful can<br /><span className="accent-text">feel beautiful.</span></h2></div><div className="home-introduction-copy"><p>I like the space where thoughtful design meets dependable engineering. The goal is not to add noise, but to make the next step feel clear.</p><p>From learning tools to small experiments, I work with care, curiosity, and a bias toward things people can actually use.</p><Link href="/about" className="text-link">Read the full story <ArrowUpRight size={15} aria-hidden="true" /></Link></div></section><section className="home-work shell-width" aria-labelledby="work-heading"><div className="section-heading"><div><p className="section-label">Selected work</p><h2 id="work-heading">Small ideas,<br /><span className="accent-text">made real.</span></h2></div><Link href="/projects" className="text-link">View all projects <ArrowUpRight size={15} aria-hidden="true" /></Link></div><div className="home-project-grid">{projects.map((project) => <article className="home-project-card" key={project.title}><div className="home-project-top"><span>{project.number}</span><ArrowUpRight size={17} aria-hidden="true" /></div><p className="project-type">{project.type}</p><h3>{project.title}</h3><p>{project.description}</p><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></article>)}</div></section><section className="home-media shell-width" aria-labelledby="media-heading"><div className="home-media-heading"><div><p className="section-label">Beyond the build</p><h2 id="media-heading">What keeps<br /><span className="accent-text">me curious.</span></h2></div><Link href="/media" className="text-link">Browse media <ArrowUpRight size={15} aria-hidden="true" /></Link></div><div className="home-media-grid"><Link href="/media/music" className="home-media-tile"><span className="section-label">01 / Music</span><strong>Soundtracks for the work in progress.</strong><span className="tile-arrow">↗</span></Link><Link href="/movies" className="home-media-tile"><span className="section-label">02 / Movies</span><strong>Stories watched, remembered, and revisited.</strong><span className="tile-arrow">↗</span></Link><Link href="/gallery" className="home-media-tile"><span className="section-label">03 / Gallery</span><strong>Frames from the places and details I notice.</strong><span className="tile-arrow">↗</span></Link></div></section><section className="home-contact shell-width"><div><p className="section-label">Open to good questions</p><h2>Let&apos;s make<br /><span className="accent-text">something useful.</span></h2></div><Link href="/contact" className="button button-primary">Start a conversation <ArrowUpRight size={16} aria-hidden="true" /></Link></section></div></SkeletonReveal>;
 }
