@@ -445,7 +445,12 @@ em, .accent-text { font-style: normal; }
   .contact-card { padding: 48px 26px; }
   .social-links { float: none; margin-top: 42px; }
   .collection-page, .resume-page { padding-top: 105px; }
-  .collection-intro { padding-bottom: 60px; }
+  .blog-index-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 52px 0 30px; }
+.blog-index-card { min-height: 280px; display: flex; flex-direction: column; padding: 22px; border: 1px solid var(--line); background: var(--surface); }
+.blog-index-card h2 { margin: auto 0 10px; font-family: var(--display); font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 400; letter-spacing: -.06em; line-height: .95; }
+.blog-index-card p { max-width: 480px; margin: 0 0 20px; color: var(--muted); line-height: 1.6; }
+@media (max-width: 600px) { .blog-index-grid { grid-template-columns: 1fr; } }
+.collection-intro { padding-bottom: 60px; }
   .timeline-item { grid-template-columns: 1fr 16px; gap: 14px; }
   .timeline-period { grid-column: 1 / -1; }
   .timeline-dot { grid-column: 2; grid-row: 2; }
@@ -562,6 +567,8 @@ em, .accent-text { font-style: normal; }
 .cms-lede { max-width: 440px; margin: 0; color: var(--muted); line-height: 1.5; }
 .cms-overview { display: flex; gap: 22px; color: var(--muted); font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
 .cms-overview strong { display: block; color: var(--ink); font-family: var(--display); font-size: 1.55rem; font-weight: 400; letter-spacing: -.04em; }
+.cms-health-chart { display: flex; align-items: end; gap: 4px; width: 48px; height: 31px; padding-left: 10px; border-left: 1px solid var(--line); }
+.cms-health-chart i { display: block; flex: 1; min-height: 5px; background: var(--accent); opacity: .8; }
 .cms-hero-manager { display: grid; grid-template-columns: 1fr 1.2fr 180px; align-items: center; gap: 26px; padding: 22px 0; border-bottom: 1px solid var(--line); }
 .cms-hero-manager h3 { margin: 7px 0; font-family: var(--display); font-size: 2rem; font-weight: 400; letter-spacing: -.05em; }
 .cms-hero-manager p:not(.section-label) { max-width: 410px; margin: 0; color: var(--muted); font-size: .84rem; line-height: 1.5; }
