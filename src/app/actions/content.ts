@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { galleryItem, musicTrack, portfolioProject } from '@/lib/db/schema'
+import { cmsContent, galleryItem, musicTrack, portfolioProject } from '@/lib/db/schema'
 import { and, desc, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
@@ -19,12 +19,13 @@ export async function getPublishedGallery() {
 
 export async function getAdminContent() {
   const userId = await requireUser()
-  const [gallery, projects, music] = await Promise.all([
+  const [gallery, projects, music, cms] = await Promise.all([
     db.select().from(galleryItem).where(eq(galleryItem.userId, userId)).orderBy(desc(galleryItem.createdAt)),
     db.select().from(portfolioProject).where(eq(portfolioProject.userId, userId)).orderBy(desc(portfolioProject.createdAt)),
     db.select().from(musicTrack).where(eq(musicTrack.userId, userId)).orderBy(musicTrack.sortOrder, desc(musicTrack.createdAt)),
+    db.select({ id: cmsContent.id, collection: cmsContent.collection, title: cmsContent.title, status: cmsContent.status }).from(cmsContent).where(eq(cmsContent.userId, userId)).orderBy(cmsContent.sortOrder, desc(cmsContent.createdAt)),
   ])
-  return { gallery, projects, music }
+  return { gallery, projects, music, cms }
 }
 
 export async function createGalleryItem(formData: FormData) {
