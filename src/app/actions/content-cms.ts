@@ -1,0 +1,11 @@
+'use server'
+import { auth } from '@/lib/auth'
+import { db } from '@/lib/db'
+import { cmsContent } from '@/lib/db/schema'
+import { and, eq } from 'drizzle-orm'
+import { headers } from 'next/headers'
+import { revalidatePath } from 'next/cache'
+async function requireUser() { const session = await auth.api.getSession({ headers: await headers() }); if (!session?.user) throw new Error('Unauthorized'); return session.user.id }
+export async function createCmsContent(formData: FormData) { const userId = await requireUser(); const collection = String(formData.get('collection') || 'Profile').trim(); const title = String(formData.get('title') || '').trim(); if (!title) throw new Error('A title is required'); const slug = `${collection}-${title}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); const payload = { description: String(formData.get('payload') || '').trim() }; await db.insert(cmsContent).values({ userId, collection, title, slug, payload, status: String(formData.get('status') || 'draft') }); revalidatePath('/admin'); revalidatePath('/about'); revalidatePath('/media') }
+export async function getPublishedCmsContent(collection: string) { return db.select({ id: cmsContent.id, title: cmsContent.title, payload: cmsContent.payload, sortOrder: cmsContent.sortOrder }).from(cmsContent).where(and(eq(cmsContent.collection, collection), eq(cmsContent.status, 'published'))).orderBy(cmsContent.sortOrder, cmsContent.createdAt) }
+export async function deleteCmsContent(id: number) { const userId = await requireUser(); await db.delete(cmsContent).where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId))); revalidatePath('/admin'); revalidatePath('/about'); revalidatePath('/media') }
