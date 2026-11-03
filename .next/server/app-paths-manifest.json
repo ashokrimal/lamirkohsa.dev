@@ -3,5 +3,7 @@
   "/about/page": "app/about/page.js",
   "/contact/page": "app/contact/page.js",
   "/page": "app/page.js",
-  "/media/page": "app/media/page.js"
+  "/media/page": "app/media/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/page": "app/admin/page.js"
 }

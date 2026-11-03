@@ -144,7 +144,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .track-row > span { color: var(--accent); font-size: 11px; }
 .track-row div { display: flex; flex-direction: column; gap: 5px; }
 .track-row small { color: var(--muted); }
+.music-row { align-items: flex-start; }
+.music-row img { width: 48px; height: 48px; object-fit: cover; flex: 0 0 auto; }
+.music-row audio { display: block; width: min(100%, 360px); height: 30px; margin-top: 10px; }
+.music-number { color: var(--accent); min-width: 48px; }
 .anime-card { background: var(--accent-soft); }
+.provider-card { background: #edf5fb; }
+.provider-links { display: flex; gap: 18px; margin-top: 28px; }
+.mal-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 26px; }
+.mal-lists div { display: flex; flex-direction: column; gap: 5px; border-top: 1px solid rgba(16,42,45,.16); padding-top: 10px; }
+.mal-lists strong { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+.mal-lists span { color: var(--muted); font-size: 12px; line-height: 1.5; }
 .settings-panel { margin-top: 44px; }
 .profile-settings-form { max-width: 800px; }
 .profile-settings-form h2 { font-size: 3rem; letter-spacing: -.07em; font-weight: 400; margin: 16px 0 30px; }
@@ -215,6 +225,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .card-heading { align-items: start; flex-direction: column; gap: 16px; }
   .wide-field { grid-column: auto; }
   .profile-settings-form h2 { font-size: 2.5rem; }
+  .music-row audio { width: 100%; }
+  .mal-lists { grid-template-columns: 1fr; }
   .about-intro { padding-bottom: 78px; }
   .about-intro h1 { font-size: clamp(3.8rem, 16vw, 6rem); }
   .about-lede { font-size: 16px; }
