@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowUpRight, Check, Download, Mail, MapPin } from 'lucide-react';
+import { ArrowUpRight, Check, MapPin } from 'lucide-react';
 import { education, experience, profile, projects, skills } from '@/lib/portfolio-data';
 
 type Collection = 'experience' | 'education' | 'skills' | 'projects' | 'certificates' | 'gallery';
@@ -31,6 +31,10 @@ function Timeline({ items }: { items: { period: string; title: string; organizat
   return <div className="timeline">{items.map((item) => <article className="timeline-item" key={`${item.title}-${item.organization}`}><div className="timeline-period">{item.period}</div><div className="timeline-dot" /><div className="timeline-content"><h2>{item.title}</h2><p className="timeline-org">{item.organization}</p><p>{item.description}</p></div></article>)}</div>;
 }
 
+export function ResumeCard() {
+  return <article className="resume-card"><header><div><p className="project-type">Curriculum vitae</p><h2>{profile.name}</h2><p>{profile.headline} · {profile.location}</p></div><MapPin size={20} /></header><section><p className="project-type">Profile</p><p>{profile.summary}</p></section><section><p className="project-type">Experience</p>{experience.map((item) => <div className="resume-line" key={item.title}><strong>{item.title}</strong><span>{item.organization} · {item.period}</span></div>)}</section><section><p className="project-type">Education</p>{education.slice(0, 1).map((item) => <div className="resume-line" key={item.title}><strong>{item.title}</strong><span>{item.organization}</span></div>)}</section></article>;
+}
+
 export function ResumePage() {
-  return <main className="resume-page shell-width"><div className="collection-intro"><p className="eyebrow">08 / Resume</p><h1>An evolving CV.</h1><p>A concise, portfolio-derived view of my experience, education, and current direction.</p><div className="hero-actions"><button className="button button-primary" type="button"><Download size={16} /> Download CV</button><Link className="button button-quiet" href="/contact"><Mail size={16} /> Contact me</Link></div></div><article className="resume-card"><header><div><p className="project-type">Curriculum vitae</p><h2>{profile.name}</h2><p>{profile.headline} · {profile.location}</p></div><MapPin size={20} /></header><section><p className="project-type">Profile</p><p>{profile.summary}</p></section><section><p className="project-type">Experience</p>{experience.map((item) => <div className="resume-line" key={item.title}><strong>{item.title}</strong><span>{item.organization} · {item.period}</span></div>)}</section><section><p className="project-type">Education</p>{education.slice(0, 1).map((item) => <div className="resume-line" key={item.title}><strong>{item.title}</strong><span>{item.organization}</span></div>)}</section></article></main>;
+  return <main className="resume-page shell-width"><div className="collection-intro"><p className="eyebrow">08 / Resume</p><h1>An evolving CV.</h1><p>A concise, portfolio-derived view of my experience, education, and current direction.</p></div><ResumeCard /></main>;
 }

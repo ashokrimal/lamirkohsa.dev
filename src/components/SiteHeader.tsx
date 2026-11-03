@@ -3,15 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Download, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
   { href: '/projects', label: 'Projects' },
   { href: '/media', label: 'Media' },
-  { href: '/gallery', label: 'Gallery' },
-  { href: '/resume', label: 'Resume' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -35,9 +33,6 @@ export default function SiteHeader() {
             ))}
           </div>
           <div className="hidden items-center gap-4 md:flex">
-            <Link href="/resume" className="inline-flex items-center gap-2 border border-[var(--line)] px-3 py-2 text-[11px] uppercase tracking-[0.12em] text-[var(--ink)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]">
-              <Download size={13} aria-hidden="true" /> CV
-            </Link>
             <Link href="/contact" className="bg-[var(--accent)] px-4 py-2 text-[11px] uppercase tracking-[0.12em] text-white transition-opacity hover:opacity-80">Contact</Link>
           </div>
           <button type="button" className="text-[var(--ink)] lg:hidden" onClick={() => setIsOpen((open) => !open)} aria-expanded={isOpen} aria-controls="mobile-navigation" aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}>
