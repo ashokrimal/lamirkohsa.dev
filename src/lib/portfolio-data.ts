@@ -10,9 +10,9 @@ export const experience = [
 ];
 
 export const education = [
-  { period: '2022 - Present', title: 'Bachelor of Computer Applications', organization: 'Crimson College of Technology', description: 'An affiliated college of Pokhara University.' },
-  { period: '2020 - 2022', title: '+2', organization: 'Tilottama College', description: 'Higher secondary education.' },
-  { period: '2018 - 2020', title: 'Secondary Education', organization: 'Rampur English Boarding Secondary School', description: 'Secondary school education.' },
+  { period: 'August 2022 - Present', title: 'Bachelor of Computer Applications', organization: 'Crimson College of Technology', description: 'An affiliated college of Pokhara University.' },
+  { period: 'July 2020 - June 2022', title: '+2', organization: 'Tilottama College', description: 'Higher secondary education.' },
+  { period: 'April 2018 - March 2020', title: 'Secondary Education', organization: 'Rampur English Boarding Secondary School', description: 'Secondary school education.' },
 ];
 
 export const skills = [
