@@ -6,7 +6,7 @@ type Category = 'gallery' | 'music' | 'anime' | 'github'
 type Track = { title?: string; artist?: string; album?: string; cover?: string; listenedAt?: number }
 type Card = { title: string; description?: string; image?: string; meta?: string }
 
-function unique<T>(items: T[], key: (item: T) => string) { const seen = new Set<string>(); return items.filter((item) => { const value = key(item).trim().toLowerCase(); if (!value || seen.has(value)) return false; seen.add(value); return true }) }
+function unique<T>(items: T[], key: (item: T) => string) { const seen = new Set<string>(); return items.filter((item) => { const value = key(item).trim().toLowerCase().replace(/[^a-z0-9]+/g, ''); if (!value || seen.has(value)) return false; seen.add(value); return true }) }
 
 function MusicPage({ data }: { data: Awaited<ReturnType<typeof getMediaData>> }) {
   const lastfm = (data.lastfmRecent as Array<{ name?: string; artist?: { '#text'?: string } | string; album?: { '#text'?: string } | string; image?: Array<{ '#text'?: string; size?: string }> }>).map((track) => ({ title: track.name, artist: typeof track.artist === 'string' ? track.artist : track.artist?.['#text'], album: typeof track.album === 'string' ? track.album : track.album?.['#text'], cover: track.image?.find((image) => image.size === 'extralarge')?.['#text'] }))
