@@ -226,6 +226,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .form-error { color: var(--accent); font-size: 12px; }
 .auth-secondary-link { display: block; margin-top: 18px; color: var(--muted); font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
 .auth-message { color: var(--muted); line-height: 1.6; font-size: 14px; margin: 20px 0; }
+.inbox-cms-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.inbox-cms-card { min-height: 240px; padding: 26px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); display: flex; flex-direction: column; }
+.inbox-cms-card:nth-child(3n) { background: #edf3fb; }
+.inbox-cms-card:nth-child(3n + 2) { background: #f3efe8; }
+.inbox-cms-meta { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 11px; }
+.inbox-cms-card h2 { font-size: 1.8rem; letter-spacing: -.06em; font-weight: 400; margin: 30px 0 12px; }
+.inbox-cms-card p { color: var(--muted); line-height: 1.6; font-size: 13px; flex: 1; white-space: pre-line; }
+@media (max-width: 700px) { .inbox-cms-grid { grid-template-columns: 1fr; } .inbox-cms-meta { flex-direction: column; gap: 6px; } }
 .media-page { padding-block: 150px 120px; }
 .media-header { display: flex; justify-content: space-between; align-items: end; gap: 32px; padding-bottom: 54px; border-bottom: 1px solid var(--line); }
 .media-header h1 { font-size: clamp(4rem, 10vw, 9rem); line-height: .88; letter-spacing: -.09em; font-weight: 500; margin: 18px 0 24px; }
