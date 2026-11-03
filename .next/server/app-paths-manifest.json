@@ -3,5 +3,7 @@
   "/music/page": "app/music/page.js",
   "/anime/page": "app/anime/page.js",
   "/github/page": "app/github/page.js",
+  "/about/page": "app/about/page.js",
+  "/projects/page": "app/projects/page.js",
   "/media/page": "app/media/page.js"
 }
