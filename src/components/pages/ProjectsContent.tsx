@@ -8,6 +8,7 @@ import { Loading } from '@/components/Loading';
 import ProjectsShowcase from '@/components/ProjectsShowcase';
 import DevSection from '@/components/devmode/DevSection';
 import { useDevMode } from '@/contexts/DevModeContext';
+import SkeletonReveal from '@/components/SkeletonReveal';
 
 interface Project {
   title: string;
@@ -109,6 +110,7 @@ export default function ProjectsContent({ projects, filters, heading, descriptio
   return (
     <ErrorBoundary>
       <Suspense fallback={<Loading />}>
+        <SkeletonReveal variant="cards">
         <div className="py-20 md:py-32">
           <ScrollObserver />
           <div className="container mx-auto px-6 space-y-12">
@@ -125,6 +127,7 @@ export default function ProjectsContent({ projects, filters, heading, descriptio
                 ))}
           </div>
         </div>
+        </SkeletonReveal>
       </Suspense>
     </ErrorBoundary>
   );

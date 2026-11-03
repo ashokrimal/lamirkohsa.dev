@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { ArrowUpRight, Download, Linkedin, Github } from 'lucide-react';
+import SkeletonReveal from '@/components/SkeletonReveal';
+import { Card, Section } from '@/components/ui/Section';
 
 const projects = [
   { number: '01', title: 'KaryaMantra', type: 'Productivity platform', description: 'A focused workspace for students to organize assignments and make progress visible.', tags: ['React', 'Firebase'] },
@@ -9,7 +11,8 @@ const projects = [
 
 export default function HomeContent() {
   return (
-    <div className="portfolio-home">
+    <SkeletonReveal variant="home">
+      <div className="portfolio-home">
       <section className="hero-section shell-width" aria-labelledby="hero-heading">
         <div className="hero-utility"><span className="hero-mark">AR<span>®</span></span><nav aria-label="Hero navigation"><Link href="/about">About me</Link><Link href="/projects">Portfolio</Link><Link href="/media">Media</Link><Link href="/contact">Contact</Link></nav><Link href="/contact" className="hero-book">Start a conversation ↗</Link></div>
         <div className="hero-editorial">
@@ -20,12 +23,12 @@ export default function HomeContent() {
         <div className="hero-meta"><span>Scroll to explore ↓</span><span>Selected work · 01 / 07</span></div>
       </section>
 
-      <section className="statement-section" aria-labelledby="statement-heading">
+      <Section className="statement-section" aria-labelledby="statement-heading">
         <div className="statement-grid shell-width">
           <h2 id="statement-heading">Good work is quiet, <span>clear,</span> and useful.</h2>
           <div><p>My work sits between design and engineering. I enjoy turning a loose idea into a calm, reliable digital experience that feels obvious to use.</p><Link className="text-link" href="/about">More about my approach <ArrowUpRight size={15} aria-hidden="true" /></Link></div>
         </div>
-      </section>
+      </Section>
 
       <section className="proof-section shell-width" aria-label="At a glance">
         <div className="proof-intro"><p className="section-label">A small dashboard of facts</p><p>Interfaces, systems, and experiments shaped by curiosity and care.</p></div>
@@ -44,7 +47,8 @@ export default function HomeContent() {
         </div>
       </section>
 
-      <section className="contact-section shell-width" aria-labelledby="contact-heading"><div className="contact-card"><p className="section-label">Have a good question?</p><h2 id="contact-heading">Let&apos;s make<br /><em>something matter.</em></h2><Link href="/contact" className="button button-primary">Start a conversation <ArrowUpRight size={15} aria-hidden="true" /></Link><div className="social-links"><Link href="https://github.com/ashokrimal" aria-label="Ashok on GitHub"><Github size={17} /></Link><Link href="https://linkedin.com/in/ashokrimal" aria-label="Ashok on LinkedIn"><Linkedin size={17} /></Link></div></div></section>
-    </div>
+      <section className="contact-section shell-width" aria-labelledby="contact-heading"><Card className="contact-card"><p className="section-label">Have a good question?</p><h2 id="contact-heading">Let&apos;s make<br /><em>something matter.</em></h2><Link href="/contact" className="button button-primary">Start a conversation <ArrowUpRight size={15} aria-hidden="true" /></Link><div className="social-links"><Link href="https://github.com/ashokrimal" aria-label="Ashok on GitHub"><Github size={17} /></Link><Link href="https://linkedin.com/in/ashokrimal" aria-label="Ashok on LinkedIn"><Linkedin size={17} /></Link></div></Card></section>
+      </div>
+    </SkeletonReveal>
   );
 }

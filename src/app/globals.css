@@ -252,6 +252,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .flappy-pipe { position: absolute; z-index: 3; left: 0; width: 62px; background: #5d9670; border: 2px solid rgba(25,59,58,.25); box-shadow: inset 8px 0 rgba(255,255,255,.15), inset -7px 0 rgba(25,59,58,.12); }.flappy-pipe::after { content: ''; position: absolute; left: -7px; width: 72px; height: 24px; border-radius: 4px; background: #6ba37a; border: 2px solid rgba(25,59,58,.25); }.flappy-pipe-top { top: 0; height: 480px; }.flappy-pipe-top::after { bottom: -2px; }.flappy-pipe-bottom { top: 0; height: 620px; }.flappy-pipe-bottom::after { top: -2px; }
 .flappy-ground { position: absolute; z-index: 5; left: 0; right: 0; bottom: 0; height: 16%; background: repeating-linear-gradient(135deg, #d8bd82 0 12px, #e6d299 12px 24px); border-top: 2px solid rgba(25,59,58,.2); }
 .flappy-message { position: absolute; z-index: 6; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; pointer-events: none; text-align: center; color: #193b3a; text-shadow: 0 1px rgba(255,255,255,.45); }.flappy-message strong { font-size: clamp(1.7rem, 4vw, 3rem); letter-spacing: -.06em; font-weight: 500; }.flappy-message span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #5f7771; }
+.portfolio-section { position: relative; }
+.portfolio-card { transition: transform .25s ease, box-shadow .25s ease; }
+.portfolio-card:hover { transform: translateY(-2px); }
+.portfolio-skeleton-page { width: min(100% - 3rem, 1120px); margin: 0 auto; padding: 5rem 0; }
+.portfolio-skeleton-page > * { background: linear-gradient(90deg, rgba(25,59,58,.08) 25%, rgba(25,59,58,.16) 50%, rgba(25,59,58,.08) 75%); background-size: 200% 100%; animation: skeleton-shimmer 1.4s ease-in-out infinite; }
+.portfolio-skeleton-page .space-y-2 > *, .portfolio-skeleton-page .space-y-3 > * { background: linear-gradient(90deg, rgba(25,59,58,.08) 25%, rgba(25,59,58,.16) 50%, rgba(25,59,58,.08) 75%); background-size: 200% 100%; animation: skeleton-shimmer 1.4s ease-in-out infinite; }
+@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 @media (max-width: 600px) { .offline-shell { padding: 18px; }.offline-topline, .offline-footer { font-size: 8px; }.offline-copy { padding: 42px 0 22px; }.flappy-board { height: 58vh; min-height: 390px; border-radius: 16px; }.offline-footer { flex-direction: column; gap: 8px; } }
 .media-page { padding-block: 150px 120px; }
 .media-header { display: flex; justify-content: space-between; align-items: end; gap: 32px; padding-bottom: 54px; border-bottom: 1px solid var(--line); }

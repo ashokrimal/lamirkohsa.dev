@@ -85,6 +85,11 @@ export function SkeletonCard() {
   );
 }
 
+export function SkeletonPage({ variant = 'page' }: { variant?: 'page' | 'home' | 'cards' }) {
+  if (variant === 'home') return <div className="portfolio-skeleton-page space-y-10"><Skeleton className="h-5 w-20" /><div className="grid gap-8 md:grid-cols-[.8fr_1.2fr]"><div className="space-y-5"><Skeleton className="h-4 w-44" /><Skeleton className="h-28 w-4/5" rounded="lg" /><Skeleton lines={2} /></div><Skeleton className="h-72 w-full" rounded="lg" /></div><div className="grid gap-4 md:grid-cols-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div></div>;
+  return <div className="portfolio-skeleton-page space-y-8"><Skeleton className="h-5 w-24" /><Skeleton className="h-16 w-3/4" rounded="lg" /><Skeleton lines={3} /><div className="grid gap-5 md:grid-cols-3">{Array.from({ length: variant === 'cards' ? 6 : 3 }).map((_, i) => <SkeletonCard key={i} />)}</div></div>;
+}
+
 export function SkeletonList({ count = 3 }: { count?: number }) {
   return (
     <div className="space-y-4">

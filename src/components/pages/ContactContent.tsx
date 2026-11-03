@@ -8,6 +8,7 @@ import ErrorBoundary from '@/components/ErrorBoundaryWrapper';
 import { Loading } from '@/components/Loading';
 import { useDevMode } from '@/contexts/DevModeContext';
 import DevSection from '@/components/devmode/DevSection';
+import SkeletonReveal from '@/components/SkeletonReveal';
 
 const PAGE_KEY = 'contact';
 const DEFAULT_SECTIONS = ['intro', 'terminal', 'channel'] as const;
@@ -162,6 +163,7 @@ export default function ContactContent() {
   return (
     <ErrorBoundary>
       <Suspense fallback={<Loading />}>
+        <SkeletonReveal variant="cards">
         <div className="py-20 md:py-32">
           <ScrollObserver />
           <div className="container mx-auto px-6 space-y-12">
@@ -210,6 +212,7 @@ export default function ContactContent() {
                 })}
           </div>
         </div>
+        </SkeletonReveal>
       </Suspense>
     </ErrorBoundary>
   );
