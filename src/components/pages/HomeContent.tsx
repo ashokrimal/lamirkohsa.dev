@@ -53,17 +53,6 @@ export default function HomeContent() {
         </div>
       </section>
 
-      <section className="experience-section" aria-labelledby="experience-heading">
-        <div className="shell-width">
-          <div className="section-heading"><div><p className="section-label">How I work</p><h2 id="experience-heading">Curious by<br /><em>default.</em></h2></div><p className="experience-intro">I bring a practical engineering mindset to every project: understand the problem, make the simplest useful thing, then keep improving it.</p></div>
-          <div className="principles-grid">
-            <article><span>01</span><h3>Start with clarity</h3><p>Good questions make better products. I take time to understand the people, constraints, and outcome before reaching for a solution.</p></article>
-            <article><span>02</span><h3>Build with intention</h3><p>Small details compound. I care about accessible interfaces, dependable systems, and code that stays easy to change.</p></article>
-            <article><span>03</span><h3>Share the process</h3><p>Learning in public keeps the work honest. I document decisions, invite feedback, and leave things clearer than I found them.</p></article>
-          </div>
-        </div>
-      </section>
-
       <section className="contact-section shell-width" aria-labelledby="contact-heading"><div className="contact-card"><p className="section-label">Have a good question?</p><h2 id="contact-heading">Let&apos;s make<br /><em>something matter.</em></h2><Link href="/contact" className="button button-primary">Start a conversation <ArrowUpRight size={15} aria-hidden="true" /></Link><div className="social-links"><Link href="https://github.com/ashokrimal" aria-label="Ashok on GitHub"><Github size={17} /></Link><Link href="https://linkedin.com/in/ashokrimal" aria-label="Ashok on LinkedIn"><Linkedin size={17} /></Link></div></div></section>
     </div>
   );
