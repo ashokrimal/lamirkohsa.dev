@@ -11,9 +11,9 @@ export default function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="py-10 bg-gray-200">
-      <div className="container mx-auto px-6 text-center text-gray-500">
-        <div className="flex justify-center space-x-6 mb-6">
+    <footer className="site-footer">
+      <div className="site-footer-inner">
+        <div className="site-footer-socials">
           {socials.map(({ href, label, Icon }) => (
             <a
               key={href}
@@ -21,14 +21,14 @@ export default function SiteFooter() {
               target="_blank"
               rel="noreferrer"
               aria-label={label}
-              className="text-gray-500 hover:text-black transition"
+              className="site-footer-link"
             >
               <Icon className="h-5 w-5" />
             </a>
           ))}
         </div>
-        <p>Exploring the intersection of design and technology.</p>
-        <p>&copy; {year} Ashok Rimal. All Rights Reserved.</p>
+        <p className="site-footer-note">Exploring the intersection of design and technology.</p>
+        <p className="site-footer-note">&copy; {year} Ashok Rimal. All Rights Reserved.</p>
       </div>
     </footer>
   );
