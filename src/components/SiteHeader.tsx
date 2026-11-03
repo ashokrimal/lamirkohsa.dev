@@ -1,94 +1,58 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { useState } from 'react';
+import { Download, Menu, X } from 'lucide-react';
 
 const navLinks = [
   { href: '/', label: 'Home' },
-  { href: '/projects', label: 'Projects' },
   { href: '/about', label: 'About' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/media', label: 'Media' },
+  { href: '/gallery', label: 'Gallery' },
+  { href: '/resume', label: 'Resume' },
   { href: '/contact', label: 'Contact' },
 ];
 
 export default function SiteHeader() {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-
-  const isCurrent = (href: string) => {
-    if (!pathname) return false;
-    if (href === '/') {
-      return pathname === '/';
-    }
-    return pathname.startsWith(href);
-  };
+  const isCurrent = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
-    <header className="fixed w-full z-30 top-0">
-      <nav className="glass-nav mt-4 mx-4 md:mx-auto max-w-5xl rounded-lg">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6">
-          <div className="flex items-center justify-between h-16">
-            <Link
-              href="/"
-              className="text-xl font-bold text-gray-800 hover:text-blue-600 transition tracking-tighter"
-              onClick={() => setIsOpen(false)}
-            >
-              lamirkohsa
-            </Link>
-            <div className="hidden md:flex items-center space-x-8">
-              {navLinks.map(link => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={
-                    isCurrent(link.href)
-                      ? 'text-black font-semibold'
-                      : 'text-gray-600 hover:text-black'
-                  }
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="md:hidden text-gray-800"
-              onClick={() => setIsOpen(prev => !prev)}
-              aria-label="Toggle navigation menu"
-            >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div className={`mobile-menu fixed top-0 right-0 h-screen w-2/3 glass-nav p-5 md:hidden ${isOpen ? 'open' : ''}`}>
-        <button
-          type="button"
-          className="absolute top-6 right-5"
-          onClick={() => setIsOpen(false)}
-          aria-label="Close navigation menu"
-        >
-          <X size={24} />
-        </button>
-        <ul className="flex flex-col items-center justify-center h-full space-y-8 text-lg">
-          {navLinks.map(link => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className={
-                  `mobile-nav-link ${
-                    isCurrent(link.href)
-                      ? 'text-blue-600 font-bold'
-                      : 'text-gray-800 hover:text-blue-600'
-                  }`
-                }
-                onClick={() => setIsOpen(false)}
-              >
+    <header className="fixed inset-x-0 top-0 z-30 px-4 pt-4">
+      <nav className="glass-nav mx-auto max-w-[1200px] rounded-sm" aria-label="Main navigation">
+        <div className="flex h-16 items-center justify-between px-5 md:px-7">
+          <Link href="/" className="font-semibold tracking-[-0.06em] text-[var(--ink)]" onClick={() => setIsOpen(false)}>
+            Ashok Rimal<span className="text-[var(--accent)]">.</span>
+          </Link>
+          <div className="hidden items-center gap-6 lg:flex">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className={`text-[11px] uppercase tracking-[0.12em] transition-colors ${isCurrent(link.href) ? 'text-[var(--accent)]' : 'text-[var(--muted)] hover:text-[var(--ink)]'}`}>
                 {link.label}
               </Link>
-            </li>
+            ))}
+          </div>
+          <div className="hidden items-center gap-4 md:flex">
+            <Link href="/resume" className="inline-flex items-center gap-2 border border-[var(--line)] px-3 py-2 text-[11px] uppercase tracking-[0.12em] text-[var(--ink)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]">
+              <Download size={13} aria-hidden="true" /> CV
+            </Link>
+            <Link href="/contact" className="bg-[var(--accent)] px-4 py-2 text-[11px] uppercase tracking-[0.12em] text-white transition-opacity hover:opacity-80">Contact</Link>
+          </div>
+          <button type="button" className="text-[var(--ink)] lg:hidden" onClick={() => setIsOpen((open) => !open)} aria-expanded={isOpen} aria-controls="mobile-navigation" aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}>
+            {isOpen ? <X size={21} /> : <Menu size={21} />}
+          </button>
+        </div>
+      </nav>
+      <div id="mobile-navigation" className={`mobile-menu fixed inset-y-0 right-0 z-40 w-[min(86vw,360px)] p-7 lg:hidden ${isOpen ? 'open' : ''}`}>
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold tracking-[-0.04em]">Navigation</span>
+          <button type="button" onClick={() => setIsOpen(false)} aria-label="Close navigation menu"><X size={21} /></button>
+        </div>
+        <ul className="mt-20 space-y-7">
+          {navLinks.map((link) => (
+            <li key={link.href}><Link href={link.href} onClick={() => setIsOpen(false)} className={`block text-2xl tracking-[-0.04em] ${isCurrent(link.href) ? 'text-[var(--accent)]' : 'text-[var(--ink)]'}`}>{link.label}</Link></li>
           ))}
         </ul>
       </div>

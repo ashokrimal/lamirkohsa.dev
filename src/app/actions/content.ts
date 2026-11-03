@@ -1,0 +1,47 @@
+'use server'
+
+import { auth } from '@/lib/auth'
+import { db } from '@/lib/db'
+import { galleryItem, musicTrack, portfolioProject } from '@/lib/db/schema'
+import { and, desc, eq } from 'drizzle-orm'
+import { headers } from 'next/headers'
+import { revalidatePath } from 'next/cache'
+
+async function requireUser() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) throw new Error('Unauthorized')
+  return session.user.id
+}
+
+export async function getPublishedGallery() {
+  return db.select().from(galleryItem).where(eq(galleryItem.published, true)).orderBy(desc(galleryItem.createdAt))
+}
+
+export async function getAdminContent() {
+  const userId = await requireUser()
+  const [gallery, projects, music] = await Promise.all([
+    db.select().from(galleryItem).where(eq(galleryItem.userId, userId)).orderBy(desc(galleryItem.createdAt)),
+    db.select().from(portfolioProject).where(eq(portfolioProject.userId, userId)).orderBy(desc(portfolioProject.createdAt)),
+    db.select().from(musicTrack).where(eq(musicTrack.userId, userId)).orderBy(musicTrack.sortOrder, desc(musicTrack.createdAt)),
+  ])
+  return { gallery, projects, music }
+}
+
+export async function createGalleryItem(formData: FormData) {
+  const userId = await requireUser()
+  const title = String(formData.get('title') || '').trim()
+  const imageUrl = String(formData.get('imageUrl') || '').trim()
+  if (!title || !imageUrl) throw new Error('Title and image URL are required')
+  await db.insert(galleryItem).values({ userId, title, slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-'), imageUrl, category: String(formData.get('category') || 'Selected work'), description: String(formData.get('description') || '') })
+  revalidatePath('/gallery'); revalidatePath('/admin')
+}
+
+export async function createMusicTrack(formData: FormData) { const userId = await requireUser(); const title = String(formData.get('title') || '').trim(); const artist = String(formData.get('artist') || '').trim(); const audioUrl = String(formData.get('audioUrl') || '').trim(); if (!title || !artist || !audioUrl) throw new Error('Title, artist, and audio URL are required'); await db.insert(musicTrack).values({ userId, title, artist, audioUrl, album: String(formData.get('album') || '').trim() || null, coverUrl: String(formData.get('coverUrl') || '').trim() || null }); revalidatePath('/media'); revalidatePath('/admin') }
+
+export async function deleteMusicTrack(id: number) { const userId = await requireUser(); await db.delete(musicTrack).where(and(eq(musicTrack.id, id), eq(musicTrack.userId, userId))); revalidatePath('/media'); revalidatePath('/admin') }
+
+export async function deleteGalleryItem(id: number) {
+  const userId = await requireUser()
+  await db.delete(galleryItem).where(and(eq(galleryItem.id, id), eq(galleryItem.userId, userId)))
+  revalidatePath('/gallery'); revalidatePath('/admin')
+}

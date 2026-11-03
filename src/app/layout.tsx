@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${inter.className} leading-relaxed tracking-wide bg-bg-light text-text-dark`}>
+      <body className={`${inter.className} leading-relaxed tracking-wide`}>
         <LayoutShell>{children}</LayoutShell>
       </body>
     </html>
