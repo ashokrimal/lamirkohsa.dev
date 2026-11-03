@@ -38,6 +38,7 @@ export default function HomeContent() {
       </section>
 
       <section className="proof-section shell-width" aria-label="At a glance">
+        <div className="proof-intro"><p className="section-label">A small dashboard of facts</p><p>Interfaces, systems, and experiments shaped by curiosity and care.</p></div>
         <div className="proof-grid">
           <div><strong>03+</strong><span>Selected projects</span></div>
           <div><strong>04</strong><span>Core disciplines</span></div>
@@ -49,7 +50,7 @@ export default function HomeContent() {
       <section className="work-section" aria-labelledby="work-heading">
         <div className="shell-width">
           <div className="section-heading"><div><p className="section-label">Selected work</p><h2 id="work-heading">A few things<br />I&apos;ve made.</h2></div><Link className="text-link" href="/projects">View all projects <ArrowUpRight size={15} aria-hidden="true" /></Link></div>
-          <div className="project-list">{projects.map((project) => <article className="project-row" key={project.title}><span className="project-number">{project.number}</span><div className="project-main"><p className="project-type">{project.type}</p><h3>{project.title}</h3><p className="project-description">{project.description}</p><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><ArrowUpRight className="text-[var(--accent)]" size={20} aria-hidden="true" /></article>)}</div>
+          <div className="project-list project-bento">{projects.map((project, index) => <article className={`project-row project-card project-card-${index + 1}`} key={project.title}><span className="project-number">{project.number}</span><div className="project-main"><p className="project-type">{project.type}</p><h3>{project.title}</h3><p className="project-description">{project.description}</p><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><ArrowUpRight className="text-[var(--accent)]" size={20} aria-hidden="true" /></article>)}</div>
         </div>
       </section>
 
