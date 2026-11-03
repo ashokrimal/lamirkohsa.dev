@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 import './globals.css';
 import LayoutShell from '@/components/LayoutShell';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '700', '900'] });
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.className} leading-relaxed tracking-wide`}>
         <LayoutShell>{children}</LayoutShell>
+        <SpeedInsights />
       </body>
     </html>
   );
