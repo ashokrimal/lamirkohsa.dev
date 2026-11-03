@@ -1,5 +1,8 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { getMediaData } from '@/app/actions/media'
+import { MediaGallerySection } from '@/components/media/MediaGallerySection'
+import { MediaGallerySkeleton } from '@/components/media/MediaGallerySkeleton'
 
 export const dynamic = 'force-dynamic'
 type ListItem = { entry?: { title?: string; images?: { jpg?: { image_url?: string } } } }
@@ -13,6 +16,8 @@ export default async function MediaPage() {
   const githubProfile = github?.profile
   return <main className="media-page shell-width">
     <header className="media-header"><div><p className="section-label">Media / Activity</p><h1>What I&apos;m <em>into.</em></h1><p>A visual log of the music, anime, manga, and code currently moving through my world.</p></div><Link href="/" className="text-link">Back home ↗</Link></header>
+
+    <Suspense fallback={<MediaGallerySkeleton />}><MediaGallerySection /></Suspense>
 
     <section className="media-section music-section"><div className="media-section-heading"><div><p className="section-label">01 / Music</p><h2>Listening <em>to.</em></h2></div><p>Live listening and the tracks that have stayed in rotation.</p></div><div className="media-feature-grid"><article className={`media-feature-card listening-now ${!nowPlaying && !spotifyNowPlaying ? 'is-quiet' : ''}`}><p className="section-label">Currently playing</p>{nowPlaying || spotifyNowPlaying ? <><h3>{nowPlaying?.track_name || spotifyNowPlaying?.name}</h3><p>{nowPlaying?.artist_name || spotifyNowPlaying?.artists?.map((artist: { name: string }) => artist.name).join(', ')}</p><span className="playing-pulse">Live listening</span></> : <><h3>Nothing playing.</h3><p>The room is quiet. A current track will appear here when listening sync is active.</p></>}</article><article className="media-feature-card music-stats"><p className="section-label">Listening archive</p><strong>{recent.length || lastfmRecent.length}</strong><p>recent tracks captured</p><div className="provider-links">{settings?.listenbrainzUsername && <a href={`https://listenbrainz.org/user/${settings.listenbrainzUsername}/`} target="_blank" rel="noreferrer">ListenBrainz ↗</a>}{settings?.spotifyProfileUrl && <a href={settings.spotifyProfileUrl} target="_blank" rel="noreferrer">Spotify ↗</a>}</div></article></div>{recent.length ? <MusicHistory recent={recent} /> : <div className="empty-state">Connect ListenBrainz or Last.fm in admin settings to build your listening history.</div>}{tracks.length > 0 && <div className="self-hosted-library"><div className="media-section-heading"><div><p className="section-label">From my library</p><h3>Play it <em>here.</em></h3></div><span>{tracks.length} tracks</span></div><div className="track-list">{tracks.map((track) => <div className="track-row music-row" key={track.id}>{track.coverUrl ? <img src={track.coverUrl} alt="" /> : <span className="music-number">{String(track.id).padStart(2, '0')}</span>}<div><strong>{track.title}</strong><small>{track.artist}{track.album ? ` · ${track.album}` : ''}</small><audio controls preload="none" src={track.audioUrl} /></div></div>)}</div></div>}</section>
 
