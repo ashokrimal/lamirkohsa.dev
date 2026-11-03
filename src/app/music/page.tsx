@@ -1,3 +1,2 @@
-import MediaDetailPage from '@/components/media/MediaDetailPage'
-export const dynamic = 'force-dynamic'
-export default function MusicPage() { return <MediaDetailPage category="music" /> }
+import { redirect } from 'next/navigation'
+export default function LegacyMusicPage() { redirect('/media/music') }

@@ -487,6 +487,25 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .gallery-form label:nth-child(4) { grid-column: auto; }
 }
 
+.about-bio { max-width: 640px; margin: 24px 0 0; color: var(--muted); font-size: 1rem; line-height: 1.7; }
+.profile-section { padding-block: 78px; border-top: 1px solid var(--line); }
+.timeline-list { display: grid; gap: 0; margin-top: 40px; }
+.timeline-item { display: grid; grid-template-columns: minmax(220px, .7fr) 1.3fr; gap: 32px; padding: 28px 0; border-top: 1px solid var(--line); }
+.timeline-item h3 { margin: 8px 0 4px; font-size: 1.5rem; }
+.timeline-item p { margin: 0; color: var(--muted); line-height: 1.6; }
+.timeline-item span { display: block; margin-top: 18px; color: var(--accent); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+.skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 40px; border: 1px solid var(--line); background: var(--line); }
+.skills-grid article { padding: 24px; background: var(--background); }
+.skills-grid article > div { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.skills-grid span { padding: 7px 10px; border: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
+.media-collection-preview { padding: 74px 0; border-top: 1px solid var(--line); }
+.media-collection-description { max-width: 520px; margin: -24px 0 32px; color: var(--muted); }
+.media-preview-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.media-preview-card { min-width: 0; padding: 14px; border: 1px solid var(--line); background: var(--surface); }
+.media-preview-card img { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 18px; background: var(--accent-soft); }
+.media-preview-card h3 { margin: 8px 0 5px; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.media-preview-card p:last-child { margin: 0; color: var(--muted); font-size: .82rem; }
+@media (max-width: 700px) { .timeline-item { grid-template-columns: 1fr; gap: 14px; } .skills-grid, .media-preview-row { grid-template-columns: 1fr 1fr; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }

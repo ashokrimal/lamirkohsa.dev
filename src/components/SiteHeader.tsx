@@ -8,8 +8,8 @@ import { Menu, X } from 'lucide-react';
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
-  { href: '/projects', label: 'Projects' },
   { href: '/media', label: 'Media' },
+  { href: '/projects', label: 'Projects' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -31,9 +31,6 @@ export default function SiteHeader() {
                 {link.label}
               </Link>
             ))}
-          </div>
-          <div className="hidden items-center gap-4 md:flex">
-            <Link href="/contact" className="bg-[var(--accent)] px-4 py-2 text-[11px] uppercase tracking-[0.12em] text-white transition-opacity hover:opacity-80">Contact</Link>
           </div>
           <button type="button" className="text-[var(--ink)] lg:hidden" onClick={() => setIsOpen((open) => !open)} aria-expanded={isOpen} aria-controls="mobile-navigation" aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}>
             {isOpen ? <X size={21} /> : <Menu size={21} />}

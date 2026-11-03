@@ -1,1 +1,2 @@
-export default function Loading() { return <main className="content-skeleton shell-width" aria-label="Loading media page"><div className="skeleton-block skeleton-kicker" /><div className="skeleton-block skeleton-title" /><div className="skeleton-media-grid"><div className="skeleton-block" /><div className="skeleton-block" /><div className="skeleton-block" /><div className="skeleton-block" /></div></main> }
+import MediaDetailSkeleton from '@/components/media/MediaDetailSkeleton'
+export default function Loading() { return <MediaDetailSkeleton /> }
