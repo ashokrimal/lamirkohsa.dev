@@ -17,7 +17,7 @@ export async function getRecentListenBrainz(username?: string) {
   try { const response = await fetch(`https://api.listenbrainz.org/1/user/${encodeURIComponent(username)}/listens?count=8`, { next: { revalidate: 300 } }); if (!response.ok) return []; const data = await response.json(); return data.payload?.listens ?? [] } catch { return [] }
 }
 
-export async function getGitHubStatus(username?: string) { if (!username) return null; try { const response = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, { next: { revalidate: 300 } }); return response.ok ? response.json() : null } catch { return null } }
+export async function getGitHubStatus(username?: string) { if (!username) return null; try { const [profileResponse, reposResponse, eventsResponse] = await Promise.all([fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, { next: { revalidate: 300 } }), fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=6`, { next: { revalidate: 300 } }), fetch(`https://api.github.com/users/${encodeURIComponent(username)}/events/public?per_page=8`, { next: { revalidate: 300 } })]); if (!profileResponse.ok) return null; return { profile: await profileResponse.json(), repos: reposResponse.ok ? await reposResponse.json() : [], events: eventsResponse.ok ? await eventsResponse.json() : [] } } catch { return null } }
 
 const malStatuses = ['watching', 'completed', 'onhold', 'dropped', 'plantowatch'] as const
 const mangaStatuses = ['reading', 'completed', 'onhold', 'dropped', 'plantoread'] as const
