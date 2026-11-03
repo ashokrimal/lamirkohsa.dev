@@ -17,7 +17,7 @@ export const auth = betterAuth({
     enabled: true,
     sendResetPassword: async ({ user, url }) => {
       const resend = new Resend(process.env.RESEND_API_KEY)
-      const domain = process.env.RESEND_EMAIL_DOMAIN || 'resend.dev'
+      const domain = process.env.RESEND_EMAIL_DOMAIN || 'ashokrimal.com.np'
       await resend.emails.send({
         from: `Portfolio Admin <noreply@${domain}>`,
         to: 'info.ashokrimal@gmail.com',
