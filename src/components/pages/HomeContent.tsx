@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { ArrowUpRight, Linkedin, Github } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import SkeletonReveal from '@/components/SkeletonReveal';
-import { Card, Section } from '@/components/ui/Section';
+import { Section } from '@/components/ui/Section';
 
 const projects = [
   { number: '01', title: 'KaryaMantra', type: 'Productivity platform', description: 'A focused workspace for students to organize assignments and make progress visible.', tags: ['React', 'Firebase'] },
@@ -47,7 +47,7 @@ export default function HomeContent() {
         </div>
       </section>
 
-      <section className="contact-section shell-width" aria-labelledby="contact-heading"><Card className="contact-card"><p className="section-label">Have a good question?</p><h2 id="contact-heading">Let&apos;s make<br /><em>something matter.</em></h2><Link href="/contact" className="button button-primary">Start a conversation <ArrowUpRight size={15} aria-hidden="true" /></Link><div className="social-links"><Link href="https://github.com/ashokrimal" aria-label="Ashok on GitHub"><Github size={17} /></Link><Link href="https://linkedin.com/in/ashokrimal" aria-label="Ashok on LinkedIn"><Linkedin size={17} /></Link></div></Card></section>
+      <section className="media-sneak-peek-section shell-width" aria-labelledby="media-sneak-peek-heading"><div className="section-heading"><div><p className="section-label">Media / Sneak peek</p><h2 id="media-sneak-peek-heading">A little of<br /><em>everything.</em></h2></div><Link className="text-link" href="/media">View all <ArrowUpRight size={15} aria-hidden="true" /></Link></div><div className="media-sneak-peek-grid"><Link href="/gallery" className="home-media-card"><span className="section-label">Gallery</span><strong>Frames, places, and quiet details.</strong><span>View all <ArrowUpRight size={15} /></span></Link><Link href="/music" className="home-media-card"><span className="section-label">Music</span><strong>What is in rotation right now.</strong><span>View all <ArrowUpRight size={15} /></span></Link><Link href="/anime" className="home-media-card"><span className="section-label">Anime / manga</span><strong>Stories currently being watched and read.</strong><span>View all <ArrowUpRight size={15} /></span></Link><Link href="/github" className="home-media-card"><span className="section-label">GitHub</span><strong>Code, activity, and momentum.</strong><span>View all <ArrowUpRight size={15} /></span></Link></div></section>
       </div>
     </SkeletonReveal>
   );
