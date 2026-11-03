@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { getMediaData } from '@/app/actions/media'
+import EmptyCollectionState from '@/components/EmptyCollectionState'
 
 type Track = { track_metadata?: { track_name?: string; artist_name?: string; additional_info?: { cover_art_url?: string } } }
 type Item = { title?: string; images?: { jpg?: { image_url?: string } }; entry?: { title?: string } }
@@ -8,7 +9,7 @@ type CollectionProps = { number: string; title: string; description: string; hre
 
 function normalize(value: string) { return value.toLowerCase().replace(/[^a-z0-9]+/g, '') }
 function uniqueItems(items: Item[]) { const seen = new Set<string>(); return items.filter((item) => { const value = item.title || item.entry?.title || ''; const normalized = normalize(value); if (!normalized || seen.has(normalized)) return false; seen.add(normalized); return true }) }
-function CollectionPreview({ number, title, description, href, items, render }: CollectionProps) { return <section className="media-collection-preview"><div className="section-heading"><div><p className="section-label">{number} / {title}</p><h2>{title} <span className="accent-text">collection.</span></h2></div><Link className="text-link" href={href}>View all <span aria-hidden="true">↗</span></Link></div><p className="media-collection-description">{description}</p>{items.length ? <div className="media-preview-row">{items.slice(0, 4).map(render)}</div> : <div className="empty-state">This collection is taking shape.</div>}</section> }
+function CollectionPreview({ number, title, description, href, items, render }: CollectionProps) { return <section className="media-collection-preview"><div className="section-heading"><div><p className="section-label">{number} / {title}</p><h2>{title} <span className="accent-text">collection.</span></h2></div><Link className="text-link" href={href}>View all <span aria-hidden="true">↗</span></Link></div><p className="media-collection-description">{description}</p>{items.length ? <div className="media-preview-row">{items.slice(0, 4).map(render)}</div> : <EmptyCollectionState title={`${title} is taking shape.`} description={`The ${title.toLowerCase()} collection will appear here as records are added.`} action={{ label: `Open ${title.toLowerCase()} collection`, href }} />}</section> }
 
 export default async function MediaHomeContent() {
   const { recent, lastfmRecent, mal, anilist, movies } = await getMediaData()

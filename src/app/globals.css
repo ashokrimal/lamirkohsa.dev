@@ -10,7 +10,7 @@
   --muted: #6d7776;
   --line: #d8d8ce;
   --accent: #52725d;
-  --accent-blue: #52725d;
+  --accent-blue: var(--accent);
   --accent-soft: #e5eadf;
   --display: Georgia, 'Times New Roman', serif;
   --sans: Inter, ui-sans-serif, system-ui, sans-serif;
@@ -211,6 +211,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .library-subsection { margin-top: 30px; }
 
 .music-history-card p, .music-history-card small { color: var(--muted); margin: 5px 0 0; }
+.empty-collection-state { display: grid; grid-template-columns: 180px 1fr; align-items: center; gap: 34px; min-height: 230px; padding: 28px; border: 1px solid var(--line); background: var(--accent-soft); }
+.empty-state-visual { position: relative; width: 180px; height: 180px; display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--surface) 52%, transparent); }
+.empty-state-visual img { width: 150px; height: 150px; object-fit: contain; mix-blend-mode: multiply; }
+.empty-state-orbit { position: absolute; display: block; border: 1px solid var(--accent); border-radius: 50%; opacity: .5; }
+.empty-state-orbit-one { width: 12px; height: 12px; top: 19px; right: 25px; background: var(--accent); }
+.empty-state-orbit-two { width: 7px; height: 7px; bottom: 29px; left: 22px; background: var(--surface); }
+.empty-state-copy { max-width: 460px; }
+.empty-state-copy h2 { margin: 8px 0 10px; font-family: var(--display); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 400; letter-spacing: -.05em; }
+.empty-state-copy > p:not(.section-label) { margin: 0 0 18px; color: var(--muted); line-height: 1.6; }
 .empty-state { padding: 28px; border: 1px dashed var(--line); border-radius: 16px; color: var(--muted); margin-top: 18px; }
 .self-hosted-library { margin-top: 54px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; }
 .self-hosted-library .media-section-heading { margin-bottom: 8px; }
@@ -546,6 +555,7 @@ em, .accent-text { font-style: normal; }
 .home-contact { align-items: end; padding-bottom: 150px; border-bottom: 0; }
 .accent-text { color: var(--accent); font-style: normal; }
 @media (max-width: 760px) { .home-hero { min-height: 610px; } .home-hero-grid { min-height: 475px; display: block; padding-top: 140px; } .home-hero-note { align-items: flex-start; margin-top: 70px; } .home-introduction, .home-media-heading, .home-contact { display: block; } .home-introduction > div:first-child, .home-media-heading > div:first-child { width: auto; margin-bottom: 38px; } .home-project-grid, .home-media-grid { grid-template-columns: 1fr; } .home-project-card { min-height: 310px; } .home-contact .button { margin-top: 34px; } }
+@media (max-width: 600px) { .empty-collection-state { grid-template-columns: 1fr; gap: 24px; text-align: center; justify-items: center; } .empty-state-copy { display: grid; justify-items: center; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
