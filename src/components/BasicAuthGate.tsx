@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Buffer } from 'buffer';
 
 const ADMIN_EMAIL = 'admin@lamirkohsa.dev';
-const ADMIN_PASSWORD = 'ashokrimal#9847177515';
+const ADMIN_PASSWORD = 'ashokrimal9847177515';
 
 type BasicAuthGateProps = {
   render: (authHeader: string) => React.ReactNode;

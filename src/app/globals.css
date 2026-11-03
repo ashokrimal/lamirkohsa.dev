@@ -144,13 +144,25 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .music-stats strong { display: block; font-size: 6rem; line-height: .85; letter-spacing: -.1em; font-weight: 400; margin-top: 30px; }
 .music-stats .provider-links { margin-top: 34px; }
 .music-stats .provider-links a { color: #d5efe7; }
-.music-history-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 18px; }
-.music-history-card { min-height: 220px; padding: 22px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; justify-content: space-between; }
+.music-history-cards { display: flex; gap: 14px; overflow-x: auto; padding: 8px 2px 16px; margin-top: 18px; scroll-snap-type: x mandatory; scrollbar-width: thin; }
+.music-history-card { flex: 0 0 230px; min-height: 280px; padding: 22px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; justify-content: space-between; scroll-snap-align: start; overflow: hidden; }
 .music-history-card:nth-child(2) { background: #e7f1f3; }
 .music-history-card:nth-child(3) { background: #f1ece5; }
 .music-history-card:nth-child(4) { background: #edf2fa; }
 .music-index { color: var(--accent); font-size: 11px; }
 .music-history-card h3 { font-size: 1.35rem; letter-spacing: -.05em; margin: 0; }
+.music-history-card > img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; margin: -4px 0 14px; }
+.history-items, .media-shelf-row { display: flex; gap: 14px; overflow-x: auto; padding: 8px 2px 16px; scroll-snap-type: x mandatory; scrollbar-width: thin; }
+.media-shelf-card, .music-library-card { flex: 0 0 230px; min-height: 280px; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); scroll-snap-align: start; }
+.media-shelf-card > img, .music-library-card > img { width: 100%; height: 150px; object-fit: cover; background: #e8eee9; }
+.media-shelf-card > div, .music-library-card > div { padding: 14px; }
+.media-shelf-card h4, .music-library-card h4 { margin: 0; font-size: 15px; line-height: 1.15; }
+.media-shelf-card p, .music-library-card p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+.media-shelf-card:not(:has(> img)), .music-library-card:not(:has(> img)) { min-height: 150px; }
+.music-library-shelf { margin-top: 28px; }
+.music-library-card audio { width: 100%; margin-top: 14px; }
+.library-subsection { margin-top: 30px; }
+
 .music-history-card p, .music-history-card small { color: var(--muted); margin: 5px 0 0; }
 .empty-state { padding: 28px; border: 1px dashed var(--line); border-radius: 16px; color: var(--muted); margin-top: 18px; }
 .self-hosted-library { margin-top: 54px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; }

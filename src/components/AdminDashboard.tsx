@@ -5,7 +5,7 @@ import { Buffer } from 'buffer';
 import MessagesTable, { Message } from '@/components/MessagesTable';
 
 const ADMIN_EMAIL = 'admin@lamirkohsa.dev';
-const ADMIN_PASSWORD = 'ashokrimal#9847177515';
+const ADMIN_PASSWORD = 'ashokrimal9847177515';
 
 const STAT_CARDS = [
   {
