@@ -11,23 +11,13 @@ export default function HomeContent() {
   return (
     <div className="portfolio-home">
       <section className="hero-section shell-width" aria-labelledby="hero-heading">
-        <div className="hero-kicker"><span className="status-dot" aria-hidden="true" /> Open to internships and thoughtful collaborations</div>
-        <div className="hero-grid">
-          <div>
-            <p className="eyebrow">Digital creator · developer · learner</p>
-            <h1 id="hero-heading" className="hero-heading">Building <em>useful</em><br />things for people.</h1>
-            <p className="hero-copy">I&apos;m Ashok Rimal, a developer and Computer Engineering student from Kathmandu. I care about clear interfaces, thoughtful systems, and work that earns its place in the world.</p>
-            <div className="hero-actions">
-              <Link href="/projects" className="button button-primary">View selected work <ArrowUpRight size={15} aria-hidden="true" /></Link>
-              <Link href="/resume" className="button button-quiet"><Download size={15} aria-hidden="true" /> Download CV</Link>
-            </div>
-          </div>
-          <div className="hero-aside">
-            <div className="portrait-frame"><span className="portrait-initials" aria-hidden="true">AR</span><span className="portrait-caption">Kathmandu<br />Nepal · 2026</span></div>
-            <p className="aside-note">Currently learning in public, building with care, and looking for the next meaningful problem to solve.</p>
-          </div>
+        <div className="hero-utility"><span className="hero-mark">AR<span>®</span></span><nav aria-label="Hero navigation"><Link href="/about">About me</Link><Link href="/projects">Portfolio</Link><Link href="/media">Media</Link><Link href="/contact">Contact</Link></nav><Link href="/contact" className="hero-book">Start a conversation ↗</Link></div>
+        <div className="hero-editorial">
+          <div className="hero-vertical"><span>Computer engineering student</span><span>2026</span></div>
+          <div className="hero-copy-block"><div className="hero-stats"><span><strong>03+</strong><small>Projects shipped</small></span><span><strong>04</strong><small>Core disciplines</small></span></div><p className="eyebrow">Developer · designer · learner</p><h1 id="hero-heading" className="hero-heading">Hello<span>.</span></h1><p className="hero-subtitle">I&apos;m Ashok, a developer building calm, useful digital experiences.</p><div className="hero-actions"><Link href="/projects" className="button button-primary">View selected work <ArrowUpRight size={15} aria-hidden="true" /></Link><Link href="/resume" className="button button-quiet"><Download size={15} aria-hidden="true" /> Download CV</Link></div></div>
+          <div className="hero-portrait"><div className="portrait-frame"><span className="portrait-initials" aria-hidden="true">AR</span></div><p>Kathmandu, Nepal<br />Available for thoughtful collaborations</p></div>
         </div>
-        <div className="hero-meta"><span><span className="status-dot" aria-hidden="true" /> Available for opportunities</span><span>Scroll to explore ↓</span><span>01 / 07</span></div>
+        <div className="hero-meta"><span>Scroll to explore ↓</span><span>Selected work · 01 / 07</span></div>
       </section>
 
       <section className="statement-section" aria-labelledby="statement-heading">
