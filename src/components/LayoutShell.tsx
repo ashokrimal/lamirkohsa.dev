@@ -8,6 +8,7 @@ import { Loading } from '@/components/Loading';
 import { DevModeProvider } from '@/contexts/DevModeContext';
 import DevConsoleHUD from '@/components/devmode/DevConsoleHUD';
 import DevModeTrigger from '@/components/devmode/DevModeTrigger';
+import OfflineFlappy from '@/components/OfflineFlappy';
 
 interface LayoutShellProps {
   children: ReactNode;
@@ -25,6 +26,7 @@ export default function LayoutShell({ children }: LayoutShellProps) {
             <DevModeTrigger />
           </div>
           <DevConsoleHUD />
+          <OfflineFlappy />
         </Suspense>
       </ErrorBoundary>
     </DevModeProvider>
