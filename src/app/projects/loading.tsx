@@ -1,5 +1,2 @@
-import { Loading } from '@/components/Loading';
-
-export default function ProjectsLoading() {
-  return <Loading />;
-}
+import { Skeleton } from '@/components/Skeleton'
+export default function ProjectsLoading() { return <main className="projects-page shell-width" aria-label="Loading projects"><header className="projects-header"><Skeleton className="h-3 w-40" /><Skeleton className="mt-5 h-16 w-full max-w-3xl" /><Skeleton className="mt-5 h-4 w-full max-w-xl" /><Skeleton className="mt-2 h-4 w-4/5 max-w-lg" /></header><div className="projects-grid">{Array.from({ length: 4 }).map((_, index) => <article className="project-card" key={index}><Skeleton className="h-56 w-full" rounded="lg" /><Skeleton className="mt-5 h-3 w-24" /><Skeleton className="mt-3 h-8 w-3/4" /><Skeleton className="mt-3 h-4 w-full" /></article>)}</div></main> }
