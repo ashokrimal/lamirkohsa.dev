@@ -11,12 +11,8 @@ import CmsCollectionManager from '@/components/admin/CmsCollectionManager'
 
 export const dynamic = 'force-dynamic'
 
-const CMS_HOST = 'cms.ashokrimal.com.np'
-
 export default async function AdminPage() {
   const requestHeaders = await headers()
-  const host = requestHeaders.get('host')?.split(':')[0]
-  if (host !== CMS_HOST) redirect(`https://${CMS_HOST}`)
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session?.user) redirect('/sign-in')
   const { gallery, projects, music, cms } = await getAdminContent()
