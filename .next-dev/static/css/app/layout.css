@@ -2651,7 +2651,7 @@ em, .accent-text { font-style: normal; }
 .media-gallery-carousel > * { flex: 0 0 min(78vw, 300px); scroll-snap-align: start; }
 .media-gallery-carousel .media-gallery-card { min-height: 260px; }
 .media-skeleton-image { height: 210px; width: 100%; }
-.media-collection-skeleton { pointer-events: none; }
+.media-collection-skeleton { position: relative; z-index: 0; pointer-events: none; }
 .about-timeline-skeleton { display: grid; gap: 16px; margin-top: 38px; }
 .about-timeline-skeleton .about-timeline-item { display: grid; grid-template-columns: 100px 1px minmax(0, 1fr); gap: 18px; align-items: start; }
 @media (min-width: 760px) { .media-gallery-carousel > * { flex-basis: 31vw; } }
