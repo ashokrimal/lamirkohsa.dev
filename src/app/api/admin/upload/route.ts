@@ -8,8 +8,10 @@ export async function POST(request: Request) {
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const formData = await request.formData()
   const file = formData.get('file')
-  if (!(file instanceof File) || !file.type.startsWith('image/')) return NextResponse.json({ error: 'Please upload an image file.' }, { status: 400 })
-  if (file.size > 8 * 1024 * 1024) return NextResponse.json({ error: 'Images must be smaller than 8MB.' }, { status: 400 })
+  const isImage = file instanceof File && file.type.startsWith('image/')
+  const isPdf = file instanceof File && file.type === 'application/pdf'
+  if (!(isImage || isPdf)) return NextResponse.json({ error: 'Please upload an image or PDF file.' }, { status: 400 })
+  if (file.size > (isPdf ? 20 : 8) * 1024 * 1024) return NextResponse.json({ error: isPdf ? 'PDFs must be smaller than 20MB.' : 'Images must be smaller than 8MB.' }, { status: 400 })
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/^-+|-+$/g, '') || 'upload-image'
   try {
     const blob = await put(`site/${session.user.id}/${Date.now()}-${safeName}`, file, { access: 'public', addRandomSuffix: false })
