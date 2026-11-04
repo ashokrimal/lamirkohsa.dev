@@ -2092,7 +2092,25 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .bg-blue-600, .bg-indigo-600 { background: var(--accent) !important; }
 .border-gray-200, .border-gray-300, .border-slate-700 { border-color: var(--line) !important; }
 
-.gallery-page, .admin-page { padding-block: 72px 120px; }
+.gallery-page { padding-block: 72px 120px; }
+.admin-page { padding-block: 132px 120px; }
+.admin-lede { max-width: 560px; margin: 16px 0 0; color: var(--muted); line-height: 1.6; }
+.cms-shell { min-height: 100vh; background: #f6f7f8; color: #172026; }
+.cms-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 20; display: flex; width: 270px; flex-direction: column; border-right: 1px solid #dce2e5; background: #fff; padding: 28px 20px 22px; }
+.cms-brand { display: flex; align-items: center; gap: 11px; color: #172026; text-decoration: none; }
+.cms-brand-mark { display: grid; width: 38px; height: 38px; place-items: center; background: #172026; color: #fff; font: 600 1.05rem var(--display); }
+.cms-brand strong, .cms-brand small { display: block; }
+.cms-brand strong { font-size: .9rem; letter-spacing: -.02em; }
+.cms-brand small { margin-top: 3px; color: #7c8990; font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; }
+.cms-nav { display: grid; gap: 28px; margin-top: 58px; }
+.cms-nav-group { display: grid; gap: 5px; }
+.cms-nav-group p { margin: 0 12px 6px; color: #89959b; font: 500 .63rem var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+.cms-nav-group a, .cms-public-link { padding: 10px 12px; border: 1px solid transparent; color: #5e6b72; font-size: .82rem; text-decoration: none; transition: .2s ease; }
+.cms-nav-group a:hover, .cms-nav-group a.is-active { border-color: #d5e4e8; background: #edf6f7; color: #16727a; }
+.cms-public-link { margin-top: auto; border-top-color: #dce2e5; padding: 18px 12px 0; color: #16727a; }
+.cms-main { min-height: 100vh; margin-left: 270px; }
+.cms-mobile-bar { display: none; }
+@media (max-width: 760px) { .cms-sidebar { position: fixed; width: min(280px, 86vw); transform: translateX(-100%); transition: transform .25s ease; } body.cms-nav-open .cms-sidebar { transform: translateX(0); } .cms-main { margin-left: 0; } .cms-mobile-bar { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #dce2e5; background: #fff; padding: 16px 18px; } .cms-mobile-bar button { border: 1px solid #cbd5d9; background: #fff; padding: 9px 13px; color: #172026; font: 500 .72rem var(--mono); text-transform: uppercase; } .cms-main .admin-page { padding-top: 48px; } }
 .admin-page .admin-header { padding: 28px 30px 38px; border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(135deg, #edf5fb, var(--surface)); margin-bottom: 22px; }
 .admin-page .admin-stats { border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--surface); margin-bottom: 72px; }
 .admin-page .admin-stats div { padding: 24px; margin: 0; border-right: 1px solid var(--line); }
@@ -2443,7 +2461,8 @@ em, .accent-text { font-style: normal; }
   .timeline-content { grid-column: 1; grid-row: 2; }
   .skill-grid { grid-template-columns: 1fr; }
   .resume-card { margin-top: 45px; padding: 28px 22px; }
-  .gallery-page, .admin-page { padding-block: 42px 80px; }
+  .gallery-page { padding-block: 42px 80px; }
+.admin-page { padding-block: 104px 80px; }
   .about-page, .content-skeleton { padding-block: 105px 80px; }
   .media-page { padding-block: 105px 80px; }
   .media-header { align-items: start; flex-direction: column; }
