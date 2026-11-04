@@ -2,161 +2,61 @@
   "node": {
     "436055457c07562869e1dc7f47d5556dbf30a362": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!",
-        "app/admin/page": "(action-browser)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcatalog.ts%22%2C%5B%22getCatalogItems%22%2C%22importAnimeManga%22%2C%22importMovieExport%22%2C%22importMusicExport%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=true!"
+        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc",
-        "app/admin/page": "action-browser"
+        "app/page": "rsc"
       }
     },
     "7676a960575e8833ccae5e1f62da456fce81c6be": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!",
-        "app/admin/page": "(action-browser)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcatalog.ts%22%2C%5B%22getCatalogItems%22%2C%22importAnimeManga%22%2C%22importMovieExport%22%2C%22importMusicExport%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=true!"
+        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc",
-        "app/admin/page": "action-browser"
+        "app/page": "rsc"
       }
     },
     "830724bd1260bd9dd1d8dc76ff806bb9e35efe89": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!",
-        "app/admin/page": "(action-browser)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcatalog.ts%22%2C%5B%22getCatalogItems%22%2C%22importAnimeManga%22%2C%22importMovieExport%22%2C%22importMusicExport%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=true!"
+        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc",
-        "app/admin/page": "action-browser"
+        "app/page": "rsc"
       }
     },
     "8d27397c60d962144fc04633aedfcaecac956455": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!",
-        "app/admin/page": "(action-browser)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcatalog.ts%22%2C%5B%22getCatalogItems%22%2C%22importAnimeManga%22%2C%22importMovieExport%22%2C%22importMusicExport%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=true!"
+        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc",
-        "app/admin/page": "action-browser"
+        "app/page": "rsc"
       }
     },
     "aba20471cf0e6e5872b9105030cf8d921f731fcc": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!",
-        "app/admin/page": "(action-browser)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcatalog.ts%22%2C%5B%22getCatalogItems%22%2C%22importAnimeManga%22%2C%22importMovieExport%22%2C%22importMusicExport%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=true!"
+        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc",
-        "app/admin/page": "action-browser"
+        "app/page": "rsc"
       }
     },
     "d91f25f320ac300dcb6a87d2e6ea4baaf8ac2e87": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!",
-        "app/admin/page": "(action-browser)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcatalog.ts%22%2C%5B%22getCatalogItems%22%2C%22importAnimeManga%22%2C%22importMovieExport%22%2C%22importMusicExport%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=true!"
+        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc",
-        "app/admin/page": "action-browser"
+        "app/page": "rsc"
       }
     },
-    "44e34bd4a9a040a9a7376a0759df9c1b9fc3c0f7": {
+    "c7e16748a7b8ae5da028c9f1dc43eb415d0f874d": {
       "workers": {
-        "app/admin/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22createGalleryItem%22%2C%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getPublishedGallery%22%2C%22createMusicTrack%22%2C%22getAdminContent%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fsettings.ts%22%2C%5B%22saveProfileSettings%22%2C%22getSettingsForAdmin%22%5D%5D%5D&__client_imported__=!"
+        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/admin/page": "rsc"
-      }
-    },
-    "4c1026a922ba2adfd818dbb24ce4460436c0009a": {
-      "workers": {
-        "app/admin/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22createGalleryItem%22%2C%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getPublishedGallery%22%2C%22createMusicTrack%22%2C%22getAdminContent%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fsettings.ts%22%2C%5B%22saveProfileSettings%22%2C%22getSettingsForAdmin%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/admin/page": "rsc"
-      }
-    },
-    "595a34ea66b31dd5176d26154c3eee20be506651": {
-      "workers": {
-        "app/admin/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22createGalleryItem%22%2C%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getPublishedGallery%22%2C%22createMusicTrack%22%2C%22getAdminContent%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fsettings.ts%22%2C%5B%22saveProfileSettings%22%2C%22getSettingsForAdmin%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/admin/page": "rsc"
-      }
-    },
-    "68449b9b6e9b9953527df36e908b432c0bdf0c4c": {
-      "workers": {
-        "app/admin/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22createGalleryItem%22%2C%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getPublishedGallery%22%2C%22createMusicTrack%22%2C%22getAdminContent%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fsettings.ts%22%2C%5B%22saveProfileSettings%22%2C%22getSettingsForAdmin%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/admin/page": "rsc"
-      }
-    },
-    "cae1cb224ce42e48f84117e970c665061e677998": {
-      "workers": {
-        "app/admin/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22createGalleryItem%22%2C%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getPublishedGallery%22%2C%22createMusicTrack%22%2C%22getAdminContent%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fsettings.ts%22%2C%5B%22saveProfileSettings%22%2C%22getSettingsForAdmin%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/admin/page": "rsc"
-      }
-    },
-    "cce6d7fa282470d5dc812b0e68ca709bee46b0cf": {
-      "workers": {
-        "app/admin/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22createGalleryItem%22%2C%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getPublishedGallery%22%2C%22createMusicTrack%22%2C%22getAdminContent%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fsettings.ts%22%2C%5B%22saveProfileSettings%22%2C%22getSettingsForAdmin%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/admin/page": "rsc"
-      }
-    },
-    "d335e6a165d5fba1b3870ffe823f260fb37f3940": {
-      "workers": {
-        "app/admin/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22createGalleryItem%22%2C%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getPublishedGallery%22%2C%22createMusicTrack%22%2C%22getAdminContent%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fsettings.ts%22%2C%5B%22saveProfileSettings%22%2C%22getSettingsForAdmin%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/admin/page": "rsc"
-      }
-    },
-    "f4a1441cac52dc9ce080c3da87c0ab54945f33ce": {
-      "workers": {
-        "app/admin/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22createGalleryItem%22%2C%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getPublishedGallery%22%2C%22createMusicTrack%22%2C%22getAdminContent%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fsettings.ts%22%2C%5B%22saveProfileSettings%22%2C%22getSettingsForAdmin%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/admin/page": "rsc"
-      }
-    },
-    "318577949ecaca0949d4000ad5076cd38155f000": {
-      "workers": {
-        "app/admin/page": "(action-browser)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcatalog.ts%22%2C%5B%22getCatalogItems%22%2C%22importAnimeManga%22%2C%22importMovieExport%22%2C%22importMusicExport%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=true!"
-      },
-      "layer": {
-        "app/admin/page": "action-browser"
-      }
-    },
-    "71f39c1562373a4d3ec5f66eee84681fde8fe8cb": {
-      "workers": {
-        "app/admin/page": "(action-browser)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcatalog.ts%22%2C%5B%22getCatalogItems%22%2C%22importAnimeManga%22%2C%22importMovieExport%22%2C%22importMusicExport%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=true!"
-      },
-      "layer": {
-        "app/admin/page": "action-browser"
-      }
-    },
-    "7adf23b2110ccc2e90d2b74a661a37f400b2d99a": {
-      "workers": {
-        "app/admin/page": "(action-browser)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcatalog.ts%22%2C%5B%22getCatalogItems%22%2C%22importAnimeManga%22%2C%22importMovieExport%22%2C%22importMusicExport%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=true!"
-      },
-      "layer": {
-        "app/admin/page": "action-browser"
-      }
-    },
-    "e7188e7e2300a5ed9d3dd5e62d0836056adf199d": {
-      "workers": {
-        "app/admin/page": "(action-browser)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcatalog.ts%22%2C%5B%22getCatalogItems%22%2C%22importAnimeManga%22%2C%22importMovieExport%22%2C%22importMusicExport%22%5D%5D%2C%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=true!"
-      },
-      "layer": {
-        "app/admin/page": "action-browser"
+        "app/page": "rsc"
       }
     }
   },
   "edge": {},
-  "encryptionKey": "sJtvfUSHtQrEhPe1q6GDWV+Q8YDcJNuehcQU0w5UIxA="
+  "encryptionKey": "mZFJ4NAmHVg81/EGDUKkVEsfCs+epjkzDOsU/B6Rtgc="
 }
