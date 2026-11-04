@@ -31,20 +31,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
-    "/page": [
+    "/projects/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/projects/page.js"
     ],
-    "/media/music/page": [
+    "/projects/loading": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/media/music/page.js"
+      "static/chunks/app/projects/loading.js"
     ],
-    "/media/music/loading": [
+    "/experience/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/media/music/loading.js"
+      "static/chunks/app/experience/page.js"
+    ],
+    "/experience/loading": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/experience/loading.js"
     ]
   }
 }
