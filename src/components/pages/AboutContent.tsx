@@ -1,6 +1,7 @@
 import { education, experience, profile, skills } from '@/lib/portfolio-data'
 import EmptyCollectionState from '@/components/EmptyCollectionState'
 import { getPublishedCmsContent } from '@/app/actions/content-cms'
+import { MediaGallerySection } from '@/components/media/MediaGallerySection'
 
 export default async function AboutContent() {
   const [publishedProfile, publishedExperience, publishedEducation] = await Promise.all([
@@ -11,6 +12,7 @@ export default async function AboutContent() {
 
   return <main className="about-page shell-width">
     <section className="about-intro"><p className="section-label">About / Ashok Rimal</p><h1>Making things<br /><span className="accent-text">matter.</span></h1><p className="about-lede">{profile.summary} Based in {profile.location}.</p><p className="about-bio">I enjoy turning open questions into clear, dependable digital experiences. My current focus is frontend development, useful products, AI, robotics, and learning through practice.</p></section>
+    <MediaGallerySection />
     <section className="about-story"><div><p className="section-label">Professional overview</p></div><div><p>My work sits between development, product thinking, and teaching. I build accessible interfaces, dependable systems, and practical technology that helps people move forward.</p><p>Outside of development, I follow music, anime, manga, photography, and the small details that make everyday life worth noticing.</p>{publishedProfile.length > 0 && <div className="cms-published-notes">{publishedProfile.map((record) => <p key={record.id}><strong>{record.title}</strong> {String(record.payload.description || '')}</p>)}</div>}</div></section>
     <section className="profile-section" aria-labelledby="experience-heading"><div className="section-heading"><div><p className="section-label">01 / Experience</p><h2 id="experience-heading">Work in<br /><span className="accent-text">practice.</span></h2></div><p>Roles where curiosity became useful work.</p></div><Timeline items={experience} cmsItems={publishedExperience} /></section>
     <section className="profile-section" aria-labelledby="education-heading"><div className="section-heading"><div><p className="section-label">02 / Education</p><h2 id="education-heading">Learning with<br /><span className="accent-text">intention.</span></h2></div><p>The foundations behind the work.</p></div><Timeline items={education} cmsItems={publishedEducation} /></section>
