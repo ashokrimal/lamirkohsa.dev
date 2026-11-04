@@ -6,7 +6,7 @@ import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { animeMangaItem } from '@/lib/db/schema'
+import { animeMangaItem, cmsContent, musicTrack } from '@/lib/db/schema'
 
 type CatalogKind = 'anime' | 'manga'
 type ImportItem = Record<string, unknown>
@@ -57,4 +57,26 @@ export async function importAnimeManga(formData: FormData) {
 export async function getCatalogItems(kind: CatalogKind) {
   const userId = await getUserId()
   return db.select().from(animeMangaItem).where(and(eq(animeMangaItem.userId, userId), eq(animeMangaItem.kind, kind))).orderBy(animeMangaItem.updatedAt)
+}
+
+function parseCsv(text: string) {
+  const rows = text.trim().split(/\r?\n/).map((line) => line.match(/(?:^|,)\s*(?:"([^"]*(?:""[^"]*)*)"|([^,]*))/g)?.map((cell) => cell.replace(/^,?\s*/, '').replace(/^"|"$/g, '').replace(/""/g, '')) ?? [])
+  const headers = rows.shift()?.map((header) => header.trim()) ?? []
+  return rows.map((row) => Object.fromEntries(headers.map((header, index) => [header, row[index] ?? ''])))
+}
+
+export async function importMusicExport(formData: FormData) {
+  const userId = await getUserId(); const file = formData.get('file')
+  if (!(file instanceof File) || !/\.json$/i.test(file.name)) throw new Error('Choose a Spotify or YouTube Music JSON export.')
+  const parsed = JSON.parse(await file.text()); const rows = (Array.isArray(parsed) ? parsed : [parsed]).map((item) => item as Record<string, unknown>).map((item) => ({ userId, title: String(item.master_metadata_track_name ?? item.track ?? item.title ?? '').trim(), artist: String(item.master_metadata_album_artist_name ?? item.artist ?? item.artist_name ?? 'Unknown artist').trim(), album: String(item.master_metadata_album_album_name ?? item.album ?? '').trim() || null, audioUrl: String(item.spotify_track_uri ?? item.youtube_url ?? item.videoId ?? `https://music.youtube.com/search?q=${encodeURIComponent(String(item.track ?? item.title ?? ''))}`), coverUrl: typeof item.image_url === 'string' ? item.image_url : null, published: true, sortOrder: 0 })).filter((item) => item.title)
+  if (!rows.length) throw new Error('No music tracks were found in this export.')
+  await db.delete(musicTrack).where(eq(musicTrack.userId, userId)); await db.insert(musicTrack).values(rows); revalidatePath('/admin'); revalidatePath('/media'); return { imported: rows.length }
+}
+
+export async function importMovieExport(formData: FormData) {
+  const userId = await getUserId(); const file = formData.get('file')
+  if (!(file instanceof File) || !/\.csv$/i.test(file.name)) throw new Error('Choose an IMDb CSV export.')
+  const rows = parseCsv(await file.text()).map((item) => ({ userId, collection: 'Movies', title: String(item.Title ?? item.title ?? '').trim(), slug: String(item.Const ?? item.title ?? item.Title ?? crypto.randomUUID()).toLowerCase().replace(/[^a-z0-9]+/g, '-'), payload: { description: item['Your Rating'] ? `IMDb rating: ${item['Your Rating']}` : 'IMDb export', source: 'IMDb', year: item.Year ?? '' }, status: 'published', sortOrder: 0 })).filter((item) => item.title)
+  if (!rows.length) throw new Error('No movies were found in this CSV export.')
+  await db.delete(cmsContent).where(and(eq(cmsContent.userId, userId), eq(cmsContent.collection, 'Movies'))); await db.insert(cmsContent).values(rows); revalidatePath('/admin'); revalidatePath('/media'); revalidatePath('/movies'); return { imported: rows.length }
 }
