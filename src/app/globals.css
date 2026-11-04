@@ -678,6 +678,7 @@ em, .accent-text { font-style: normal; }
 .cms-status { color: var(--accent); }
 .cms-status.draft { color: var(--muted); }
 .cms-record-image { display: block; width: 100%; height: 120px; margin: 15px 0; object-fit: cover; filter: grayscale(.25); }
+.cms-record-file { display: inline-flex; margin: 15px 0; border: 1px solid #dce2e5; background: #f7fafb; padding: 12px 14px; color: #16727a; font: 500 .7rem var(--mono); text-decoration: none; text-transform: uppercase; }
 .cms-record-card h4, .cms-empty h4, .cms-create-card h4 { margin: 24px 0 7px; font-family: var(--display); font-size: 1.7rem; font-weight: 400; letter-spacing: -.05em; }
 .cms-record-card p, .cms-empty p:not(.section-label) { margin: 0; color: var(--muted); line-height: 1.5; font-size: .84rem; }
 .cms-record-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 22px; padding-top: 13px; border-top: 1px solid var(--line); }
