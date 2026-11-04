@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { headers } from 'next/headers';
 import './globals.css';
 import LayoutShell from '@/components/LayoutShell';
 
@@ -27,10 +28,12 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const host = headers().get('host')?.split(':')[0]
+  const isCmsHost = host === 'cms.ashokrimal.com.np'
   return (
     <html lang="en" className="scroll-smooth">
       <body className="leading-relaxed tracking-wide">
-        <LayoutShell>{children}</LayoutShell>
+        <LayoutShell isCmsHost={isCmsHost}>{children}</LayoutShell>
       </body>
     </html>
   );
