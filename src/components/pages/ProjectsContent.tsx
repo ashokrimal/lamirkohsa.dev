@@ -111,9 +111,9 @@ export default function ProjectsContent({ projects, filters, heading, descriptio
     <ErrorBoundary>
       <Suspense fallback={<Loading />}>
         <SkeletonReveal variant="cards">
-        <div className="py-20 md:py-32">
+        <main className="projects-page shell-width">
           <ScrollObserver />
-          <div className="container mx-auto px-6 space-y-12">
+          <div className="projects-content">
             {mode === 'classic'
               ? (
                 <>
@@ -126,7 +126,7 @@ export default function ProjectsContent({ projects, filters, heading, descriptio
                   <div key={sectionId}>{sectionMap[sectionId]}</div>
                 ))}
           </div>
-        </div>
+        </main>
         </SkeletonReveal>
       </Suspense>
     </ErrorBoundary>

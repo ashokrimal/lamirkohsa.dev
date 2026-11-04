@@ -33,33 +33,29 @@ export default function ProjectsShowcase({ projects, filters }: ProjectsShowcase
   }, [activeFilter, projects]);
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+    <div className="projects-showcase">
+      <div className="projects-filter">
         {filters.map(filter => (
           <button
             key={filter}
             type="button"
             onClick={() => setActiveFilter(filter)}
-            className={`rounded-full border px-5 py-2 text-sm font-semibold transition ${
-              activeFilter === filter
-                ? 'border-blue-600 bg-blue-600 text-white shadow'
-                : 'border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600'
-            }`}
+            className={`projects-filter-button ${activeFilter === filter ? 'is-active' : ''}`}
           >
             {filter}
           </button>
         ))}
       </div>
 
-      <div className="grid gap-10 xl:grid-cols-2">
+      <div className="projects-grid">
         {filteredProjects.map((project, index) => (
           <article
             key={project.title}
-            className="fade-in-up overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+            className="project-showcase-card"
             style={{ transitionDelay: `${index * 120}ms` }}
           >
-            <Image src={project.image} alt={`${project.title} screenshot`} width={1200} height={900} className="h-64 w-full object-cover" />
-            <div className="p-8 flex flex-col gap-6">
+            <Image src={project.image} alt={`${project.title} screenshot`} width={1200} height={900} className="project-showcase-image" />
+            <div className="project-showcase-body">
               <div className="flex flex-col gap-2">
                 <span className="text-xs uppercase tracking-[0.3em] text-blue-500">{project.category}</span>
                 <h2 className="text-3xl font-semibold text-gray-900">{project.title}</h2>
