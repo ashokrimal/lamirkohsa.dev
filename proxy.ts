@@ -4,8 +4,8 @@ const CMS_HOST = 'cms.ashokrimal.com.np'
 
 export function proxy(request: NextRequest) {
   const host = request.headers.get('host')?.split(':')[0]
-  const isPortfolioHost = host === 'ashokrimal.com.np' || host === 'www.ashokrimal.com.np'
-  if (isPortfolioHost && request.nextUrl.pathname === '/admin') {
+  const isPreviewHost = !host || host === 'localhost' || host === '127.0.0.1' || host.endsWith('.vercel.app') || host.endsWith('.v0.app')
+  if (!isPreviewHost && host !== CMS_HOST && request.nextUrl.pathname === '/admin') {
     return NextResponse.redirect(new URL(`https://${CMS_HOST}`, request.url))
   }
   if (host === CMS_HOST && request.nextUrl.pathname === '/') {
