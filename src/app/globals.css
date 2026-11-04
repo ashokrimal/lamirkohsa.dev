@@ -544,6 +544,9 @@ em, .accent-text { font-style: normal; }
 .media-preview-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 .media-preview-card { min-width: 0; padding: 14px; border: 1px solid var(--line); background: var(--surface); }
 .media-preview-card img { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 18px; background: var(--accent-soft); }
+.media-preview-card--art { display: flex; min-height: 310px; flex-direction: column; transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease; }
+.media-preview-card--art h3 { margin-top: auto; }
+@media (hover: hover) and (pointer: fine) { .media-preview-card--art:hover { transform: translateY(-5px); border-color: var(--accent-blue); box-shadow: 0 16px 32px color-mix(in srgb, var(--ink) 10%, transparent); } }
 .media-preview-card h3 { margin: 8px 0 5px; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .media-preview-card p:last-child { margin: 0; color: var(--muted); font-size: .82rem; }
 @media (max-width: 700px) { .timeline-item { grid-template-columns: 1fr; gap: 14px; } .skills-grid, .media-preview-row { grid-template-columns: 1fr 1fr; } }
