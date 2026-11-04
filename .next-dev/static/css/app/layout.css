@@ -2100,6 +2100,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .cms-import-card h3 { margin: 0; color: #172026; font-size: 1.2rem; }
 .cms-import-card p { color: #718087; font-size: .82rem; line-height: 1.5; }
 .cms-import-card input[type=file] { display: block; width: 100%; margin-top: 7px; font-size: .75rem; }
+.cms-image-input { display: grid; gap: 8px; }
+.cms-image-input .cms-upload-button { justify-self: start; }
 .cms-import-card button { justify-self: start; border: 0; background: #172026; color: #fff; padding: 11px 16px; cursor: pointer; font: 500 .72rem var(--mono); text-transform: uppercase; }
 .cms-shell { min-height: 100vh; background: #f6f7f8; color: #172026; }
 @media (max-width: 720px) { .cms-import-grid { grid-template-columns: 1fr; } }
