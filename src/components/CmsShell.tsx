@@ -4,9 +4,9 @@ import type { ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 
 const groups = [
-  { label: 'Workspace', links: [['Overview', '/admin'], ['Inbox', '/admin#inbox']] },
-  { label: 'Portfolio', links: [['Profile & settings', '/admin#profile'], ['Projects', '/admin#projects'], ['Gallery', '/admin#gallery']] },
-  { label: 'Media', links: [['Music', '/admin#music'], ['Movies', '/admin#movies'], ['Anime & manga', '/admin#anime']] },
+  { label: 'Workspace', links: [['Overview', '/admin'], ['Content collections', '/admin?section=content']] },
+  { label: 'Portfolio', links: [['Profile & settings', '/admin?section=settings'], ['Gallery', '/admin?section=gallery'], ['Upload center', '/admin?section=uploads']] },
+  { label: 'Media', links: [['Music', '/admin?section=music'], ['Movies & catalog', '/admin?section=catalog']] },
 ]
 
 export default function CmsShell({ children }: { children: ReactNode }) {
