@@ -41,15 +41,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/projects/loading.js"
     ],
-    "/experience/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/experience/page.js"
-    ],
-    "/experience/loading": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/experience/loading.js"
+      "static/chunks/app/page.js"
     ]
   }
 }
