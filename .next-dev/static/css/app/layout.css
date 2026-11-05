@@ -2172,6 +2172,25 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .media-gallery-view-all { margin-top: 1.5rem; }
 @media (max-width: 700px) { .media-gallery-card, .media-gallery-skeleton-card, .media-gallery-skeleton-feature { grid-column: span 6; } .media-gallery-card:nth-child(1) { grid-column: span 12; } }
 
+@media (max-width: 760px) {
+  .cms-main .shell-width { width: auto; margin-inline: 16px; }
+  .cms-main .admin-page { padding: 30px 0 56px; }
+  .cms-section-heading { gap: 18px; }
+  .cms-section-heading h1 { max-width: 100%; font-size: clamp(2.7rem, 14vw, 4.1rem); }
+  .cms-section-heading p:not(.section-label) { font-size: .9rem; }
+  .cms-section-actions { flex-wrap: wrap; }
+  .cms-preview-button { padding: 10px 12px; }
+  .admin-panel, .settings-panel { padding: 18px !important; }
+  .gallery-form, .cms-import-grid, .cms-overview-grid { grid-template-columns: 1fr; }
+  .cms-workspace { padding: 18px; }
+  .cms-workspace-header { align-items: flex-start; flex-direction: column; gap: 18px; }
+  .cms-control-row { grid-template-columns: 1fr; }
+  .cms-hero-manager { grid-template-columns: 1fr; gap: 18px; }
+  .cms-hero-manager h3 { font-size: 2.4rem; }
+  .cms-hero-form { min-width: 0; }
+  .cms-mobile-bar { position: sticky; top: 0; z-index: 30; }
+}
+
 @media (min-width: 1200px) {
   .shell-width { width: min(1440px, calc(100% - 112px)); }
   .hero-section { min-height: 820px; padding: 46px 58px 34px; margin-top: 32px; }
