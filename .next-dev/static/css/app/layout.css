@@ -2699,6 +2699,8 @@ em, .accent-text { font-style: normal; }
 .cms-category-nav button { display: flex; align-items: center; justify-content: space-between; padding: 13px 14px; color: var(--muted); background: transparent; }
 .cms-category-nav button:hover, .cms-category-nav button.is-active { color: var(--ink); background: var(--accent-soft); }
 .cms-category-nav button.is-active { box-shadow: inset 3px 0 var(--accent); }
+.cms-category-nav button:focus-visible, .cms-collection-tabs button:focus-visible, .cms-nav-group a:focus-visible, .cms-public-link:focus-visible, .cms-topbar-actions a:focus-visible, .cms-preview-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.cms-category-nav button:active, .cms-collection-tabs button:active { transform: translateY(1px); }
 .cms-category-nav small, .cms-collection-tabs small { color: var(--accent); font-size: .68rem; }
 .cms-main-heading { display: flex; justify-content: space-between; gap: 20px; align-items: end; }
 .cms-main-heading h3 { max-width: 470px; margin: 7px 0 0; font-family: var(--display); font-size: 1.8rem; font-weight: 400; letter-spacing: -.05em; line-height: 1; }
