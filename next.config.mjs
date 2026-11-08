@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   // Keep preview builds isolated from production build artifacts to prevent stale chunk 404s.
   distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
   async headers() {

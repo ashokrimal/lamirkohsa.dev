@@ -1,0 +1,8 @@
+{
+  "name": "Ashok Rimal Portfolio & CMS Studio",
+  "description": "Portfolio and SaaS content management dashboard for digital creator and developer Ashok Rimal.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

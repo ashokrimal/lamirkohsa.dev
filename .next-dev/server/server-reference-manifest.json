@@ -1,62 +1,124 @@
 {
   "node": {
-    "436055457c07562869e1dc7f47d5556dbf30a362": {
+    "a2d333f4690271115558cb522ebcdc38081c799f": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%5D&__client_imported__=!",
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc"
+        "app/page": "rsc",
+        "app/about/page": "rsc"
       }
     },
-    "7676a960575e8833ccae5e1f62da456fce81c6be": {
+    "aefe17a85219aee9718f4c34b0a742ac7be487a1": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%5D&__client_imported__=!",
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc"
+        "app/page": "rsc",
+        "app/about/page": "rsc"
       }
     },
-    "830724bd1260bd9dd1d8dc76ff806bb9e35efe89": {
+    "b0544da5d2d5f6bfccd0242424d416047314cf0b": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%5D&__client_imported__=!",
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc"
+        "app/page": "rsc",
+        "app/about/page": "rsc"
       }
     },
-    "8d27397c60d962144fc04633aedfcaecac956455": {
+    "d70dbd0b741bd6a2185e9d592e4f9ebd62ef25d3": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%5D&__client_imported__=!",
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc"
+        "app/page": "rsc",
+        "app/about/page": "rsc"
       }
     },
-    "aba20471cf0e6e5872b9105030cf8d921f731fcc": {
+    "e3805f05d2975f828c109a80729e5a384d72977e": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%5D&__client_imported__=!",
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc"
+        "app/page": "rsc",
+        "app/about/page": "rsc"
       }
     },
-    "c7e16748a7b8ae5da028c9f1dc43eb415d0f874d": {
+    "f2c5b26ea5575914b153c68afae7afbd62fb140e": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%5D&__client_imported__=!",
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc"
+        "app/page": "rsc",
+        "app/about/page": "rsc"
       }
     },
-    "d91f25f320ac300dcb6a87d2e6ea4baaf8ac2e87": {
+    "fc5f95f54d621b773f2e98cece9612ca5ed0e9ac": {
       "workers": {
-        "app/page": "(rsc)/./node_modules/.pnpm/next@14.2.5_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fvercel%2Fshare%2Fv0-project%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22updateCmsContent%22%2C%22getHeroImage%22%2C%22deleteCmsContent%22%2C%22getPublishedCmsContent%22%2C%22saveCmsImage%22%2C%22ensureCmsSeedData%22%2C%22createCmsContent%22%5D%5D%5D&__client_imported__=!"
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%5D&__client_imported__=!",
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/page": "rsc"
+        "app/page": "rsc",
+        "app/about/page": "rsc"
+      }
+    },
+    "26e20c65906d5b8fe0e95f893f3a3b60e6adfbd3": {
+      "workers": {
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/about/page": "rsc"
+      }
+    },
+    "30d42723621da0a8470b5860738d069cf5fed695": {
+      "workers": {
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/about/page": "rsc"
+      }
+    },
+    "8e047474216cd4a64caa2dfe5129441766792962": {
+      "workers": {
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/about/page": "rsc"
+      }
+    },
+    "a8ee4bf18c38924c28fe2daa2fdc03c8dde58059": {
+      "workers": {
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/about/page": "rsc"
+      }
+    },
+    "b1f71e9c886c626a138aede105427ca5c6d546b3": {
+      "workers": {
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/about/page": "rsc"
+      }
+    },
+    "c836a018a59cc7e4c2426c99c716fae9edbb4dab": {
+      "workers": {
+        "app/about/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent-cms.ts%22%2C%5B%22deleteCmsContent%22%2C%22getHeroImage%22%2C%22getPublishedCmsContent%22%2C%22ensureCmsSeedData%22%2C%22saveCmsImage%22%2C%22createCmsContent%22%2C%22updateCmsContent%22%5D%5D%2C%5B%22%2Fapp%2Fapplet%2Fsrc%2Fapp%2Factions%2Fcontent.ts%22%2C%5B%22deleteGalleryItem%22%2C%22deleteMusicTrack%22%2C%22getAdminContent%22%2C%22createMusicTrack%22%2C%22getPublishedGallery%22%2C%22createGalleryItem%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/about/page": "rsc"
       }
     }
   },
   "edge": {},
-  "encryptionKey": "eFxyRvNV9BDVPftFfWOU6FFR+5u/wcAUE5W07ktS3hI="
+  "encryptionKey": "0P2notjIYHZ5ULrnII1Opd0q4jB4L8jJV/CZaKsgor0="
 }
