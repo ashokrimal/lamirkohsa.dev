@@ -8,18 +8,18 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, view
 
 export const metadata: Metadata = {
   title: {
-    default: 'Ashok Rimal - Digital Creator & Developer',
+    default: 'Ashok Rimal - Software Developer Portfolio',
     template: '%s | Ashok Rimal',
   },
   description:
-    'Portfolio of Ashok Rimal, a student, designer, and developer from Nepal passionate about building beautiful digital experiences.',
+    'Premium personal portfolio and content management studio for software developer Ashok Rimal.',
   metadataBase: new URL('https://ashokrimal.com.np'),
   openGraph: {
-    title: 'Ashok Rimal - Digital Creator & Developer',
+    title: 'Ashok Rimal - Software Developer Portfolio',
     description:
-      'Portfolio of Ashok Rimal, a student, designer, and developer from Nepal passionate about building beautiful digital experiences.',
+      'Premium personal portfolio and content management studio for software developer Ashok Rimal.',
     url: 'https://ashokrimal.com.np',
-    siteName: 'lamirkohsa',
+    siteName: 'Ashok Rimal Portfolio',
     locale: 'en_US',
     type: 'website',
   },
@@ -29,8 +29,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
-  const host = headers().get('host')?.split(':')[0]
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const headersList = await headers()
+  const host = headersList.get('host')?.split(':')[0]
   const isCmsHost = host === 'cms.ashokrimal.com.np'
   return (
     <html lang="en" className="scroll-smooth">

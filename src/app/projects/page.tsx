@@ -1,96 +1,95 @@
-import type { Metadata } from 'next';
-import ProjectsContent from '@/components/pages/ProjectsContent';
+import type { Metadata } from 'next'
+import ProjectsContent from '@/components/pages/ProjectsContent'
+import { getPublishedCmsContent } from '@/app/actions/content-cms'
 
-type ProjectCategory = 'Web' | 'Mobile';
+export const dynamic = 'force-dynamic'
 
-const projects: {
-  title: string;
-  category: ProjectCategory;
-  image: string;
-  challenge: string;
-  solution: string;
-  features: string[];
-  techStack: string[];
-  github: string;
-  live?: string;
-}[] = [
-  {
-    title: 'KaryaMantra ',
-    category: 'Web',
-    image: 'https://placehold.co/1200x900/0f172a/ffffff?text=CampusConnect',
-    challenge:
-      'Students needed a simple way to stay ahead of coursework deadlines and team deliverables while coordinating across busy schedules.',
-    solution:
-      'Designed a Kanban-inspired interface with real-time assignment updates, deadline reminders, and collaborative task lists powered by Firebase.',
-    features: ['Authentication with role-based dashboards', 'Drag-and-drop task board', 'Deadline reminders via email'],
-    techStack: ['React', 'Firebase', 'Tailwind CSS', 'Framer Motion'],
-    github: 'https://github.com/ashokrimal',
-    live: '#',
-  },
-  {
-    title: 'BuyNepal Marketplace',
-    category: 'Web',
-    image: 'https://placehold.co/1200x900/1d4ed8/ffffff?text=LocalSphere',
-    challenge:
-      'Independent artisans required a digital storefront that could scale, support online payments, and surface analytics without sacrificing storytelling.',
-    solution:
-      'Architected a full-stack marketplace with secure checkout, CMS-like product management, and admin analytics leveraging Next.js and MongoDB.',
-    features: ['Product inventory CMS', 'Secure Stripe checkout', 'Sales analytics dashboard'],
-    techStack: ['Next.js', 'Node.js', 'MongoDB', 'Stripe'],
-    github: 'https://github.com/ashokrimal',
-    live: '#',
-  },
-  {
-    title: 'SwiftCare Telehealth',
-    category: 'Mobile',
-    image: 'https://placehold.co/1200x900/0ea5e9/ffffff?text=SwiftCare',
-    challenge:
-      'Clinics needed a convenient way for patients to book virtual consultations and share health updates without waiting for email replies.',
-    solution:
-      'Shipped a cross-platform mobile app integrating scheduling, push notifications, and secure chat to connect patients with doctors in real time.',
-    features: ['Cross-platform scheduling', 'Encrypted doctor-patient chat', 'Push notifications & reminders'],
-    techStack: ['React Native', 'Express.js', 'Socket.io', 'Expo'],
-    github: 'https://github.com/ashokrimal',
-    live: '#',
-  },
-  {
-    title: 'Departmental Store Management System',
-    category: 'Web',
-    image: 'https://placehold.co/1200x900/0ea5e9/ffffff?text=Departmental',
-    challenge:
-      'Departmental stores needed a way to manage their inventory, sales, and customer orders without relying on paper-based systems.',
-    solution:
-      'Developed a full-stack inventory management system with real-time sales tracking, order fulfillment, and automated reporting.',
-    features: ['Inventory management', 'Order fulfillment', 'Sales analytics'],
-    techStack: ['React.js', 'MongoDB', 'Tailwind CSS', 'Express.js', 'Node.js'],
-    github: 'https://github.com/ashokrimal/arss',
-    live: 'https://dsmsbyarss.vercel.app',
-  },
-];
+export type ProjectCategory = 'Web' | 'Mobile'
 
-const filters: Array<'All' | ProjectCategory> = ['All', 'Web', 'Mobile'];
+export interface ProjectPhase {
+  phase: string
+  name: string
+  period: string
+  description: string
+  completed: boolean
+}
+
+export interface ProjectItem {
+  title: string
+  category: ProjectCategory
+  image: string
+  completionDate: string
+  period: string
+  status: string
+  challenge: string
+  solution: string
+  phases: ProjectPhase[]
+  features: string[]
+  techStack: string[]
+  github: string
+  live?: string
+}
 
 export const metadata: Metadata = {
-  title: 'Projects - Ashok Rimal',
-  description: 'In-depth case studies demonstrating Ashok Rimal’s approach to web and mobile product development.',
-};
+  title: 'Projects & Systems - Ashok Rimal',
+  description: 'Technical case studies demonstrating Ashok Rimal’s approach to web, mobile, and full-stack software development.',
+}
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  // Fetch ALL projects dynamically from CMS
+  const records = await getPublishedCmsContent('Projects')
+
+  const projects: ProjectItem[] = records.map((r) => {
+    const p = r.payload || {}
+    const category = (p.category === 'Mobile' ? 'Mobile' : 'Web') as ProjectCategory
+    const phases: ProjectPhase[] = Array.isArray(p.phases)
+      ? (p.phases as ProjectPhase[])
+      : []
+    const features: string[] = Array.isArray(p.features)
+      ? (p.features as string[])
+      : []
+    const techStack: string[] = Array.isArray(p.techStack)
+      ? (p.techStack as string[])
+      : []
+
+    return {
+      title: r.title,
+      category,
+      image: typeof p.image === 'string' ? p.image : (typeof p.imageUrl === 'string' ? p.imageUrl : 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1200&auto=format&fit=crop&q=80'),
+      completionDate: typeof p.completionDate === 'string' ? p.completionDate : '2024',
+      period: typeof p.period === 'string' ? p.period : '2024',
+      status: typeof p.status === 'string' ? p.status : 'Active',
+      challenge: typeof p.challenge === 'string' ? p.challenge : (typeof p.description === 'string' ? p.description : 'Engineering requirements and problem definition.'),
+      solution: typeof p.solution === 'string' ? p.solution : (typeof p.summary === 'string' ? p.summary : 'Architectural implementation and user experience.'),
+      phases,
+      features: features.length ? features : ['Accessible and responsive layout', 'Optimized data operations and state handling'],
+      techStack: techStack.length ? techStack : ['React', 'Next.js', 'TypeScript', 'Tailwind CSS'],
+      github: typeof p.github === 'string' ? p.github : 'https://github.com/ashokrimal',
+      live: typeof p.live === 'string' ? p.live : undefined,
+    }
+  })
+
+  const filters: Array<'All' | ProjectCategory> = ['All', 'Web', 'Mobile']
+
   return (
     <ProjectsContent
       projects={projects}
       filters={filters}
       heading={
-        <>
-          <p className="text-sm uppercase tracking-[0.3em] text-blue-500">Selected Case Studies</p>
-          <h1 className="mt-4 text-4xl md:text-5xl font-black text-gray-900">Proof that I can ship ideas end-to-end.</h1>
-        </>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-3">
+            Selected Work · Case Studies
+          </p>
+          <h1 className="text-4xl md:text-6xl font-normal tracking-[-0.07em] text-[var(--ink)] leading-[0.95]">
+            Engineering ideas into <span className="font-serif italic text-[var(--accent)]">reality.</span>
+          </h1>
+        </div>
       }
       description={
-        <p className="mt-6 text-lg text-gray-600">
-          From discovery to deployment, here are the projects where I balanced UX thinking, technical execution, and measurable outcomes. Filter by web or mobile to find what matters most to you.
+        <p className="mt-5 text-sm md:text-base text-[var(--muted)] max-w-2xl leading-relaxed">
+          From initial user discovery to production deployment, here are selected systems where I balanced architecture, performance, interface craft, and real-world utility. All records managed via CMS.
         </p>
       }
     />
-  );
+  )
 }

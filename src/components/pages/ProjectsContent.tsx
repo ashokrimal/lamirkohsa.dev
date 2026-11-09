@@ -6,11 +6,12 @@ import ScrollObserver from '@/components/ScrollObserver';
 import ErrorBoundary from '@/components/ErrorBoundaryWrapper';
 import { Loading } from '@/components/Loading';
 import ProjectsShowcase from '@/components/ProjectsShowcase';
+import { ProjectsTimeline, type ProjectPhase } from '@/components/ProjectsTimeline';
 import DevSection from '@/components/devmode/DevSection';
 import { useDevMode } from '@/contexts/DevModeContext';
 import SkeletonReveal from '@/components/SkeletonReveal';
 
-interface Project {
+export interface Project {
   title: string;
   category: 'Web' | 'Mobile';
   image: string;
@@ -20,6 +21,10 @@ interface Project {
   techStack: string[];
   github: string;
   live?: string;
+  completionDate?: string;
+  period?: string;
+  status?: string;
+  phases?: ProjectPhase[];
 }
 
 interface ProjectsContentProps {
@@ -30,48 +35,73 @@ interface ProjectsContentProps {
 }
 
 const PAGE_KEY = 'projects';
-const DEFAULT_SECTIONS = ['intro', 'showcase'] as const;
+const DEFAULT_SECTIONS = ['intro', 'timeline', 'showcase'] as const;
 
 type SectionId = (typeof DEFAULT_SECTIONS)[number];
 
-type SectionRenderer = () => JSX.Element;
-
-function IntroSection({ children }: { children: ReactNode }) {
+function IntroSection({
+  heading,
+  description,
+}: {
+  heading: ReactNode;
+  description: ReactNode;
+}) {
   return (
     <DevSection
       pageKey={PAGE_KEY}
       sectionId="intro"
       label="Intro"
-      fallbackAccent="#22d3ee"
-      className="py-12"
+      fallbackAccent="#52725d"
+      className="pt-6 pb-2"
     >
-      <header className="max-w-3xl mx-auto text-center space-y-4">
-        {children}
+      <header className="max-w-4xl space-y-3">
+        {heading}
+        {description}
       </header>
     </DevSection>
   );
 }
 
-function ShowcaseSection({ projects, filters }: { projects: Project[]; filters: Array<'All' | 'Web' | 'Mobile'> }) {
+function TimelineSection({ projects }: { projects: Project[] }) {
+  return (
+    <DevSection
+      pageKey={PAGE_KEY}
+      sectionId="timeline"
+      label="Timeline & Milestones"
+      fallbackAccent="#52725d"
+      className="py-2"
+    >
+      <ProjectsTimeline projects={projects} />
+    </DevSection>
+  );
+}
+
+function ShowcaseSection({
+  projects,
+  filters,
+}: {
+  projects: Project[];
+  filters: Array<'All' | 'Web' | 'Mobile'>;
+}) {
   return (
     <DevSection
       pageKey={PAGE_KEY}
       sectionId="showcase"
-      label="Showcase"
-      fallbackAccent="#2563eb"
-      className="py-12"
+      label="Case Studies Showcase"
+      fallbackAccent="#52725d"
+      className="py-4"
     >
       <ProjectsShowcase projects={projects} filters={filters} />
     </DevSection>
   );
 }
 
-const SECTION_RENDERERS: Record<SectionId, SectionRenderer> = {
-  intro: () => <div className="hidden" />,
-  showcase: () => <div className="hidden" />,
-};
-
-export default function ProjectsContent({ projects, filters, heading, description }: ProjectsContentProps) {
+export default function ProjectsContent({
+  projects,
+  filters,
+  heading,
+  description,
+}: ProjectsContentProps) {
   const { mode, registerPageSections, getSectionOrder } = useDevMode();
 
   useEffect(() => {
@@ -86,24 +116,13 @@ export default function ProjectsContent({ projects, filters, heading, descriptio
     return filtered.length ? filtered : [...DEFAULT_SECTIONS];
   }, [getSectionOrder]);
 
-  const intro = (
-    <IntroSection>
-      <p className="text-sm uppercase tracking-[0.3em] text-blue-500">
-        Selected Case Studies
-      </p>
-      <h1 className="mt-4 text-4xl md:text-5xl font-black text-gray-900">
-        Proof that I can ship ideas end-to-end.
-      </h1>
-      <p className="mt-6 text-lg text-gray-600">
-        A collection of projects showcasing my work across web and mobile platforms.
-      </p>
-    </IntroSection>
-  );
-
+  const intro = <IntroSection heading={heading} description={description} />;
+  const timeline = <TimelineSection projects={projects} />;
   const showcase = <ShowcaseSection projects={projects} filters={filters} />;
 
   const sectionMap: Record<SectionId, JSX.Element> = {
     intro,
+    timeline,
     showcase,
   };
 
@@ -111,22 +130,25 @@ export default function ProjectsContent({ projects, filters, heading, descriptio
     <ErrorBoundary>
       <Suspense fallback={<Loading />}>
         <SkeletonReveal variant="cards">
-        <main className="projects-page shell-width">
-          <ScrollObserver />
-          <div className="projects-content">
-            {mode === 'classic'
-              ? (
-                <>
-                  {heading}
-                  {description}
+          <main className="projects-page shell-width">
+            <ScrollObserver />
+            <div className="projects-content">
+              {mode === 'classic' ? (
+                <div className="space-y-6">
+                  <header className="max-w-4xl space-y-3">
+                    {heading}
+                    {description}
+                  </header>
+                  <ProjectsTimeline projects={projects} />
                   <ProjectsShowcase projects={projects} filters={filters} />
-                </>
-              )
-              : orderedSections.map(sectionId => (
+                </div>
+              ) : (
+                orderedSections.map((sectionId) => (
                   <div key={sectionId}>{sectionMap[sectionId]}</div>
-                ))}
-          </div>
-        </main>
+                ))
+              )}
+            </div>
+          </main>
         </SkeletonReveal>
       </Suspense>
     </ErrorBoundary>

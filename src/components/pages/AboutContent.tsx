@@ -1,26 +1,223 @@
-import { education, experience, profile, skills } from '@/lib/portfolio-data'
-import EmptyCollectionState from '@/components/EmptyCollectionState'
-import { getPublishedCmsContent } from '@/app/actions/content-cms'
-import { MediaGallerySection } from '@/components/media/MediaGallerySection'
+import Link from 'next/link'
+import { ArrowUpRight, Award, Briefcase, Calendar, CheckCircle2, Code2, Compass, GraduationCap, MapPin, Terminal } from 'lucide-react'
+import {
+  getProfileContent,
+  getExperienceItems,
+  getEducationItems,
+  getSkillsContent,
+  getPublishedCmsContent,
+  getGalleryItems,
+} from '@/app/actions/content-cms'
+import { SectionHeader } from '@/components/ui/SectionHeader'
+import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
+import { SkillDisplay } from '@/components/ui/SkillDisplay'
+import { CertificateCard } from '@/components/ui/CertificateCard'
+import { GalleryGrid } from '@/components/ui/GalleryGrid'
 
 export default async function AboutContent() {
-  const [publishedProfile, publishedExperience, publishedEducation] = await Promise.all([
-    getPublishedCmsContent('Profile'),
-    getPublishedCmsContent('Experience'),
-    getPublishedCmsContent('Education'),
+  // Fetch ALL About content directly from CMS (Single Source of Truth)
+  const [
+    profile,
+    experienceRaw,
+    educationRaw,
+    skillsRaw,
+    certificatesRaw,
+    galleryItemsRaw,
+  ] = await Promise.all([
+    getProfileContent(),
+    getExperienceItems(),
+    getEducationItems(),
+    getSkillsContent(),
+    getPublishedCmsContent('Certificates'),
+    getGalleryItems(4),
   ])
 
-  return <main className="about-page shell-width">
-    <section className="about-intro"><p className="section-label">About / Ashok Rimal</p><h1>Making things<br /><span className="accent-text">matter.</span></h1><p className="about-lede">{profile.summary} Based in {profile.location}.</p><p className="about-bio">I enjoy turning open questions into clear, dependable digital experiences. My current focus is frontend development, useful products, AI, robotics, and learning through practice.</p></section>
-    <MediaGallerySection />
-    <section className="about-story"><div><p className="section-label">Professional overview</p></div><div><p>My work sits between development, product thinking, and teaching. I build accessible interfaces, dependable systems, and practical technology that helps people move forward.</p><p>Outside of development, I follow music, anime, manga, photography, and the small details that make everyday life worth noticing.</p>{publishedProfile.length > 0 && <div className="cms-published-notes">{publishedProfile.map((record) => <p key={record.id}><strong>{record.title}</strong> {String(record.payload.description || '')}</p>)}</div>}</div></section>
-    <section className="profile-section" aria-labelledby="experience-heading"><div className="section-heading"><div><p className="section-label">01 / Experience</p><h2 id="experience-heading">Work in<br /><span className="accent-text">practice.</span></h2></div><p>Roles where curiosity became useful work.</p></div><Timeline items={experience} cmsItems={publishedExperience} /></section>
-    <section className="profile-section" aria-labelledby="education-heading"><div className="section-heading"><div><p className="section-label">02 / Education</p><h2 id="education-heading">Learning with<br /><span className="accent-text">intention.</span></h2></div><p>The foundations behind the work.</p></div><Timeline items={education} cmsItems={publishedEducation} /></section>
-    <section className="profile-section about-toolkit" aria-labelledby="toolkit-heading"><div className="section-heading"><div><p className="section-label">03 / Toolkit</p><h2 id="toolkit-heading">Tools for turning<br /><span className="accent-text">ideas real.</span></h2></div><p>A practical stack, always in motion.</p></div><div className="toolkit-card-grid">{skills.slice(0, 6).map((group, index) => <article className="toolkit-card" key={group.category}><div className="toolkit-card-top"><span className="toolkit-card-index">0{index + 1}</span><span className="toolkit-card-mark" aria-hidden="true">+</span></div><h3>{group.category}</h3><div className="toolkit-chip-list">{group.items.map((item) => <span className="toolkit-chip" key={item}>{item}</span>)}</div></article>)}</div></section>
-    <section className="profile-section about-proof" aria-labelledby="proof-heading"><div className="section-heading"><div><p className="section-label">04 / Proof</p><h2 id="proof-heading">Still being<br /><span className="accent-text">collected.</span></h2></div><p>Only verified milestones belong here.</p></div><div className="proof-empty-grid"><EmptyCollectionState eyebrow="Certificates / Empty" title="No certificates published yet." description="Verified learning milestones will appear here when they are ready to share." /><EmptyCollectionState eyebrow="Awards / Empty" title="No awards published yet." description="Recognition and meaningful milestones will appear here when they are documented." /></div></section>
-  </main>
-}
+  // Transform Experience
+  const experience = experienceRaw.map((e) => ({
+    id: e.id,
+    title: e.title,
+    organization: typeof e.payload?.organization === 'string' ? e.payload.organization : '',
+    period: typeof e.payload?.period === 'string' ? e.payload.period : '',
+    location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
+    description: typeof e.payload?.description === 'string' ? e.payload.description : '',
+    highlights: Array.isArray(e.payload?.highlights) ? (e.payload.highlights as string[]) : undefined,
+  }))
 
-type TimelineItem = { period: string; title: string; organization: string; description: string }
-type CmsItem = { id: number; title: string; payload: unknown }
-function Timeline({ items, cmsItems }: { items: TimelineItem[]; cmsItems: CmsItem[] }) { return <div className="about-timeline">{items.map((item) => <article className="about-timeline-item" key={`${item.organization}-${item.title}`}><p className="timeline-period">{item.period}</p><div className="timeline-rule" /><div><h3>{item.title}</h3><p className="timeline-org">{item.organization}</p><p>{item.description}</p></div></article>)}{cmsItems.map((record) => <article className="about-timeline-item cms-timeline-item" key={record.id}><p className="timeline-period">Published</p><div className="timeline-rule" /><div><h3>{record.title}</h3><p>{typeof record.payload === 'object' && record.payload && 'description' in record.payload ? String(record.payload.description) : ''}</p></div></article>)}</div> }
+  // Transform Education
+  const education = educationRaw.map((e) => ({
+    id: e.id,
+    title: e.title,
+    organization: typeof e.payload?.organization === 'string' ? e.payload.organization : '',
+    period: typeof e.payload?.period === 'string' ? e.payload.period : '',
+    location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
+    description: typeof e.payload?.description === 'string' ? e.payload.description : '',
+    highlights: Array.isArray(e.payload?.highlights) ? (e.payload.highlights as string[]) : undefined,
+  }))
+
+  // Transform Skills
+  const skills = skillsRaw.map((s) => ({
+    category: typeof s.payload?.category === 'string' ? s.payload.category : s.title,
+    items: Array.isArray(s.payload?.items) ? (s.payload.items as string[]) : [],
+    level: typeof s.payload?.level === 'string' ? s.payload.level : undefined,
+  }))
+
+  // Transform Certificates
+  const certificates = certificatesRaw.map((c) => ({
+    id: c.id,
+    title: c.title,
+    organization: typeof c.payload?.organization === 'string' ? c.payload.organization : '',
+    date: typeof c.payload?.date === 'string' ? c.payload.date : undefined,
+    credentialUrl: typeof c.payload?.credentialUrl === 'string' ? c.payload.credentialUrl : undefined,
+    credentialId: typeof c.payload?.credentialId === 'string' ? c.payload.credentialId : undefined,
+    description: typeof c.payload?.description === 'string' ? c.payload.description : undefined,
+  }))
+
+  // Transform Gallery
+  const gallery = galleryItemsRaw.map((g) => ({
+    id: g.id,
+    title: g.title,
+    imageUrl: typeof g.payload?.imageUrl === 'string' ? g.payload.imageUrl : '',
+    category: typeof g.payload?.category === 'string' ? g.payload.category : 'Photography',
+    description: typeof g.payload?.description === 'string' ? g.payload.description : '',
+    location: typeof g.payload?.location === 'string' ? g.payload.location : undefined,
+  }))
+
+  return (
+    <main className="about-page shell-width py-12 md:py-20 space-y-16 md:space-y-24">
+      {/* 1. ABOUT INTRO & BIOGRAPHY */}
+      <section className="about-intro border-b border-[var(--line)] pb-12">
+        <div className="max-w-4xl space-y-4">
+          <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[var(--muted)]">
+            About / Software Developer
+          </p>
+          <h1 className="text-4xl md:text-7xl font-normal text-[var(--ink)] tracking-[-0.06em] leading-[0.95]">
+            Making things <span className="font-serif italic text-[var(--accent)]">matter.</span>
+          </h1>
+          <p className="mt-4 text-base md:text-xl text-[var(--muted)] leading-relaxed">
+            {profile.summary ||
+              'A Bachelor of Computer Applications student and full-stack software developer focused on thoughtful interfaces, dependable backend systems, and the details that make software feel human.'}
+          </p>
+        </div>
+
+        {/* Narrative & Snapshot Grid */}
+        <div className="mt-10 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-start">
+          <div className="space-y-4 text-xs md:text-sm text-[var(--muted)] leading-relaxed">
+            <p>
+              {profile.bio ||
+                'I enjoy turning open questions into clear, dependable digital experiences. My current focus is frontend development, useful products, AI, robotics, and learning through practice.'}
+            </p>
+            <p>
+              My work sits between engineering execution and human curiosity. At Dursikshya Education, I instructed students on connecting Python software logic to physical Arduino microcontrollers, making abstract algorithms tactile and real.
+            </p>
+            <p>
+              Outside of the terminal, I follow music, anime, photography, and the quiet architectures of everyday life.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-sm border border-[var(--line)] bg-[var(--surface)] space-y-3.5 text-xs">
+            <h3 className="text-xs font-mono uppercase tracking-wider text-[var(--muted)] pb-2 border-b border-[var(--line)]/60">
+              Quick Coordinates
+            </h3>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[var(--muted)]">Location:</span>
+                <span className="font-semibold text-[var(--ink)]">{profile.location || 'Butwal, Nepal'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[var(--muted)]">Focus:</span>
+                <span className="font-semibold text-[var(--ink)]">Full-Stack &amp; Interface Craft</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[var(--muted)]">Availability:</span>
+                <span className="font-semibold text-[var(--accent)]">Open for collaborations</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[var(--muted)]">Education:</span>
+                <span className="font-semibold text-[var(--ink)]">BCA · Crimson College</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. EXPERIENCE TIMELINE */}
+      <section id="experience" className="profile-section" aria-labelledby="experience-heading">
+        <SectionHeader
+          eyebrow="01 / Work Experience"
+          title="Work in"
+          accent="practice."
+          description="Professional roles and teaching commitments where curiosity became practical impact."
+        />
+        <div className="mt-8">
+          <ExperienceTimeline items={experience} type="experience" />
+        </div>
+      </section>
+
+      {/* 3. EDUCATION */}
+      <section id="education" className="profile-section" aria-labelledby="education-heading">
+        <SectionHeader
+          eyebrow="02 / Education"
+          title="Learning with"
+          accent="intention."
+          description="Academic foundation in computer applications, distributed software, and algorithmic thinking."
+        />
+        <div className="mt-8">
+          <ExperienceTimeline items={education} type="education" />
+        </div>
+      </section>
+
+      {/* 4. TECHNICAL TOOLKIT & SKILLS */}
+      <section id="skills" className="profile-section" aria-labelledby="skills-heading">
+        <SectionHeader
+          eyebrow="03 / Engineering Stack"
+          title="Tools for turning"
+          accent="ideas real."
+          description="A practical, modern stack spanning frontend systems, backend services, and embedded hardware."
+        />
+        <div className="mt-8">
+          <SkillDisplay skills={skills} />
+        </div>
+      </section>
+
+      {/* 5. CERTIFICATES & RECOGNITION */}
+      <section id="certificates" className="profile-section" aria-labelledby="certificates-heading">
+        <SectionHeader
+          eyebrow="04 / Verified Credentials"
+          title="Verified"
+          accent="milestones."
+          description="Certificates and structured coursework in machine learning, full-stack development, and computer science."
+        />
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {certificates.map((cert) => (
+            <CertificateCard key={cert.id || cert.title} certificate={cert} />
+          ))}
+        </div>
+      </section>
+
+      {/* 6. VISUAL JOURNAL / GALLERY */}
+      <section id="gallery" className="profile-section" aria-labelledby="gallery-heading">
+        <SectionHeader
+          eyebrow="05 / Visual Journal"
+          title="Beyond the"
+          accent="screen."
+          description="Photographic frames exploring quiet Nepal geometry, mountain landscapes, and desk setups."
+          linkHref="/media"
+          linkLabel="Explore complete media archives"
+        />
+        <div className="mt-8">
+          <GalleryGrid items={gallery} showViewAll={true} viewAllHref="/media" columns={4} />
+        </div>
+      </section>
+
+      {/* Footer CTA */}
+      <div className="pt-8 border-t border-[var(--line)] flex items-center justify-between text-xs">
+        <Link href="/" className="text-[var(--muted)] hover:text-[var(--ink)]">
+          ← Return home
+        </Link>
+        <Link href="/projects" className="font-semibold text-[var(--accent)] hover:underline inline-flex items-center gap-1">
+          Explore technical projects &amp; case studies <ArrowUpRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+    </main>
+  )
+}

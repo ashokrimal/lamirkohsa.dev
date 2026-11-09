@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -16,16 +16,44 @@ const navLinks = [
 
 export default function SiteHeader() {
   const [isOpen, setIsOpen] = useState(false);
+  const [nepalTime, setNepalTime] = useState<string>('');
   const pathname = usePathname();
   const isCurrent = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+
+  useEffect(() => {
+    const updateTime = () => {
+      try {
+        const d = new Date();
+        setNepalTime(
+          new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Kathmandu',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }).format(d)
+        );
+      } catch {}
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="fixed inset-x-0 top-0 z-30 px-4 pt-4">
       <nav className="glass-nav mx-auto max-w-[1200px] rounded-sm" aria-label="Main navigation">
         <div className="flex h-16 items-center justify-between px-5 md:px-7">
-          <Link href="/" className="font-semibold tracking-[-0.06em] text-[var(--ink)]" onClick={() => setIsOpen(false)}>
-            Ashok Rimal<span className="text-[var(--accent)]">.</span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="font-semibold tracking-[-0.06em] text-[var(--ink)]" onClick={() => setIsOpen(false)}>
+              Ashok Rimal<span className="text-[var(--accent)]">.</span>
+            </Link>
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-xs bg-[var(--surface)] border border-[var(--line)] text-[10px] font-mono text-[var(--muted)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+              <span className="text-[var(--ink)] font-medium">Nepal {nepalTime || 'NPT'}</span>
+              <span className="text-[var(--muted)]/50">·</span>
+              <span className="text-[var(--accent)] font-semibold">Available</span>
+            </div>
+          </div>
           <div className="hidden items-center gap-6 lg:flex">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} className={`text-[11px] uppercase tracking-[0.12em] transition-colors ${isCurrent(link.href) ? 'text-[var(--accent)]' : 'text-[var(--muted)] hover:text-[var(--ink)]'}`}>

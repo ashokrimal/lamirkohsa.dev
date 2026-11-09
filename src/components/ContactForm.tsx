@@ -6,143 +6,143 @@ type ContactFormProps = {
   onSuccessMessage?: string;
 };
 
-export default function ContactForm({ onSuccessMessage = "Thanks for reaching out! I'll respond as soon as possible." }: ContactFormProps) {
+export default function ContactForm({
+  onSuccessMessage = "Thank you for reaching out. Your note has been received and I'll respond as soon as possible.",
+}: ContactFormProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
 
-    if (isSubmitting) return;
+      if (isSubmitting) return;
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    const body = {
-      name: formData.get('name')?.toString().trim(),
-      email: formData.get('email')?.toString().trim(),
-      subject: formData.get('subject')?.toString().trim(),
-      message: formData.get('message')?.toString().trim(),
-    };
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      const body = {
+        name: formData.get('name')?.toString().trim(),
+        email: formData.get('email')?.toString().trim(),
+        subject: formData.get('subject')?.toString().trim(),
+        message: formData.get('message')?.toString().trim(),
+      };
 
-    setIsSubmitting(true);
-    setError(null);
+      setIsSubmitting(true);
+      setError(null);
 
-    try {
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      try {
+        const response = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error ?? 'Something went wrong.');
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error ?? 'Something went wrong.');
+        }
+
+        form.reset();
+        setShowSuccess(true);
+        const timeout = window.setTimeout(() => setShowSuccess(false), 5000);
+        return () => window.clearTimeout(timeout);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to send message.';
+        setError(message);
+      } finally {
+        setIsSubmitting(false);
       }
-
-      form.reset();
-      setShowSuccess(true);
-      const timeout = window.setTimeout(() => setShowSuccess(false), 5000);
-      return () => window.clearTimeout(timeout);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to send message.';
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [isSubmitting]);
+    },
+    [isSubmitting]
+  );
 
   return (
-    <div className="form-container p-8 md:p-10 rounded-2xl shadow-sm">
-      <h2 className="text-2xl font-semibold text-gray-900">Send a message</h2>
-      <p className="mt-2 text-sm text-gray-500">I usually respond within 24 hours.</p>
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-        <div className="relative">
+    <div className="rounded-sm border border-[var(--line)] bg-[var(--surface)] p-6 md:p-8">
+      <h2 className="text-xl md:text-2xl font-normal text-[var(--ink)] tracking-[-0.03em]">
+        Send a direct <span className="font-serif italic text-[var(--accent)]">dispatch</span>
+      </h2>
+      <p className="mt-1 text-xs text-[var(--muted)] font-mono">
+        Typically responding within 24 hours.
+      </p>
+
+      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="name" className="block text-[11px] font-mono uppercase tracking-wider text-[var(--muted)] mb-1.5">
+            Full Name
+          </label>
           <input
             type="text"
             id="name"
             name="name"
-            className="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-gray-900 placeholder-transparent focus:border-blue-600 focus:outline-none focus:ring-0"
-            placeholder="Your Name"
+            className="w-full rounded-xs border border-[var(--line)] bg-[var(--paper)] px-3.5 py-2.5 text-xs text-[var(--ink)] focus:border-[var(--accent)] focus:outline-none transition-colors"
+            placeholder="e.g. Maya Sharma"
             required
           />
-          <label
-            htmlFor="name"
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:scale-75 peer-focus:text-blue-600 peer-focus:bg-white peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:-translate-y-1/2 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:bg-white px-1"
-          >
-            Full Name
-          </label>
         </div>
 
-        <div className="relative">
+        <div>
+          <label htmlFor="email" className="block text-[11px] font-mono uppercase tracking-wider text-[var(--muted)] mb-1.5">
+            Email Address
+          </label>
           <input
             type="email"
             id="email"
             name="email"
-            className="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-gray-900 placeholder-transparent focus:border-blue-600 focus:outline-none focus:ring-0"
-            placeholder="Email Address"
+            className="w-full rounded-xs border border-[var(--line)] bg-[var(--paper)] px-3.5 py-2.5 text-xs text-[var(--ink)] focus:border-[var(--accent)] focus:outline-none transition-colors"
+            placeholder="e.g. maya@example.com"
             required
           />
-          <label
-            htmlFor="email"
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:scale-75 peer-focus:text-blue-600 peer-focus:bg-white peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:-translate-y-1/2 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:bg-white px-1"
-          >
-            Email Address
-          </label>
         </div>
 
-        <div className="relative">
+        <div>
+          <label htmlFor="subject" className="block text-[11px] font-mono uppercase tracking-wider text-[var(--muted)] mb-1.5">
+            Topic or Project
+          </label>
           <input
             type="text"
             id="subject"
             name="subject"
-            className="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-gray-900 placeholder-transparent focus:border-blue-600 focus:outline-none focus:ring-0"
-            placeholder="Project Subject"
+            className="w-full rounded-xs border border-[var(--line)] bg-[var(--paper)] px-3.5 py-2.5 text-xs text-[var(--ink)] focus:border-[var(--accent)] focus:outline-none transition-colors"
+            placeholder="e.g. Freelance web app / Collaboration"
             required
           />
-          <label
-            htmlFor="subject"
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:scale-75 peer-focus:text-blue-600 peer-focus:bg-white peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:-translate-y-1/2 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:bg-white px-1"
-          >
-            Project Subject
-          </label>
         </div>
 
-        <div className="relative">
+        <div>
+          <label htmlFor="message" className="block text-[11px] font-mono uppercase tracking-wider text-[var(--muted)] mb-1.5">
+            Message Details
+          </label>
           <textarea
             id="message"
             name="message"
-            rows={5}
-            className="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-gray-900 placeholder-transparent focus:border-blue-600 focus:outline-none focus:ring-0"
-            placeholder="Tell me about your project"
+            rows={4}
+            className="w-full rounded-xs border border-[var(--line)] bg-[var(--paper)] px-3.5 py-2.5 text-xs text-[var(--ink)] focus:border-[var(--accent)] focus:outline-none transition-colors leading-relaxed"
+            placeholder="Tell me about what you're building, timelines, or thoughts..."
             required
           />
-          <label
-            htmlFor="message"
-            className="pointer-events-none absolute left-4 top-4 text-gray-500 duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:scale-75 peer-focus:text-blue-600 peer-focus:bg-white peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:-translate-y-1/2 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:bg-white px-1"
-          >
-            Project details
-          </label>
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full flex items-center justify-center rounded-lg py-3 px-6 font-semibold transition-colors duration-300 ${
-            isSubmitting ? 'bg-blue-300 text-white cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+          className={`w-full flex items-center justify-center rounded-xs py-2.5 px-5 text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+            isSubmitting
+              ? 'bg-[var(--line)] text-[var(--muted)] cursor-not-allowed'
+              : 'bg-[var(--accent)] text-white hover:bg-[#435d4c] shadow-2xs'
           }`}
         >
-          {isSubmitting ? 'Sending…' : 'Send message'}
+          {isSubmitting ? 'Sending Message…' : 'Transmit Message'}
         </button>
       </form>
 
       {error && (
-        <div className="mt-6 text-center p-4 bg-red-100 text-red-700 rounded-lg">
+        <div className="mt-4 p-3 rounded-xs bg-red-50 border border-red-200 text-red-800 text-xs">
           <p>{error}</p>
         </div>
       )}
       {showSuccess && (
-        <div className="mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">
+        <div className="mt-4 p-3 rounded-xs bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent)] text-xs font-medium">
           <p>{onSuccessMessage}</p>
         </div>
       )}

@@ -394,9 +394,13 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
   const contentTabs = [
     { id: 'ALL', label: 'All Records', count: cmsRecords.length },
     { id: 'Profile', label: 'Identity', count: cmsRecords.filter((r) => r.collection === 'Profile' || r.collection === 'Social Links').length },
-    { id: 'Career', label: 'Career', count: cmsRecords.filter((r) => r.collection === 'Experience' || r.collection === 'Education' || r.collection === 'Skills').length },
     { id: 'Projects', label: 'Projects', count: cmsRecords.filter((r) => r.collection === 'Projects').length },
+    { id: 'Gallery', label: 'Gallery', count: cmsRecords.filter((r) => r.collection === 'Gallery').length },
+    { id: 'Career', label: 'Career', count: cmsRecords.filter((r) => r.collection === 'Experience' || r.collection === 'Education' || r.collection === 'Skills').length },
+    { id: 'Media', label: 'Media', count: cmsRecords.filter((r) => r.collection === 'Music' || r.collection === 'Anime' || r.collection === 'Manga').length },
+    { id: 'Certificates', label: 'Certificates', count: cmsRecords.filter((r) => r.collection === 'Certificates' || r.collection === 'Awards').length },
     { id: 'Blogs', label: 'Publishing', count: cmsRecords.filter((r) => r.collection === 'Blogs').length },
+    { id: 'Site Settings', label: 'Site Settings', count: cmsRecords.filter((r) => r.collection === 'Site Settings').length },
   ]
 
   // Columns for CMS Records Table
@@ -486,6 +490,12 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
     }
     if (activeContentCategory === 'Profile') {
       return cmsRecords.filter((r) => r.collection === 'Profile' || r.collection === 'Social Links')
+    }
+    if (activeContentCategory === 'Media') {
+      return cmsRecords.filter((r) => r.collection === 'Music' || r.collection === 'Anime' || r.collection === 'Manga')
+    }
+    if (activeContentCategory === 'Certificates') {
+      return cmsRecords.filter((r) => r.collection === 'Certificates' || r.collection === 'Awards')
     }
     return cmsRecords.filter((r) => r.collection === activeContentCategory)
   }, [cmsRecords, activeContentCategory])
@@ -1271,13 +1281,18 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
               onChange={(e) => setNewCollection(e.target.value)}
               options={[
                 { label: 'Projects', value: 'Projects' },
-                { label: 'Profile (Bio)', value: 'Profile' },
+                { label: 'Profile (Bio & Identity)', value: 'Profile' },
+                { label: 'Gallery (Photographs)', value: 'Gallery' },
                 { label: 'Experience (Work)', value: 'Experience' },
                 { label: 'Education', value: 'Education' },
                 { label: 'Skills', value: 'Skills' },
+                { label: 'Certificates & Awards', value: 'Certificates' },
+                { label: 'Music (Media)', value: 'Music' },
+                { label: 'Anime (Media)', value: 'Anime' },
+                { label: 'Manga / Manhwa (Media)', value: 'Manga' },
+                { label: 'Social Links', value: 'Social Links' },
                 { label: 'Blogs / Journal', value: 'Blogs' },
-                { label: 'Certificates', value: 'Certificates' },
-                { label: 'Awards', value: 'Awards' },
+                { label: 'Site Settings', value: 'Site Settings' },
               ]}
             />
           </CmsFormField>

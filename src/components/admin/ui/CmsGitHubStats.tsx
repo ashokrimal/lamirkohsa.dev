@@ -15,6 +15,7 @@ import {
   Sparkles,
   AlertCircle,
   FolderGit2,
+  TrendingUp,
 } from 'lucide-react'
 import { CmsSectionCard } from '@/components/admin/ui/CmsCard'
 import { CmsTabs } from '@/components/admin/ui/CmsTabs'
@@ -23,6 +24,12 @@ import { useCmsToast } from '@/components/admin/ui/CmsToast'
 interface GitHubStatsProps {
   initialUsername?: string
   className?: string
+}
+
+interface SparklineDay {
+  date: string
+  dayLabel: string
+  count: number
 }
 
 interface GitHubData {
@@ -40,6 +47,8 @@ interface GitHubData {
   totalStars: number
   totalForks: number
   activeStreak: number
+  commitSparkline?: SparklineDay[]
+  total30DayCommits?: number
   topLanguages: {
     language: string
     count: number
@@ -77,6 +86,79 @@ const languageColors: Record<string, string> = {
   'C++': '#f34b7d',
   Rust: '#dea584',
   Go: '#00ADD8',
+}
+
+function CommitSparklineChart({
+  items,
+  totalCommits,
+}: {
+  items: SparklineDay[]
+  totalCommits: number
+}) {
+  const [hovered, setHovered] = useState<SparklineDay | null>(null)
+  const max = Math.max(...items.map((i) => i.count), 4)
+
+  return (
+    <div className="p-3.5 bg-slate-50/70 border border-slate-100 rounded-xl space-y-2">
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+            <GitCommit className="w-3.5 h-3.5 text-teal-600" />
+            30-Day Commit Frequency
+          </span>
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">
+            <TrendingUp className="w-3 h-3 text-teal-600" />
+            {totalCommits} commits
+          </span>
+        </div>
+        <div className="text-[11px] text-slate-500 min-h-[18px]">
+          {hovered ? (
+            <span className="font-medium text-teal-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+              {hovered.dayLabel}: <strong>{hovered.count} commit{hovered.count === 1 ? '' : 's'}</strong>
+            </span>
+          ) : (
+            <span className="text-slate-400">Hover bar for daily frequency</span>
+          )}
+        </div>
+      </div>
+
+      {/* SVG Bar Sparkline with responsive layout */}
+      <div className="pt-1.5 pb-0.5">
+        <div className="flex items-end gap-[3px] sm:gap-1 h-14 w-full">
+          {items.map((day) => {
+            const heightPct = Math.max((day.count / max) * 100, day.count > 0 ? 18 : 6)
+            const isHovered = hovered?.date === day.date
+            const isZero = day.count === 0
+            return (
+              <div
+                key={day.date}
+                className="flex-1 flex flex-col justify-end h-full group relative cursor-pointer"
+                onMouseEnter={() => setHovered(day)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <div
+                  style={{ height: `${heightPct}%` }}
+                  className={`w-full rounded-t-[2px] transition-all duration-150 ${
+                    isHovered
+                      ? 'bg-teal-600 ring-2 ring-teal-200'
+                      : isZero
+                      ? 'bg-slate-200/90 hover:bg-slate-300'
+                      : 'bg-teal-600/80 hover:bg-teal-700'
+                  }`}
+                />
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="flex justify-between items-center text-[10px] text-slate-400 mt-2 px-0.5 font-mono">
+          <span>{items[0]?.dayLabel}</span>
+          <span className="hidden sm:inline">{items[Math.floor(items.length / 2)]?.dayLabel}</span>
+          <span>{items[items.length - 1]?.dayLabel}</span>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' }: GitHubStatsProps) {
@@ -174,6 +256,7 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
               <div key={i} className="h-20 bg-slate-100 rounded-xl" />
             ))}
           </div>
+          <div className="h-20 bg-slate-100 rounded-xl" />
           <div className="h-32 bg-slate-100 rounded-xl" />
         </div>
       )}
@@ -273,6 +356,14 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
               <p className="text-[10px] text-slate-400 mt-0.5">Public contribution</p>
             </div>
           </div>
+
+          {/* 30-Day Commit Frequency Sparkline Chart */}
+          {data.commitSparkline && data.commitSparkline.length > 0 && (
+            <CommitSparklineChart
+              items={data.commitSparkline}
+              totalCommits={data.total30DayCommits ?? data.commitSparkline.reduce((sum, item) => sum + item.count, 0)}
+            />
+          )}
 
           {/* Languages Distribution Bar */}
           {data.topLanguages.length > 0 && (
