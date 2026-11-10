@@ -42,11 +42,7 @@ export function SectionHeader({
         )}
         <h2 className="text-3xl md:text-5xl font-semibold text-ink tracking-[-0.04em] leading-[1.05]">
           {title}{' '}
-          {accent && (
-            <span className="font-serif italic font-normal text-accent">
-              {accent}
-            </span>
-          )}
+          {accent && <span className="font-normal text-accent">{accent}</span>}
         </h2>
         {description && (
           <p className="mt-2 text-sm md:text-base text-muted leading-relaxed font-normal">

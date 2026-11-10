@@ -1,156 +1,141 @@
-'use client';
+'use client'
 
-import { Suspense, useEffect, useMemo } from 'react';
-import type { ReactNode } from 'react';
-import ScrollObserver from '@/components/ScrollObserver';
-import ErrorBoundary from '@/components/ErrorBoundaryWrapper';
-import { Loading } from '@/components/Loading';
-import ProjectsShowcase from '@/components/ProjectsShowcase';
-import { ProjectsTimeline, type ProjectPhase } from '@/components/ProjectsTimeline';
-import DevSection from '@/components/devmode/DevSection';
-import { useDevMode } from '@/contexts/DevModeContext';
-import SkeletonReveal from '@/components/SkeletonReveal';
-
-export interface Project {
-  title: string;
-  category: 'Web' | 'Mobile';
-  image: string;
-  challenge: string;
-  solution: string;
-  features: string[];
-  techStack: string[];
-  github: string;
-  live?: string;
-  completionDate?: string;
-  period?: string;
-  status?: string;
-  phases?: ProjectPhase[];
-}
+import { Suspense, useEffect, useMemo } from 'react'
+import { Calendar, Layers } from 'lucide-react'
+import ScrollObserver from '@/components/ScrollObserver'
+import ErrorBoundary from '@/components/ErrorBoundaryWrapper'
+import { Loading } from '@/components/Loading'
+import { ProjectsTimeline } from '@/components/ProjectsTimeline'
+import DevSection from '@/components/devmode/DevSection'
+import { useDevMode } from '@/contexts/DevModeContext'
+import { ProjectCard } from '@/components/ui/ProjectCard'
+import { MetaChip, PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
+import type { ProjectEntry } from '@/lib/projects'
 
 interface ProjectsContentProps {
-  projects: Project[];
-  filters: Array<'All' | 'Web' | 'Mobile'>;
-  heading: ReactNode;
-  description: ReactNode;
+  projects: ProjectEntry[]
 }
 
-const PAGE_KEY = 'projects';
-const DEFAULT_SECTIONS = ['intro', 'timeline', 'showcase'] as const;
+const PAGE_KEY = 'projects'
+const DEFAULT_SECTIONS = ['intro', 'work', 'timeline'] as const
 
-type SectionId = (typeof DEFAULT_SECTIONS)[number];
+type SectionId = (typeof DEFAULT_SECTIONS)[number]
 
-function IntroSection({
-  heading,
-  description,
-}: {
-  heading: ReactNode;
-  description: ReactNode;
-}) {
-  return (
+export default function ProjectsContent({ projects }: ProjectsContentProps) {
+  const { mode, registerPageSections, getSectionOrder } = useDevMode()
+
+  useEffect(() => {
+    registerPageSections(PAGE_KEY, DEFAULT_SECTIONS as unknown as string[])
+  }, [registerPageSections])
+
+  const orderedSections = useMemo(() => {
+    const sections = getSectionOrder(PAGE_KEY, DEFAULT_SECTIONS as unknown as string[])
+    const filtered = sections.filter((section): section is SectionId =>
+      (DEFAULT_SECTIONS as readonly string[]).includes(section as SectionId),
+    )
+    return filtered.length ? filtered : [...DEFAULT_SECTIONS]
+  }, [getSectionOrder])
+
+  const webCount = projects.filter((project) => project.category === 'Web').length
+  const mobileCount = projects.filter((project) => project.category === 'Mobile').length
+
+  const intro = (
     <DevSection
       pageKey={PAGE_KEY}
       sectionId="intro"
       label="Intro"
       fallbackAccent="var(--accent-secondary)"
-      className="pt-6 pb-2"
+      className="pt-0"
     >
-      <header className="max-w-4xl space-y-3">
-        {heading}
-        {description}
-      </header>
+      <PageHero
+        eyebrow="Selected Work · Case Studies"
+        krEyebrow="주요 프로젝트"
+        title="Engineering ideas into"
+        accent="reality."
+        description="Case studies from discovery to deployment, where architecture, performance and interface craft meet real-world utility. Every record is managed through the CMS."
+        meta={
+          <>
+            <MetaChip icon={Layers}>{projects.length} case studies</MetaChip>
+            <MetaChip>{webCount} web</MetaChip>
+            <MetaChip>{mobileCount} mobile</MetaChip>
+            <MetaChip icon={Calendar}>2019 — today</MetaChip>
+          </>
+        }
+      />
     </DevSection>
-  );
-}
+  )
 
-function TimelineSection({ projects }: { projects: Project[] }) {
-  return (
+  const work = (
+    <DevSection
+      pageKey={PAGE_KEY}
+      sectionId="work"
+      label="Case Studies"
+      fallbackAccent="var(--accent-secondary)"
+      className="pt-0"
+    >
+      <PageSection
+        eyebrow="Archive"
+        krEyebrow="전체 사례"
+        title="Selected"
+        accent="case studies."
+        description="Open a project to read its challenge, solution, delivery phases and technical stack."
+      >
+        {projects.length ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {projects.map((project, index) => (
+              <ProjectCard key={project.slug || project.title} project={project} index={index} />
+            ))}
+          </div>
+        ) : (
+          <div className="apple-card p-10 text-center text-sm text-muted">
+            Case studies will appear here as they are published in the CMS.
+          </div>
+        )}
+      </PageSection>
+    </DevSection>
+  )
+
+  const timeline = (
     <DevSection
       pageKey={PAGE_KEY}
       sectionId="timeline"
       label="Timeline & Milestones"
       fallbackAccent="var(--accent-secondary)"
-      className="py-2"
+      className="pt-0"
     >
-      <ProjectsTimeline projects={projects} />
+      <PageSection
+        eyebrow="Process"
+        krEyebrow="진행 단계"
+        title="Delivery"
+        accent="timeline."
+        description="How each build moved from the first phase through to release."
+      >
+        <ProjectsTimeline projects={projects} />
+      </PageSection>
     </DevSection>
-  );
-}
+  )
 
-function ShowcaseSection({
-  projects,
-  filters,
-}: {
-  projects: Project[];
-  filters: Array<'All' | 'Web' | 'Mobile'>;
-}) {
-  return (
-    <DevSection
-      pageKey={PAGE_KEY}
-      sectionId="showcase"
-      label="Case Studies Showcase"
-      fallbackAccent="var(--accent-secondary)"
-      className="py-4"
-    >
-      <ProjectsShowcase projects={projects} filters={filters} />
-    </DevSection>
-  );
-}
-
-export default function ProjectsContent({
-  projects,
-  filters,
-  heading,
-  description,
-}: ProjectsContentProps) {
-  const { mode, registerPageSections, getSectionOrder } = useDevMode();
-
-  useEffect(() => {
-    registerPageSections(PAGE_KEY, DEFAULT_SECTIONS as unknown as string[]);
-  }, [registerPageSections]);
-
-  const orderedSections = useMemo(() => {
-    const sections = getSectionOrder(PAGE_KEY, DEFAULT_SECTIONS as unknown as string[]);
-    const filtered = sections.filter((section): section is SectionId =>
-      (DEFAULT_SECTIONS as readonly string[]).includes(section as SectionId),
-    );
-    return filtered.length ? filtered : [...DEFAULT_SECTIONS];
-  }, [getSectionOrder]);
-
-  const intro = <IntroSection heading={heading} description={description} />;
-  const timeline = <TimelineSection projects={projects} />;
-  const showcase = <ShowcaseSection projects={projects} filters={filters} />;
-
-  const sectionMap: Record<SectionId, JSX.Element> = {
-    intro,
-    timeline,
-    showcase,
-  };
+  const sectionMap: Record<SectionId, JSX.Element> = { intro, work, timeline }
 
   return (
     <ErrorBoundary>
       <Suspense fallback={<Loading />}>
-        <SkeletonReveal variant="cards">
-          <main className="projects-page shell-width">
-            <ScrollObserver />
-            <div className="projects-content">
-              {mode === 'classic' ? (
-                <div className="space-y-6">
-                  <header className="max-w-4xl space-y-3">
-                    {heading}
-                    {description}
-                  </header>
-                  <ProjectsTimeline projects={projects} />
-                  <ProjectsShowcase projects={projects} filters={filters} />
-                </div>
-              ) : (
-                orderedSections.map((sectionId) => (
-                  <div key={sectionId}>{sectionMap[sectionId]}</div>
-                ))
-              )}
-            </div>
-          </main>
-        </SkeletonReveal>
+        <PageShell>
+          <ScrollObserver />
+          <div className="space-y-16 md:space-y-24">
+            {mode === 'classic' ? (
+              <>
+                {intro}
+                {work}
+                {timeline}
+              </>
+            ) : (
+              orderedSections.map((sectionId) => <div key={sectionId}>{sectionMap[sectionId]}</div>)
+            )}
+          </div>
+          <PageNav backLabel="Return home" nextHref="/contact" nextLabel="Start a conversation" />
+        </PageShell>
       </Suspense>
     </ErrorBoundary>
-  );
+  )
 }

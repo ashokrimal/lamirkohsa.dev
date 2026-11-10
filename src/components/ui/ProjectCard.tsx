@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowUpRight, Calendar, Github, Layers, Sparkles } from 'lucide-react'
 import { Card3D } from '@/components/ui/Card3D'
 import { sensoryAudio } from '@/lib/sensory-audio'
+import { toSlug } from '@/lib/slug'
 
 export interface ProjectData {
   id?: number | string
@@ -34,6 +35,8 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, variant = 'standard', index, onQuickView }: ProjectCardProps) {
   const isFeatured = variant === 'featured' || project.featured
+  // Every card opens the case study route, never an inline expansion.
+  const detailHref = `/projects/${project.slug || toSlug(project.title)}`
 
   return (
     <Card3D maxTilt={6} className={isFeatured ? 'md:col-span-2' : ''}>
@@ -87,8 +90,10 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
             </div>
 
             {/* Title */}
-            <h3 className="text-xl md:text-2xl font-semibold text-ink tracking-tight leading-snug group-hover:text-accent transition-colors">
-              {project.title}
+            <h3 className="text-xl md:text-2xl font-semibold text-ink tracking-tight leading-snug transition-colors">
+              <Link href={detailHref} className="hover:text-accent transition-colors">
+                {project.title}
+              </Link>
             </h3>
 
             {/* Description */}
@@ -173,10 +178,10 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
               </button>
             ) : (
               <Link
-                href="/projects"
+                href={detailHref}
                 className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"
               >
-                <span>Details</span>
+                <span>Read case study</span>
                 <ArrowUpRight className="w-3 h-3" />
               </Link>
             )}

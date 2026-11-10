@@ -1,5 +1,3 @@
-import Link from 'next/link'
-import { ArrowUpRight, Award, Briefcase, Calendar, CheckCircle2, Code2, Compass, GraduationCap, MapPin, Terminal } from 'lucide-react'
 import {
   getProfileContent,
   getExperienceItems,
@@ -8,30 +6,24 @@ import {
   getPublishedCmsContent,
   getGalleryItems,
 } from '@/app/actions/content-cms'
-import { SectionHeader } from '@/components/ui/SectionHeader'
 import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { SkillDisplay } from '@/components/ui/SkillDisplay'
 import { CertificateCard } from '@/components/ui/CertificateCard'
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
+import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
 
 export default async function AboutContent() {
   // Fetch ALL About content directly from CMS (Single Source of Truth)
-  const [
-    profile,
-    experienceRaw,
-    educationRaw,
-    skillsRaw,
-    certificatesRaw,
-    galleryItemsRaw,
-  ] = await Promise.all([
-    getProfileContent(),
-    getExperienceItems(),
-    getEducationItems(),
-    getSkillsContent(),
-    getPublishedCmsContent('Certificates'),
-    getGalleryItems(4),
-  ])
+  const [profile, experienceRaw, educationRaw, skillsRaw, certificatesRaw, galleryItemsRaw] =
+    await Promise.all([
+      getProfileContent(),
+      getExperienceItems(),
+      getEducationItems(),
+      getSkillsContent(),
+      getPublishedCmsContent('Certificates'),
+      getGalleryItems(4),
+    ])
 
   // Transform Experience
   const experience = experienceRaw.map((e) => ({
@@ -41,7 +33,9 @@ export default async function AboutContent() {
     period: typeof e.payload?.period === 'string' ? e.payload.period : '',
     location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
     description: typeof e.payload?.description === 'string' ? e.payload.description : '',
-    highlights: Array.isArray(e.payload?.highlights) ? (e.payload.highlights as string[]) : undefined,
+    highlights: Array.isArray(e.payload?.highlights)
+      ? (e.payload.highlights as string[])
+      : undefined,
   }))
 
   // Transform Education
@@ -52,7 +46,9 @@ export default async function AboutContent() {
     period: typeof e.payload?.period === 'string' ? e.payload.period : '',
     location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
     description: typeof e.payload?.description === 'string' ? e.payload.description : '',
-    highlights: Array.isArray(e.payload?.highlights) ? (e.payload.highlights as string[]) : undefined,
+    highlights: Array.isArray(e.payload?.highlights)
+      ? (e.payload.highlights as string[])
+      : undefined,
   }))
 
   // Transform Skills
@@ -68,7 +64,8 @@ export default async function AboutContent() {
     title: c.title,
     organization: typeof c.payload?.organization === 'string' ? c.payload.organization : '',
     date: typeof c.payload?.date === 'string' ? c.payload.date : undefined,
-    credentialUrl: typeof c.payload?.credentialUrl === 'string' ? c.payload.credentialUrl : undefined,
+    credentialUrl:
+      typeof c.payload?.credentialUrl === 'string' ? c.payload.credentialUrl : undefined,
     credentialId: typeof c.payload?.credentialId === 'string' ? c.payload.credentialId : undefined,
     description: typeof c.payload?.description === 'string' ? c.payload.description : undefined,
   }))
@@ -84,152 +81,154 @@ export default async function AboutContent() {
   }))
 
   return (
-    <main className="about-page shell-width py-12 md:py-20 space-y-16 md:space-y-24">
-      {/* 1. ABOUT INTRO & BIOGRAPHY */}
-      <section className="about-intro border-b border-[var(--line)] pb-12">
-        <div className="max-w-4xl space-y-4">
-          <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[var(--muted)]">
-            About / Software Developer
+    <PageShell>
+      <PageHero
+        eyebrow="About / Software Developer"
+        krEyebrow="소개"
+        title="Making things"
+        accent="matter."
+        description={
+          profile.summary ||
+          'A Bachelor of Computer Applications student and full-stack software developer focused on thoughtful interfaces, dependable backend systems, and the details that make software feel human.'
+        }
+      />
+
+      {/* Narrative & quick coordinates */}
+      <section className="pt-10 md:pt-14 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 md:gap-8 items-start">
+        <div className="space-y-4 text-sm md:text-base text-muted leading-relaxed">
+          <p>
+            {profile.bio ||
+              'I enjoy turning open questions into clear, dependable digital experiences. My current focus is frontend development, useful products, AI, robotics, and learning through practice.'}
           </p>
-          <h1 className="text-4xl md:text-7xl font-normal text-[var(--ink)] tracking-[-0.06em] leading-[0.95]">
-            Making things <span className="font-serif italic text-[var(--accent)]">matter.</span>
-          </h1>
-          <p className="mt-4 text-base md:text-xl text-[var(--muted)] leading-relaxed">
-            {profile.summary ||
-              'A Bachelor of Computer Applications student and full-stack software developer focused on thoughtful interfaces, dependable backend systems, and the details that make software feel human.'}
+          <p>
+            My work sits between engineering execution and human curiosity. At Dursikshya Education,
+            I instructed students on connecting Python software logic to physical Arduino
+            microcontrollers, making abstract algorithms tactile and real.
+          </p>
+          <p>
+            Outside of the terminal, I follow music, anime, photography, and the quiet architectures
+            of everyday life.
           </p>
         </div>
 
-        {/* Narrative & Snapshot Grid */}
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-start">
-          <div className="space-y-4 text-xs md:text-sm text-[var(--muted)] leading-relaxed">
-            <p>
-              {profile.bio ||
-                'I enjoy turning open questions into clear, dependable digital experiences. My current focus is frontend development, useful products, AI, robotics, and learning through practice.'}
-            </p>
-            <p>
-              My work sits between engineering execution and human curiosity. At Dursikshya Education, I instructed students on connecting Python software logic to physical Arduino microcontrollers, making abstract algorithms tactile and real.
-            </p>
-            <p>
-              Outside of the terminal, I follow music, anime, photography, and the quiet architectures of everyday life.
-            </p>
+        <aside className="apple-card p-6 md:p-7 space-y-4 text-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-line-subtle">
+            <h2 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
+              Quick Coordinates
+            </h2>
+            <span lang="ko" className="font-korean text-[10px] text-muted">
+              기본 정보
+            </span>
           </div>
+          <dl className="space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted">Location</dt>
+              <dd className="font-semibold text-ink text-right">
+                {profile.location || 'Butwal, Nepal'}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted">Focus</dt>
+              <dd className="font-semibold text-ink text-right">
+                Full-Stack &amp; Interface Craft
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted">Availability</dt>
+              <dd className="font-medium text-accent text-right">Open for collaborations</dd>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted">Education</dt>
+              <dd className="font-semibold text-ink text-right">BCA · Crimson College</dd>
+            </div>
+          </dl>
+        </aside>
+      </section>
 
-          <div className="apple-card p-6 md:p-7 space-y-4 text-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-line-subtle">
-              <h3 className="text-xs uppercase tracking-wider text-muted font-medium">
-                Quick Coordinates
-              </h3>
-              <span lang="ko" className="font-korean text-[10px] text-muted">기본 정보</span>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-muted">Location:</span>
-                <span className="font-semibold text-ink">{profile.location || 'Butwal, Nepal'}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted">Focus:</span>
-                <span className="font-semibold text-ink">Full-Stack &amp; Interface Craft</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted">Availability:</span>
-                <span className="font-medium text-emerald-600">Open for collaborations</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted">Education:</span>
-                <span className="font-semibold text-ink">BCA · Crimson College</span>
-              </div>
-            </div>
+      <PageSection
+        id="experience"
+        eyebrow="01 / Work Experience"
+        krEyebrow="경력 사항"
+        title="Work in"
+        accent="practice."
+        description="Professional roles and teaching commitments where curiosity became practical impact."
+      >
+        <ExperienceTimeline items={experience} type="experience" />
+      </PageSection>
+
+      <PageSection
+        id="education"
+        eyebrow="02 / Education"
+        krEyebrow="학력 사항"
+        title="Learning with"
+        accent="intention."
+        description="Academic foundation in computer applications, distributed software, and algorithmic thinking."
+      >
+        <ExperienceTimeline items={education} type="education" />
+      </PageSection>
+
+      <PageSection
+        id="skills"
+        eyebrow="03 / Engineering Stack"
+        krEyebrow="기술 스택"
+        title="Tools for turning"
+        accent="ideas real."
+        description="A practical, modern stack spanning frontend systems, backend services, and embedded hardware."
+      >
+        <SkillDisplay skills={skills} />
+      </PageSection>
+
+      <PageSection
+        id="certificates"
+        eyebrow="04 / Verified Credentials"
+        krEyebrow="자격 증명"
+        title="Verified"
+        accent="milestones."
+        description="Certificates and structured coursework in machine learning, full-stack development, and computer science."
+      >
+        {certificates.length ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {certificates.map((cert) => (
+              <CertificateCard key={cert.id || cert.title} certificate={cert} />
+            ))}
           </div>
-        </div>
-      </section>
+        ) : (
+          <div className="apple-card p-8 text-center text-sm text-muted">
+            Credentials will appear here as they are published in the CMS.
+          </div>
+        )}
+      </PageSection>
 
-      {/* 2. EXPERIENCE TIMELINE */}
-      <section id="experience" className="profile-section" aria-labelledby="experience-heading">
-        <SectionHeader
-          eyebrow="01 / Work Experience"
-          krEyebrow="경력 사항"
-          title="Work in"
-          accent="practice."
-          description="Professional roles and teaching commitments where curiosity became practical impact."
-        />
-        <div className="mt-8">
-          <ExperienceTimeline items={experience} type="experience" />
-        </div>
-        <div className="mt-8">
-          <GitHubActivitySparkline showRecentCommits={true} />
-        </div>
-      </section>
+      <PageSection
+        id="gallery"
+        eyebrow="05 / Visual Journal"
+        krEyebrow="시각 기록"
+        title="Beyond the"
+        accent="screen."
+        description="Photographic frames exploring quiet Nepal geometry, mountain landscapes, and desk setups."
+        linkHref="/gallery"
+        linkLabel="Open the photography archive"
+      >
+        <GalleryGrid items={gallery} columns={4} />
+      </PageSection>
 
-      {/* 3. EDUCATION */}
-      <section id="education" className="profile-section" aria-labelledby="education-heading">
-        <SectionHeader
-          eyebrow="02 / Education"
-          krEyebrow="학력 사항"
-          title="Learning with"
-          accent="intention."
-          description="Academic foundation in computer applications, distributed software, and algorithmic thinking."
-        />
-        <div className="mt-8">
-          <ExperienceTimeline items={education} type="education" />
-        </div>
-      </section>
+      {/* GitHub status closes the page, after every curated section */}
+      <PageSection
+        id="github"
+        eyebrow="06 / Live From GitHub"
+        krEyebrow="깃허브 활동"
+        title="Commit"
+        accent="activity."
+        description="A live view of public repositories, streaks and recent commits — the work-in-progress side of the story."
+      >
+        <GitHubActivitySparkline showRecentCommits={true} />
+      </PageSection>
 
-      {/* 4. TECHNICAL TOOLKIT & SKILLS */}
-      <section id="skills" className="profile-section" aria-labelledby="skills-heading">
-        <SectionHeader
-          eyebrow="03 / Engineering Stack"
-          krEyebrow="기술 스택"
-          title="Tools for turning"
-          accent="ideas real."
-          description="A practical, modern stack spanning frontend systems, backend services, and embedded hardware."
-        />
-        <div className="mt-8">
-          <SkillDisplay skills={skills} />
-        </div>
-      </section>
-
-      {/* 5. CERTIFICATES & RECOGNITION */}
-      <section id="certificates" className="profile-section" aria-labelledby="certificates-heading">
-        <SectionHeader
-          eyebrow="04 / Verified Credentials"
-          krEyebrow="자격 증명"
-          title="Verified"
-          accent="milestones."
-          description="Certificates and structured coursework in machine learning, full-stack development, and computer science."
-        />
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {certificates.map((cert) => (
-            <CertificateCard key={cert.id || cert.title} certificate={cert} />
-          ))}
-        </div>
-      </section>
-
-      {/* 6. VISUAL JOURNAL / GALLERY */}
-      <section id="gallery" className="profile-section" aria-labelledby="gallery-heading">
-        <SectionHeader
-          eyebrow="05 / Visual Journal"
-          krEyebrow="시각 기록"
-          title="Beyond the"
-          accent="screen."
-          description="Photographic frames exploring quiet Nepal geometry, mountain landscapes, and desk setups."
-          linkHref="/media"
-          linkLabel="Explore complete media archives"
-        />
-        <div className="mt-8">
-          <GalleryGrid items={gallery} showViewAll={true} viewAllHref="/media" columns={4} />
-        </div>
-      </section>
-
-      {/* Footer CTA */}
-      <div className="pt-8 border-t border-[var(--line)] flex items-center justify-between text-xs">
-        <Link href="/" className="text-[var(--muted)] hover:text-[var(--ink)]">
-          ← Return home
-        </Link>
-        <Link href="/projects" className="font-semibold text-[var(--accent)] hover:underline inline-flex items-center gap-1">
-          Explore technical projects &amp; case studies <ArrowUpRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
-    </main>
+      <PageNav
+        backLabel="Return home"
+        nextHref="/projects"
+        nextLabel="Explore technical projects & case studies"
+      />
+    </PageShell>
   )
 }

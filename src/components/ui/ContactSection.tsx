@@ -55,7 +55,7 @@ export function ContactSection({
             </div>
             <h2 className="text-3xl md:text-5xl font-semibold text-ink tracking-tight leading-tight">
               {title}{' '}
-              <span className="font-serif italic font-normal text-accent">
+              <span className="font-normal text-accent">
                 {accent}
               </span>
             </h2>
@@ -124,7 +124,7 @@ export function ContactSection({
               <div className="apple-card p-8 space-y-4">
                 <h3 className="text-xl font-semibold text-ink tracking-tight">
                   Have a project or opportunity in{' '}
-                  <span className="font-serif italic text-accent">mind?</span>
+                  <span className="text-accent">mind?</span>
                 </h3>
                 <p className="text-sm text-muted leading-relaxed">
                   Whether you want to discuss a full-time role, a contracting project, or exchange thoughts on architecture, I am always glad to connect.

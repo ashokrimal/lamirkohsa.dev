@@ -48,7 +48,7 @@ export function ProjectsTimeline({
             Chronology &amp; Execution
           </p>
           <h2 className="mt-1 text-2xl md:text-3xl font-normal tracking-[-0.04em] text-[var(--ink)]">
-            Project Phases &amp; <span className="font-serif italic text-[var(--accent)]">Milestones.</span>
+            Project Phases &amp; <span className="text-[var(--accent)]">Milestones.</span>
           </h2>
           <p className="mt-1.5 text-xs md:text-sm text-[var(--muted)] max-w-xl leading-relaxed">
             A chronological timeline documenting research, architecture, core implementation, and production completion dates.
@@ -134,7 +134,7 @@ export function ProjectsTimeline({
                 )}
               </div>
               <h3 className="mt-1 text-lg font-normal text-[var(--ink)]">
-                {selected.title} — <span className="font-serif italic text-[var(--accent)]">Execution Phases</span>
+                {selected.title} — <span className="text-[var(--accent)]">Execution Phases</span>
               </h3>
             </div>
 

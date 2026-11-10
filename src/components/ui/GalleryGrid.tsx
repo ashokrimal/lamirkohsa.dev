@@ -1,6 +1,5 @@
 import Image from 'next/image'
-import Link from 'next/link'
-import { ArrowUpRight, Camera, MapPin } from 'lucide-react'
+import { Camera, MapPin } from 'lucide-react'
 import { Card3D } from '@/components/ui/Card3D'
 
 export interface GalleryItemData {
@@ -15,17 +14,14 @@ export interface GalleryItemData {
 
 interface GalleryGridProps {
   items: GalleryItemData[]
-  showViewAll?: boolean
-  viewAllHref?: string
   columns?: 2 | 3 | 4
 }
 
-export function GalleryGrid({
-  items,
-  showViewAll = true,
-  viewAllHref = '/media',
-  columns = 4,
-}: GalleryGridProps) {
+/**
+ * The grid never carries its own "view all" link: the surrounding section header
+ * already owns that action, so repeating it here only duplicated navigation.
+ */
+export function GalleryGrid({ items, columns = 4 }: GalleryGridProps) {
   if (!items || items.length === 0) {
     return (
       <div className="p-8 rounded-[24px] border border-line-subtle bg-surface/70 backdrop-blur-md text-center text-sm text-muted">
@@ -39,8 +35,8 @@ export function GalleryGrid({
     columns === 4
       ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'
       : columns === 3
-      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'
-      : 'grid grid-cols-1 sm:grid-cols-2 gap-5'
+        ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'
+        : 'grid grid-cols-1 sm:grid-cols-2 gap-5'
 
   return (
     <div className="space-y-6">
@@ -89,19 +85,6 @@ export function GalleryGrid({
           </Card3D>
         ))}
       </div>
-
-      {showViewAll && (
-        <div className="flex justify-end pt-2">
-          <Link
-            href={viewAllHref}
-            className="apple-btn-secondary"
-          >
-            <span>View all photographs in Media library</span>
-            <span lang="ko" className="font-korean text-[10px] text-muted">미디어 기록</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-muted" />
-          </Link>
-        </div>
-      )}
     </div>
   )
 }

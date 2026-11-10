@@ -149,6 +149,13 @@ export default function SiteHeader() {
         </div>
       </nav>
 
+      {/* Cream scrim behind the drawer so the page never bleeds through */}
+      <div
+        onClick={() => setIsOpen(false)}
+        aria-hidden="true"
+        className={`mobile-menu-scrim fixed inset-0 z-40 md:hidden ${isOpen ? 'open' : ''}`}
+      />
+
       {/* Mobile Drawer (Only for phones < 768px) */}
       <div
         id="mobile-navigation"

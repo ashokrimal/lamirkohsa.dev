@@ -5,6 +5,7 @@ import { getMediaData } from '@/app/actions/media'
 import { getMediaPreviews } from '@/app/actions/content-cms'
 import EmptyCollectionState from '@/components/EmptyCollectionState'
 import { ArrowUpRight, BookOpen, Disc3, Film, Sparkles } from 'lucide-react'
+import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 
 type Track = {
   track_metadata?: {
@@ -53,32 +54,29 @@ function CollectionPreview({
   icon: Icon,
 }: CollectionProps) {
   return (
-    <section className="media-collection-preview py-8 border-b border-[var(--line)]">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4">
+    <section className="mt-10 md:mt-14 pt-10 md:pt-14 border-t border-line">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-line">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="p-1 rounded-xs bg-[var(--paper)] text-[var(--accent)] border border-[var(--line)]">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="p-1.5 rounded-full bg-overlay text-accent border border-line-subtle">
               <Icon className="w-3.5 h-3.5" />
             </span>
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--muted)]">
+            <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-muted">
               {number} / {title}
             </p>
           </div>
-          <h2 className="text-2xl md:text-3xl font-normal text-[var(--ink)] tracking-[-0.04em]">
-            {title} <span className="font-serif italic text-[var(--accent)]">collection.</span>
+          <h2 className="text-3xl md:text-5xl font-semibold text-ink tracking-[-0.04em] leading-[1.05]">
+            {title} <span className="text-accent">collection.</span>
           </h2>
-          <p className="mt-1 text-xs md:text-sm text-[var(--muted)] max-w-xl">
+          <p className="mt-2 text-sm md:text-base text-muted max-w-xl leading-relaxed">
             {description}
           </p>
         </div>
 
         {items.length > 0 && (
-          <Link
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent)] hover:underline shrink-0"
-            href={href}
-          >
+          <Link className="apple-btn-secondary group shrink-0" href={href}>
             <span>View collection ({items.length})</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <ArrowUpRight className="w-3.5 h-3.5 text-muted group-hover:text-ink transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         )}
       </div>
@@ -89,10 +87,10 @@ function CollectionPreview({
             const imageUrl = item.images?.jpg?.image_url
             return (
               <article
-                className="rounded-sm border border-[var(--line)] bg-[var(--surface)] overflow-hidden flex flex-col justify-between hover:border-[var(--accent)] transition-all group"
+                className="apple-card overflow-hidden flex flex-col justify-between group"
                 key={`${item.title}-${index}`}
               >
-                <div className="relative aspect-[4/3] bg-[var(--paper)] overflow-hidden">
+                <div className="relative aspect-[4/3] bg-overlay-faint overflow-hidden">
                   {imageUrl ? (
                     <Image
                       src={imageUrl}
@@ -107,16 +105,16 @@ function CollectionPreview({
                       <Icon className="w-6 h-6 text-[var(--accent)]" />
                     </div>
                   )}
-                  <div className="absolute top-2 left-2 bg-[var(--ink)]/80 text-[var(--paper)] px-1.5 py-0.5 rounded-xs text-[9px] font-mono">
+                  <div className="absolute top-2 left-2 rounded-full bg-surface/85 backdrop-blur-xl border border-line-subtle px-2 py-0.5 text-[9px] font-mono text-ink">
                     0{index + 1}
                   </div>
                 </div>
 
-                <div className="p-3.5 space-y-1">
-                  <h3 className="text-xs font-semibold text-[var(--ink)] truncate group-hover:text-[var(--accent)] transition-colors">
+                <div className="p-4 space-y-1">
+                  <h3 className="text-xs font-semibold text-ink truncate group-hover:text-accent transition-colors">
                     {item.title || 'Untitled'}
                   </h3>
-                  <p className="text-[11px] text-[var(--muted)] truncate font-mono">
+                  <p className="text-[11px] text-muted truncate font-mono">
                     {item.entry?.title || 'Catalog record'}
                   </p>
                 </div>
@@ -135,17 +133,24 @@ function CollectionPreview({
 }
 
 export default async function MediaHomeContent() {
-  const [mediaApiData, cmsPreviews] = await Promise.all([
-    getMediaData(),
-    getMediaPreviews(),
-  ])
+  const [mediaApiData, cmsPreviews] = await Promise.all([getMediaData(), getMediaPreviews()])
 
-  const { recent, lastfmRecent, mal, anilist, movies, imdbMovies, tracks: catalogTracks } = mediaApiData
+  const {
+    recent,
+    lastfmRecent,
+    mal,
+    anilist,
+    movies,
+    imdbMovies,
+    tracks: catalogTracks,
+  } = mediaApiData
 
   // Merge CMS music with API music
   const cmsMusicItems: Item[] = cmsPreviews.music.map((m) => ({
     title: m.title,
-    images: { jpg: { image_url: typeof m.payload.coverUrl === 'string' ? m.payload.coverUrl : undefined } },
+    images: {
+      jpg: { image_url: typeof m.payload.coverUrl === 'string' ? m.payload.coverUrl : undefined },
+    },
     entry: { title: typeof m.payload.artist === 'string' ? m.payload.artist : 'CMS Track' },
   }))
 
@@ -169,7 +174,8 @@ export default async function MediaHomeContent() {
     const current = `${track.track_metadata?.track_name}-${track.track_metadata?.artist_name}`
     return (
       all.findIndex(
-        (item) => `${item.track_metadata?.track_name}-${item.track_metadata?.artist_name}` === current
+        (item) =>
+          `${item.track_metadata?.track_name}-${item.track_metadata?.artist_name}` === current,
       ) === index
     )
   }) as Track[]
@@ -191,13 +197,17 @@ export default async function MediaHomeContent() {
   // Merge CMS Anime & Manga
   const cmsAnimeItems: Item[] = cmsPreviews.anime.map((a) => ({
     title: a.title,
-    images: { jpg: { image_url: typeof a.payload.imageUrl === 'string' ? a.payload.imageUrl : undefined } },
+    images: {
+      jpg: { image_url: typeof a.payload.imageUrl === 'string' ? a.payload.imageUrl : undefined },
+    },
     entry: { title: `${a.payload.score || ''} · ${a.payload.status || 'Anime'}` },
   }))
 
   const cmsMangaItems: Item[] = cmsPreviews.manga.map((m) => ({
     title: m.title,
-    images: { jpg: { image_url: typeof m.payload.imageUrl === 'string' ? m.payload.imageUrl : undefined } },
+    images: {
+      jpg: { image_url: typeof m.payload.imageUrl === 'string' ? m.payload.imageUrl : undefined },
+    },
     entry: { title: `${m.payload.score || ''} · ${m.payload.status || 'Manga'}` },
   }))
 
@@ -206,13 +216,13 @@ export default async function MediaHomeContent() {
       entries: Array<{
         media?: { title?: { userPreferred?: string }; coverImage?: { large?: string } }
       }>
-    }> = []
+    }> = [],
   ) =>
     groups.flatMap((group) =>
       group.entries.map((entry) => ({
         title: entry.media?.title?.userPreferred,
         images: { jpg: { image_url: entry.media?.coverImage?.large } },
-      }))
+      })),
     )
 
   const anime: Item[] = uniqueItems([
@@ -233,32 +243,37 @@ export default async function MediaHomeContent() {
         ...movies.map((movie) => ({
           title: movie.title,
           entry: {
-            title: typeof movie.payload?.description === 'string' ? movie.payload.description : 'Watched movie',
+            title:
+              typeof movie.payload?.description === 'string'
+                ? movie.payload.description
+                : 'Watched movie',
           },
         })),
         ...imdbMovies.map((movie) => ({
           title: movie.title,
           entry: { title: 'IMDb watchlist' },
         })),
-      ].map((movie) => [movie.title.toLowerCase().replace(/[^a-z0-9]+/g, ''), movie])
-    ).values()
+      ].map((movie) => [movie.title.toLowerCase().replace(/[^a-z0-9]+/g, ''), movie]),
+    ).values(),
   )
 
   return (
-    <main className="media-page shell-width py-12 md:py-20 space-y-12">
-      <header className="media-header pb-8 border-b border-[var(--line)]">
-        <div>
-          <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[var(--muted)] mb-2">
-            Media &amp; Cultural Library
-          </p>
-          <h1 className="text-4xl md:text-7xl font-normal text-[var(--ink)] tracking-[-0.06em] leading-[0.95]">
-            What I&apos;m <span className="font-serif italic text-[var(--accent)]">into.</span>
-          </h1>
-          <p className="mt-3 text-sm md:text-base text-[var(--muted)] max-w-2xl leading-relaxed">
-            Curated listening rotation, anime, manga, and films that inspire focus and visual storytelling. All records dynamically managed via CMS.
-          </p>
-        </div>
-      </header>
+    <PageShell>
+      <PageHero
+        eyebrow="Media & Cultural Library"
+        krEyebrow="미디어 기록"
+        title="What I'm"
+        accent="into."
+        description="Curated listening rotation, anime, manga, and films that inspire focus and visual storytelling. Every record is managed dynamically through the CMS."
+        meta={
+          <>
+            <MetaChip icon={Disc3}>{musicItems.length} tracks</MetaChip>
+            <MetaChip icon={Film}>{anime.length} series</MetaChip>
+            <MetaChip icon={BookOpen}>{manga.length} titles</MetaChip>
+            <MetaChip icon={Sparkles}>{movieItems.length} films</MetaChip>
+          </>
+        }
+      />
 
       <CollectionPreview
         number="01"
@@ -295,6 +310,8 @@ export default async function MediaHomeContent() {
         items={movieItems}
         icon={Sparkles}
       />
-    </main>
+
+      <PageNav backLabel="Return home" nextHref="/contact" nextLabel="Start a conversation" />
+    </PageShell>
   )
 }

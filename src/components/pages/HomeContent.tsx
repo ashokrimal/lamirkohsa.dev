@@ -1,7 +1,14 @@
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
-import { ArrowUpRight, CheckCircle2, Code2, Compass, Layers, Sparkles, Terminal } from 'lucide-react'
-import SkeletonReveal from '@/components/SkeletonReveal'
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Code2,
+  Compass,
+  Layers,
+  Sparkles,
+  Terminal,
+} from 'lucide-react'
 import {
   getHeroSectionConfig,
   getHomepageSectionsConfig,
@@ -68,15 +75,22 @@ export default async function HomeContent() {
       title: p.title,
       slug: p.slug,
       category: typeof payload.category === 'string' ? payload.category : 'Web',
-      summary: typeof payload.summary === 'string' ? payload.summary : String(payload.description || ''),
+      summary:
+        typeof payload.summary === 'string' ? payload.summary : String(payload.description || ''),
       description: typeof payload.description === 'string' ? payload.description : '',
       techStack: Array.isArray(payload.techStack) ? (payload.techStack as string[]) : [],
-      image: typeof payload.image === 'string' ? payload.image : (typeof payload.imageUrl === 'string' ? payload.imageUrl : undefined),
+      image:
+        typeof payload.image === 'string'
+          ? payload.image
+          : typeof payload.imageUrl === 'string'
+            ? payload.imageUrl
+            : undefined,
       live: typeof payload.live === 'string' ? payload.live : undefined,
       github: typeof payload.github === 'string' ? payload.github : undefined,
       status: typeof payload.status === 'string' ? payload.status : 'Active',
       featured: payload.featured === true,
-      completionDate: typeof payload.completionDate === 'string' ? payload.completionDate : undefined,
+      completionDate:
+        typeof payload.completionDate === 'string' ? payload.completionDate : undefined,
       phases: Array.isArray(payload.phases) ? (payload.phases as any) : undefined,
     }
   })
@@ -99,7 +113,9 @@ export default async function HomeContent() {
     period: typeof e.payload?.period === 'string' ? e.payload.period : '',
     location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
     description: typeof e.payload?.description === 'string' ? e.payload.description : '',
-    highlights: Array.isArray(e.payload?.highlights) ? (e.payload.highlights as string[]) : undefined,
+    highlights: Array.isArray(e.payload?.highlights)
+      ? (e.payload.highlights as string[])
+      : undefined,
   }))
 
   // Transform Skills
@@ -150,8 +166,10 @@ export default async function HomeContent() {
   }))
 
   // Section Ordering and Visibility from CMS
-  const { order = ['about', 'gallery', 'projects', 'media', 'experience', 'contact'], enabled = {} } =
-    sectionsConfig
+  const {
+    order = ['about', 'gallery', 'projects', 'media', 'experience', 'contact'],
+    enabled = {},
+  } = sectionsConfig
   const meta = sectionsConfig.sectionMeta || {}
 
   // Helper to render sections dynamically
@@ -162,13 +180,20 @@ export default async function HomeContent() {
       // 1. ABOUT ME PREVIEW
       case 'about':
         return (
-          <section key="about" className="py-16 md:py-24 border-t border-line" aria-labelledby="about-preview-heading">
+          <section
+            key="about"
+            className="py-16 md:py-24 border-t border-line"
+            aria-labelledby="about-preview-heading"
+          >
             <SectionHeader
               eyebrow={meta.about?.eyebrow || '01 / About Me'}
               krEyebrow="소개 및 철학"
               title={meta.about?.title || 'Useful by design.'}
               accent={meta.about?.accent || 'Quietly ambitious.'}
-              description={meta.about?.description || 'I like the space between a rough idea and the moment it becomes obvious to use.'}
+              description={
+                meta.about?.description ||
+                'I like the space between a rough idea and the moment it becomes obvious to use.'
+              }
               linkHref="/about"
               linkLabel="Read complete biography & approach"
             />
@@ -188,12 +213,16 @@ export default async function HomeContent() {
                   <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
                     <Compass className="w-3.5 h-3.5 text-accent" />
                     <span>Based in {profile.location || 'Nepal'}</span>
-                    <span lang="ko" className="font-korean text-[10px] text-muted">네팔</span>
+                    <span lang="ko" className="font-korean text-[10px] text-muted">
+                      네팔
+                    </span>
                   </span>
                   <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
                     <Code2 className="w-3.5 h-3.5 text-accent" />
                     <span>{profile.headline || 'Full-Stack Developer'}</span>
-                    <span lang="ko" className="font-korean text-[10px] text-muted">개발자</span>
+                    <span lang="ko" className="font-korean text-[10px] text-muted">
+                      개발자
+                    </span>
                   </span>
                 </div>
               </div>
@@ -206,7 +235,9 @@ export default async function HomeContent() {
                       <span className="text-xs uppercase tracking-wider text-muted font-medium">
                         Status &amp; Focus
                       </span>
-                      <span lang="ko" className="font-korean text-[10px] text-muted">· 상태</span>
+                      <span lang="ko" className="font-korean text-[10px] text-muted">
+                        · 상태
+                      </span>
                     </div>
                     <span className="text-xs text-emerald-600 font-medium flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -255,18 +286,25 @@ export default async function HomeContent() {
       // 2. GALLERY PREVIEW
       case 'gallery':
         return (
-          <section key="gallery" className="py-16 md:py-24 border-t border-line" aria-labelledby="gallery-preview-heading">
+          <section
+            key="gallery"
+            className="py-16 md:py-24 border-t border-line"
+            aria-labelledby="gallery-preview-heading"
+          >
             <SectionHeader
               eyebrow={meta.gallery?.eyebrow || '02 / Visual Journal'}
               krEyebrow="사진 및 시각 기록"
               title={meta.gallery?.title || 'Moments in'}
               accent={meta.gallery?.accent || 'perspective.'}
-              description={meta.gallery?.description || 'Personal photographs capturing quiet geometry, architecture, and light across Nepal.'}
+              description={
+                meta.gallery?.description ||
+                'Personal photographs capturing quiet geometry, architecture, and light across Nepal.'
+              }
               linkHref="/media"
               linkLabel="View all photographs"
             />
             <div className="mt-8">
-              <GalleryGrid items={galleryItems} showViewAll={true} viewAllHref="/media" columns={4} />
+              <GalleryGrid items={galleryItems} columns={4} />
             </div>
           </section>
         )
@@ -274,13 +312,20 @@ export default async function HomeContent() {
       // 3. PROJECTS PREVIEW
       case 'projects':
         return (
-          <section key="projects" className="py-16 md:py-24 border-t border-line" aria-labelledby="projects-preview-heading">
+          <section
+            key="projects"
+            className="py-16 md:py-24 border-t border-line"
+            aria-labelledby="projects-preview-heading"
+          >
             <SectionHeader
               eyebrow={meta.projects?.eyebrow || '03 / Selected Work'}
               krEyebrow="주요 프로젝트"
               title={meta.projects?.title || 'Systems built with'}
               accent={meta.projects?.accent || 'conviction.'}
-              description={meta.projects?.description || 'Web and mobile applications engineered from user research to production delivery.'}
+              description={
+                meta.projects?.description ||
+                'Web and mobile applications engineered from user research to production delivery.'
+              }
               linkHref="/projects"
               linkLabel="Browse project archive & execution timeline"
             />
@@ -290,12 +335,11 @@ export default async function HomeContent() {
             </div>
 
             <div className="mt-8 pt-4 flex justify-end">
-              <Link
-                href="/projects"
-                className="apple-btn-primary"
-              >
+              <Link href="/projects" className="apple-btn-primary">
                 <span>Browse all case studies &amp; milestones</span>
-                <span lang="ko" className="font-korean text-xs opacity-75">전체 작업</span>
+                <span lang="ko" className="font-korean text-xs opacity-75">
+                  전체 작업
+                </span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -305,13 +349,20 @@ export default async function HomeContent() {
       // 4. MEDIA PREVIEW (Interactive Filterable Shelf)
       case 'media':
         return (
-          <section key="media" className="py-16 md:py-24 border-t border-line" aria-labelledby="media-preview-heading">
+          <section
+            key="media"
+            className="py-16 md:py-24 border-t border-line"
+            aria-labelledby="media-preview-heading"
+          >
             <SectionHeader
               eyebrow={meta.media?.eyebrow || '04 / Cultural Influences'}
               krEyebrow="음악 및 미디어"
               title={meta.media?.title || 'Soundtrack &'}
               accent={meta.media?.accent || 'Stories.'}
-              description={meta.media?.description || 'Interactive media shelf with real-time Spotify listening, music rotation, anime, and manga records.'}
+              description={
+                meta.media?.description ||
+                'Interactive media shelf with real-time Spotify listening, music rotation, anime, and manga records.'
+              }
               linkHref="/media"
               linkLabel="Open complete media collections"
             />
@@ -329,13 +380,20 @@ export default async function HomeContent() {
       // 5. EXPERIENCE & HIGHLIGHTS PREVIEW
       case 'experience':
         return (
-          <section key="experience" className="py-16 md:py-24 border-t border-line" aria-labelledby="experience-preview-heading">
+          <section
+            key="experience"
+            className="py-16 md:py-24 border-t border-line"
+            aria-labelledby="experience-preview-heading"
+          >
             <SectionHeader
               eyebrow={meta.experience?.eyebrow || '05 / Career & Toolkit'}
               krEyebrow="경력 및 기술"
               title={meta.experience?.title || 'Work in'}
               accent={meta.experience?.accent || 'practice.'}
-              description={meta.experience?.description || 'Roles, teaching commitments, and practical technical proficiencies.'}
+              description={
+                meta.experience?.description ||
+                'Roles, teaching commitments, and practical technical proficiencies.'
+              }
               linkHref="/about"
               linkLabel="View complete career & qualifications"
             />
@@ -345,7 +403,9 @@ export default async function HomeContent() {
               <div>
                 <h3 className="text-xs uppercase tracking-wider text-muted font-medium mb-4 flex items-center justify-between">
                   <span>Selected Milestones</span>
-                  <span lang="ko" className="font-korean text-[10px] text-muted">· 주요 이력</span>
+                  <span lang="ko" className="font-korean text-[10px] text-muted">
+                    · 주요 이력
+                  </span>
                 </h3>
                 <ExperienceTimeline items={experienceItems.slice(0, 2)} type="experience" />
               </div>
@@ -354,7 +414,9 @@ export default async function HomeContent() {
               <div className="space-y-4">
                 <h3 className="text-xs uppercase tracking-wider text-muted font-medium mb-4 flex items-center justify-between">
                   <span>Core Disciplines</span>
-                  <span lang="ko" className="font-korean text-[10px] text-muted">· 핵심 기술</span>
+                  <span lang="ko" className="font-korean text-[10px] text-muted">
+                    · 핵심 기술
+                  </span>
                 </h3>
                 <SkillDisplay skills={skills} limit={2} />
 
@@ -365,7 +427,10 @@ export default async function HomeContent() {
 
                 <div className="apple-card p-5 flex items-center justify-between text-xs text-muted">
                   <span>Want to see verified credentials &amp; tools?</span>
-                  <Link href="/about" className="font-semibold text-accent hover:underline inline-flex items-center gap-1">
+                  <Link
+                    href="/about"
+                    className="font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                  >
                     About page <ArrowUpRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -382,12 +447,19 @@ export default async function HomeContent() {
       // 6. CONTACT PREVIEW
       case 'contact':
         return (
-          <section key="contact" className="py-16 md:py-24 border-t border-line" aria-labelledby="contact-preview-heading">
+          <section
+            key="contact"
+            className="py-16 md:py-24 border-t border-line"
+            aria-labelledby="contact-preview-heading"
+          >
             <ContactSection
               eyebrow={meta.contact?.eyebrow || '06 / Direct Dispatch'}
               title={meta.contact?.title || "Let's build something"}
               accent={meta.contact?.accent || 'thoughtful.'}
-              description={meta.contact?.description || 'Open to software engineering roles, independent client contracts, and collaborative open-source builds.'}
+              description={
+                meta.contact?.description ||
+                'Open to software engineering roles, independent client contracts, and collaborative open-source builds.'
+              }
               socialLinks={socialLinks}
               showForm={true}
             />
@@ -400,69 +472,70 @@ export default async function HomeContent() {
   }
 
   return (
-    <SkeletonReveal variant="home">
-      <div className="portfolio-home home-redesign">
-        {/* ========================================================================= */}
-        {/* HERO SECTION: PRESERVED EXACTLY AS IS (DESIGN, TYPOGRAPHY, LAYOUT & META) */}
-        {/* ========================================================================= */}
-        <section className="hero-section shell-width" style={heroStyle} aria-labelledby="hero-heading">
-          <div className="hero-editorial">
-            <div className="hero-copy-block">
-              <div className="hero-stats">
-                <span>
-                  <strong>{heroData.stats?.[0]?.value || '03+'}</strong>
-                  <small>{heroData.stats?.[0]?.label || 'Selected projects'}</small>
-                </span>
-                <span>
-                  <strong>{heroData.stats?.[1]?.value || '04'}</strong>
-                  <small>{heroData.stats?.[1]?.label || 'Creative disciplines'}</small>
-                </span>
-              </div>
-              <h1 id="hero-heading" className="hero-heading">
-                {heroData.heading ? heroData.heading.replace(/\.$/, '') : 'Hello'}
-                <span>.</span>
-              </h1>
-              <p className="hero-subtitle">
-                {heroData.subtitle || "I'm Ashok, a developer building calm, useful digital experiences."}
-              </p>
+    <div className="portfolio-home home-redesign">
+      {/* ========================================================================= */}
+      {/* HERO SECTION: PRESERVED EXACTLY AS IS (DESIGN, TYPOGRAPHY, LAYOUT & META) */}
+      {/* ========================================================================= */}
+      <section
+        className="hero-section shell-width"
+        style={heroStyle}
+        aria-labelledby="hero-heading"
+      >
+        <div className="hero-editorial">
+          <div className="hero-copy-block">
+            <div className="hero-stats">
+              <span>
+                <strong>{heroData.stats?.[0]?.value || '03+'}</strong>
+                <small>{heroData.stats?.[0]?.label || 'Selected projects'}</small>
+              </span>
+              <span>
+                <strong>{heroData.stats?.[1]?.value || '04'}</strong>
+                <small>{heroData.stats?.[1]?.label || 'Creative disciplines'}</small>
+              </span>
             </div>
-            <div className="hero-portrait">
-              <div className="portrait-frame">
-                <span className="portrait-initials" aria-hidden="true">
-                  {heroData.initials || 'AR'}
-                </span>
-              </div>
-              <p>
-                {heroData.location ? (
-                  heroData.location.split('\n').map((line: string, i: number) => (
-                    <span key={i}>
-                      {line}
-                      <br />
-                    </span>
-                  ))
-                ) : (
-                  <>
-                    Butwal, Nepal
+            <h1 id="hero-heading" className="hero-heading">
+              {heroData.heading ? heroData.heading.replace(/\.$/, '') : 'Hello'}
+              <span>.</span>
+            </h1>
+            <p className="hero-subtitle">
+              {heroData.subtitle ||
+                "I'm Ashok, a developer building calm, useful digital experiences."}
+            </p>
+          </div>
+          <div className="hero-portrait">
+            <div className="portrait-frame">
+              <span className="portrait-initials" aria-hidden="true">
+                {heroData.initials || 'AR'}
+              </span>
+            </div>
+            <p>
+              {heroData.location ? (
+                heroData.location.split('\n').map((line: string, i: number) => (
+                  <span key={i}>
+                    {line}
                     <br />
-                    Available for thoughtful collaborations
-                  </>
-                )}
-              </p>
-            </div>
+                  </span>
+                ))
+              ) : (
+                <>
+                  Butwal, Nepal
+                  <br />
+                  Available for thoughtful collaborations
+                </>
+              )}
+            </p>
           </div>
-          <div className="hero-meta">
-            <span>{heroData.metaLeft || 'Scroll to explore ↓'}</span>
-            <span>{heroData.metaRight || 'Selected work · 01 / 06'}</span>
-          </div>
-        </section>
-
-        {/* ========================================================================= */}
-        {/* DYNAMIC HOMEPAGE SECTIONS DRIVEN BY CMS (ORDER & VISIBILITY CONFIGURABLE)  */}
-        {/* ========================================================================= */}
-        <div className="shell-width">
-          {order.map((sectionKey) => renderSection(sectionKey))}
         </div>
-      </div>
-    </SkeletonReveal>
+        <div className="hero-meta">
+          <span>{heroData.metaLeft || 'Scroll to explore ↓'}</span>
+          <span>{heroData.metaRight || 'Selected work · 01 / 06'}</span>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* DYNAMIC HOMEPAGE SECTIONS DRIVEN BY CMS (ORDER & VISIBILITY CONFIGURABLE)  */}
+      {/* ========================================================================= */}
+      <div className="shell-width">{order.map((sectionKey) => renderSection(sectionKey))}</div>
+    </div>
   )
 }

@@ -24,7 +24,16 @@ export default function LayoutShell({ children, isCmsHost = false }: LayoutShell
     <DevModeProvider>
       <ErrorBoundary>
         <Suspense fallback={<Loading />}>
-          {showCmsShell ? <CmsShell>{children}</CmsShell> : <><SiteHeader /><main>{children}</main><SiteFooter /></>}
+          {showCmsShell ? (
+            <CmsShell>{children}</CmsShell>
+          ) : (
+            <>
+              <SiteHeader />
+              {/* Pages own their own <main> landmark; wrapping them in another nested one. */}
+              <div className="min-h-screen">{children}</div>
+              <SiteFooter />
+            </>
+          )}
           <div className="fixed bottom-6 right-6 z-40">
             <DevModeTrigger />
           </div>
