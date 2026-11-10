@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Check, Copy, Clock, Volume2, VolumeX } from 'lucide-react'
+import { Check, Copy, Clock } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
 
 interface LiveStatusPillProps {
@@ -14,10 +14,8 @@ interface LiveStatusPillProps {
 export function LiveStatusPill({ email, location, timeZone, timezoneLabel }: LiveStatusPillProps) {
   const [timeStr, setTimeStr] = useState<string>('')
   const [copied, setCopied] = useState(false)
-  const [soundOn, setSoundOn] = useState(false)
 
   useEffect(() => {
-    setSoundOn(sensoryAudio.isEnabled())
     if (!timeZone) return
 
     const updateTime = () => {
@@ -47,10 +45,6 @@ export function LiveStatusPill({ email, location, timeZone, timezoneLabel }: Liv
     navigator.clipboard.writeText(email)
     setCopied(true)
     setTimeout(() => setCopied(false), 2200)
-  }
-
-  const toggleSound = () => {
-    setSoundOn(sensoryAudio.toggle())
   }
 
   return (
@@ -95,28 +89,6 @@ export function LiveStatusPill({ email, location, timeZone, timezoneLabel }: Liv
         </button>
       )}
 
-      <button
-        type="button"
-        onClick={toggleSound}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all cursor-pointer shadow-xs active:scale-95 ${
-          soundOn
-            ? 'border-accent/30 bg-accent/10 text-accent font-medium'
-            : 'border-line-subtle bg-surface/80 text-muted hover:text-ink'
-        }`}
-        title={soundOn ? 'Interface audio enabled' : 'Interface audio muted'}
-      >
-        {soundOn ? (
-          <>
-            <Volume2 className="w-3.5 h-3.5 text-accent" />
-            <span className="text-xs">On</span>
-          </>
-        ) : (
-          <>
-            <VolumeX className="w-3.5 h-3.5 text-muted" />
-            <span className="text-xs">Muted</span>
-          </>
-        )}
-      </button>
     </div>
   )
 }

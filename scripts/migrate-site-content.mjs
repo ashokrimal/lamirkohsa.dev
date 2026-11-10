@@ -22,15 +22,15 @@ const siteSettings = [
       primary: [
         { href: '/', label: 'Home', kr: '홈' },
         { href: '/about', label: 'About', kr: '소개' },
-        { href: '/projects', label: 'Projects', kr: '작업' },
         { href: '/media', label: 'Media', kr: '미디어' },
+        { href: '/projects', label: 'Projects', kr: '작업' },
         { href: '/contact', label: 'Contact', kr: '연락처' },
       ],
       footer: [
         { href: '/', label: 'Home', kr: '홈' },
         { href: '/about', label: 'About', kr: '소개' },
-        { href: '/projects', label: 'Projects', kr: '작업' },
         { href: '/media', label: 'Media', kr: '미디어' },
+        { href: '/projects', label: 'Projects', kr: '작업' },
         { href: '/contact', label: 'Contact', kr: '연락처' },
       ],
       collections: [
@@ -113,13 +113,12 @@ const siteSettings = [
     slug: 'homepage-sections',
     sortOrder: 1,
     payload: {
-      order: ['about', 'gallery', 'projects', 'media', 'experience', 'contact'],
+      order: ['gallery', 'about', 'projects', 'media', 'contact'],
       enabled: {
-        about: true,
         gallery: true,
+        about: true,
         projects: true,
         media: true,
-        experience: true,
         contact: true,
       },
       sectionMeta: {
@@ -142,8 +141,9 @@ const siteSettings = [
           accent: 'perspective.',
           description:
             'Personal photographs capturing quiet geometry, architecture, and light across Nepal.',
-          href: '/media',
+          href: '/gallery',
           primaryLabel: 'View all photographs',
+          previewCount: 5,
         },
         projects: {
           eyebrow: '03 / Selected Work',
@@ -153,8 +153,9 @@ const siteSettings = [
           description:
             'Web and mobile applications engineered from user research to production delivery.',
           href: '/projects',
-          primaryLabel: 'Browse project archive & execution timeline',
+          primaryLabel: 'View all projects',
           secondaryLabel: 'Browse all case studies & milestones',
+          previewCount: 5,
         },
         media: {
           eyebrow: '04 / Cultural Influences',
@@ -163,7 +164,8 @@ const siteSettings = [
           accent: 'Stories.',
           description: 'Music rotation, anime, and manga that inspire visual rhythm and focus.',
           href: '/media',
-          primaryLabel: 'Open complete media collections',
+          primaryLabel: 'View all media',
+          previewCount: 5,
         },
         experience: {
           eyebrow: '05 / Career & Toolkit',
@@ -386,30 +388,34 @@ const mediaCollections = [
     kr: '음악',
     description: 'Favorite listening, recent rotation, and personal soundscapes.',
     href: '/media/music',
+    previewCount: 5,
+  },
+  {
+    key: 'movies',
+    number: '02',
+    label: 'Movies',
+    kr: '영화',
+    description: 'Cinematic films watched, remembered, and worth revisiting.',
+    href: '/movies',
+    previewCount: 5,
   },
   {
     key: 'anime',
-    number: '02',
+    number: '03',
     label: 'Anime',
     kr: '애니',
     description: 'Favorite, currently watching, completed, and plan-to-watch series.',
     href: '/media/anime',
+    previewCount: 5,
   },
   {
     key: 'manga',
-    number: '03',
-    label: 'Manga & Manhwa',
+    number: '04',
+    label: 'Manga',
     kr: '만화',
     description: 'Favorite graphic novels, currently reading series, and masterworks.',
     href: '/media/manga',
-  },
-  {
-    key: 'films',
-    number: '04',
-    label: 'Films',
-    kr: '영화',
-    description: 'Cinematic films watched, remembered, and worth revisiting.',
-    href: '/movies',
+    previewCount: 5,
   },
 ]
 

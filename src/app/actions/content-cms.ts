@@ -288,6 +288,8 @@ export interface HomepageSectionMeta {
   primaryLabel?: string
   secondaryLabel?: string
   meta?: string
+  /** How many cards the preview collection shows before the View all card. */
+  previewCount?: number
 }
 
 export async function getHomepageSectionsConfig(): Promise<{

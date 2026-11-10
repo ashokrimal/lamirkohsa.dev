@@ -51,6 +51,9 @@ export interface ContactDetails {
   timezoneLabel?: string
   availability?: string
   email?: string
+  phone?: string
+  /** Whether the contact form is shown on the contact page and preview. */
+  formEnabled?: boolean
 }
 
 export interface PageCopy {
@@ -74,6 +77,8 @@ export interface MediaCollection {
   kr?: string
   description?: string
   href: string
+  /** How many cards the preview row shows before the View all card. */
+  previewCount?: number
 }
 
 export interface SiteConfig {
@@ -86,6 +91,20 @@ export interface SiteConfig {
 function text(payload: Record<string, unknown> | undefined, key: string): string | undefined {
   const value = payload?.[key]
   return typeof value === 'string' && value.trim() ? value : undefined
+}
+
+function booleanValue(payload: Record<string, unknown> | undefined, key: string) {
+  const value = payload?.[key]
+  if (typeof value === 'boolean') return value
+  if (value === 'false') return false
+  if (value === 'true') return true
+  return undefined
+}
+
+function numberValue(payload: Record<string, unknown> | undefined, key: string) {
+  const value = payload?.[key]
+  const parsed = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : undefined
 }
 
 function links(payload: Record<string, unknown> | undefined, key: string): NavLink[] {
@@ -194,6 +213,8 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       timezoneLabel: text(contact?.payload, 'timezoneLabel'),
       availability: text(contact?.payload, 'availability'),
       email: text(contact?.payload, 'email'),
+      phone: text(contact?.payload, 'phone'),
+      formEnabled: booleanValue(contact?.payload, 'formEnabled'),
     },
   }
 }
@@ -227,6 +248,7 @@ export async function getMediaCollections(): Promise<MediaCollection[]> {
       kr: text(record.payload, 'kr'),
       description: text(record.payload, 'description'),
       href,
+      previewCount: numberValue(record.payload, 'previewCount'),
     })
   }
 

@@ -1,3 +1,7 @@
-import MediaDetailPage from '@/components/media/MediaDetailPage'
+import MediaCategoryPage from '@/components/media/MediaCategoryPage'
+
 export const dynamic = 'force-dynamic'
-export default function MangaCollectionPage() { return <MediaDetailPage category="manga" /> }
+
+export default function MangaCollectionPage() {
+  return <MediaCategoryPage kind="manga" />
+}

@@ -1071,3 +1071,73 @@ em, .accent-text { font-style: normal; }
 }
 
 
+
+/* ---------------------------------------------------------------------------
+   Horizontal card collections (gallery, featured projects, media sections)
+   One track, five preview cards, a trailing View all card. No extra controls.
+--------------------------------------------------------------------------- */
+.horizontal-collection {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.16) transparent;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+.horizontal-collection::-webkit-scrollbar { height: 6px; }
+.horizontal-collection::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.16); border-radius: 9999px; }
+.horizontal-collection::-webkit-scrollbar-track { background: transparent; }
+.horizontal-collection:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 20px; }
+
+.horizontal-collection-track {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 4px 20px 12px 0;
+  list-style: none;
+}
+@media (min-width: 640px) {
+  .horizontal-collection-track { padding: 4px 0 12px; }
+}
+
+.horizontal-collection-item {
+  flex: 0 0 auto;
+  width: 78vw;
+  max-width: 320px;
+  scroll-snap-align: start;
+  display: flex;
+}
+.horizontal-collection-item > * { width: 100%; }
+
+.horizontal-collection-item--action {
+  width: 46vw;
+  max-width: 200px;
+}
+
+.horizontal-collection-view-all {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 100%;
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color .25s ease, transform .25s ease;
+}
+.horizontal-collection-view-all:hover { border-color: rgba(0, 0, 0, 0.16); transform: translateY(-2px); }
+.horizontal-collection-view-all-label { font-size: .95rem; font-weight: 600; letter-spacing: -.01em; }
+.horizontal-collection-view-all-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+  color: var(--accent);
+}

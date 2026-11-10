@@ -4,12 +4,11 @@ import {
   getEducationItems,
   getSkillsContent,
   getPublishedCmsContent,
-  getGalleryItems,
+  getSocialLinks,
 } from '@/app/actions/content-cms'
 import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { SkillDisplay } from '@/components/ui/SkillDisplay'
 import { CertificateCard } from '@/components/ui/CertificateCard'
-import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
 import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy } from '@/lib/site-content'
@@ -19,18 +18,28 @@ function value(profile: Record<string, unknown>, key: string) {
   return typeof raw === 'string' && raw.trim() ? raw : undefined
 }
 
+function stringValue(payload: Record<string, unknown> | undefined, key: string) {
+  const raw = payload?.[key]
+  return typeof raw === 'string' ? raw : ''
+}
+
+/**
+ * About page, in the required order: biography, profile information, education,
+ * experience, skills, certificates, interests, social links, then GitHub last.
+ * Each block is shown only when the CMS has content for it.
+ */
 export default async function AboutContent() {
   const copy = (await getPageCopy()).about
   const sections = copy?.sections
 
-  const [profile, experienceRaw, educationRaw, skillsRaw, certificatesRaw, galleryItemsRaw] =
+  const [profile, experienceRaw, educationRaw, skillsRaw, certificatesRaw, socialRaw] =
     await Promise.all([
       getProfileContent(),
       getExperienceItems(),
       getEducationItems(),
       getSkillsContent(),
       getPublishedCmsContent('Certificates'),
-      getGalleryItems(4),
+      getSocialLinks(),
     ])
 
   function dedupeItems<T>(items: T[], keyFn: (item: T) => string | number | undefined): T[] {
@@ -47,75 +56,82 @@ export default async function AboutContent() {
     experienceRaw.map((e) => ({
       id: e.id,
       title: e.title,
-      organization: typeof e.payload?.organization === 'string' ? e.payload.organization : '',
-      period: typeof e.payload?.period === 'string' ? e.payload.period : '',
-      location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
-      description: typeof e.payload?.description === 'string' ? e.payload.description : '',
+      organization: stringValue(e.payload, 'organization'),
+      period: stringValue(e.payload, 'period'),
+      location: stringValue(e.payload, 'location') || undefined,
+      description: stringValue(e.payload, 'description'),
       highlights: Array.isArray(e.payload?.highlights)
         ? (e.payload.highlights as string[])
         : undefined,
     })),
-    (e) => `${e.title}::${e.organization}` || e.id
+    (e) => `${e.title}::${e.organization}` || e.id,
   )
 
   const education = dedupeItems(
     educationRaw.map((e) => ({
       id: e.id,
       title: e.title,
-      organization: typeof e.payload?.organization === 'string' ? e.payload.organization : '',
-      period: typeof e.payload?.period === 'string' ? e.payload.period : '',
-      location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
-      description: typeof e.payload?.description === 'string' ? e.payload.description : '',
+      organization: stringValue(e.payload, 'organization'),
+      period: stringValue(e.payload, 'period'),
+      location: stringValue(e.payload, 'location') || undefined,
+      description: stringValue(e.payload, 'description'),
       highlights: Array.isArray(e.payload?.highlights)
         ? (e.payload.highlights as string[])
         : undefined,
     })),
-    (e) => `${e.title}::${e.organization}` || e.id
+    (e) => `${e.title}::${e.organization}` || e.id,
   )
 
   const skills = dedupeItems(
     skillsRaw.map((s) => ({
-      category: typeof s.payload?.category === 'string' ? s.payload.category : s.title,
+      category: stringValue(s.payload, 'category') || s.title,
       items: Array.isArray(s.payload?.items) ? (s.payload.items as string[]) : [],
-      level: typeof s.payload?.level === 'string' ? s.payload.level : undefined,
+      level: stringValue(s.payload, 'level') || undefined,
     })),
-    (s) => s.category
-  )
+    (s) => s.category,
+  ).filter((s) => s.items.length > 0)
 
   const certificates = dedupeItems(
     certificatesRaw.map((c) => ({
       id: c.id,
       title: c.title,
-      organization: typeof c.payload?.organization === 'string' ? c.payload.organization : '',
-      date: typeof c.payload?.date === 'string' ? c.payload.date : undefined,
-      credentialUrl:
-        typeof c.payload?.credentialUrl === 'string' ? c.payload.credentialUrl : undefined,
-      credentialId: typeof c.payload?.credentialId === 'string' ? c.payload.credentialId : undefined,
-      description: typeof c.payload?.description === 'string' ? c.payload.description : undefined,
+      organization: stringValue(c.payload, 'organization'),
+      date: stringValue(c.payload, 'date') || undefined,
+      credentialUrl: stringValue(c.payload, 'credentialUrl') || undefined,
+      credentialId: stringValue(c.payload, 'credentialId') || undefined,
+      description: stringValue(c.payload, 'description') || undefined,
     })),
-    (c) => c.title || c.id
+    (c) => c.title,
   )
 
-  const gallery = dedupeItems(
-    galleryItemsRaw.map((g) => ({
-      id: g.id,
-      title: g.title,
-      imageUrl: typeof g.payload?.imageUrl === 'string' ? g.payload.imageUrl : '',
-      category: typeof g.payload?.category === 'string' ? g.payload.category : undefined,
-      description: typeof g.payload?.description === 'string' ? g.payload.description : '',
-      location: typeof g.payload?.location === 'string' ? g.payload.location : undefined,
+  const socialLinks = dedupeItems(
+    socialRaw.map((s) => ({
+      id: s.id,
+      label: stringValue(s.payload, 'label') || s.title,
+      href: stringValue(s.payload, 'href'),
+      handle: stringValue(s.payload, 'handle') || undefined,
     })),
-    (g) => g.title || g.imageUrl || g.id
-  )
+    (s) => s.href || s.label,
+  ).filter((s) => s.href)
 
-  const summary = value(profile as Record<string, unknown>, 'summary')
-  const bio = value(profile as Record<string, unknown>, 'bio')
-  const coordinates = [
-    { label: value(profile as Record<string, unknown>, 'locationLabel'), value: value(profile as Record<string, unknown>, 'location') },
-    { label: value(profile as Record<string, unknown>, 'focusLabel'), value: value(profile as Record<string, unknown>, 'focus') },
-    { label: value(profile as Record<string, unknown>, 'availabilityLabel'), value: value(profile as Record<string, unknown>, 'availability') },
-    { label: value(profile as Record<string, unknown>, 'educationLabel'), value: value(profile as Record<string, unknown>, 'education') },
-  ].filter((item) => item.label && item.value)
+  const profileData = profile as Record<string, unknown>
+  const summary = value(profileData, 'summary')
+  const bio = value(profileData, 'bio')
+  const profileImage = value(profileData, 'avatarUrl') || value(profileData, 'imageUrl')
+  const interests = Array.isArray(profile.interests)
+    ? (profile.interests as unknown[]).filter(
+        (item): item is string => typeof item === 'string' && item.trim().length > 0,
+      )
+    : []
+
+  const infoRows = [
+    { label: 'Full name', value: value(profileData, 'fullName') },
+    { label: 'Professional title', value: value(profileData, 'headline') },
+    { label: 'Location', value: value(profileData, 'location') },
+    { label: 'Availability', value: value(profileData, 'availability') },
+    { label: 'Focus', value: value(profileData, 'focus') },
+    { label: 'Email', value: value(profileData, 'email') },
+  ].filter((row) => row.value)
 
   return (
     <PageShell>
@@ -127,52 +143,48 @@ export default async function AboutContent() {
         description={copy?.description ?? summary}
       />
 
-      {(bio || coordinates.length > 0) && (
+      {/* 1. BIOGRAPHY + PROFILE */}
+      {(bio || summary || profileImage) && (
         <section className="pt-10 md:pt-14 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 md:gap-8 items-start">
-          {bio && (
-            <div className="space-y-4 text-sm md:text-base text-muted leading-relaxed">
-              {bio.split(/\n{2,}/).map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
-            </div>
-          )}
+          <div className="space-y-4 text-sm md:text-base text-muted leading-relaxed">
+            {summary && <p className="text-lg md:text-2xl text-ink leading-relaxed">{summary}</p>}
+            {bio &&
+              bio
+                .split(/\n{2,}/)
+                .map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+          </div>
 
-          {coordinates.length > 0 && (
-            <aside className="apple-card p-6 md:p-7 space-y-4 text-xs">
-              {sections?.coordinates?.title && (
-                <div className="pb-3 border-b border-line-subtle">
-                  <h2 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-                    {sections.coordinates.title}
-                  </h2>
-                </div>
-              )}
-              <dl className="space-y-3">
-                {coordinates.map((item) => (
-                  <div key={item.label} className="flex items-center justify-between gap-4">
-                    <dt className="text-muted">{item.label}</dt>
-                    <dd className="font-semibold text-ink text-right">{item.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </aside>
-          )}
+          <div className="space-y-5">
+            {profileImage && (
+              <div className="relative aspect-[4/5] w-full rounded-[24px] overflow-hidden border border-line-subtle bg-overlay-faint">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={profileImage}
+                  alt={value(profileData, 'fullName') || ''}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            )}
+
+            {infoRows.length > 0 && (
+              <aside className="apple-card p-6 md:p-7 space-y-4 text-xs">
+                <dl className="space-y-3">
+                  {infoRows.map((row) => (
+                    <div key={row.label} className="flex items-start justify-between gap-4">
+                      <dt className="text-muted">{row.label}</dt>
+                      <dd className="font-semibold text-ink text-right">{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </aside>
+            )}
+          </div>
         </section>
       )}
 
-      {sections?.experience?.title && (
-        <PageSection
-          id="experience"
-          eyebrow={sections.experience.eyebrow}
-          krEyebrow={sections.experience.krEyebrow}
-          title={sections.experience.title}
-          accent={sections.experience.accent}
-          description={sections.experience.description}
-        >
-          <ExperienceTimeline items={experience} type="experience" />
-        </PageSection>
-      )}
-
-      {sections?.education?.title && (
+      {/* 2. EDUCATION */}
+      {sections?.education?.title && education.length > 0 && (
         <PageSection
           id="education"
           eyebrow={sections.education.eyebrow}
@@ -185,7 +197,22 @@ export default async function AboutContent() {
         </PageSection>
       )}
 
-      {sections?.skills?.title && (
+      {/* 3. PROFESSIONAL EXPERIENCE */}
+      {sections?.experience?.title && experience.length > 0 && (
+        <PageSection
+          id="experience"
+          eyebrow={sections.experience.eyebrow}
+          krEyebrow={sections.experience.krEyebrow}
+          title={sections.experience.title}
+          accent={sections.experience.accent}
+          description={sections.experience.description}
+        >
+          <ExperienceTimeline items={experience} type="experience" />
+        </PageSection>
+      )}
+
+      {/* 4. TECHNICAL SKILLS */}
+      {sections?.skills?.title && skills.length > 0 && (
         <PageSection
           id="skills"
           eyebrow={sections.skills.eyebrow}
@@ -198,6 +225,7 @@ export default async function AboutContent() {
         </PageSection>
       )}
 
+      {/* 5. CERTIFICATES & ACHIEVEMENTS */}
       {sections?.certificates?.title && certificates.length > 0 && (
         <PageSection
           id="certificates"
@@ -215,22 +243,59 @@ export default async function AboutContent() {
         </PageSection>
       )}
 
-      {sections?.gallery?.title && gallery.length > 0 && (
+      {/* 6. PERSONAL INTERESTS */}
+      {sections?.interests?.title && interests.length > 0 && (
         <PageSection
-          id="gallery"
-          eyebrow={sections.gallery.eyebrow}
-          krEyebrow={sections.gallery.krEyebrow}
-          title={sections.gallery.title}
-          accent={sections.gallery.accent}
-          description={sections.gallery.description}
-          linkHref={sections.gallery.href}
-          linkLabel={sections.gallery.meta}
+          id="interests"
+          eyebrow={sections.interests.eyebrow}
+          krEyebrow={sections.interests.krEyebrow}
+          title={sections.interests.title}
+          accent={sections.interests.accent}
+          description={sections.interests.description}
         >
-          <GalleryGrid items={gallery} columns={4} />
+          <ul className="flex flex-wrap gap-2.5">
+            {interests.map((interest) => (
+              <li
+                key={interest}
+                className="inline-flex items-center rounded-full bg-overlay border border-line-hairline px-3.5 py-1.5 text-xs text-ink-secondary"
+              >
+                {interest}
+              </li>
+            ))}
+          </ul>
         </PageSection>
       )}
 
-      {sections?.github?.title && (
+      {/* 7. SOCIAL LINKS */}
+      {sections?.socials?.title && socialLinks.length > 0 && (
+        <PageSection
+          id="socials"
+          eyebrow={sections.socials.eyebrow}
+          krEyebrow={sections.socials.krEyebrow}
+          title={sections.socials.title}
+          accent={sections.socials.accent}
+          description={sections.socials.description}
+        >
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {socialLinks.map((link) => (
+              <li key={link.id}>
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-surface/80 border border-line-subtle hover:border-line-strong transition-colors text-ink"
+                >
+                  <span className="text-sm font-medium">{link.label}</span>
+                  <span className="text-xs text-muted">{link.handle || link.href}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </PageSection>
+      )}
+
+      {/* 8. GITHUB ACTIVITY — always the final section */}
+      {sections?.github?.title && profile.github && (
         <PageSection
           id="github"
           eyebrow={sections.github.eyebrow}
@@ -239,9 +304,7 @@ export default async function AboutContent() {
           accent={sections.github.accent}
           description={sections.github.description}
         >
-          {profile.github && (
-            <GitHubActivitySparkline username={profile.github} showRecentCommits={true} />
-          )}
+          <GitHubActivitySparkline username={profile.github} showRecentCommits={true} />
         </PageSection>
       )}
 

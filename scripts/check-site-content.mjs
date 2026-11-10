@@ -46,7 +46,7 @@ const requiredPageCopy = [
 ]
 
 // Media library sections rendered from Media Collections records.
-const requiredMediaCollections = ['music', 'anime', 'manga', 'films']
+const requiredMediaCollections = ['music', 'movies', 'anime', 'manga']
 
 // Collections shown somewhere on the site. Reported when empty, not fatal.
 const contentCollections = [
@@ -56,6 +56,8 @@ const contentCollections = [
   'Education',
   'Skills',
   'Certificates',
+  'Social Links',
+  'Interests',
   'Gallery',
   'Blogs',
   'Music',
@@ -150,6 +152,7 @@ async function main() {
     const payload = contact.payload || {}
     if (!hasText(payload.email)) warnings.push('Contact Details has no email, so the copy-email pill is hidden.')
     if (!hasText(payload.location)) warnings.push('Contact Details has no location, so the coordinates card is hidden.')
+    if (!hasText(payload.phone)) warnings.push('Contact Details has no phone, so the phone channel is hidden.')
     if (!hasText(payload.timeZone)) warnings.push('Contact Details has no timeZone, so the local clock is hidden.')
   }
 
@@ -171,6 +174,18 @@ async function main() {
     const missingMeta = order.filter((key) => !sectionMeta[key] || !hasText(sectionMeta[key].title))
     if (missingMeta.length) {
       warnings.push(`Homepage sections without a title: ${missingMeta.join(', ')}.`)
+    }
+    const unknownSections = order.filter(
+      (key) => !['gallery', 'about', 'projects', 'media', 'contact'].includes(key),
+    )
+    if (unknownSections.length) {
+      warnings.push(`Homepage sections that no longer render: ${unknownSections.join(', ')}.`)
+    }
+    const noPreviewCount = order.filter(
+      (key) => ['gallery', 'projects', 'media'].includes(key) && !sectionMeta[key]?.previewCount,
+    )
+    if (noPreviewCount.length) {
+      warnings.push(`Homepage sections without previewCount (default 5): ${noPreviewCount.join(', ')}.`)
     }
   }
 
@@ -225,6 +240,9 @@ async function main() {
     const records = mediaByKey.get(key)
     if (!records) continue
     const payload = records[records.length - 1].payload || {}
+    if (!hasText(payload.previewCount ? String(payload.previewCount) : '')) {
+      warnings.push(`Media Collections "${key}" has no previewCount, so it falls back to 5.`)
+    }
     if (!hasText(payload.href)) {
       warnings.push(`Media Collections "${key}" has no href, so its card has no destination.`)
     }

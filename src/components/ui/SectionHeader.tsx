@@ -25,6 +25,9 @@ export function SectionHeader({
   className = '',
   actions,
 }: SectionHeaderProps) {
+  // An empty CMS record should not leave a blank heading and rule behind.
+  if (!eyebrow && !title && !description && !actions && !(linkHref && linkLabel)) return null
+
   return (
     <div className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-line ${className}`}>
       <div className="max-w-2xl space-y-2">
