@@ -283,8 +283,8 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
               </div>
 
               <Link
-                href="/sign-in"
-                title="Sign out or switch profile"
+                href="/admin/sign-out"
+                title="Sign out"
                 className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                 aria-label="Sign out"
               >

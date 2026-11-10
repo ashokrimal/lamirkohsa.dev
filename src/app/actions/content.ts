@@ -6,15 +6,17 @@ import { cmsContent, galleryItem, musicTrack, portfolioProject } from '@/lib/db/
 import { and, desc, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
+import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
 
-async function requireUser() {
+async function requireUser(): Promise<string> {
   try {
     const session = await auth.api.getSession({ headers: await headers() })
     if (session?.user?.id) return session.user.id
   } catch {
-    // Auth or DB offline fallback
+    // Fall through to the admin session cookie
   }
-  return 'admin-ashok-rimal'
+  if (await hasAdminSession()) return ADMIN_OWNER_ID
+  throw new Error('Unauthorized: sign in to the admin studio first.')
 }
 
 export async function getPublishedGallery() {

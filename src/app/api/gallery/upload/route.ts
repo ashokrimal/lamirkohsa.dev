@@ -1,6 +1,7 @@
 import { put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { galleryItem } from '@/lib/db/schema'
@@ -15,7 +16,8 @@ function messageFor(error: unknown) {
 
 export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) return NextResponse.json({ error: 'Your session has expired. Please sign in again.' }, { status: 401 })
+  const ownerId = session?.user?.id ?? ((await hasAdminSession()) ? ADMIN_OWNER_ID : null)
+  if (!ownerId) return NextResponse.json({ error: 'Your session has expired. Please sign in again.' }, { status: 401 })
 
   try {
     const formData = await request.formData()
@@ -34,11 +36,11 @@ export async function POST(request: Request) {
     for (const [index, fileValue] of files.entries()) {
       const file = fileValue as File
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/^-+|-+$/g, '') || `photo-${index + 1}.jpg`
-      const blob = await put(`gallery/${session.user.id}/${timestamp}-${index}-${safeName}`, file, { access: 'public' })
+      const blob = await put(`gallery/${ownerId}/${timestamp}-${index}-${safeName}`, file, { access: 'public' })
       const baseTitle = title || file.name.replace(/\.[^.]+$/, '') || `Photo ${index + 1}`
       const recordTitle = files.length > 1 && title ? `${title} ${index + 1}` : baseTitle
       const slug = `${recordTitle}-${timestamp}-${index}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-      await db.insert(galleryItem).values({ userId: session.user.id, title: recordTitle, slug, description: null, imageUrl: blob.url, category, featured: false, published: true })
+      await db.insert(galleryItem).values({ userId: ownerId, title: recordTitle, slug, description: null, imageUrl: blob.url, category, featured: false, published: true })
       uploaded.push(blob.url)
     }
 

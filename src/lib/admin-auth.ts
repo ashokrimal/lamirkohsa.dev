@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { cookies } from 'next/headers'
 
 /**
  * Server-side admin credential check.
@@ -14,6 +15,12 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
  */
 export const ADMIN_SESSION_COOKIE = 'admin_session'
 export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 8
+
+/**
+ * Owner id used for records created through the cookie-based admin session. It is
+ * the id this portfolio's content already belongs to.
+ */
+export const ADMIN_OWNER_ID = 'admin-ashok-rimal'
 
 function constantTimeEquals(a: string, b: string) {
   const bufferA = Buffer.from(a)
@@ -60,6 +67,16 @@ export function verifyAdminSessionToken(token: string | undefined, now = Date.no
   if (!Number.isFinite(expiry) || expiry < now) return false
 
   return constantTimeEquals(signature, sign(expiresAt, secret))
+}
+
+/** True when the current request carries a valid, unexpired admin session cookie. */
+export async function hasAdminSession() {
+  try {
+    const store = await cookies()
+    return verifyAdminSessionToken(store.get(ADMIN_SESSION_COOKIE)?.value)
+  } catch {
+    return false
+  }
 }
 
 /** Basic auth stays available for scripts; it is still checked against the environment. */

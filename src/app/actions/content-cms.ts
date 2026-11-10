@@ -6,6 +6,7 @@ import { cmsContent } from '@/lib/db/schema'
 import { and, asc, desc, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
+import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
 
 export interface CmsRecord {
   id: number
@@ -20,14 +21,19 @@ export interface CmsRecord {
   updatedAt?: Date | string
 }
 
-async function requireUser() {
+/**
+ * Resolves the owner id for admin mutations. Requires a signed-in owner: either a
+ * better-auth session or a valid admin session cookie. Anything else is rejected.
+ */
+async function requireUser(): Promise<string> {
   try {
     const session = await auth.api.getSession({ headers: await headers() })
     if (session?.user?.id) return session.user.id
   } catch {
-    // Auth or DB offline fallback
+    // Fall through to the admin session cookie
   }
-  return 'admin-ashok-rimal'
+  if (await hasAdminSession()) return ADMIN_OWNER_ID
+  throw new Error('Unauthorized: sign in to the admin studio first.')
 }
 
 // Master Initial CMS Data Set (Source of Truth for initial seed)

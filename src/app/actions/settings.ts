@@ -6,13 +6,17 @@ import { profileSettings } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
+import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
 
-async function getAdminUser() {
+async function getAdminUser(): Promise<string> {
   try {
     const session = await auth.api.getSession({ headers: await headers() })
     if (session?.user?.id) return session.user.id
-  } catch {}
-  return 'admin-ashok-rimal'
+  } catch {
+    // Fall through to the admin session cookie
+  }
+  if (await hasAdminSession()) return ADMIN_OWNER_ID
+  throw new Error('Unauthorized: sign in to the admin studio first.')
 }
 
 export async function getSettingsForAdmin() {
@@ -24,18 +28,18 @@ export async function getSettingsForAdmin() {
     // Database fallback below
   }
 
-  // Realistic default profile settings
+  // Nothing is invented: an owner who has not saved integrations gets empty fields.
   return {
-    id: 1,
+    id: 0,
     userId,
-    githubUsername: 'ashokrimal',
-    malUsername: 'ashokrimal',
-    lastfmUsername: 'lamirkohsa',
-    listenbrainzUsername: 'ashokrimal',
-    malUsernames: ['ashokrimal'],
-    anilistUsernames: ['ashokrimal'],
-    spotifyProfileUrl: 'https://open.spotify.com/user/lamirkohsa',
-    updatedAt: new Date(),
+    githubUsername: null,
+    malUsername: null,
+    lastfmUsername: null,
+    listenbrainzUsername: null,
+    malUsernames: [],
+    anilistUsernames: [],
+    spotifyProfileUrl: null,
+    updatedAt: null,
   }
 }
 

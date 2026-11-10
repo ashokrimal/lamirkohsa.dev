@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth'
 import { getAdminContent } from '@/app/actions/content'
 import { getSettingsForAdmin } from '@/app/actions/settings'
 import AdminWorkspace from '@/components/admin/AdminWorkspace'
+import AdminSignIn from '@/components/admin/AdminSignIn'
+import { hasAdminSession, isAdminAuthConfigured } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +14,14 @@ export default async function AdminPage({ searchParams }: { searchParams?: { sec
   try {
     session = await auth.api.getSession({ headers: requestHeaders })
   } catch {
-    // In dev / unconfigured DB, proceed to Admin Workspace in Demo Admin mode
+    // Auth or database unavailable; the admin cookie below still decides access.
+  }
+
+  // The studio is owner-only: a better-auth session or a valid admin session
+  // cookie. There is no demo mode and no unauthenticated fallback.
+  const adminSession = await hasAdminSession()
+  if (!session?.user && !adminSession) {
+    return <AdminSignIn configured={isAdminAuthConfigured()} />
   }
 
   const content = await getAdminContent()
@@ -24,8 +33,13 @@ export default async function AdminPage({ searchParams }: { searchParams?: { sec
       section={section}
       content={content}
       settings={settings}
-      isDemoSession={!session?.user}
-      user={session?.user ?? { name: 'Ashok Rimal (Admin Demo)', email: 'info.ashokrimal@gmail.com' }}
+      isDemoSession={false}
+      user={
+        session?.user ?? {
+          name: 'Site owner',
+          email: adminSession ? process.env.ADMIN_EMAIL ?? '' : '',
+        }
+      }
     />
   )
 }

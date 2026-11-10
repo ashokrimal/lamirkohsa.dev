@@ -7,14 +7,16 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { animeMangaItem, cmsContent, musicTrack } from '@/lib/db/schema'
+import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
 
 type CatalogKind = 'anime' | 'manga'
 type ImportItem = Record<string, unknown>
 
 async function getUserId() {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) throw new Error('Unauthorized')
-  return session.user.id
+  if (session?.user?.id) return session.user.id
+  if (await hasAdminSession()) return ADMIN_OWNER_ID
+  throw new Error('Unauthorized')
 }
 
 function asText(value: unknown) {
