@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
+import NextImage from 'next/image'
 import {
   Plus,
   ExternalLink,
@@ -968,10 +969,13 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                     className="aspect-4/3 bg-slate-100 relative overflow-hidden cursor-pointer"
                     onClick={() => setLightboxImage(item.imageUrl)}
                   >
-                    <img
+                    <NextImage
                       src={item.imageUrl}
                       alt={item.title || 'Gallery item'}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 300px"
+                      referrerPolicy="no-referrer"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-inverse">
                       <Eye className="w-6 h-6" />
@@ -1010,11 +1014,16 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                     header: 'Artwork',
                     accessor: (row) => (
                       <div className="flex items-center gap-3">
-                        <img
-                          src={row.imageUrl}
-                          alt=""
-                          className="w-10 h-10 rounded-lg object-cover"
-                        />
+                        <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                          <NextImage
+                            src={row.imageUrl}
+                            alt=""
+                            fill
+                            sizes="40px"
+                            referrerPolicy="no-referrer"
+                            className="object-cover"
+                          />
+                        </div>
                         <div>
                           <p className="font-semibold text-slate-900">{row.title || 'Untitled'}</p>
                           <p className="text-[11px] text-slate-500">{row.description || 'No description'}</p>
@@ -1085,10 +1094,13 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="relative w-10 h-10 rounded-lg bg-slate-200 overflow-hidden shrink-0">
                         {track.coverUrl ? (
-                          <img
+                          <NextImage
                             src={track.coverUrl}
                             alt=""
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="40px"
+                            referrerPolicy="no-referrer"
+                            className="object-cover"
                           />
                         ) : (
                           <Music className="w-5 h-5 text-slate-400 m-auto mt-2.5" />
@@ -1668,11 +1680,16 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
           className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
           onClick={() => setLightboxImage(null)}
         >
-          <img
-            src={lightboxImage}
-            alt=""
-            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
-          />
+          <div className="relative max-w-4xl max-h-[90vh] w-full h-[80vh]">
+            <NextImage
+              src={lightboxImage}
+              alt="Artwork preview"
+              fill
+              sizes="90vw"
+              referrerPolicy="no-referrer"
+              className="object-contain rounded-xl shadow-2xl"
+            />
+          </div>
         </div>
       )}
     </div>

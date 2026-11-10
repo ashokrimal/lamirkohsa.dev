@@ -15,9 +15,10 @@ export function useFetch<T>(
     }
   }, [execute, fetchFn]);
 
+  const depsKey = JSON.stringify(deps);
   useEffect(() => {
     fetchData();
-  }, [fetchData, JSON.stringify(deps)]); // Using JSON.stringify for stable dependency comparison
+  }, [fetchData, depsKey]);
 
   const refetch = useCallback(() => {
     return fetchData();

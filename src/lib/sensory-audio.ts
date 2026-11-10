@@ -51,6 +51,11 @@ class SensoryAudioEngine {
     return this.enabled
   }
 
+  public toggleMute(): boolean {
+    const isNowEnabled = this.toggle()
+    return !isNowEnabled
+  }
+
   /**
    * Tactile click: Soft micro-pop for button presses
    */

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import {
   GitBranch,
   Star,
@@ -285,11 +286,16 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
           {/* Profile Header & 4 Key Telemetry Metrics */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50/70 border border-slate-100 rounded-xl">
             <div className="flex items-center gap-3">
-              <img
-                src={data.profile.avatar_url}
-                alt={data.profile.name}
-                className="w-10 h-10 rounded-full border border-slate-200 object-cover"
-              />
+              <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 border border-slate-200">
+                <Image
+                  src={data.profile.avatar_url}
+                  alt={data.profile.name}
+                  fill
+                  sizes="40px"
+                  referrerPolicy="no-referrer"
+                  className="object-cover"
+                />
+              </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-slate-900">{data.profile.name}</span>
