@@ -33,55 +33,80 @@ export default async function AboutContent() {
       getGalleryItems(4),
     ])
 
-  const experience = experienceRaw.map((e) => ({
-    id: e.id,
-    title: e.title,
-    organization: typeof e.payload?.organization === 'string' ? e.payload.organization : '',
-    period: typeof e.payload?.period === 'string' ? e.payload.period : '',
-    location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
-    description: typeof e.payload?.description === 'string' ? e.payload.description : '',
-    highlights: Array.isArray(e.payload?.highlights)
-      ? (e.payload.highlights as string[])
-      : undefined,
-  }))
+  function dedupeItems<T>(items: T[], keyFn: (item: T) => string | number | undefined): T[] {
+    const seen = new Set<string | number>()
+    return items.filter((item) => {
+      const key = keyFn(item)
+      if (key === undefined || key === '' || seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  }
 
-  const education = educationRaw.map((e) => ({
-    id: e.id,
-    title: e.title,
-    organization: typeof e.payload?.organization === 'string' ? e.payload.organization : '',
-    period: typeof e.payload?.period === 'string' ? e.payload.period : '',
-    location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
-    description: typeof e.payload?.description === 'string' ? e.payload.description : '',
-    highlights: Array.isArray(e.payload?.highlights)
-      ? (e.payload.highlights as string[])
-      : undefined,
-  }))
+  const experience = dedupeItems(
+    experienceRaw.map((e) => ({
+      id: e.id,
+      title: e.title,
+      organization: typeof e.payload?.organization === 'string' ? e.payload.organization : '',
+      period: typeof e.payload?.period === 'string' ? e.payload.period : '',
+      location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
+      description: typeof e.payload?.description === 'string' ? e.payload.description : '',
+      highlights: Array.isArray(e.payload?.highlights)
+        ? (e.payload.highlights as string[])
+        : undefined,
+    })),
+    (e) => `${e.title}::${e.organization}` || e.id
+  )
 
-  const skills = skillsRaw.map((s) => ({
-    category: typeof s.payload?.category === 'string' ? s.payload.category : s.title,
-    items: Array.isArray(s.payload?.items) ? (s.payload.items as string[]) : [],
-    level: typeof s.payload?.level === 'string' ? s.payload.level : undefined,
-  }))
+  const education = dedupeItems(
+    educationRaw.map((e) => ({
+      id: e.id,
+      title: e.title,
+      organization: typeof e.payload?.organization === 'string' ? e.payload.organization : '',
+      period: typeof e.payload?.period === 'string' ? e.payload.period : '',
+      location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
+      description: typeof e.payload?.description === 'string' ? e.payload.description : '',
+      highlights: Array.isArray(e.payload?.highlights)
+        ? (e.payload.highlights as string[])
+        : undefined,
+    })),
+    (e) => `${e.title}::${e.organization}` || e.id
+  )
 
-  const certificates = certificatesRaw.map((c) => ({
-    id: c.id,
-    title: c.title,
-    organization: typeof c.payload?.organization === 'string' ? c.payload.organization : '',
-    date: typeof c.payload?.date === 'string' ? c.payload.date : undefined,
-    credentialUrl:
-      typeof c.payload?.credentialUrl === 'string' ? c.payload.credentialUrl : undefined,
-    credentialId: typeof c.payload?.credentialId === 'string' ? c.payload.credentialId : undefined,
-    description: typeof c.payload?.description === 'string' ? c.payload.description : undefined,
-  }))
+  const skills = dedupeItems(
+    skillsRaw.map((s) => ({
+      category: typeof s.payload?.category === 'string' ? s.payload.category : s.title,
+      items: Array.isArray(s.payload?.items) ? (s.payload.items as string[]) : [],
+      level: typeof s.payload?.level === 'string' ? s.payload.level : undefined,
+    })),
+    (s) => s.category
+  )
 
-  const gallery = galleryItemsRaw.map((g) => ({
-    id: g.id,
-    title: g.title,
-    imageUrl: typeof g.payload?.imageUrl === 'string' ? g.payload.imageUrl : '',
-    category: typeof g.payload?.category === 'string' ? g.payload.category : undefined,
-    description: typeof g.payload?.description === 'string' ? g.payload.description : '',
-    location: typeof g.payload?.location === 'string' ? g.payload.location : undefined,
-  }))
+  const certificates = dedupeItems(
+    certificatesRaw.map((c) => ({
+      id: c.id,
+      title: c.title,
+      organization: typeof c.payload?.organization === 'string' ? c.payload.organization : '',
+      date: typeof c.payload?.date === 'string' ? c.payload.date : undefined,
+      credentialUrl:
+        typeof c.payload?.credentialUrl === 'string' ? c.payload.credentialUrl : undefined,
+      credentialId: typeof c.payload?.credentialId === 'string' ? c.payload.credentialId : undefined,
+      description: typeof c.payload?.description === 'string' ? c.payload.description : undefined,
+    })),
+    (c) => c.title || c.id
+  )
+
+  const gallery = dedupeItems(
+    galleryItemsRaw.map((g) => ({
+      id: g.id,
+      title: g.title,
+      imageUrl: typeof g.payload?.imageUrl === 'string' ? g.payload.imageUrl : '',
+      category: typeof g.payload?.category === 'string' ? g.payload.category : undefined,
+      description: typeof g.payload?.description === 'string' ? g.payload.description : '',
+      location: typeof g.payload?.location === 'string' ? g.payload.location : undefined,
+    })),
+    (g) => g.title || g.imageUrl || g.id
+  )
 
   const summary = value(profile as Record<string, unknown>, 'summary')
   const bio = value(profile as Record<string, unknown>, 'bio')

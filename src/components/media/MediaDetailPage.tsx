@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { ReactNode } from 'react'
 import { getMediaData } from '@/app/actions/media'
 import { getMediaPreviews } from '@/app/actions/content-cms'
@@ -136,12 +137,16 @@ function MusicPage({
               className="apple-card overflow-hidden flex gap-4 p-4"
             >
               {track.cover && (
-                <img
-                  src={track.cover}
-                  alt={`${track.title} cover`}
-                  loading="lazy"
-                  className="h-16 w-16 rounded-xl object-cover bg-overlay-faint shrink-0"
-                />
+                <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-overlay-faint shrink-0">
+                  <Image
+                    src={track.cover}
+                    alt={`${track.title} cover`}
+                    fill
+                    sizes="64px"
+                    referrerPolicy="no-referrer"
+                    className="object-cover"
+                  />
+                </div>
               )}
               <div className="min-w-0">
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
@@ -244,11 +249,13 @@ function LibraryPage({
             >
               {card.image && (
                 <div className="relative aspect-[3/4] bg-overlay-faint overflow-hidden">
-                  <img
+                  <Image
                     src={card.image}
                     alt={`${card.title} cover`}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    referrerPolicy="no-referrer"
+                    className="object-cover"
                   />
                 </div>
               )}

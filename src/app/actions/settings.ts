@@ -40,11 +40,14 @@ export async function getSettingsForAdmin() {
 }
 
 const parseUsernames = (value: FormDataEntryValue | null) =>
-  String(value || '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .slice(0, 4)
+  Array.from(
+    new Set(
+      String(value || '')
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    )
+  ).slice(0, 4)
 
 export async function saveProfileSettings(formData: FormData) {
   const userId = await getAdminUser()

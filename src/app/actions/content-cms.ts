@@ -41,9 +41,17 @@ class MemoryCmsRepository {
 
   public getAll(collection?: string): CmsRecord[] {
     const list = Array.from(this.records.values())
-    if (!collection) return list.sort((a, b) => a.sortOrder - b.sortOrder)
-    return list
-      .filter((r) => r.collection.toLowerCase() === collection.toLowerCase())
+    const filtered = collection
+      ? list.filter((r) => r.collection.toLowerCase() === collection.toLowerCase())
+      : list
+    const seen = new Set<string>()
+    return filtered
+      .filter((r) => {
+        const key = `${r.collection}::${r.title}`.toLowerCase().trim()
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
       .sort((a, b) => a.sortOrder - b.sortOrder)
   }
 
@@ -151,9 +159,17 @@ export async function getPublishedCmsContent(collection: string): Promise<CmsRec
       .orderBy(asc(cmsContent.sortOrder), desc(cmsContent.createdAt))
 
     if (rows && rows.length > 0) {
+      // Deduplicate rows by collection and title to guarantee uniqueness
+      const seen = new Set<string>()
+      const uniqueRows = (rows as CmsRecord[]).filter((r) => {
+        const key = `${r.collection}::${r.title}`.toLowerCase().trim()
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
       // Synchronize back to memory cache
-      rows.forEach((r) => repo.update(r.id, r as CmsRecord))
-      return rows as CmsRecord[]
+      uniqueRows.forEach((r) => repo.update(r.id, r))
+      return uniqueRows
     }
   } catch {
     // Database offline fallback to memory
@@ -187,12 +203,19 @@ export async function getAllCmsContent(collection?: string): Promise<CmsRecord[]
 
     const rows = await query
     if (rows && rows.length > 0) {
+      const seen = new Set<string>()
+      const uniqueRows = (rows as CmsRecord[]).filter((r) => {
+        const key = `${r.collection}::${r.title}`.toLowerCase().trim()
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
       if (collection) {
-        return (rows as CmsRecord[]).filter(
+        return uniqueRows.filter(
           (r) => r.collection.toLowerCase() === collection.toLowerCase()
         )
       }
-      return rows as CmsRecord[]
+      return uniqueRows
     }
   } catch {
     // Database offline fallback

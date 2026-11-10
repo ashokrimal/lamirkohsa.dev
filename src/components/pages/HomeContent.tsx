@@ -97,75 +97,106 @@ export default async function HomeContent() {
     }
   })
 
+function dedupe<T>(items: T[], keyFn: (item: T) => string | number | undefined): T[] {
+  const seen = new Set<string | number>()
+  return items.filter((item) => {
+    const key = keyFn(item)
+    if (key === undefined || key === '' || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
   // Transform Gallery items
-  const galleryItems = galleryItemsRaw.map((g) => ({
-    id: g.id,
-    title: g.title,
-    imageUrl: typeof g.payload?.imageUrl === 'string' ? g.payload.imageUrl : '',
-    category: typeof g.payload?.category === 'string' ? g.payload.category : 'Photography',
-    description: typeof g.payload?.description === 'string' ? g.payload.description : '',
-    location: typeof g.payload?.location === 'string' ? g.payload.location : undefined,
-  }))
+  const galleryItems = dedupe(
+    galleryItemsRaw.map((g) => ({
+      id: g.id,
+      title: g.title,
+      imageUrl: typeof g.payload?.imageUrl === 'string' ? g.payload.imageUrl : '',
+      category: typeof g.payload?.category === 'string' ? g.payload.category : 'Photography',
+      description: typeof g.payload?.description === 'string' ? g.payload.description : '',
+      location: typeof g.payload?.location === 'string' ? g.payload.location : undefined,
+    })),
+    (g) => g.title || g.imageUrl || g.id
+  )
 
   // Transform Experience items
-  const experienceItems = experienceItemsRaw.map((e) => ({
-    id: e.id,
-    title: e.title,
-    organization: typeof e.payload?.organization === 'string' ? e.payload.organization : '',
-    period: typeof e.payload?.period === 'string' ? e.payload.period : '',
-    location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
-    description: typeof e.payload?.description === 'string' ? e.payload.description : '',
-    highlights: Array.isArray(e.payload?.highlights)
-      ? (e.payload.highlights as string[])
-      : undefined,
-  }))
+  const experienceItems = dedupe(
+    experienceItemsRaw.map((e) => ({
+      id: e.id,
+      title: e.title,
+      organization: typeof e.payload?.organization === 'string' ? e.payload.organization : '',
+      period: typeof e.payload?.period === 'string' ? e.payload.period : '',
+      location: typeof e.payload?.location === 'string' ? e.payload.location : undefined,
+      description: typeof e.payload?.description === 'string' ? e.payload.description : '',
+      highlights: Array.isArray(e.payload?.highlights)
+        ? (e.payload.highlights as string[])
+        : undefined,
+    })),
+    (e) => `${e.title}::${e.organization}` || e.id
+  )
 
   // Transform Skills
-  const skills = skillsRaw.map((s) => ({
-    category: typeof s.payload?.category === 'string' ? s.payload.category : s.title,
-    items: Array.isArray(s.payload?.items) ? (s.payload.items as string[]) : [],
-    level: typeof s.payload?.level === 'string' ? s.payload.level : undefined,
-  }))
+  const skills = dedupe(
+    skillsRaw.map((s) => ({
+      category: typeof s.payload?.category === 'string' ? s.payload.category : s.title,
+      items: Array.isArray(s.payload?.items) ? (s.payload.items as string[]) : [],
+      level: typeof s.payload?.level === 'string' ? s.payload.level : undefined,
+    })),
+    (s) => s.category
+  )
 
   // Transform Social Links
-  const socialLinks = socialLinksRaw.map((s) => ({
-    id: s.id,
-    label: typeof s.payload?.label === 'string' ? s.payload.label : s.title,
-    href: typeof s.payload?.href === 'string' ? s.payload.href : '#',
-    handle: typeof s.payload?.handle === 'string' ? s.payload.handle : undefined,
-  }))
+  const socialLinks = dedupe(
+    socialLinksRaw.map((s) => ({
+      id: s.id,
+      label: typeof s.payload?.label === 'string' ? s.payload.label : s.title,
+      href: typeof s.payload?.href === 'string' ? s.payload.href : '#',
+      handle: typeof s.payload?.handle === 'string' ? s.payload.handle : undefined,
+    })),
+    (s) => s.href || s.label
+  )
 
   // Transform Media items for FilterableMediaShelf
-  const musicShelfItems: MusicItemData[] = mediaPreviews.music.map((item) => ({
-    id: item.id,
-    title: item.title,
-    artist: String(item.payload.artist || 'Unknown Artist'),
-    album: item.payload.album ? String(item.payload.album) : undefined,
-    coverUrl: item.payload.coverUrl ? String(item.payload.coverUrl) : undefined,
-    audioUrl: item.payload.audioUrl ? String(item.payload.audioUrl) : undefined,
-    mood: item.payload.mood ? String(item.payload.mood) : undefined,
-  }))
+  const musicShelfItems: MusicItemData[] = dedupe(
+    mediaPreviews.music.map((item) => ({
+      id: item.id,
+      title: item.title,
+      artist: String(item.payload.artist || 'Unknown Artist'),
+      album: item.payload.album ? String(item.payload.album) : undefined,
+      coverUrl: item.payload.coverUrl ? String(item.payload.coverUrl) : undefined,
+      audioUrl: item.payload.audioUrl ? String(item.payload.audioUrl) : undefined,
+      mood: item.payload.mood ? String(item.payload.mood) : undefined,
+    })),
+    (m) => `${m.title}::${m.artist}` || m.id
+  )
 
-  const animeShelfItems: AnimeItemData[] = mediaPreviews.anime.map((item) => ({
-    id: item.id,
-    title: item.title,
-    score: item.payload.score ? String(item.payload.score) : undefined,
-    status: item.payload.status ? String(item.payload.status) : undefined,
-    progress: item.payload.progress ? String(item.payload.progress) : undefined,
-    imageUrl: item.payload.imageUrl ? String(item.payload.imageUrl) : undefined,
-    synopsis: item.payload.synopsis ? String(item.payload.synopsis) : undefined,
-  }))
+  const animeShelfItems: AnimeItemData[] = dedupe(
+    mediaPreviews.anime.map((item) => ({
+      id: item.id,
+      title: item.title,
+      score: item.payload.score ? String(item.payload.score) : undefined,
+      status: item.payload.status ? String(item.payload.status) : undefined,
+      progress: item.payload.progress ? String(item.payload.progress) : undefined,
+      imageUrl: item.payload.imageUrl ? String(item.payload.imageUrl) : undefined,
+      synopsis: item.payload.synopsis ? String(item.payload.synopsis) : undefined,
+    })),
+    (a) => a.title || a.id
+  )
 
-  const mangaShelfItems: MangaItemData[] = mediaPreviews.manga.map((item) => ({
-    id: item.id,
-    title: item.title,
-    kind: item.payload.kind ? String(item.payload.kind) : 'Manga',
-    score: item.payload.score ? String(item.payload.score) : undefined,
-    status: item.payload.status ? String(item.payload.status) : undefined,
-    progress: item.payload.progress ? String(item.payload.progress) : undefined,
-    imageUrl: item.payload.imageUrl ? String(item.payload.imageUrl) : undefined,
-    synopsis: item.payload.synopsis ? String(item.payload.synopsis) : undefined,
-  }))
+  const mangaShelfItems: MangaItemData[] = dedupe(
+    mediaPreviews.manga.map((item) => ({
+      id: item.id,
+      title: item.title,
+      kind: item.payload.kind ? String(item.payload.kind) : 'Manga',
+      score: item.payload.score ? String(item.payload.score) : undefined,
+      status: item.payload.status ? String(item.payload.status) : undefined,
+      progress: item.payload.progress ? String(item.payload.progress) : undefined,
+      imageUrl: item.payload.imageUrl ? String(item.payload.imageUrl) : undefined,
+      synopsis: item.payload.synopsis ? String(item.payload.synopsis) : undefined,
+    })),
+    (m) => m.title || m.id
+  )
 
   // Section order, visibility and copy all come from the CMS. There are no
   // local fallbacks: an empty configuration simply renders no sections.

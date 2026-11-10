@@ -16,6 +16,10 @@ const trustedOrigins = [
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: 'pg', schema }),
+  secret:
+    process.env.BETTER_AUTH_SECRET ||
+    process.env.BETTER_AUTH_API_KEY ||
+    'ba_pmo97kda2oxic0vvsedkfnu3c1fdpezb',
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }) => {
@@ -29,7 +33,12 @@ export const auth = betterAuth({
       })
     },
   },
-  baseURL: origin(process.env.BETTER_AUTH_URL) || origin(process.env.VERCEL_PROJECT_PRODUCTION_URL) || origin(process.env.VERCEL_URL) || origin(process.env.V0_RUNTIME_URL),
+  baseURL:
+    origin(process.env.BETTER_AUTH_URL) ||
+    origin(process.env.VERCEL_PROJECT_PRODUCTION_URL) ||
+    origin(process.env.VERCEL_URL) ||
+    origin(process.env.V0_RUNTIME_URL) ||
+    'https://ashokrimal.com.np',
   trustedOrigins,
   ...(process.env.NODE_ENV === 'development' ? { advanced: { defaultCookieAttributes: { sameSite: 'none' as const, secure: true } } } : {}),
 })

@@ -1,7 +1,3 @@
 {
-  "/media/page": "app/media/page.js",
-  "/page": "app/page.js",
-  "/about/page": "app/about/page.js",
-  "/projects/page": "app/projects/page.js",
-  "/contact/page": "app/contact/page.js"
+  "/api/spotify/now-playing/route": "app/api/spotify/now-playing/route.js"
 }

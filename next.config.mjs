@@ -1,8 +1,16 @@
 /** @type {import('next').NextConfig} */
+const isVercel = Boolean(process.env.VERCEL)
+const isDev = process.env.NODE_ENV === 'development' && !isVercel
+
 const nextConfig = {
-  output: 'standalone',
-  // Keep preview builds isolated from production build artifacts to prevent stale chunk 404s.
-  distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
+  ...(isVercel ? {} : { output: 'standalone' }),
+  ...(isDev ? { distDir: '.next-dev' } : {}),
+  async redirects() {
+    return [
+      { source: '/anime', destination: '/media/anime', permanent: true },
+      { source: '/music', destination: '/media/music', permanent: true },
+    ]
+  },
   async headers() {
     return [{
       source: '/(.*)',
