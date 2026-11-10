@@ -1,4 +1,7 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+/* Pretendard, variable + dynamic subsets. The previous /gh/ static build shipped
+   relative font URLs that 404 on jsDelivr, so Hangul silently fell back to system
+   fonts; the npm package resolves correctly and covers weights 45–920. */
+@import url("https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -96,9 +99,9 @@
   --color-active: var(--color-overlay-subtle);          /* pressed wash */
   --color-scrim: rgb(var(--scrim-rgb));                 /* image scrims: #000000 */
 
-  --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", "Pretendard", "Apple SD Gothic Neo", "Helvetica Neue", sans-serif;
-  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", "Pretendard", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
-  --korean-font: "Pretendard", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+  --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Helvetica Neue", sans-serif;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
+  --korean-font: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -117,7 +120,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 9999px; }
 .shell-width { width: min(1280px, calc(100% - 48px)); margin-inline: auto; }
 
-.font-korean { font-family: var(--korean-font); }
+/* Korean typography — Pretendard owns Hangul. The Latin-tuned negative tracking
+   crushes syllable rhythm and default breaking can split a word mid-syllable,
+   so Korean runs reset the tracking and keep words whole. */
+.font-korean,
+:lang(ko) {
+  font-family: var(--korean-font);
+  letter-spacing: 0;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
 
 /* Apple-style continuous rounded squircles & fluid glass */
 .apple-card {

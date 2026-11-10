@@ -188,12 +188,12 @@ export default async function HomeContent() {
                   <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
                     <Compass className="w-3.5 h-3.5 text-accent" />
                     <span>Based in {profile.location || 'Nepal'}</span>
-                    <span className="font-korean text-[10px] text-muted">네팔</span>
+                    <span lang="ko" className="font-korean text-[10px] text-muted">네팔</span>
                   </span>
                   <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
                     <Code2 className="w-3.5 h-3.5 text-accent" />
                     <span>{profile.headline || 'Full-Stack Developer'}</span>
-                    <span className="font-korean text-[10px] text-muted">개발자</span>
+                    <span lang="ko" className="font-korean text-[10px] text-muted">개발자</span>
                   </span>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default async function HomeContent() {
                       <span className="text-xs uppercase tracking-wider text-muted font-medium">
                         Status &amp; Focus
                       </span>
-                      <span className="font-korean text-[10px] text-muted">· 상태</span>
+                      <span lang="ko" className="font-korean text-[10px] text-muted">· 상태</span>
                     </div>
                     <span className="text-xs text-emerald-600 font-medium flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -295,7 +295,7 @@ export default async function HomeContent() {
                 className="apple-btn-primary"
               >
                 <span>Browse all case studies &amp; milestones</span>
-                <span className="font-korean text-xs opacity-75">전체 작업</span>
+                <span lang="ko" className="font-korean text-xs opacity-75">전체 작업</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -345,7 +345,7 @@ export default async function HomeContent() {
               <div>
                 <h3 className="text-xs uppercase tracking-wider text-muted font-medium mb-4 flex items-center justify-between">
                   <span>Selected Milestones</span>
-                  <span className="font-korean text-[10px] text-muted">· 주요 이력</span>
+                  <span lang="ko" className="font-korean text-[10px] text-muted">· 주요 이력</span>
                 </h3>
                 <ExperienceTimeline items={experienceItems.slice(0, 2)} type="experience" />
               </div>
@@ -354,7 +354,7 @@ export default async function HomeContent() {
               <div className="space-y-4">
                 <h3 className="text-xs uppercase tracking-wider text-muted font-medium mb-4 flex items-center justify-between">
                   <span>Core Disciplines</span>
-                  <span className="font-korean text-[10px] text-muted">· 핵심 기술</span>
+                  <span lang="ko" className="font-korean text-[10px] text-muted">· 핵심 기술</span>
                 </h3>
                 <SkillDisplay skills={skills} limit={2} />
 

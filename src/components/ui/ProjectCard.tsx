@@ -75,7 +75,7 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
               {index !== undefined && (
                 <div className="flex items-center gap-1.5 text-[11px] text-muted">
                   <span className="font-mono">0{index + 1}</span>
-                  <span className="font-korean">· 프로젝트</span>
+                  <span lang="ko" className="font-korean">· 프로젝트</span>
                 </div>
               )}
               {project.completionDate && (
@@ -168,7 +168,7 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline cursor-pointer"
               >
                 <span>Details</span>
-                <span className="font-korean text-[10px] text-muted font-normal">상세</span>
+                <span lang="ko" className="font-korean text-[10px] text-muted font-normal">상세</span>
                 <ArrowUpRight className="w-3 h-3" />
               </button>
             ) : (

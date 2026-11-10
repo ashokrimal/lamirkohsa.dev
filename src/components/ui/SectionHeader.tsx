@@ -34,7 +34,7 @@ export function SectionHeader({
               {eyebrow}
             </span>
             {krEyebrow && (
-              <span className="text-[11px] font-korean text-muted tracking-normal font-normal">
+              <span lang="ko" className="text-[11px] font-korean text-muted tracking-normal font-normal">
                 · {krEyebrow}
               </span>
             )}

@@ -77,7 +77,7 @@ export default function SiteHeader() {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-medium">NPT {nepalTime || 'UTC+5:45'}</span>
             <span className="text-scrim/20">·</span>
-            <span className="font-korean text-muted">가용</span>
+            <span lang="ko" className="font-korean text-muted">가용</span>
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export default function SiteHeader() {
                 }`}
               >
                 <span>{link.label}</span>
-                <span className="text-[10px] font-korean text-muted opacity-75 font-normal">
+                <span lang="ko" className="text-[10px] font-korean text-muted opacity-75 font-normal">
                   {link.kr}
                 </span>
                 {active && (
@@ -157,7 +157,7 @@ export default function SiteHeader() {
               <span className="text-sm font-semibold tracking-tight text-ink">
                 Ashok Rimal
               </span>
-              <p className="text-[11px] font-korean text-muted">아쇼크 리말 · 메뉴</p>
+              <p lang="ko" className="text-[11px] font-korean text-muted">아쇼크 리말 · 메뉴</p>
             </div>
             <button
               type="button"
@@ -185,6 +185,7 @@ export default function SiteHeader() {
                   >
                     <span className="text-lg tracking-tight font-medium">{link.label}</span>
                     <span
+                      lang="ko"
                       className={`text-xs font-korean ${
                         active ? 'text-inverse/80' : 'text-muted'
                       }`}
@@ -206,7 +207,7 @@ export default function SiteHeader() {
           </div>
           <div className="flex items-center justify-between">
             <span>Availability:</span>
-            <span className="font-medium text-emerald-600 font-korean">협업 가능 (Available)</span>
+            <span lang="ko" className="font-medium text-emerald-600 font-korean">협업 가능 (Available)</span>
           </div>
         </div>
       </div>

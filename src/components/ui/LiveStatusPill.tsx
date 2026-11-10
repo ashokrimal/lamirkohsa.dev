@@ -67,7 +67,7 @@ export function LiveStatusPill({
         </span>
         <span className="text-scrim/20">·</span>
         <span className="text-muted">{location}</span>
-        <span className="font-korean text-[10px] text-muted">네팔</span>
+        <span lang="ko" className="font-korean text-[10px] text-muted">네팔</span>
       </div>
 
       {/* Copy Email Button Pill */}

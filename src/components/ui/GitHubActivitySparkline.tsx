@@ -229,7 +229,7 @@ export function GitHubActivitySparkline({
             </div>
             <p className="text-xs text-muted flex items-center gap-1.5 mt-0.5">
               <span>Open-source activity &amp; commit cadence</span>
-              <span className="font-korean text-[10px] text-muted">· 깃허브 기록</span>
+              <span lang="ko" className="font-korean text-[10px] text-muted">· 깃허브 기록</span>
             </p>
           </div>
         </div>
@@ -307,7 +307,7 @@ export function GitHubActivitySparkline({
 
           <div className="flex items-center justify-between pt-3 border-t border-line-faint text-[10px] text-muted">
             <span>{data.sparkline[0]?.dayLabel || '30 days ago'}</span>
-            <span className="text-accent font-medium font-korean">기여도 활동 (Commit Activity)</span>
+            <span lang="ko" className="text-accent font-medium font-korean">기여도 활동 (Commit Activity)</span>
             <span>Today</span>
           </div>
         </div>
@@ -320,7 +320,7 @@ export function GitHubActivitySparkline({
             <span className="text-xs uppercase tracking-wide text-muted font-medium">
               Recent Open-Source Dispatches
             </span>
-            <span className="font-korean text-[10px] text-muted">최근 커밋</span>
+            <span lang="ko" className="font-korean text-[10px] text-muted">최근 커밋</span>
           </div>
           <div className="space-y-2 text-xs">
             {data.recentActivities.map((act, i) => (

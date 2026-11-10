@@ -120,7 +120,7 @@ export default async function AboutContent() {
               <h3 className="text-xs uppercase tracking-wider text-muted font-medium">
                 Quick Coordinates
               </h3>
-              <span className="font-korean text-[10px] text-muted">기본 정보</span>
+              <span lang="ko" className="font-korean text-[10px] text-muted">기본 정보</span>
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">

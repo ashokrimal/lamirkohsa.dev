@@ -135,7 +135,7 @@ export function ContactSection({
                     className="apple-btn-primary"
                   >
                     <span>Open Communication Page</span>
-                    <span className="font-korean text-xs opacity-80">연락처</span>
+                    <span lang="ko" className="font-korean text-xs opacity-80">연락처</span>
                     <ArrowUpRight className="w-4 h-4" />
                   </Link>
                 </div>

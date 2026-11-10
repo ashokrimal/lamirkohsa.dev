@@ -97,7 +97,7 @@ export function GalleryGrid({
             className="apple-btn-secondary"
           >
             <span>View all photographs in Media library</span>
-            <span className="font-korean text-[10px] text-muted">미디어 기록</span>
+            <span lang="ko" className="font-korean text-[10px] text-muted">미디어 기록</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-muted" />
           </Link>
         </div>

@@ -32,7 +32,7 @@ export function ProjectsPreviewGrid({ projects }: ProjectsPreviewGridProps) {
           <span className="text-muted font-medium">
             Showing {projects.length} featured works
           </span>
-          <span className="font-korean text-[11px] text-muted">· 주요 작업</span>
+          <span lang="ko" className="font-korean text-[11px] text-muted">· 주요 작업</span>
         </div>
 
         <div className="flex items-center gap-1 p-1 rounded-full bg-overlay border border-line-faint backdrop-blur-md">

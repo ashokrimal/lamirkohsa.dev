@@ -59,7 +59,7 @@ export function CertificateCard({ certificate }: CertificateCardProps) {
               className="apple-btn-secondary !py-1.5 !px-3.5 !text-xs ml-auto"
             >
               <span>Verify Credential</span>
-              <span className="font-korean text-[10px] text-muted">검증</span>
+              <span lang="ko" className="font-korean text-[10px] text-muted">검증</span>
               <ArrowUpRight className="w-3 h-3 text-muted" />
             </a>
           )}

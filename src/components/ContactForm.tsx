@@ -143,7 +143,7 @@ export default function ContactForm({
         >
           <Send className="w-4 h-4" />
           <span>{isSubmitting ? 'Sending Message…' : 'Transmit Message'}</span>
-          <span className="font-korean text-xs opacity-75">전송</span>
+          <span lang="ko" className="font-korean text-xs opacity-75">전송</span>
         </button>
       </form>
 

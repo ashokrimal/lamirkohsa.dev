@@ -78,7 +78,7 @@ export function SpotifyWidget({ className = '' }: { className?: string }) {
           <span className="font-semibold tracking-tight text-ink">
             {track.isPlaying ? 'Listening on Spotify' : 'Soundtrack Rotation'}
           </span>
-          <span className="font-korean text-[10px] text-muted font-normal">스포티파이</span>
+          <span lang="ko" className="font-korean text-[10px] text-muted font-normal">스포티파이</span>
         </div>
 
         <DitherEqualizer isPlaying={isPlayingAudio || track.isPlaying} />
