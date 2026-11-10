@@ -5,7 +5,7 @@ import { getPublishedCmsContent } from '@/app/actions/content-cms'
 import { toSlug } from '@/lib/slug'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 type Blog = {
   id: number

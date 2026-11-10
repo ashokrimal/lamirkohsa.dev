@@ -10,6 +10,7 @@ import { SkillDisplay } from '@/components/ui/SkillDisplay'
 import { CertificateCard } from '@/components/ui/CertificateCard'
 import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy } from '@/lib/site-content'
+import type { ReactNode } from 'react'
 
 export type CollectionKind = 'experience' | 'education' | 'skills' | 'certificates' | 'resume'
 
@@ -32,7 +33,13 @@ function mapTimeline(records: Awaited<ReturnType<typeof getExperienceItems>>) {
   }))
 }
 
-export default async function CollectionPage({ kind }: { kind: CollectionKind }) {
+export default async function CollectionPage({
+  kind,
+  heroActions,
+}: {
+  kind: CollectionKind
+  heroActions?: ReactNode
+}) {
   const copy = (await getPageCopy())[kind]
 
   const [profile, experienceRaw, educationRaw, skillsRaw, certificatesRaw] = await Promise.all([
@@ -62,13 +69,14 @@ export default async function CollectionPage({ kind }: { kind: CollectionKind })
   const profileSummary = stringValue(profile as Record<string, unknown>, 'summary')
 
   return (
-    <PageShell>
+    <PageShell className={kind === 'resume' ? 'resume-page' : undefined}>
       <PageHero
         eyebrow={copy?.eyebrow ?? ''}
         krEyebrow={copy?.krEyebrow}
         title={copy?.title ?? ''}
         accent={copy?.accent}
         description={copy?.description}
+        actions={heroActions}
       />
 
       <div className="mt-10 md:mt-14">

@@ -5,8 +5,9 @@ import { db } from '@/lib/db'
 import { cmsContent } from '@/lib/db/schema'
 import { and, asc, desc, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
+import { CMS_CACHE_TAG, CMS_REVALIDATE_SECONDS, cmsCollectionTag } from '@/lib/cms-cache'
 
 export interface CmsRecord {
   id: number
@@ -137,45 +138,59 @@ function getMemoryRepo(): MemoryCmsRepository {
 
 // --- CMS QUERY FUNCTIONS FOR FRONTEND & ADMIN ---
 
+async function fetchPublishedCollection(collection: string): Promise<CmsRecord[]> {
+  const rows = await db
+    .select({
+      id: cmsContent.id,
+      collection: cmsContent.collection,
+      title: cmsContent.title,
+      slug: cmsContent.slug,
+      payload: cmsContent.payload,
+      status: cmsContent.status,
+      sortOrder: cmsContent.sortOrder,
+      createdAt: cmsContent.createdAt,
+      updatedAt: cmsContent.updatedAt,
+    })
+    .from(cmsContent)
+    .where(
+      and(eq(cmsContent.collection, collection), eq(cmsContent.status, 'published'))
+    )
+    .orderBy(asc(cmsContent.sortOrder), desc(cmsContent.createdAt))
+
+  // Deduplicate rows by collection and title to guarantee uniqueness
+  const seen = new Set<string>()
+  return (rows as CmsRecord[]).filter((r) => {
+    const key = `${r.collection}::${r.title}`.toLowerCase().trim()
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 /**
- * Retrieve all published records for a collection
+ * Retrieve all published records for a collection.
+ *
+ * Reads are cached and tagged, so pages can be statically rendered or
+ * revalidated on demand instead of querying the database on every request.
+ * Admin mutations call `revalidateTag(CMS_CACHE_TAG)`, and the cache also
+ * refreshes on its own after `CMS_REVALIDATE_SECONDS`.
  */
 export async function getPublishedCmsContent(collection: string): Promise<CmsRecord[]> {
   const repo = getMemoryRepo()
   try {
-    const rows = await db
-      .select({
-        id: cmsContent.id,
-        collection: cmsContent.collection,
-        title: cmsContent.title,
-        slug: cmsContent.slug,
-        payload: cmsContent.payload,
-        status: cmsContent.status,
-        sortOrder: cmsContent.sortOrder,
-        createdAt: cmsContent.createdAt,
-        updatedAt: cmsContent.updatedAt,
-      })
-      .from(cmsContent)
-      .where(
-        and(
-          eq(cmsContent.collection, collection),
-          eq(cmsContent.status, 'published')
-        )
-      )
-      .orderBy(asc(cmsContent.sortOrder), desc(cmsContent.createdAt))
+    const rows = await unstable_cache(
+      () => fetchPublishedCollection(collection),
+      ['cms-published', collection],
+      {
+        tags: [CMS_CACHE_TAG, cmsCollectionTag(collection)],
+        revalidate: CMS_REVALIDATE_SECONDS,
+      }
+    )()
 
-    if (rows && rows.length > 0) {
-      // Deduplicate rows by collection and title to guarantee uniqueness
-      const seen = new Set<string>()
-      const uniqueRows = (rows as CmsRecord[]).filter((r) => {
-        const key = `${r.collection}::${r.title}`.toLowerCase().trim()
-        if (seen.has(key)) return false
-        seen.add(key)
-        return true
-      })
-      // Synchronize back to memory cache
-      uniqueRows.forEach((r) => repo.update(r.id, r))
-      return uniqueRows
+    if (rows.length > 0) {
+      // Synchronize back to the in-memory fallback used when the DB is offline.
+      rows.forEach((r) => repo.update(r.id, r))
+      return rows
     }
   } catch {
     // Database offline fallback to memory
@@ -654,6 +669,7 @@ export async function saveCmsImage(url: string) {
 }
 
 function revalidateAllRoutes() {
+  revalidateTag(CMS_CACHE_TAG)
   revalidatePath('/')
   revalidatePath('/about')
   revalidatePath('/projects')

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, type ReactNode } from 'react';
+import { Suspense, useEffect, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
@@ -21,7 +21,13 @@ interface LayoutShellProps {
 
 export default function LayoutShell({ children, site, isCmsHost = false }: LayoutShellProps) {
   const isCmsRoute = usePathname().startsWith('/admin')
-  const showCmsShell = isCmsHost || isCmsRoute
+  // The CMS host is read after mount so the shared layout stays free of request
+  // headers and the public pages can be cached and revalidated.
+  const [isCmsHostname, setIsCmsHostname] = useState(false)
+  useEffect(() => {
+    setIsCmsHostname(window.location.hostname === 'cms.ashokrimal.com.np')
+  }, [])
+  const showCmsShell = isCmsHost || isCmsHostname || isCmsRoute
   return (
     <DevModeProvider>
       <ErrorBoundary>

@@ -7,7 +7,7 @@ import { getPublishedCmsContent } from '@/app/actions/content-cms'
 import { toSlug } from '@/lib/slug'
 import { getPageCopy } from '@/lib/site-content'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 export const metadata: Metadata = {
   title: 'Journal & Notes - Ashok Rimal',

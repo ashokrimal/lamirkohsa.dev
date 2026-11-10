@@ -13,7 +13,7 @@ import {
   PageShell,
 } from '@/components/ui/PageChrome'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 async function findProject(slug: string) {
   const records = await getPublishedCmsContent('Projects')

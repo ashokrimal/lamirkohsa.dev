@@ -4,7 +4,7 @@ import { getPublishedCmsContent } from '@/app/actions/content-cms'
 import { mapProjectRecords } from '@/lib/projects'
 import { getPageCopy } from '@/lib/site-content'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 export const metadata: Metadata = {
   title: 'Projects & Systems - Ashok Rimal',

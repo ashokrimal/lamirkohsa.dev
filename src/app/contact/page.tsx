@@ -3,7 +3,7 @@ import ContactContent from '@/components/pages/ContactContent'
 import { getSocialLinks } from '@/app/actions/content-cms'
 import { getPageCopy, getSiteConfig } from '@/lib/site-content'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 export const metadata: Metadata = {
   title: 'Contact - Ashok Rimal',

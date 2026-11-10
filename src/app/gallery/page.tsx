@@ -6,7 +6,7 @@ import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy } from '@/lib/site-content'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 export const metadata: Metadata = {
   title: 'Photography Archive - Ashok Rimal',
