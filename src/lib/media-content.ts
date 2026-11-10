@@ -28,7 +28,7 @@ const DEFAULT_LABEL: Record<MediaKind, string> = {
 
 const DEFAULT_HREF: Record<MediaKind, string> = {
   music: '/media/music',
-  movies: '/movies',
+  movies: '/media/movies',
   anime: '/media/anime',
   manga: '/media/manga',
 }

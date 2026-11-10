@@ -19,7 +19,7 @@ export async function MediaGallerySection() {
       />
       <div className="media-gallery-carousel">
         {gallery.slice(0, 7).map((item) => (
-          <Link href="/gallery" className="media-gallery-card group" key={item.id}>
+          <Link href="/about/gallery" className="media-gallery-card group" key={item.id}>
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-black/[0.02]">
               <Image
                 src={item.imageUrl}
@@ -42,7 +42,7 @@ export async function MediaGallerySection() {
         />
       )}
       {gallery.length > 0 && (
-        <Link href="/gallery" className="button button-quiet media-gallery-view-all">
+        <Link href="/about/gallery" className="button button-quiet media-gallery-view-all">
           View All Photos <span aria-hidden="true">↗</span>
         </Link>
       )}

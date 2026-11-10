@@ -9,6 +9,9 @@ const nextConfig = {
     return [
       { source: '/anime', destination: '/media/anime', permanent: true },
       { source: '/music', destination: '/media/music', permanent: true },
+      { source: '/movies', destination: '/media/movies', permanent: true },
+      { source: '/gallery', destination: '/about/gallery', permanent: true },
+      { source: '/github', destination: '/about/github', permanent: true },
     ]
   },
   async headers() {

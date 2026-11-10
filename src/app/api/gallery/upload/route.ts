@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       uploaded.push(blob.url)
     }
 
-    revalidatePath('/gallery')
+    revalidatePath('/about/gallery')
     revalidatePath('/media')
     revalidatePath('/admin')
     return NextResponse.json({ urls: uploaded, count: uploaded.length })

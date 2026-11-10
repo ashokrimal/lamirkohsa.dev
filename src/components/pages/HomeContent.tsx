@@ -136,7 +136,7 @@ export default async function HomeContent() {
                   <PhotoCard key={item.id} item={item} />
                 ))}
                 previewCount={meta.gallery?.previewCount ?? PREVIEW_COUNT}
-                viewAllHref={meta.gallery?.href || '/gallery'}
+                viewAllHref={meta.gallery?.href || '/about/gallery'}
                 viewAllLabel={meta.gallery?.primaryLabel || 'View all photographs'}
                 ariaLabel="Photography collection"
               />

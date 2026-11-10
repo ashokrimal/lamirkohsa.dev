@@ -35,7 +35,7 @@ const siteSettings = [
       ],
       collections: [
         { href: '/blogs', label: 'Journal', kr: '글' },
-        { href: '/gallery', label: 'Gallery', kr: '사진' },
+        { href: '/about/gallery', label: 'Gallery', kr: '사진' },
         { href: '/media/music', label: 'Music archive', kr: '음악' },
         { href: '/media/anime', label: 'Anime library', kr: '애니' },
         { href: '/resume', label: 'Résumé', kr: '이력서' },
@@ -141,7 +141,7 @@ const siteSettings = [
           accent: 'perspective.',
           description:
             'Personal photographs capturing quiet geometry, architecture, and light across Nepal.',
-          href: '/gallery',
+          href: '/about/gallery',
           primaryLabel: 'View all photographs',
           previewCount: 5,
         },
@@ -396,7 +396,7 @@ const mediaCollections = [
     label: 'Movies',
     kr: '영화',
     description: 'Cinematic films watched, remembered, and worth revisiting.',
-    href: '/movies',
+    href: '/media/movies',
     previewCount: 5,
   },
   {

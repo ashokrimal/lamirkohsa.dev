@@ -51,7 +51,7 @@ const PRIMARY_NAV = [
 const HOMEPAGE_ORDER = ['gallery', 'about', 'projects', 'media', 'contact']
 
 const HOMEPAGE_SECTIONS = {
-  gallery: { previewCount: 5, href: '/gallery' },
+  gallery: { previewCount: 5, href: '/about/gallery' },
   about: { previewCount: 5 },
   projects: { previewCount: 5, href: '/projects' },
   media: { previewCount: 5, href: '/media' },
@@ -60,7 +60,7 @@ const HOMEPAGE_SECTIONS = {
 
 const MEDIA_COLLECTIONS = [
   { key: 'music', label: 'Music', kr: '음악', href: '/media/music', number: '01' },
-  { key: 'movies', label: 'Movies', kr: '영화', href: '/movies', number: '02' },
+  { key: 'movies', label: 'Movies', kr: '영화', href: '/media/movies', number: '02' },
   { key: 'anime', label: 'Anime', kr: '애니', href: '/media/anime', number: '03' },
   { key: 'manga', label: 'Manga', kr: '만화', href: '/media/manga', number: '04' },
 ]

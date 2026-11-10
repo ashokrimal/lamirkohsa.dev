@@ -81,5 +81,5 @@ export async function importMovieExport(formData: FormData) {
   if (!(file instanceof File) || !/\.csv$/i.test(file.name)) throw new Error('Choose an IMDb CSV export.')
   const rows = parseCsv(await file.text()).map((item) => ({ userId, collection: 'Movies', title: String(item.Title ?? item.title ?? '').trim(), slug: String(item.Const ?? item.title ?? item.Title ?? crypto.randomUUID()).toLowerCase().replace(/[^a-z0-9]+/g, '-'), payload: { description: item['Your Rating'] ? `IMDb rating: ${item['Your Rating']}` : 'IMDb export', source: 'IMDb', year: item.Year ?? '' }, status: 'published', sortOrder: 0 })).filter((item) => item.title)
   if (!rows.length) throw new Error('No movies were found in this CSV export.')
-  await db.delete(cmsContent).where(and(eq(cmsContent.userId, userId), eq(cmsContent.collection, 'Movies'))); await db.insert(cmsContent).values(rows); revalidatePath('/admin'); revalidateTag(CMS_CACHE_TAG); revalidatePath('/media'); revalidatePath('/movies'); return { imported: rows.length }
+  await db.delete(cmsContent).where(and(eq(cmsContent.userId, userId), eq(cmsContent.collection, 'Movies'))); await db.insert(cmsContent).values(rows); revalidatePath('/admin'); revalidateTag(CMS_CACHE_TAG); revalidatePath('/media'); revalidatePath('/media/movies'); return { imported: rows.length }
 }

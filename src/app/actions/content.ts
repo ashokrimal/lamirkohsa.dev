@@ -59,7 +59,7 @@ export async function createGalleryItem(formData: FormData) {
   } catch (err) {
     console.warn('[Gallery] Insert simulated/fallback:', err)
   }
-  revalidatePath('/gallery')
+  revalidatePath('/about/gallery')
   revalidatePath('/admin')
 }
 
@@ -96,6 +96,6 @@ export async function deleteGalleryItem(id: number) {
   } catch (err) {
     console.warn('[Gallery] Delete simulated/fallback:', err)
   }
-  revalidatePath('/gallery')
+  revalidatePath('/about/gallery')
   revalidatePath('/admin')
 }

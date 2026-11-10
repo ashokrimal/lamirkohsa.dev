@@ -357,7 +357,7 @@ export default async function MediaDetailPage({ category }: { category: Category
     <DetailShell
       copy={copy}
     >
-      <Link className="apple-btn-primary" href="/gallery">
+      <Link className="apple-btn-primary" href="/about/gallery">
         Open all photography
       </Link>
     </DetailShell>
