@@ -1,14 +1,18 @@
 import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getAdminContent } from '@/app/actions/content'
 import { getSettingsForAdmin } from '@/app/actions/settings'
 import AdminWorkspace from '@/components/admin/AdminWorkspace'
-import AdminSignIn from '@/components/admin/AdminSignIn'
-import { hasAdminSession, isAdminAuthConfigured } from '@/lib/admin-auth'
+import { getAdminIdentity, hasAdminSession } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminPage({ searchParams }: { searchParams?: { section?: string } }) {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams?: { section?: string; collection?: string }
+}) {
   const requestHeaders = await headers()
   let session = null
   try {
@@ -17,11 +21,18 @@ export default async function AdminPage({ searchParams }: { searchParams?: { sec
     // Auth or database unavailable; the admin cookie below still decides access.
   }
 
-  // The studio is owner-only: a better-auth session or a valid admin session
-  // cookie. There is no demo mode and no unauthenticated fallback.
+  const identity = await getAdminIdentity()
+  const ownerEmail = identity?.email?.toLowerCase()
+
+  // Only the configured owner is allowed in: a better-auth session for any other
+  // address is treated as signed out, and the cookie must carry a valid signature.
+  const betterAuthOwner = Boolean(
+    session?.user?.email && ownerEmail && session.user.email.toLowerCase() === ownerEmail,
+  )
   const adminSession = await hasAdminSession()
-  if (!session?.user && !adminSession) {
-    return <AdminSignIn configured={isAdminAuthConfigured()} />
+
+  if (!betterAuthOwner && !adminSession) {
+    redirect('/admin/sign-in')
   }
 
   const content = await getAdminContent()
@@ -31,15 +42,13 @@ export default async function AdminPage({ searchParams }: { searchParams?: { sec
   return (
     <AdminWorkspace
       section={section}
+      initialCategory={searchParams?.collection}
       content={content}
       settings={settings}
-      isDemoSession={false}
-      user={
-        session?.user ?? {
-          name: 'Site owner',
-          email: adminSession ? process.env.ADMIN_EMAIL ?? '' : '',
-        }
-      }
+      user={{
+        name: session?.user?.name ?? 'Site owner',
+        email: identity?.email ?? session?.user?.email ?? '',
+      }}
     />
   )
 }

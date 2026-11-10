@@ -9,7 +9,7 @@ import {
 
 /** Signs the admin in. Credentials are compared here, never in the browser. */
 export async function POST(request: NextRequest) {
-  if (!isAdminAuthConfigured()) {
+  if (!(await isAdminAuthConfigured())) {
     return NextResponse.json(
       {
         error:
@@ -29,11 +29,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
 
-  if (!verifyAdminCredentials(email, password)) {
+  if (!(await verifyAdminCredentials(email, password))) {
     return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 })
   }
 
-  const token = createAdminSessionToken()
+  const token = await createAdminSessionToken()
   if (!token) {
     return NextResponse.json({ error: 'Admin sign-in is not configured.' }, { status: 503 })
   }

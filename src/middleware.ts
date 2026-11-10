@@ -11,6 +11,29 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 308)
   }
 
+  // The studio is owner-only. Page components validate the signed cookie; this
+  // early check turns "not signed in" into a real HTTP redirect instead of a
+  // streamed client redirect, and keeps signed-out visitors off the page shell.
+  const { pathname } = request.nextUrl
+  const hasAdminCookie = Boolean(request.cookies.get('admin_session')?.value)
+  const hasBetterAuthCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.includes('better-auth.session_token'))
+
+  if (pathname === '/admin/sign-in' && (hasAdminCookie || hasBetterAuthCookie)) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/admin'
+    return NextResponse.redirect(url, 307)
+  }
+
+  if (pathname.startsWith('/admin') && pathname !== '/admin/sign-in' && pathname !== '/admin/sign-out') {
+    if (!hasAdminCookie && !hasBetterAuthCookie) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/admin/sign-in'
+      return NextResponse.redirect(url, 307)
+    }
+  }
+
   try {
     return NextResponse.next();
   } catch (error) {
@@ -29,5 +52,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/:path*', '/about/:path*'],
+  matcher: ['/api/:path*', '/about/:path*', '/admin/:path*'],
 };

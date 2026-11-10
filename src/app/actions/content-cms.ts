@@ -6,7 +6,7 @@ import { cmsContent } from '@/lib/db/schema'
 import { and, asc, desc, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
-import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
+import { getAdminActorId } from '@/lib/admin-auth'
 import { CMS_CACHE_TAG, CMS_REVALIDATE_SECONDS, cmsCollectionTag } from '@/lib/cms-cache'
 
 export interface CmsRecord {
@@ -27,14 +27,9 @@ export interface CmsRecord {
  * better-auth session or a valid admin session cookie. Anything else is rejected.
  */
 async function requireUser(): Promise<string> {
-  try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (session?.user?.id) return session.user.id
-  } catch {
-    // Fall through to the admin session cookie
-  }
-  if (await hasAdminSession()) return ADMIN_OWNER_ID
-  throw new Error('Unauthorized: sign in to the admin studio first.')
+  const actorId = await getAdminActorId()
+  if (!actorId) throw new Error('Unauthorized: sign in to the admin studio first.')
+  return actorId
 }
 
 // Master Initial CMS Data Set (Source of Truth for initial seed)
@@ -432,6 +427,17 @@ export async function createCmsContent(formData: FormData) {
   if (imageUrl) payload.imageUrl = String(imageUrl).trim()
   const category = formData.get('category')
   if (category) payload.category = String(category).trim()
+  for (const field of ['live', 'github', 'summary', 'altText', 'period', 'completionDate']) {
+    const value = formData.get(field)
+    if (typeof value === 'string' && value.trim()) payload[field] = value.trim()
+  }
+  const techStack = formData.get('techStack')
+  if (typeof techStack === 'string' && techStack.trim()) {
+    payload.techStack = techStack
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
   const status = String(formData.get('status') || 'published')
 
   const repo = getMemoryRepo()

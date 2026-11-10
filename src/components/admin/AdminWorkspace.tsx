@@ -26,7 +26,6 @@ import {
   Play,
   Pause,
   ArrowRight,
-  TrendingUp,
   Layers,
   Globe,
   Mail,
@@ -37,11 +36,13 @@ import {
 } from 'lucide-react'
 
 import { CmsToastProvider, useCmsToast } from '@/components/admin/ui/CmsToast'
+import ImageUploadField from '@/components/admin/ImageUploadField'
+import ContentSetupGuide from '@/components/admin/ContentSetupGuide'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
 import { CmsStatCard, CmsSectionCard } from '@/components/admin/ui/CmsCard'
 import { CmsTable, type Column } from '@/components/admin/ui/CmsTable'
 import { CmsTabs } from '@/components/admin/ui/CmsTabs'
-import { CmsTrafficChart, CmsDistributionChart, type DataPoint } from '@/components/admin/ui/CmsChart'
+import { CmsDistributionChart } from '@/components/admin/ui/CmsChart'
 import { CmsGitHubStats } from '@/components/admin/ui/CmsGitHubStats'
 import {
   CmsFormField,
@@ -134,34 +135,30 @@ function parseStructuredPayload(text: string): Record<string, unknown> | null {
   }
 }
 
+interface InboxItem {
+  id: string
+  fromEmail: string
+  subject: string
+  textBody?: string | null
+  receivedAt: string | Date
+  readAt?: string | Date | null
+}
+
 interface AdminWorkspaceProps {
   section: string
+  initialCategory?: string
   content: {
     gallery: any[]
     projects: any[]
     music: any[]
     cms: any[]
+    messages?: InboxItem[]
   }
   settings: any
-  isDemoSession?: boolean
   user?: { name?: string | null; email?: string | null }
 }
 
-const sampleTrafficData: DataPoint[] = [
-  { label: 'Oct 09', value: 38, secondary: 24 },
-  { label: 'Oct 12', value: 45, secondary: 29 },
-  { label: 'Oct 15', value: 52, secondary: 36 },
-  { label: 'Oct 18', value: 48, secondary: 31 },
-  { label: 'Oct 21', value: 65, secondary: 42 },
-  { label: 'Oct 24', value: 84, secondary: 56 },
-  { label: 'Oct 27', value: 78, secondary: 51 },
-  { label: 'Oct 30', value: 96, secondary: 64 },
-  { label: 'Nov 02', value: 112, secondary: 75 },
-  { label: 'Nov 05', value: 128, secondary: 88 },
-  { label: 'Nov 08', value: 142, secondary: 94 },
-]
-
-function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWorkspaceProps) {
+function WorkspaceInner({ section, initialCategory, content, settings }: AdminWorkspaceProps) {
   const { toast } = useCmsToast()
 
   // Local state initialized with server data for optimistic updates
@@ -173,12 +170,11 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
 
   // View state
   const [galleryViewMode, setGalleryViewMode] = useState<'grid' | 'table'>('grid')
-  const [activeContentCategory, setActiveContentCategory] = useState('ALL')
+  const [activeContentCategory, setActiveContentCategory] = useState(initialCategory || 'ALL')
   const [nowPlayingTrackId, setNowPlayingTrackId] = useState<number | null>(null)
 
   // Modals state
   const [createRecordModalOpen, setCreateRecordModalOpen] = useState(false)
-  const [createProjectModalOpen, setCreateProjectModalOpen] = useState(false)
   const [createGalleryModalOpen, setCreateGalleryModalOpen] = useState(false)
   const [createMusicModalOpen, setCreateMusicModalOpen] = useState(false)
   const [editingRecord, setEditingRecord] = useState<any | null>(null)
@@ -193,39 +189,22 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
   const [newCollection, setNewCollection] = useState('Projects')
   const [newDescription, setNewDescription] = useState('')
   const [newImageUrl, setNewImageUrl] = useState('')
+  const [newGalleryImage, setNewGalleryImage] = useState('')
+  const [newCoverUrl, setNewCoverUrl] = useState('')
   const [newStatus, setNewStatus] = useState('published')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Sample Inbox Messages
-  const [inboxMessages, setInboxMessages] = useState([
-    {
-      id: 'e36bb2e0-1280-4691-b6a2-d13dc25681a3',
-      name: 'Shishir Pandey',
-      email: 'shishirpandey085@gmail.com',
-      subject: 'Project Collaboration',
-      message: 'We want team members for our Project entitled "DSMS", a departmental store management system. Interested in leading the frontend?',
-      createdAt: '2025-11-06T08:28:00.742Z',
-      read: false,
-    },
-    {
-      id: '8ec016ed-d7f4-41ee-9839-107ecca53775',
-      name: 'Bishal Shrestha',
-      email: 'bishal.shrestha@example.org',
-      subject: 'Internship Opportunity at TechWorks',
-      message: 'Hi Ashok, we reviewed your KaryaMantra and BuyNepal projects. We are impressed by the attention to typography and performance.',
-      createdAt: '2025-11-05T14:12:10.000Z',
-      read: true,
-    },
-  ])
+  // Real messages only; an empty inbox stays empty.
+  const [inboxMessages] = useState<InboxItem[]>(content.messages ?? [])
 
   // Content distribution metrics
   const distributionItems = useMemo(
     () => [
-      { label: 'Projects & Work', count: projectsList.length || 4, color: '#0d9488' },
-      { label: 'Gallery Artworks', count: galleryItems.length || 4, color: '#0284c7' },
-      { label: 'Music Tracks', count: musicTracks.length || 3, color: '#8b5cf6' },
-      { label: 'Career & Profile', count: cmsRecords.filter((r) => r.collection === 'Experience' || r.collection === 'Education').length || 4, color: '#f59e0b' },
-      { label: 'Skills & Journal', count: cmsRecords.filter((r) => r.collection === 'Skills' || r.collection === 'Blogs').length || 9, color: '#ec4899' },
+      { label: 'Projects & Work', count: cmsRecords.filter((r) => r.collection === 'Projects').length, color: '#0d9488' },
+      { label: 'Gallery Artworks', count: galleryItems.length, color: '#0284c7' },
+      { label: 'Music Tracks', count: musicTracks.length, color: '#8b5cf6' },
+      { label: 'Career & Profile', count: cmsRecords.filter((r) => r.collection === 'Experience' || r.collection === 'Education').length, color: '#f59e0b' },
+      { label: 'Skills & Journal', count: cmsRecords.filter((r) => r.collection === 'Skills' || r.collection === 'Blogs').length, color: '#ec4899' },
     ],
     [cmsRecords, galleryItems, musicTracks, projectsList]
   )
@@ -246,6 +225,17 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
   const handleCreateCmsRecord = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newTitle.trim()) return
+    const form = new FormData(e.currentTarget as HTMLFormElement)
+    const projectFields = {
+      category: String(form.get('category') || '').trim(),
+      techStack: String(form.get('techStack') || '')
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean),
+      live: String(form.get('live') || '').trim(),
+      github: String(form.get('github') || '').trim(),
+      altText: String(form.get('altText') || '').trim(),
+    }
     setIsSubmitting(true)
 
     const optimisticId = Date.now()
@@ -255,7 +245,15 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
       title: newTitle.trim(),
       payload: isStructuredCollection(newCollection)
         ? parseStructuredPayload(newDescription) ?? { description: newDescription.trim() }
-        : { description: newDescription.trim(), imageUrl: newImageUrl.trim() },
+        : {
+            description: newDescription.trim(),
+            imageUrl: newImageUrl.trim(),
+            ...(newCollection === 'Projects' && projectFields.category ? { category: projectFields.category } : {}),
+            ...(newCollection === 'Projects' && projectFields.techStack.length ? { techStack: projectFields.techStack } : {}),
+            ...(newCollection === 'Projects' && projectFields.live ? { live: projectFields.live } : {}),
+            ...(newCollection === 'Projects' && projectFields.github ? { github: projectFields.github } : {}),
+            ...(projectFields.altText ? { altText: projectFields.altText } : {}),
+          },
       status: newStatus,
     }
 
@@ -282,6 +280,11 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
       formData.set('title', newTitle)
       formData.set('payload', newDescription)
       formData.set('imageUrl', newImageUrl)
+      formData.set('category', projectFields.category)
+      formData.set('techStack', projectFields.techStack.join(', '))
+      formData.set('live', projectFields.live)
+      formData.set('github', projectFields.github)
+      formData.set('altText', projectFields.altText)
       formData.set('status', newStatus)
       if (newKey.trim()) formData.set('key', newKey.trim())
       await createCmsContent(formData)
@@ -374,9 +377,10 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
   const handleCreateGalleryItem = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const form = new FormData(e.currentTarget)
-    const title = String(form.get('title') || 'Untitled Frame').trim()
+    const title = String(form.get('title') || '').trim()
     const category = String(form.get('category') || 'Photography').trim()
-    const imageUrl = String(form.get('imageUrl') || '').trim() || 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&auto=format&fit=crop&q=80'
+    const imageUrl = String(form.get('imageUrl') || '').trim()
+    if (!title || !imageUrl) return
 
     const newItem = {
       id: Date.now(),
@@ -389,6 +393,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
 
     setGalleryItems((prev) => [newItem as any, ...prev])
     setCreateGalleryModalOpen(false)
+    setNewGalleryImage('')
     toast({
       title: 'Artwork Published',
       description: `"${title}" added to gallery successfully.`,
@@ -411,15 +416,16 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
       id: Date.now(),
       title,
       artist,
-      album: String(form.get('album') || 'Single'),
-      coverUrl: String(form.get('coverUrl') || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80'),
-      audioUrl: String(form.get('audioUrl') || ''),
+      album: String(form.get('album') || '').trim() || null,
+      coverUrl: String(form.get('coverUrl') || '').trim() || null,
+      audioUrl: String(form.get('audioUrl') || '').trim(),
       published: true,
       sortOrder: musicTracks.length,
     }
 
     setMusicTracks((prev) => [newTrack as any, ...prev])
     setCreateMusicModalOpen(false)
+    setNewCoverUrl('')
     toast({
       title: 'Track Added',
       description: `"${title}" by ${artist || 'Unknown'} added to playlist.`,
@@ -565,19 +571,41 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
     return cmsRecords.filter((r) => r.collection === activeContentCategory)
   }, [cmsRecords, activeContentCategory])
 
+  const openCreateRecord = (collection = 'Projects') => {
+    setNewCollection(collection)
+    setCreateRecordModalOpen(true)
+  }
+
+  const openGalleryUpload = () => {
+    setNewGalleryImage('')
+    setCreateGalleryModalOpen(true)
+  }
+
+  const openMusicUpload = () => {
+    setNewCoverUrl('')
+    setCreateMusicModalOpen(true)
+  }
+
   return (
     <div className="space-y-6">
-      {/* Top Banner / Environment Indicator if Demo */}
-      {isDemoSession && (
-        <div className="p-3 bg-teal-50/90 border border-teal-200/80 rounded-xl flex items-center justify-between text-xs text-teal-950">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />
-            <span className="font-semibold">Interactive Studio Workspace</span>
-            <span className="hidden sm:inline text-teal-700">· Changes update live in preview</span>
+      {/* SECTION: CONTENT SETUP */}
+      {section === 'setup' && (
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">Content setup</h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Every area the public site reads, grouped and linked to its editor.
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-teal-700">Ashok Rimal Admin Session</span>
-          </div>
+          <ContentSetupGuide
+            records={cmsRecords}
+            galleryCount={galleryItems.length}
+            projectCount={cmsRecords.filter((r) => r.collection === 'Projects').length}
+            musicCount={musicTracks.length}
+            onNewRecord={openCreateRecord}
+            onNewGallery={openGalleryUpload}
+            onNewMusic={openMusicUpload}
+          />
         </div>
       )}
 
@@ -595,9 +623,22 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
               </p>
             </div>
             <div className="flex items-center gap-2.5">
+              <Link
+                href="/admin?section=setup"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800 hover:bg-teal-100 transition-colors"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Content setup</span>
+              </Link>
+              <Link
+                href="/admin/account"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <span>Account</span>
+              </Link>
               <button
                 type="button"
-                onClick={() => setCreateRecordModalOpen(true)}
+                onClick={() => openCreateRecord('Projects')}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -620,29 +661,25 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             <CmsStatCard
               label="Content Records"
               value={cmsRecords.length}
-              change={{ value: '+12%', trend: 'up' }}
-              subtext="Indexed across 8 collections"
+              subtext={`${new Set(cmsRecords.map((r) => r.collection)).size} collections in use`}
               icon={<FileText className="w-4 h-4" />}
             />
             <CmsStatCard
               label="Visual Artworks"
               value={galleryItems.length}
-              change={{ value: '+2 new', trend: 'up' }}
-              subtext="High-res gallery frames"
+              subtext="Gallery photos"
               icon={<ImageIcon className="w-4 h-4" />}
             />
             <CmsStatCard
               label="Music Tracks"
               value={musicTracks.length}
-              change={{ value: 'Streaming', trend: 'neutral' }}
-              subtext="Synced audio selections"
+              subtext="Tracks on the media shelf"
               icon={<Music className="w-4 h-4" />}
             />
             <CmsStatCard
               label="Inquiries"
               value={inboxMessages.length}
-              change={{ value: '1 new', trend: 'up' }}
-              subtext="Collaboration requests"
+              subtext="Messages from the contact form"
               icon={<Inbox className="w-4 h-4" />}
             />
           </div>
@@ -651,15 +688,27 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <CmsSectionCard
-                title="Visitor Traffic & Page Impressions"
-                description="Interactive 30-day overview of portfolio reach."
+                title="Content coverage"
+                description="What the public site has to show right now. No analytics provider is connected."
                 action={
-                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                    +24% vs last month
-                  </span>
+                  <Link href="/admin?section=setup" className="text-xs font-semibold text-teal-700 hover:underline">
+                    Open checklist →
+                  </Link>
                 }
               >
-                <CmsTrafficChart data={sampleTrafficData} height={200} />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-2">
+                  {[
+                    { label: 'CMS records', value: cmsRecords.length },
+                    { label: 'Photos', value: galleryItems.length },
+                    { label: 'Projects', value: cmsRecords.filter((r) => r.collection === 'Projects').length },
+                    { label: 'Tracks', value: musicTracks.length },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+                      <p className="text-lg font-bold text-slate-900">{item.value}</p>
+                      <p className="text-[11px] text-slate-500">{item.label}</p>
+                    </div>
+                  ))}
+                </div>
               </CmsSectionCard>
             </div>
 
@@ -677,7 +726,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <button
               type="button"
-              onClick={() => setCreateRecordModalOpen(true)}
+              onClick={() => openCreateRecord('Projects')}
               className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
             >
               <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
@@ -689,7 +738,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
 
             <button
               type="button"
-              onClick={() => setCreateGalleryModalOpen(true)}
+              onClick={openGalleryUpload}
               className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
             >
               <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
@@ -701,7 +750,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
 
             <button
               type="button"
-              onClick={() => setCreateMusicModalOpen(true)}
+              onClick={openMusicUpload}
               className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
             >
               <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
@@ -724,7 +773,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
           </div>
 
           {/* Real-Time GitHub Activity Telemetry */}
-          <CmsGitHubStats initialUsername={profileSettingsState?.githubUsername || 'ashokrimal'} />
+          <CmsGitHubStats initialUsername={profileSettingsState?.githubUsername || ''} />
 
           {/* Recent Records Data Table */}
           <CmsSectionCard
@@ -766,7 +815,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             </div>
             <button
               type="button"
-              onClick={() => setCreateRecordModalOpen(true)}
+              onClick={() => openCreateRecord('Projects')}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -839,7 +888,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             </div>
             <button
               type="button"
-              onClick={() => setCreateProjectModalOpen(true)}
+              onClick={() => openCreateRecord('Projects')}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -949,7 +998,10 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
               </div>
               <button
                 type="button"
-                onClick={() => setCreateGalleryModalOpen(true)}
+                onClick={() => {
+                  setNewGalleryImage('')
+                  setCreateGalleryModalOpen(true)
+                }}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -983,7 +1035,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                   </div>
                   <div className="p-3.5 flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-semibold text-slate-900">{item.title || 'Untitled frame'}</p>
+                      <p className="text-xs font-semibold text-slate-900">{item.title || 'Gallery photo'}</p>
                       <p className="text-[11px] text-slate-500">{item.category}</p>
                     </div>
                     <button
@@ -1025,7 +1077,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                           />
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900">{row.title || 'Untitled'}</p>
+                          <p className="font-semibold text-slate-900">{row.title || 'Gallery photo'}</p>
                           <p className="text-[11px] text-slate-500">{row.description || 'No description'}</p>
                         </div>
                       </div>
@@ -1176,30 +1228,30 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                   key={msg.id}
                   onClick={() => setInboxMessageModal(msg)}
                   className={`p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-slate-50/80 transition-colors ${
-                    !msg.read ? 'bg-teal-50/20' : ''
+                    !msg.readAt ? 'bg-teal-50/20' : ''
                   }`}
                 >
                   <div className="flex items-start gap-3 min-w-0">
                     <div
                       className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                        !msg.read ? 'bg-teal-600 ring-2 ring-teal-200' : 'bg-slate-300'
+                        !msg.readAt ? 'bg-teal-600 ring-2 ring-teal-200' : 'bg-slate-300'
                       }`}
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-900">{msg.name}</span>
-                        <span className="text-[11px] text-slate-400">({msg.email})</span>
+                        <span className="text-xs font-bold text-slate-900">{msg.fromEmail}</span>
+                        
                       </div>
                       <p className="text-xs font-semibold text-slate-800 mt-0.5 truncate">
                         {msg.subject}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-1">{msg.message}</p>
+                      <p className="text-xs text-slate-500 mt-1 line-clamp-1">{msg.textBody}</p>
                     </div>
                   </div>
 
                   <div className="shrink-0 text-right">
                     <time className="text-[11px] text-slate-400">
-                      {new Date(msg.createdAt).toLocaleDateString()}
+                      {new Date(msg.receivedAt).toLocaleDateString()}
                     </time>
                     <div className="mt-1">
                       <span className="text-[10px] text-teal-700 font-medium hover:underline">
@@ -1235,7 +1287,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                 <CmsFormField label="GitHub Username" hint="Repos & commit streaks">
                   <CmsInput
                     name="githubUsername"
-                    defaultValue={profileSettingsState?.githubUsername || 'ashokrimal'}
+                    defaultValue={profileSettingsState?.githubUsername || ''}
                     placeholder="e.g. ashokrimal"
                   />
                 </CmsFormField>
@@ -1243,7 +1295,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                 <CmsFormField label="Last.fm Username" hint="Scrobble history">
                   <CmsInput
                     name="lastfmUsername"
-                    defaultValue={profileSettingsState?.lastfmUsername || 'lamirkohsa'}
+                    defaultValue={profileSettingsState?.lastfmUsername || ''}
                     placeholder="e.g. lamirkohsa"
                   />
                 </CmsFormField>
@@ -1251,7 +1303,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                 <CmsFormField label="ListenBrainz Username" hint="Now playing tracking">
                   <CmsInput
                     name="listenbrainzUsername"
-                    defaultValue={profileSettingsState?.listenbrainzUsername || 'ashokrimal'}
+                    defaultValue={profileSettingsState?.listenbrainzUsername || ''}
                     placeholder="e.g. ashokrimal"
                   />
                 </CmsFormField>
@@ -1259,7 +1311,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                 <CmsFormField label="Spotify Profile URL" hint="Public profile link">
                   <CmsInput
                     name="spotifyProfileUrl"
-                    defaultValue={profileSettingsState?.spotifyProfileUrl || 'https://open.spotify.com/user/lamirkohsa'}
+                    defaultValue={profileSettingsState?.spotifyProfileUrl || ''}
                     placeholder="https://open.spotify.com/user/..."
                   />
                 </CmsFormField>
@@ -1267,11 +1319,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                 <CmsFormField label="MyAnimeList Usernames" hint="Comma-separated">
                   <CmsInput
                     name="malUsernames"
-                    defaultValue={
-                      profileSettingsState?.malUsernames?.join(', ') ||
-                      profileSettingsState?.malUsername ||
-                      'ashokrimal'
-                    }
+                    defaultValue={profileSettingsState?.malUsernames?.join(', ') || profileSettingsState?.malUsername || ''}
                     placeholder="e.g. ashokrimal, user2"
                   />
                 </CmsFormField>
@@ -1279,7 +1327,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                 <CmsFormField label="AniList Usernames" hint="Comma-separated">
                   <CmsInput
                     name="anilistUsernames"
-                    defaultValue={profileSettingsState?.anilistUsernames?.join(', ') || 'ashokrimal'}
+                    defaultValue={profileSettingsState?.anilistUsernames?.join(', ') || ''}
                     placeholder="e.g. ashokrimal"
                   />
                 </CmsFormField>
@@ -1292,54 +1340,6 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
               </div>
             </CmsSectionCard>
           </form>
-        </div>
-      )}
-
-      {/* SECTION: ANALYTICS */}
-      {section === 'analytics' && (
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">
-              Traffic &amp; Interaction Analytics
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Audience trends, referrer breakdown, and device telemetry.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <CmsSectionCard title="30-Day Reach Trend">
-                <CmsTrafficChart data={sampleTrafficData} height={220} />
-              </CmsSectionCard>
-            </div>
-
-            <div>
-              <CmsSectionCard title="Referrer Sources">
-                <div className="space-y-3 text-xs">
-                  <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
-                    <span className="text-slate-600 font-medium">GitHub / Repositories</span>
-                    <span className="font-bold text-slate-900">46%</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
-                    <span className="text-slate-600 font-medium">LinkedIn Profile</span>
-                    <span className="font-bold text-slate-900">28%</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
-                    <span className="text-slate-600 font-medium">Direct / URL</span>
-                    <span className="font-bold text-slate-900">18%</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5">
-                    <span className="text-slate-600 font-medium">Google Search</span>
-                    <span className="font-bold text-slate-900">8%</span>
-                  </div>
-                </div>
-              </CmsSectionCard>
-            </div>
-          </div>
-
-          {/* Real-Time GitHub Developer Statistics */}
-          <CmsGitHubStats initialUsername={profileSettingsState?.githubUsername || 'ashokrimal'} />
         </div>
       )}
 
@@ -1419,12 +1419,32 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             />
           </CmsFormField>
 
-          <CmsFormField label="Media / Image URL" hint="Optional">
-            <CmsInput
-              value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
-              placeholder="https://images.unsplash.com/..."
-            />
+          <ImageUploadField
+            label="Media / Image"
+            value={newImageUrl}
+            onChange={setNewImageUrl}
+            hint="Optional. Upload from your device or paste an image URL."
+          />
+
+          {newCollection === 'Projects' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CmsFormField label="Category" hint="e.g. Web app">
+                <CmsInput name="category" placeholder="e.g. Full-stack" />
+              </CmsFormField>
+              <CmsFormField label="Tech stack" hint="Comma-separated">
+                <CmsInput name="techStack" placeholder="Next.js, Postgres, Tailwind" />
+              </CmsFormField>
+              <CmsFormField label="Live URL">
+                <CmsInput name="live" type="url" placeholder="https://…" />
+              </CmsFormField>
+              <CmsFormField label="Source URL">
+                <CmsInput name="github" type="url" placeholder="https://github.com/…" />
+              </CmsFormField>
+            </div>
+          )}
+
+          <CmsFormField label="Image alt text" hint="Describes the image for screen readers">
+            <CmsInput name="altText" placeholder="A short description of the image" />
           </CmsFormField>
 
           <CmsFormField label="Publishing Status">
@@ -1543,14 +1563,12 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             />
           </CmsFormField>
 
-          <CmsFormField label="Image URL" required>
-            <CmsInput
-              name="imageUrl"
-              placeholder="https://images.unsplash.com/..."
-              defaultValue="https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&auto=format&fit=crop&q=80"
-              required
-            />
-          </CmsFormField>
+          <ImageUploadField
+            label="Image"
+            name="imageUrl"
+            value={newGalleryImage}
+            onChange={setNewGalleryImage}
+          />
 
           <CmsFormField label="Description / Caption">
             <CmsTextarea name="description" placeholder="Short story behind this frame..." rows={3} />
@@ -1581,21 +1599,25 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             <CmsInput name="title" placeholder="e.g. Chamber of Reflection" required />
           </CmsFormField>
 
-          <CmsFormField label="Artist">
-            <CmsInput name="artist" placeholder="e.g. Mac DeMarco" />
+          <CmsFormField label="Artist" required>
+            <CmsInput name="artist" placeholder="e.g. Mac DeMarco" required />
           </CmsFormField>
 
           <CmsFormField label="Album">
             <CmsInput name="album" placeholder="e.g. Salad Days" />
           </CmsFormField>
 
-          <CmsFormField label="Cover Art URL">
-            <CmsInput
-              name="coverUrl"
-              placeholder="https://images.unsplash.com/..."
-              defaultValue="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80"
-            />
+          <CmsFormField label="Audio URL" required>
+            <CmsInput name="audioUrl" type="url" placeholder="https://…/track.mp3" required />
           </CmsFormField>
+
+          <ImageUploadField
+            label="Cover art"
+            name="coverUrl"
+            value={newCoverUrl}
+            onChange={setNewCoverUrl}
+            hint="Optional. Upload cover art or paste an image URL."
+          />
 
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
             <button
@@ -1647,19 +1669,19 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
         isOpen={Boolean(inboxMessageModal)}
         onClose={() => setInboxMessageModal(null)}
         title={inboxMessageModal?.subject || 'Message'}
-        description={`From: ${inboxMessageModal?.name} <${inboxMessageModal?.email}>`}
+        description={`From: ${inboxMessageModal?.fromEmail ?? ''}`}
       >
         {inboxMessageModal && (
           <div className="space-y-4 text-xs">
             <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-xl leading-relaxed text-slate-700 whitespace-pre-wrap">
-              {inboxMessageModal.message}
+              {inboxMessageModal.textBody}
             </div>
             <div className="flex items-center justify-between pt-2">
               <span className="text-slate-400 text-[11px]">
-                Received {new Date(inboxMessageModal.createdAt).toLocaleString()}
+                Received {new Date(inboxMessageModal.receivedAt).toLocaleString()}
               </span>
               <a
-                href={`mailto:${inboxMessageModal.email}?subject=${encodeURIComponent(
+                href={`mailto:${inboxMessageModal.fromEmail}?subject=${encodeURIComponent(
                   `Re: ${inboxMessageModal.subject}`
                 )}`}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse font-semibold hover:bg-teal-700 transition-colors"

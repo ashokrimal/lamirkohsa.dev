@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { pool } from '@/lib/db'
+import { isAdminAuthConfigured } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,9 +20,7 @@ export async function GET() {
     ),
     betterAuthSecret: Boolean(process.env.BETTER_AUTH_SECRET),
     betterAuthUrl: Boolean(process.env.BETTER_AUTH_URL),
-    adminSignIn: Boolean(
-      process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD && process.env.ADMIN_SESSION_SECRET,
-    ),
+    adminSignIn: await isAdminAuthConfigured(),
     email: Boolean(process.env.RESEND_API_KEY),
     contactRecipient: Boolean(process.env.CONTACT_TO_EMAIL || process.env.ADMIN_EMAIL),
     blobStorage: Boolean(process.env.BLOB_READ_WRITE_TOKEN),

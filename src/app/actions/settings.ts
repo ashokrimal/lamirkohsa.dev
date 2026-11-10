@@ -6,17 +6,12 @@ import { profileSettings } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
-import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
+import { getAdminActorId } from '@/lib/admin-auth'
 
 async function getAdminUser(): Promise<string> {
-  try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (session?.user?.id) return session.user.id
-  } catch {
-    // Fall through to the admin session cookie
-  }
-  if (await hasAdminSession()) return ADMIN_OWNER_ID
-  throw new Error('Unauthorized: sign in to the admin studio first.')
+  const actorId = await getAdminActorId()
+  if (!actorId) throw new Error('Unauthorized: sign in to the admin studio first.')
+  return actorId
 }
 
 export async function getSettingsForAdmin() {

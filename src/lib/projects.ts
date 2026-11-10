@@ -19,6 +19,8 @@ export interface ProjectEntry {
   completionDate?: string
   period?: string
   status?: string
+  summary?: string
+  description?: string
   challenge?: string
   solution?: string
   phases: ProjectPhase[]
@@ -53,6 +55,8 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
     completionDate: optionalString(payload.completionDate),
     period: optionalString(payload.period),
     status: optionalString(payload.status),
+    summary: optionalString(payload.summary),
+    description: optionalString(payload.description),
     challenge: optionalString(payload.challenge) ?? optionalString(payload.description),
     solution: optionalString(payload.solution) ?? optionalString(payload.summary),
     phases: Array.isArray(payload.phases)

@@ -1,13 +1,20 @@
 import { put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
-import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
+import { getAdminActorId } from '@/lib/admin-auth'
 
 export async function POST(request: Request) {
-  const session = await auth.api.getSession({ headers: await headers() })
-  const ownerId = session?.user?.id ?? ((await hasAdminSession()) ? ADMIN_OWNER_ID : null)
+
+  const ownerId = await getAdminActorId()
   if (!ownerId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return NextResponse.json(
+      {
+        error:
+          'Device uploads need Blob storage. Add BLOB_READ_WRITE_TOKEN to the deployment, or paste an image URL instead.',
+      },
+      { status: 503 },
+    )
+  }
   const formData = await request.formData()
   const file = formData.get('file')
   const isImage = file instanceof File && file.type.startsWith('image/')

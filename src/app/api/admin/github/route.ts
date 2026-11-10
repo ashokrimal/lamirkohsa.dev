@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { hasAdminSession } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
+  if (!(await hasAdminSession())) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { searchParams } = new URL(request.url)
-  const username = searchParams.get('username')?.trim() || 'ashokrimal'
+  const username = searchParams.get('username')?.trim() || ''
+  if (!username) return NextResponse.json({ error: 'Add a GitHub username in Settings first.' }, { status: 400 })
 
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github.v3+json',
@@ -13,24 +19,6 @@ export async function GET(request: NextRequest) {
 
   if (process.env.GITHUB_TOKEN) {
     headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
-  }
-
-  // Generate fallback 30-day sparkline
-  const generateFallbackSparkline = () => {
-    const sparkline = []
-    const baseCommits = [2, 0, 3, 1, 4, 0, 0, 5, 2, 1, 3, 4, 0, 2, 6, 3, 1, 0, 4, 5, 2, 3, 0, 1, 4, 6, 2, 5, 3, 4]
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const dateStr = d.toISOString().slice(0, 10)
-      const dayLabel = d.toLocaleDateString([], { month: 'short', day: 'numeric' })
-      sparkline.push({
-        date: dateStr,
-        dayLabel,
-        count: baseCommits[29 - i] ?? 2,
-      })
-    }
-    return sparkline
   }
 
   try {
@@ -53,92 +41,8 @@ export async function GET(request: NextRequest) {
       if (userRes.status === 404) {
         return NextResponse.json({ error: `GitHub user "${username}" was not found.` }, { status: 404 })
       }
-      if (userRes.status === 403) {
-        const fallbackSparkline = generateFallbackSparkline()
-        return NextResponse.json({
-          rateLimited: true,
-          profile: {
-            login: username,
-            name: 'Ashok Rimal',
-            avatar_url: 'https://avatars.githubusercontent.com/u/122424817?v=4',
-            html_url: `https://github.com/${username}`,
-            bio: 'Passionate about turning ideas into reality through code.',
-            public_repos: 18,
-            followers: 42,
-            following: 28,
-          },
-          totalStars: 14,
-          totalForks: 6,
-          activeStreak: 12,
-          commitSparkline: fallbackSparkline,
-          total30DayCommits: fallbackSparkline.reduce((sum, item) => sum + item.count, 0),
-          topLanguages: [
-            { language: 'TypeScript', count: 8, percentage: 44 },
-            { language: 'JavaScript', count: 5, percentage: 28 },
-            { language: 'Python', count: 3, percentage: 17 },
-            { language: 'HTML/CSS', count: 2, percentage: 11 },
-          ],
-          repos: [
-            {
-              id: 1,
-              name: 'lamirkohsa.dev',
-              html_url: `https://github.com/${username}/lamirkohsa.dev`,
-              description: 'Personal portfolio website and SaaS content studio.',
-              stargazers_count: 5,
-              forks_count: 2,
-              language: 'TypeScript',
-              updated_at: new Date().toISOString(),
-            },
-            {
-              id: 2,
-              name: 'arss',
-              html_url: `https://github.com/${username}/arss`,
-              description: 'Departmental store management system built with Next.js & MongoDB.',
-              stargazers_count: 6,
-              forks_count: 3,
-              language: 'JavaScript',
-              updated_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-            },
-            {
-              id: 3,
-              name: 'karyamantra',
-              html_url: `https://github.com/${username}/karyamantra`,
-              description: 'Calm academic productivity workspace and Kanban task manager.',
-              stargazers_count: 3,
-              forks_count: 1,
-              language: 'TypeScript',
-              updated_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-            },
-          ],
-          events: [
-            {
-              id: 'ev-1',
-              type: 'PushEvent',
-              repoName: `${username}/lamirkohsa.dev`,
-              repoUrl: `https://github.com/${username}/lamirkohsa.dev`,
-              message: 'feat: add real-time github statistics component to cms',
-              createdAt: new Date().toISOString(),
-            },
-            {
-              id: 'ev-2',
-              type: 'CreateEvent',
-              repoName: `${username}/lamirkohsa.dev`,
-              repoUrl: `https://github.com/${username}/lamirkohsa.dev`,
-              message: 'Created branch main and updated dependencies',
-              createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-            },
-            {
-              id: 'ev-3',
-              type: 'WatchEvent',
-              repoName: `${username}/arss`,
-              repoUrl: `https://github.com/${username}/arss`,
-              message: 'Starred repository',
-              createdAt: new Date(Date.now() - 86400000).toISOString(),
-            },
-          ],
-        })
-      }
-      return NextResponse.json({ error: 'Failed to fetch data from GitHub API.' }, { status: userRes.status })
+            return NextResponse.json({ error: 'Failed to fetch data from GitHub API.' }, { status: userRes.status })
+
     }
 
     const profile = await userRes.json()
@@ -191,8 +95,7 @@ export async function GET(request: NextRequest) {
       const dateStr = d.toISOString().slice(0, 10)
       const dayLabel = d.toLocaleDateString([], { month: 'short', day: 'numeric' })
       const actualCount = dailyCommitsMap[dateStr] || 0
-      // Provide reasonable baseline if events only cover recent days
-      const count = actualCount > 0 ? actualCount : (i % 7 === 1 || i % 7 === 3 ? Math.floor(((i * 3) % 4) + 1) : 0)
+      const count = actualCount
       total30DayCommits += count
       commitSparkline.push({
         date: dateStr,

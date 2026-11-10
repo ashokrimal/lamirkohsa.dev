@@ -162,7 +162,7 @@ function CommitSparklineChart({
   )
 }
 
-export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' }: GitHubStatsProps) {
+export function CmsGitHubStats({ initialUsername = '', className = '' }: GitHubStatsProps) {
   const { toast } = useCmsToast()
   const [username, setUsername] = useState(initialUsername)
   const [data, setData] = useState<GitHubData | null>(null)

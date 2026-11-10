@@ -1,8 +1,6 @@
 import { put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
-import { headers } from 'next/headers'
-import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
-import { auth } from '@/lib/auth'
+import { getAdminActorId } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 import { galleryItem } from '@/lib/db/schema'
 import { revalidatePath } from 'next/cache'
@@ -15,8 +13,7 @@ function messageFor(error: unknown) {
 }
 
 export async function POST(request: Request) {
-  const session = await auth.api.getSession({ headers: await headers() })
-  const ownerId = session?.user?.id ?? ((await hasAdminSession()) ? ADMIN_OWNER_ID : null)
+  const ownerId = await getAdminActorId()
   if (!ownerId) return NextResponse.json({ error: 'Your session has expired. Please sign in again.' }, { status: 401 })
 
   try {

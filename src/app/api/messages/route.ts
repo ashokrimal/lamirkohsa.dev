@@ -205,13 +205,13 @@ export async function GET(request: NextRequest) {
   // Either the signed admin session cookie or env-backed basic auth (for scripts).
   const sessionCookie = request.cookies.get(ADMIN_SESSION_COOKIE)?.value
   const authorized =
-    verifyAdminSessionToken(sessionCookie) ||
-    verifyAdminBasicAuthHeader(request.headers.get('authorization'))
+    (await verifyAdminSessionToken(sessionCookie)) ||
+    (await verifyAdminBasicAuthHeader(request.headers.get('authorization')))
 
   if (!authorized) {
     return NextResponse.json(
-      { error: isAdminAuthConfigured() ? 'Unauthorized' : 'Admin sign-in is not configured.' },
-      { status: isAdminAuthConfigured() ? 401 : 503 },
+      { error: (await isAdminAuthConfigured()) ? 'Unauthorized' : 'Admin sign-in is not configured.' },
+      { status: (await isAdminAuthConfigured()) ? 401 : 503 },
     )
   }
 

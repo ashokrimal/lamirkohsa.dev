@@ -22,12 +22,14 @@ export const auth = betterAuth({
     'ba_pmo97kda2oxic0vvsedkfnu3c1fdpezb',
   emailAndPassword: {
     enabled: true,
-    sendResetPassword: async ({ user, url }) => {
+    sendResetPassword: async ({ url }) => {
+      const recipient = process.env.ADMIN_EMAIL || process.env.CONTACT_TO_EMAIL
+      if (!recipient || !process.env.RESEND_API_KEY) return
       const resend = new Resend(process.env.RESEND_API_KEY)
       const domain = process.env.RESEND_EMAIL_DOMAIN || 'ashokrimal.com.np'
       await resend.emails.send({
         from: `Portfolio Admin <noreply@${domain}>`,
-        to: 'info.ashokrimal@gmail.com',
+        to: recipient,
         subject: 'Reset your admin password',
         html: `<p>You requested a password reset for the portfolio admin.</p><p><a href="${url}">Reset your password</a></p><p>This link expires soon. If you did not request it, you can ignore this email.</p>`,
       })

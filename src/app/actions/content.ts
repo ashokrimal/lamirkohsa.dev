@@ -2,21 +2,16 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { cmsContent, galleryItem, musicTrack, portfolioProject } from '@/lib/db/schema'
+import { cmsContent, galleryItem, inboxMessage, musicTrack, portfolioProject } from '@/lib/db/schema'
 import { and, desc, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
-import { ADMIN_OWNER_ID, hasAdminSession } from '@/lib/admin-auth'
+import { getAdminActorId } from '@/lib/admin-auth'
 
 async function requireUser(): Promise<string> {
-  try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (session?.user?.id) return session.user.id
-  } catch {
-    // Fall through to the admin session cookie
-  }
-  if (await hasAdminSession()) return ADMIN_OWNER_ID
-  throw new Error('Unauthorized: sign in to the admin studio first.')
+  const actorId = await getAdminActorId()
+  if (!actorId) throw new Error('Unauthorized: sign in to the admin studio first.')
+  return actorId
 }
 
 export async function getPublishedGallery() {
@@ -31,21 +26,33 @@ export async function getPublishedGallery() {
 export async function getAdminContent() {
   const userId = await requireUser()
   try {
-    const [gallery, projectsData, music, cms] = await Promise.all([
+    const [gallery, projectsData, music, cms, messages] = await Promise.all([
       db.select().from(galleryItem).where(eq(galleryItem.userId, userId)).orderBy(desc(galleryItem.createdAt)),
       db.select().from(portfolioProject).where(eq(portfolioProject.userId, userId)).orderBy(desc(portfolioProject.createdAt)),
       db.select().from(musicTrack).where(eq(musicTrack.userId, userId)).orderBy(musicTrack.sortOrder, desc(musicTrack.createdAt)),
       db.select({ id: cmsContent.id, collection: cmsContent.collection, title: cmsContent.title, payload: cmsContent.payload, status: cmsContent.status }).from(cmsContent).where(eq(cmsContent.userId, userId)).orderBy(cmsContent.sortOrder, desc(cmsContent.createdAt)),
+      db
+        .select({
+          id: inboxMessage.id,
+          fromEmail: inboxMessage.fromEmail,
+          subject: inboxMessage.subject,
+          textBody: inboxMessage.textBody,
+          receivedAt: inboxMessage.receivedAt,
+          readAt: inboxMessage.readAt,
+        })
+        .from(inboxMessage)
+        .orderBy(desc(inboxMessage.receivedAt))
+        .limit(100),
     ])
 
-    return { gallery, projects: projectsData, music, cms }
+    return { gallery, projects: projectsData, music, cms, messages }
   } catch (error) {
     console.warn('[Admin Content] Database unavailable:', error)
   }
 
   // Nothing is invented when the database is unreachable: the studio simply
   // shows an empty state until records exist.
-  return { gallery: [], projects: [], music: [], cms: [] }
+  return { gallery: [], projects: [], music: [], cms: [], messages: [] }
 
 }
 
