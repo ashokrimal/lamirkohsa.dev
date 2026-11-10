@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { ProjectCard, type ProjectData } from '@/components/ui/ProjectCard'
 import { ProjectQuickViewModal } from '@/components/ui/ProjectQuickViewModal'
-import { LayoutGrid, List } from 'lucide-react'
+import { LayoutGrid, List, ArrowUpRight } from 'lucide-react'
+import { sensoryAudio } from '@/lib/sensory-audio'
 
 interface ProjectsPreviewGridProps {
   projects: ProjectData[]
@@ -13,21 +14,35 @@ export function ProjectsPreviewGrid({ projects }: ProjectsPreviewGridProps) {
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
+  const handleSetViewMode = (mode: 'grid' | 'list') => {
+    sensoryAudio.playToggle()
+    setViewMode(mode)
+  }
+
+  const handleSelectProject = (project: ProjectData) => {
+    sensoryAudio.playModal()
+    setSelectedProject(project)
+  }
+
   return (
     <div className="space-y-6">
-      {/* View Mode controls inspired by creative-developer.webflow.io & tenztan.in */}
-      <div className="flex items-center justify-between text-xs font-mono">
-        <span className="text-[var(--muted)]">
-          Showing {projects.length} featured engineering systems
-        </span>
-        <div className="flex items-center gap-1 p-0.5 rounded-xs bg-[var(--surface)] border border-[var(--line)]">
+      {/* Apple-style segmented view mode control */}
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2">
+          <span className="text-[#86868b] font-medium">
+            Showing {projects.length} featured works
+          </span>
+          <span className="font-korean text-[11px] text-[#86868b]">· 주요 작업</span>
+        </div>
+
+        <div className="flex items-center gap-1 p-1 rounded-full bg-black/[0.04] border border-black/[0.04] backdrop-blur-md">
           <button
             type="button"
-            onClick={() => setViewMode('grid')}
-            className={`p-1 rounded-xs transition-colors cursor-pointer ${
+            onClick={() => handleSetViewMode('grid')}
+            className={`p-1.5 rounded-full transition-all cursor-pointer ${
               viewMode === 'grid'
-                ? 'bg-[var(--accent)] text-white'
-                : 'text-[var(--muted)] hover:text-[var(--ink)]'
+                ? 'bg-white text-[#1d1d1f] shadow-xs'
+                : 'text-[#86868b] hover:text-[#1d1d1f]'
             }`}
             title="Grid view"
             aria-label="Grid view"
@@ -36,11 +51,11 @@ export function ProjectsPreviewGrid({ projects }: ProjectsPreviewGridProps) {
           </button>
           <button
             type="button"
-            onClick={() => setViewMode('list')}
-            className={`p-1 rounded-xs transition-colors cursor-pointer ${
+            onClick={() => handleSetViewMode('list')}
+            className={`p-1.5 rounded-full transition-all cursor-pointer ${
               viewMode === 'list'
-                ? 'bg-[var(--accent)] text-white'
-                : 'text-[var(--muted)] hover:text-[var(--ink)]'
+                ? 'bg-white text-[#1d1d1f] shadow-xs'
+                : 'text-[#86868b] hover:text-[#1d1d1f]'
             }`}
             title="Compact list view"
             aria-label="Compact list view"
@@ -58,51 +73,51 @@ export function ProjectsPreviewGrid({ projects }: ProjectsPreviewGridProps) {
               key={project.id || project.title}
               project={project}
               index={idx}
-              onQuickView={(p) => setSelectedProject(p)}
+              onQuickView={handleSelectProject}
             />
           ))}
         </div>
       ) : (
-        <div className="divide-y divide-[var(--line)] rounded-sm border border-[var(--line)] bg-[var(--surface)] overflow-hidden">
+        <div className="apple-card divide-y divide-black/[0.06] overflow-hidden">
           {projects.map((project, idx) => (
             <div
               key={project.id || project.title}
-              className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[var(--paper)] transition-colors group"
+              className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-black/[0.02] transition-colors group cursor-pointer"
+              onClick={() => handleSelectProject(project)}
             >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-[var(--muted)]">0{idx + 1}</span>
-                  <span className="text-sm font-semibold text-[var(--ink)] group-hover:text-[var(--accent)] transition-colors">
+              <div className="space-y-1 min-w-0">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs font-mono text-[#86868b]">0{idx + 1}</span>
+                  <span className="text-base font-semibold text-[#1d1d1f] group-hover:text-[#0071e3] transition-colors tracking-tight">
                     {project.title}
                   </span>
                   {project.status && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-xs bg-[var(--paper)] border border-[var(--line)] text-[var(--accent)]">
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
                       {project.status}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[var(--muted)] line-clamp-1 max-w-xl">
+                <p className="text-sm text-[#86868b] line-clamp-1 max-w-xl">
                   {project.summary || project.description}
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0 text-xs font-mono">
-                <div className="hidden md:flex items-center gap-1.5">
-                  {project.techStack?.slice(0, 3).map((t) => (
-                    <span
-                      key={t}
-                      className="text-[10px] px-2 py-0.5 rounded-xs bg-[var(--paper)] border border-[var(--line)] text-[var(--ink)]"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex items-center gap-3 shrink-0 text-xs">
+                {project.category && (
+                  <span className="px-3 py-1 rounded-full bg-black/[0.04] text-[11px] font-medium text-[#424245]">
+                    {project.category}
+                  </span>
+                )}
                 <button
                   type="button"
-                  onClick={() => setSelectedProject(project)}
-                  className="px-3 py-1.5 rounded-xs bg-[var(--accent)] text-white text-[11px] font-medium hover:bg-[#435d4c] transition cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleSelectProject(project)
+                  }}
+                  className="apple-btn-secondary !py-1.5 !px-3 text-xs"
                 >
-                  Quick view →
+                  <span>Quick View</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -110,11 +125,13 @@ export function ProjectsPreviewGrid({ projects }: ProjectsPreviewGridProps) {
         </div>
       )}
 
-      {/* Modal instance */}
-      <ProjectQuickViewModal
-        project={selectedProject}
-        onClose={() => setSelectedProject(null)}
-      />
+      {/* Interactive Quick View Modal */}
+      {selectedProject && (
+        <ProjectQuickViewModal
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+        />
+      )}
     </div>
   )
 }

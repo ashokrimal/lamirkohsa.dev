@@ -13,6 +13,7 @@ import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { SkillDisplay } from '@/components/ui/SkillDisplay'
 import { CertificateCard } from '@/components/ui/CertificateCard'
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
+import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
 
 export default async function AboutContent() {
   // Fetch ALL About content directly from CMS (Single Source of Truth)
@@ -114,26 +115,29 @@ export default async function AboutContent() {
             </p>
           </div>
 
-          <div className="p-6 rounded-sm border border-[var(--line)] bg-[var(--surface)] space-y-3.5 text-xs">
-            <h3 className="text-xs font-mono uppercase tracking-wider text-[var(--muted)] pb-2 border-b border-[var(--line)]/60">
-              Quick Coordinates
-            </h3>
-            <div className="space-y-2.5">
+          <div className="apple-card p-6 md:p-7 space-y-4 text-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-black/[0.06]">
+              <h3 className="text-xs uppercase tracking-wider text-[#86868b] font-medium">
+                Quick Coordinates
+              </h3>
+              <span className="font-korean text-[10px] text-[#86868b]">기본 정보</span>
+            </div>
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[var(--muted)]">Location:</span>
-                <span className="font-semibold text-[var(--ink)]">{profile.location || 'Butwal, Nepal'}</span>
+                <span className="text-[#86868b]">Location:</span>
+                <span className="font-semibold text-[#1d1d1f]">{profile.location || 'Butwal, Nepal'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[var(--muted)]">Focus:</span>
-                <span className="font-semibold text-[var(--ink)]">Full-Stack &amp; Interface Craft</span>
+                <span className="text-[#86868b]">Focus:</span>
+                <span className="font-semibold text-[#1d1d1f]">Full-Stack &amp; Interface Craft</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[var(--muted)]">Availability:</span>
-                <span className="font-semibold text-[var(--accent)]">Open for collaborations</span>
+                <span className="text-[#86868b]">Availability:</span>
+                <span className="font-medium text-emerald-600">Open for collaborations</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[var(--muted)]">Education:</span>
-                <span className="font-semibold text-[var(--ink)]">BCA · Crimson College</span>
+                <span className="text-[#86868b]">Education:</span>
+                <span className="font-semibold text-[#1d1d1f]">BCA · Crimson College</span>
               </div>
             </div>
           </div>
@@ -144,6 +148,7 @@ export default async function AboutContent() {
       <section id="experience" className="profile-section" aria-labelledby="experience-heading">
         <SectionHeader
           eyebrow="01 / Work Experience"
+          krEyebrow="경력 사항"
           title="Work in"
           accent="practice."
           description="Professional roles and teaching commitments where curiosity became practical impact."
@@ -151,12 +156,16 @@ export default async function AboutContent() {
         <div className="mt-8">
           <ExperienceTimeline items={experience} type="experience" />
         </div>
+        <div className="mt-8">
+          <GitHubActivitySparkline showRecentCommits={true} />
+        </div>
       </section>
 
       {/* 3. EDUCATION */}
       <section id="education" className="profile-section" aria-labelledby="education-heading">
         <SectionHeader
           eyebrow="02 / Education"
+          krEyebrow="학력 사항"
           title="Learning with"
           accent="intention."
           description="Academic foundation in computer applications, distributed software, and algorithmic thinking."
@@ -170,6 +179,7 @@ export default async function AboutContent() {
       <section id="skills" className="profile-section" aria-labelledby="skills-heading">
         <SectionHeader
           eyebrow="03 / Engineering Stack"
+          krEyebrow="기술 스택"
           title="Tools for turning"
           accent="ideas real."
           description="A practical, modern stack spanning frontend systems, backend services, and embedded hardware."
@@ -183,11 +193,12 @@ export default async function AboutContent() {
       <section id="certificates" className="profile-section" aria-labelledby="certificates-heading">
         <SectionHeader
           eyebrow="04 / Verified Credentials"
+          krEyebrow="자격 증명"
           title="Verified"
           accent="milestones."
           description="Certificates and structured coursework in machine learning, full-stack development, and computer science."
         />
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
           {certificates.map((cert) => (
             <CertificateCard key={cert.id || cert.title} certificate={cert} />
           ))}
@@ -198,6 +209,7 @@ export default async function AboutContent() {
       <section id="gallery" className="profile-section" aria-labelledby="gallery-heading">
         <SectionHeader
           eyebrow="05 / Visual Journal"
+          krEyebrow="시각 기록"
           title="Beyond the"
           accent="screen."
           description="Photographic frames exploring quiet Nepal geometry, mountain landscapes, and desk setups."

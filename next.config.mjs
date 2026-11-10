@@ -63,6 +63,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'd3njjcbhbojbot.cloudfront.net',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.scdn.co',
+      },
     ],
   },
 };

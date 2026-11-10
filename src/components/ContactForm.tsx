@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { sensoryAudio } from '@/lib/sensory-audio';
+import { Send, CheckCircle2 } from 'lucide-react';
 
 type ContactFormProps = {
   onSuccessMessage?: string;
@@ -19,6 +21,7 @@ export default function ContactForm({
 
       if (isSubmitting) return;
 
+      sensoryAudio.playClick();
       const form = event.currentTarget;
       const formData = new FormData(form);
       const body = {
@@ -45,6 +48,7 @@ export default function ContactForm({
 
         form.reset();
         setShowSuccess(true);
+        sensoryAudio.playChime();
         const timeout = window.setTimeout(() => setShowSuccess(false), 5000);
         return () => window.clearTimeout(timeout);
       } catch (err) {
@@ -58,66 +62,73 @@ export default function ContactForm({
   );
 
   return (
-    <div className="rounded-sm border border-[var(--line)] bg-[var(--surface)] p-6 md:p-8">
-      <h2 className="text-xl md:text-2xl font-normal text-[var(--ink)] tracking-[-0.03em]">
-        Send a direct <span className="font-serif italic text-[var(--accent)]">dispatch</span>
-      </h2>
-      <p className="mt-1 text-xs text-[var(--muted)] font-mono">
-        Typically responding within 24 hours.
-      </p>
+    <div className="apple-card p-6 md:p-8 space-y-6">
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-semibold text-xl md:text-2xl text-[#1d1d1f] tracking-tight">
+            Send a direct message
+          </span>
+          <span className="font-korean text-xs text-[#86868b] font-normal">
+            · 문의하기
+          </span>
+        </div>
+        <p className="text-xs text-[#86868b]">
+          Typically responding within 24 hours.
+        </p>
+      </div>
 
-      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="name" className="block text-[11px] font-mono uppercase tracking-wider text-[var(--muted)] mb-1.5">
+          <label htmlFor="name" className="block text-xs font-medium text-[#424245] mb-1.5">
             Full Name
           </label>
           <input
             type="text"
             id="name"
             name="name"
-            className="w-full rounded-xs border border-[var(--line)] bg-[var(--paper)] px-3.5 py-2.5 text-xs text-[var(--ink)] focus:border-[var(--accent)] focus:outline-none transition-colors"
+            className="w-full rounded-2xl border border-black/[0.08] bg-black/[0.02] px-4 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:bg-white focus:outline-none transition-all placeholder:text-[#86868b]/60"
             placeholder="e.g. Maya Sharma"
             required
           />
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-[11px] font-mono uppercase tracking-wider text-[var(--muted)] mb-1.5">
+          <label htmlFor="email" className="block text-xs font-medium text-[#424245] mb-1.5">
             Email Address
           </label>
           <input
             type="email"
             id="email"
             name="email"
-            className="w-full rounded-xs border border-[var(--line)] bg-[var(--paper)] px-3.5 py-2.5 text-xs text-[var(--ink)] focus:border-[var(--accent)] focus:outline-none transition-colors"
+            className="w-full rounded-2xl border border-black/[0.08] bg-black/[0.02] px-4 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:bg-white focus:outline-none transition-all placeholder:text-[#86868b]/60"
             placeholder="e.g. maya@example.com"
             required
           />
         </div>
 
         <div>
-          <label htmlFor="subject" className="block text-[11px] font-mono uppercase tracking-wider text-[var(--muted)] mb-1.5">
+          <label htmlFor="subject" className="block text-xs font-medium text-[#424245] mb-1.5">
             Topic or Project
           </label>
           <input
             type="text"
             id="subject"
             name="subject"
-            className="w-full rounded-xs border border-[var(--line)] bg-[var(--paper)] px-3.5 py-2.5 text-xs text-[var(--ink)] focus:border-[var(--accent)] focus:outline-none transition-colors"
-            placeholder="e.g. Freelance web app / Collaboration"
+            className="w-full rounded-2xl border border-black/[0.08] bg-black/[0.02] px-4 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:bg-white focus:outline-none transition-all placeholder:text-[#86868b]/60"
+            placeholder="e.g. Full-stack engineering / Project collaboration"
             required
           />
         </div>
 
         <div>
-          <label htmlFor="message" className="block text-[11px] font-mono uppercase tracking-wider text-[var(--muted)] mb-1.5">
+          <label htmlFor="message" className="block text-xs font-medium text-[#424245] mb-1.5">
             Message Details
           </label>
           <textarea
             id="message"
             name="message"
             rows={4}
-            className="w-full rounded-xs border border-[var(--line)] bg-[var(--paper)] px-3.5 py-2.5 text-xs text-[var(--ink)] focus:border-[var(--accent)] focus:outline-none transition-colors leading-relaxed"
+            className="w-full rounded-2xl border border-black/[0.08] bg-black/[0.02] px-4 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:bg-white focus:outline-none transition-all leading-relaxed placeholder:text-[#86868b]/60"
             placeholder="Tell me about what you're building, timelines, or thoughts..."
             required
           />
@@ -126,23 +137,24 @@ export default function ContactForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full flex items-center justify-center rounded-xs py-2.5 px-5 text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
-            isSubmitting
-              ? 'bg-[var(--line)] text-[var(--muted)] cursor-not-allowed'
-              : 'bg-[var(--accent)] text-white hover:bg-[#435d4c] shadow-2xs'
+          className={`apple-btn-primary w-full justify-center !py-3 !text-sm cursor-pointer ${
+            isSubmitting ? 'opacity-60 cursor-not-allowed' : ''
           }`}
         >
-          {isSubmitting ? 'Sending Message…' : 'Transmit Message'}
+          <Send className="w-4 h-4" />
+          <span>{isSubmitting ? 'Sending Message…' : 'Transmit Message'}</span>
+          <span className="font-korean text-xs opacity-75">전송</span>
         </button>
       </form>
 
       {error && (
-        <div className="mt-4 p-3 rounded-xs bg-red-50 border border-red-200 text-red-800 text-xs">
+        <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 text-xs">
           <p>{error}</p>
         </div>
       )}
       {showSuccess && (
-        <div className="mt-4 p-3 rounded-xs bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent)] text-xs font-medium">
+        <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-xs font-medium flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
           <p>{onSuccessMessage}</p>
         </div>
       )}

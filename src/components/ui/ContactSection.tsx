@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowUpRight, Github, Globe, Linkedin, Mail, MapPin } from 'lucide-react'
 import ContactForm from '@/components/ContactForm'
 import { LiveStatusPill } from '@/components/ui/LiveStatusPill'
+import { Card3D } from '@/components/ui/Card3D'
 
 export interface SocialLinkItem {
   id?: number | string
@@ -44,13 +45,21 @@ export function ContactSection({
         {/* Left Column: Heading & Contact Channels */}
         <div className="space-y-6">
           <div>
-            <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[var(--muted)] mb-2">
-              {eyebrow}
-            </p>
-            <h2 className="text-3xl md:text-5xl font-normal text-[var(--ink)] tracking-[-0.05em] leading-tight">
-              {title} <span className="font-serif italic text-[var(--accent)]">{accent}</span>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#86868b]">
+                {eyebrow}
+              </span>
+              <span className="font-korean text-[11px] text-[#86868b]">
+                · 연락 및 협업
+              </span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-semibold text-[#1d1d1f] tracking-tight leading-tight">
+              {title}{' '}
+              <span className="font-serif italic font-normal text-[#0071e3]">
+                {accent}
+              </span>
             </h2>
-            <p className="mt-3 text-xs md:text-sm text-[var(--muted)] leading-relaxed max-w-xl">
+            <p className="mt-3 text-sm md:text-base text-[#86868b] leading-relaxed max-w-xl font-normal">
               {description}
             </p>
           </div>
@@ -60,8 +69,8 @@ export function ContactSection({
             <LiveStatusPill />
           </div>
 
-          {/* Social Channels List */}
-          <div className="space-y-2.5 pt-2 font-mono text-xs max-w-md">
+          {/* Social Channels List with Apple Squircles */}
+          <div className="space-y-3 pt-2 max-w-md">
             {socialLinks.map((link) => {
               const Icon = getSocialIcon(link.label)
               return (
@@ -70,31 +79,35 @@ export function ContactSection({
                   href={link.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-between p-3 rounded-xs border border-[var(--line)] bg-[var(--surface)] hover:border-[var(--accent)] text-[var(--ink)] transition-colors group"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-white/80 border border-black/[0.06] hover:border-black/15 shadow-xs hover:shadow-sm text-[#1d1d1f] transition-all group"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className="w-3.5 h-3.5 text-[var(--accent)]" />
+                  <div className="flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-xl bg-black/[0.04] text-[#0071e3] flex items-center justify-center shrink-0">
+                      <Icon className="w-4 h-4" />
+                    </span>
                     <div>
-                      <span className="block text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                      <span className="block text-[10px] uppercase tracking-wide text-[#86868b] font-medium">
                         {link.label}
                       </span>
-                      <span className="font-semibold text-xs group-hover:text-[var(--accent)]">
+                      <span className="font-semibold text-sm group-hover:text-[#0071e3] transition-colors">
                         {link.handle || link.href}
                       </span>
                     </div>
                   </div>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-[var(--muted)] group-hover:text-[var(--accent)] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <ArrowUpRight className="w-4 h-4 text-[#86868b] group-hover:text-[#0071e3] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
               )
             })}
 
-            <div className="flex items-center gap-2.5 p-3 rounded-xs border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)]">
-              <MapPin className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />
+            <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/80 border border-black/[0.06] shadow-xs text-[#1d1d1f]">
+              <span className="w-9 h-9 rounded-xl bg-black/[0.04] text-[#0071e3] flex items-center justify-center shrink-0">
+                <MapPin className="w-4 h-4" />
+              </span>
               <div>
-                <span className="block text-[9px] uppercase tracking-wider text-[var(--muted)]">
-                  Coordinates
+                <span className="block text-[10px] uppercase tracking-wide text-[#86868b] font-medium">
+                  Coordinates · 위치
                 </span>
-                <span className="text-xs text-[var(--ink)] font-semibold">
+                <span className="text-sm text-[#1d1d1f] font-semibold">
                   Kathmandu &amp; Butwal, Nepal · Remote Friendly
                 </span>
               </div>
@@ -103,25 +116,31 @@ export function ContactSection({
         </div>
 
         {/* Right Column: Interactive Form or Full Link */}
-        <div className="rounded-sm">
+        <div>
           {showForm ? (
             <ContactForm />
           ) : (
-            <div className="p-8 rounded-sm border border-[var(--line)] bg-[var(--surface)] space-y-4">
-              <h3 className="text-xl font-normal text-[var(--ink)]">
-                Have a project or opportunity in <span className="font-serif italic text-[var(--accent)]">mind?</span>
-              </h3>
-              <p className="text-xs text-[var(--muted)] leading-relaxed">
-                Whether you want to discuss a full-time role, a contracting project, or exchange thoughts on architecture, I am always glad to connect.
-              </p>
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xs bg-[var(--accent)] text-white text-xs font-semibold hover:bg-[#435d4c] transition shadow-2xs"
-              >
-                <span>Open Communication Page</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+            <Card3D maxTilt={5}>
+              <div className="apple-card p-8 space-y-4">
+                <h3 className="text-xl font-semibold text-[#1d1d1f] tracking-tight">
+                  Have a project or opportunity in{' '}
+                  <span className="font-serif italic text-[#0071e3]">mind?</span>
+                </h3>
+                <p className="text-sm text-[#86868b] leading-relaxed">
+                  Whether you want to discuss a full-time role, a contracting project, or exchange thoughts on architecture, I am always glad to connect.
+                </p>
+                <div className="pt-2">
+                  <Link
+                    href="/contact"
+                    className="apple-btn-primary"
+                  >
+                    <span>Open Communication Page</span>
+                    <span className="font-korean text-xs opacity-80">연락처</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            </Card3D>
           )}
         </div>
       </div>

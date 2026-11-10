@@ -1,4 +1,8 @@
-import { Briefcase, Calendar, CheckCircle2, GraduationCap, MapPin } from 'lucide-react'
+'use client'
+
+import React from 'react'
+import { Briefcase, Calendar, CheckCircle2, GraduationCap, MapPin, Building2, Sparkles } from 'lucide-react'
+import { Card3D } from '@/components/ui/Card3D'
 
 export interface ExperienceItemData {
   id?: number | string
@@ -23,66 +27,147 @@ export function ExperienceTimeline({
 }: ExperienceTimelineProps) {
   if (!items || items.length === 0) {
     return (
-      <div className="p-6 rounded-sm border border-[var(--line)] bg-[var(--surface)] text-center text-xs text-[var(--muted)]">
+      <div className="p-8 rounded-[24px] border border-black/[0.06] bg-white/70 backdrop-blur-md text-center text-sm text-[#86868b]">
         No records published in this section yet.
       </div>
     )
   }
 
   const Icon = type === 'experience' ? Briefcase : GraduationCap
+  const typeLabelKr = type === 'experience' ? '경력 사항' : '학력 사항'
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      {items.map((item, index) => (
-        <article
-          key={item.id || index}
-          className="rounded-sm border border-[var(--line)] bg-[var(--surface)] p-5 md:p-6 transition-all hover:border-[var(--accent)]"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3 mb-3 border-b border-[var(--line)]/60">
-            <div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="p-1 rounded-xs bg-[var(--paper)] text-[var(--accent)] border border-[var(--line)]">
-                  <Icon className="w-3.5 h-3.5" />
-                </span>
-                <span className="font-semibold text-sm text-[var(--ink)]">
-                  {item.title}
-                </span>
+    <div className={`space-y-6 ${className}`}>
+      {/* ============================================================== */}
+      {/* MOBILE DISPLAY: LINKEDIN APP TIMELINE STYLE (< 768px)          */}
+      {/* ============================================================== */}
+      <div className="block md:hidden relative pl-4 pr-1">
+        {/* Continuous LinkedIn Vertical Connector Line */}
+        <div
+          aria-hidden="true"
+          className="absolute left-[36px] top-4 bottom-8 w-[2px] bg-neutral-200"
+        />
+
+        <div className="space-y-7">
+          {items.map((item, index) => {
+            const isLast = index === items.length - 1
+            return (
+              <div key={item.id || index} className="relative flex items-start gap-3.5">
+                {/* LinkedIn-style Company Squircle Logo Avatar */}
+                <div className="relative z-10 w-11 h-11 rounded-2xl bg-white border border-black/[0.08] shadow-sm flex items-center justify-center shrink-0">
+                  <Icon className="w-5 h-5 text-[#0071e3]" />
+                </div>
+
+                {/* Content Block */}
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <h4 className="text-[15px] font-semibold text-[#1d1d1f] tracking-tight leading-snug">
+                    {item.title}
+                  </h4>
+                  <p className="text-[13px] font-medium text-[#424245] mt-0.5">
+                    {item.organization}
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-x-2 text-[12px] text-[#86868b] mt-1">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-[#0071e3]" />
+                      {item.period}
+                    </span>
+                    {item.location && (
+                      <>
+                        <span>·</span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-[#86868b]" />
+                          {item.location}
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  {item.description && (
+                    <p className="text-[13px] text-[#515154] mt-2.5 leading-relaxed">
+                      {item.description}
+                    </p>
+                  )}
+
+                  {item.highlights && item.highlights.length > 0 && (
+                    <ul className="mt-3 space-y-1.5 text-[12px] text-[#1d1d1f]">
+                      {item.highlights.map((h, hIdx) => (
+                        <li key={hIdx} className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#0071e3] mt-1.5 shrink-0" />
+                          <span className="leading-snug text-[#424245]">{h}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
-              <p className="mt-1 text-xs text-[var(--accent)] font-medium">
-                {item.organization}
+            )
+          })}
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* DESKTOP DISPLAY: APPLE 3D GLASS CARDS (>= 768px)               */}
+      {/* ============================================================== */}
+      <div className="hidden md:grid grid-cols-1 gap-5">
+        {items.map((item, index) => (
+          <Card3D key={item.id || index} maxTilt={5}>
+            <article className="apple-card p-6 lg:p-7 space-y-4">
+              <div className="flex items-start justify-between gap-4 pb-4 border-b border-black/[0.06]">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-black/[0.04] border border-black/[0.04] flex items-center justify-center text-[#0071e3] shadow-xs">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#1d1d1f] tracking-tight">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm font-medium text-[#0071e3]">
+                      {item.organization}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-1">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.04] text-xs font-medium text-[#424245] border border-black/[0.04]">
+                    <Calendar className="w-3.5 h-3.5 text-[#0071e3]" />
+                    <span>{item.period}</span>
+                  </span>
+                  {item.location && (
+                    <span className="text-[11px] text-[#86868b] flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {item.location}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-sm text-[#424245] leading-relaxed">
+                {item.description}
               </p>
-            </div>
 
-            <div className="flex items-center gap-3 text-[11px] font-mono text-[var(--muted)] shrink-0">
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-[var(--accent)]" />
-                {item.period}
-              </span>
-              {item.location && (
-                <span className="hidden md:inline-flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-[var(--muted)]" />
-                  {item.location}
-                </span>
+              {item.highlights && item.highlights.length > 0 && (
+                <div className="pt-3 border-t border-black/[0.04] space-y-2">
+                  <span className="text-[11px] font-korean uppercase tracking-wider text-[#86868b] block font-medium">
+                    {typeLabelKr} · 핵심 성과
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#1d1d1f]">
+                    {item.highlights.map((h, hIdx) => (
+                      <div
+                        key={hIdx}
+                        className="flex items-start gap-2 p-2.5 rounded-xl bg-black/[0.02] border border-black/[0.03]"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-[#0071e3] mt-0.5 shrink-0" />
+                        <span className="leading-snug text-[#424245]">{h}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
-            </div>
-          </div>
-
-          <p className="text-xs md:text-sm text-[var(--muted)] leading-relaxed">
-            {item.description}
-          </p>
-
-          {item.highlights && item.highlights.length > 0 && (
-            <ul className="mt-3 space-y-1.5 pt-2 border-t border-[var(--line)]/40 text-xs text-[var(--ink)]">
-              {item.highlights.map((h, hIdx) => (
-                <li key={hIdx} className="flex items-start gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[var(--accent)] mt-0.5 shrink-0" />
-                  <span className="leading-snug">{h}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </article>
-      ))}
+            </article>
+          </Card3D>
+        ))}
+      </div>
     </div>
   )
 }

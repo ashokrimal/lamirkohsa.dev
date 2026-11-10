@@ -7,6 +7,9 @@ import { Resend } from 'resend'
 const origin = (value?: string) => value ? (value.startsWith('http') ? value : `https://${value}`) : undefined
 const trustedOrigins = [
   'http://localhost:3000',
+  'https://ashokrimal.com.np',
+  'https://www.ashokrimal.com.np',
+  'https://cms.ashokrimal.com.np',
   origin(process.env.V0_RUNTIME_URL), origin(process.env.V0_DEV_APP_URL), origin(process.env.V0_BUILD_URL), origin(process.env.V0_SANDBOX_URL),
   origin(process.env.VERCEL_URL), origin(process.env.VERCEL_PROJECT_PRODUCTION_URL),
 ].filter(Boolean) as string[]

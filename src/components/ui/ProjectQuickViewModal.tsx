@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Image from 'next/image'
 import { X, ArrowUpRight, Github, Calendar, CheckCircle2, Layers, Check } from 'lucide-react'
 import type { ProjectData } from '@/components/ui/ProjectCard'
+import { sensoryAudio } from '@/lib/sensory-audio'
 
 interface ProjectQuickViewModalProps {
   project: ProjectData | null
@@ -32,51 +33,57 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-md animate-in fade-in duration-200"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
+        if (e.target === e.currentTarget) {
+          sensoryAudio.playClick()
+          onClose()
+        }
       }}
     >
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-sm border border-[var(--line)] bg-[var(--surface)] shadow-2xl p-6 sm:p-8 space-y-6">
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-black/[0.08] bg-white/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 space-y-6">
         {/* Header bar */}
-        <div className="flex items-start justify-between gap-4 pb-4 border-b border-[var(--line)]">
+        <div className="flex items-start justify-between gap-4 pb-4 border-b border-black/[0.06]">
           <div>
-            <div className="flex items-center gap-2 mb-1.5 text-xs font-mono">
+            <div className="flex flex-wrap items-center gap-2 mb-2 text-xs">
               {project.category && (
-                <span className="px-2 py-0.5 rounded-xs bg-[var(--paper)] border border-[var(--line)] text-[var(--accent)] font-semibold text-[10px] uppercase">
+                <span className="px-3 py-1 rounded-full bg-black/[0.04] text-[#0071e3] font-medium text-[11px] uppercase tracking-wide">
                   {project.category}
                 </span>
               )}
               {project.status && (
-                <span className="text-[10px] text-[var(--muted)]">
-                  • {project.status}
+                <span className="text-[11px] text-emerald-600 font-medium px-2 py-0.5 rounded-full bg-emerald-500/10">
+                  {project.status}
                 </span>
               )}
               {project.completionDate && (
-                <span className="text-[10px] text-[var(--muted)] flex items-center gap-1 ml-auto sm:ml-2">
-                  <Calendar className="w-3 h-3 text-[var(--accent)]" />
+                <span className="text-[11px] text-[#86868b] flex items-center gap-1 ml-auto sm:ml-2">
+                  <Calendar className="w-3 h-3 text-[#0071e3]" />
                   {project.completionDate}
                 </span>
               )}
             </div>
-            <h2 id="modal-title" className="text-2xl sm:text-3xl font-normal text-[var(--ink)] tracking-[-0.04em]">
+            <h2 id="modal-title" className="text-2xl sm:text-3xl font-semibold text-[#1d1d1f] tracking-tight">
               {project.title}
             </h2>
           </div>
 
           <button
             type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-xs border border-[var(--line)] bg-[var(--paper)] text-[var(--muted)] hover:text-[var(--ink)] hover:border-[var(--accent)] transition-colors"
+            onClick={() => {
+              sensoryAudio.playClick()
+              onClose()
+            }}
+            className="p-2 rounded-full bg-black/[0.05] hover:bg-black/[0.09] text-[#1d1d1f] transition-all cursor-pointer"
             aria-label="Close modal"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Hero image if present */}
+        {/* Hero image */}
         {project.image && (
-          <div className="relative aspect-[16/9] w-full rounded-xs overflow-hidden bg-[var(--paper)] border border-[var(--line)]">
+          <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden bg-black/[0.02] border border-black/[0.04]">
             <Image
               src={project.image}
               alt={`${project.title} preview`}
@@ -88,64 +95,85 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
           </div>
         )}
 
-        {/* Challenge & Solution Architecture (Inspiration: worksruthi.com & aimane.dev) */}
+        {/* Challenge & Solution Architecture */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs leading-relaxed">
-          <div className="p-4 rounded-xs border border-[var(--line)] bg-[var(--paper)] space-y-1.5">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] font-semibold">
-              The Challenge
+          <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/[0.04] space-y-1.5">
+            <span className="text-[11px] font-korean uppercase tracking-wider text-[#86868b] font-medium">
+              문제 정의 · The Challenge
             </span>
-            <p className="text-[var(--ink)]">
-              {project.challenge || project.description || 'Solving real-world performance, usability, and workflow friction through engineering.'}
+            <p className="text-[#1d1d1f] text-sm">
+              {project.challenge || project.description || 'Solving real-world performance, usability, and workflow friction through thoughtful engineering.'}
             </p>
           </div>
 
-          <div className="p-4 rounded-xs border border-[var(--line)] bg-[var(--paper)] space-y-1.5">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--accent)] font-semibold">
-              The Architecture Solution
+          <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/[0.04] space-y-1.5">
+            <span className="text-[11px] font-korean uppercase tracking-wider text-[#86868b] font-medium">
+              기술 해결책 · Solution
             </span>
-            <p className="text-[var(--ink)]">
-              {project.solution || project.summary || 'Engineered modular components, reliable state synchronization, and low-latency interaction pipelines.'}
+            <p className="text-[#1d1d1f] text-sm">
+              {project.solution || 'Engineered with clean separation of concerns, optimistic UI updates, and dependable backend integrity.'}
             </p>
           </div>
         </div>
 
-        {/* Execution Timeline Phases */}
+        {/* Execution Phases Timeline */}
         {project.phases && project.phases.length > 0 && (
-          <div className="space-y-3 pt-2 border-t border-[var(--line)]">
-            <div className="flex items-center gap-1.5 text-xs font-mono uppercase text-[var(--muted)] tracking-wider">
-              <Layers className="w-3.5 h-3.5 text-[var(--accent)]" />
-              <span>Project Execution Milestones</span>
+          <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/[0.04] space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-semibold text-[#1d1d1f] flex items-center gap-1.5">
+                <Layers className="w-4 h-4 text-[#0071e3]" />
+                <span>Execution Phases</span>
+              </span>
+              <span className="text-[11px] text-[#86868b]">
+                {project.phases.filter((p) => p.completed).length} / {project.phases.length} Complete
+              </span>
             </div>
+
             <div className="space-y-2">
-              {project.phases.map((phase, idx) => (
+              {project.phases.map((ph, idx) => (
                 <div
                   key={idx}
-                  className="flex items-start gap-2.5 p-3 rounded-xs border border-[var(--line)]/60 bg-[var(--paper)] text-xs"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-black/[0.04] text-xs"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-[var(--accent)] mt-0.5 shrink-0" />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-[var(--ink)]">{phase.name}</span>
-                      <span className="text-[10px] font-mono text-[var(--muted)]">({phase.phase})</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium ${
+                        ph.completed
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-black/[0.06] text-[#86868b]'
+                      }`}
+                    >
+                      {ph.completed ? <Check className="w-3 h-3" /> : idx + 1}
+                    </span>
+                    <span className="font-medium text-[#1d1d1f]">{ph.phase}</span>
+                    <span className="text-[#86868b]">· {ph.name}</span>
                   </div>
+                  <span
+                    className={`text-[10px] px-2 py-0.5 rounded-full ${
+                      ph.completed
+                        ? 'bg-emerald-500/10 text-emerald-600'
+                        : 'bg-black/[0.04] text-[#86868b]'
+                    }`}
+                  >
+                    {ph.completed ? 'Delivered' : 'Planned'}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Tech Stack Chips */}
+        {/* Tech Stack Pills */}
         {project.techStack && project.techStack.length > 0 && (
-          <div className="space-y-2 pt-2 border-t border-[var(--line)]">
-            <span className="text-[10px] font-mono uppercase text-[var(--muted)] tracking-wider block">
-              Core Technologies Used
+          <div className="space-y-2">
+            <span className="text-[11px] font-korean uppercase tracking-wider text-[#86868b] font-medium block">
+              사용 기술 스택 · Technology Stack
             </span>
             <div className="flex flex-wrap gap-1.5">
               {project.techStack.map((tech) => (
                 <span
                   key={tech}
-                  className="inline-flex items-center rounded-xs bg-[var(--paper)] border border-[var(--line)] px-2.5 py-1 text-[11px] font-mono text-[var(--ink)]"
+                  className="px-3 py-1 rounded-full bg-black/[0.04] text-xs font-medium text-[#424245] border border-black/[0.03]"
                 >
                   {tech}
                 </span>
@@ -154,18 +182,18 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
           </div>
         )}
 
-        {/* Action Links */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[var(--line)]">
+        {/* Modal footer CTA */}
+        <div className="pt-4 border-t border-black/[0.06] flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             {project.live && project.live !== '#' && (
               <a
                 href={project.live}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xs bg-[var(--accent)] text-white text-xs font-semibold hover:bg-[#435d4c] transition shadow-2xs"
+                className="apple-btn-primary"
               >
-                <span>Open Live Deployment</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
+                <span>Live Experience</span>
+                <ArrowUpRight className="w-4 h-4" />
               </a>
             )}
             {project.github && (
@@ -173,10 +201,10 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
                 href={project.github}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xs border border-[var(--line)] bg-[var(--paper)] text-xs text-[var(--ink)] hover:border-[var(--accent)] transition"
+                className="apple-btn-secondary"
               >
-                <Github className="w-3.5 h-3.5 text-[var(--muted)]" />
-                <span>GitHub Source</span>
+                <Github className="w-4 h-4" />
+                <span>Source Code</span>
               </a>
             )}
           </div>
@@ -184,9 +212,9 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
           <button
             type="button"
             onClick={onClose}
-            className="text-xs font-mono text-[var(--muted)] hover:text-[var(--ink)] underline cursor-pointer"
+            className="apple-btn-secondary"
           >
-            Close window
+            Close
           </button>
         </div>
       </div>

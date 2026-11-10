@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight, Camera, MapPin } from 'lucide-react'
+import { Card3D } from '@/components/ui/Card3D'
 
 export interface GalleryItemData {
   id: number | string
@@ -27,8 +28,8 @@ export function GalleryGrid({
 }: GalleryGridProps) {
   if (!items || items.length === 0) {
     return (
-      <div className="p-8 rounded-sm border border-[var(--line)] bg-[var(--surface)] text-center text-xs text-[var(--muted)]">
-        <Camera className="w-5 h-5 mx-auto mb-2 text-[var(--muted)]" />
+      <div className="p-8 rounded-[24px] border border-black/[0.06] bg-white/70 backdrop-blur-md text-center text-sm text-[#86868b]">
+        <Camera className="w-6 h-6 mx-auto mb-2 text-[#86868b]" />
         <p>No photographs currently published in this collection.</p>
       </div>
     )
@@ -36,57 +37,56 @@ export function GalleryGrid({
 
   const gridColsClass =
     columns === 4
-      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'
+      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'
       : columns === 3
-      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
-      : 'grid grid-cols-1 sm:grid-cols-2 gap-4'
+      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'
+      : 'grid grid-cols-1 sm:grid-cols-2 gap-5'
 
   return (
     <div className="space-y-6">
       <div className={gridColsClass}>
         {items.map((item, index) => (
-          <article
-            key={item.id || index}
-            className="group rounded-sm border border-[var(--line)] bg-[var(--surface)] overflow-hidden transition-all duration-300 hover:border-[var(--accent)] hover:shadow-xs flex flex-col justify-between"
-          >
-            {/* Image frame */}
-            <div className="relative aspect-[4/3] overflow-hidden bg-[var(--paper)]">
-              <Image
-                src={item.imageUrl}
-                alt={item.title || 'Photograph by Ashok Rimal'}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                referrerPolicy="no-referrer"
-                className="object-cover transition-transform duration-500 group-hover:scale-104"
-              />
-              {item.category && (
-                <div className="absolute top-2.5 left-2.5 bg-[var(--surface)]/90 backdrop-blur-xs border border-[var(--line)] px-2 py-0.5 rounded-xs text-[9px] font-mono uppercase tracking-wider text-[var(--accent)] font-semibold">
-                  {item.category}
-                </div>
-              )}
-            </div>
-
-            {/* Caption & Location metadata */}
-            <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
-              <div>
-                <h4 className="text-sm font-semibold text-[var(--ink)] tracking-[-0.02em] leading-snug group-hover:text-[var(--accent)] transition-colors">
-                  {item.title || 'Untitled Photograph'}
-                </h4>
-                {item.description && (
-                  <p className="mt-1 text-xs text-[var(--muted)] leading-relaxed line-clamp-2">
-                    {item.description}
-                  </p>
+          <Card3D key={item.id || index} maxTilt={6}>
+            <article className="apple-card overflow-hidden flex flex-col justify-between h-full group">
+              {/* Image frame */}
+              <div className="relative aspect-[4/3] overflow-hidden bg-black/[0.02]">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.title || 'Photograph by Ashok Rimal'}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  referrerPolicy="no-referrer"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+                {item.category && (
+                  <div className="absolute top-3 left-3 bg-white/85 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-medium tracking-tight text-[#1d1d1f] shadow-xs">
+                    {item.category}
+                  </div>
                 )}
               </div>
 
-              {item.location && (
-                <div className="pt-2 border-t border-[var(--line)]/50 flex items-center gap-1.5 text-[10px] font-mono text-[var(--muted)]">
-                  <MapPin className="w-3 h-3 text-[var(--accent)]" />
-                  <span>{item.location}</span>
+              {/* Caption & Location metadata */}
+              <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                <div>
+                  <h4 className="text-sm font-semibold text-[#1d1d1f] tracking-tight leading-snug group-hover:text-[#0071e3] transition-colors">
+                    {item.title || 'Untitled Photograph'}
+                  </h4>
+                  {item.description && (
+                    <p className="mt-1 text-xs text-[#86868b] leading-relaxed line-clamp-2">
+                      {item.description}
+                    </p>
+                  )}
                 </div>
-              )}
-            </div>
-          </article>
+
+                {item.location && (
+                  <div className="pt-2.5 border-t border-black/[0.04] flex items-center gap-1.5 text-[11px] text-[#86868b]">
+                    <MapPin className="w-3.5 h-3.5 text-[#0071e3]" />
+                    <span>{item.location}</span>
+                  </div>
+                )}
+              </div>
+            </article>
+          </Card3D>
         ))}
       </div>
 
@@ -94,10 +94,11 @@ export function GalleryGrid({
         <div className="flex justify-end pt-2">
           <Link
             href={viewAllHref}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent)] hover:underline"
+            className="apple-btn-secondary"
           >
             <span>View all photographs in Media library</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <span className="font-korean text-[10px] text-[#86868b]">미디어 기록</span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#86868b]" />
           </Link>
         </div>
       )}
