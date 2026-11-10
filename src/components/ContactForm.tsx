@@ -137,7 +137,7 @@ export default function ContactForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`apple-btn-primary w-full justify-center !py-3 !text-sm cursor-pointer ${
+          className={`w-full inline-flex items-center justify-center gap-2 rounded-full border border-line-strong bg-overlay px-6 py-3 text-sm font-medium text-accent cursor-pointer transition-colors hover:bg-overlay-medium hover:border-accent ${
             isSubmitting ? 'opacity-60 cursor-not-allowed' : ''
           }`}
         >

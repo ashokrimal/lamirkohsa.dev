@@ -153,7 +153,7 @@ export function MediaCard({ type, item }: MediaCardProps) {
             </div>
           )}
           {anime.score && (
-            <div className="absolute top-2.5 right-2.5 bg-scrim/75 backdrop-blur-md text-inverse px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 shadow-sm">
+            <div className="absolute top-2.5 right-2.5 bg-surface/90 backdrop-blur-md text-ink px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 border border-line-subtle shadow-xs">
               <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
               {anime.score}
             </div>
@@ -206,7 +206,7 @@ export function MediaCard({ type, item }: MediaCardProps) {
           </div>
         )}
         {manga.score && (
-          <div className="absolute top-2.5 right-2.5 bg-scrim/75 backdrop-blur-md text-inverse px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 shadow-sm">
+          <div className="absolute top-2.5 right-2.5 bg-surface/90 backdrop-blur-md text-ink px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 border border-line-subtle shadow-xs">
             <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
             {manga.score}
           </div>

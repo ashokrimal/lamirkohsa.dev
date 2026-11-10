@@ -142,7 +142,7 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
                   target="_blank"
                   rel="noreferrer"
                   onClick={() => sensoryAudio.playClick()}
-                  className="apple-btn-primary !py-1.5 !px-3.5 !text-xs !shadow-none"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-overlay px-3.5 py-1.5 text-xs font-medium text-ink transition-colors hover:border-line-strong hover:bg-overlay-medium"
                 >
                   <span>Live Demo</span>
                   <ArrowUpRight className="w-3 h-3" />
