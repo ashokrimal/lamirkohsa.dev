@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { headers } from 'next/headers';
 import './globals.css';
 import LayoutShell from '@/components/LayoutShell';
+import { getSiteConfig } from '@/lib/site-content';
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#f6f7f8' };
 
@@ -33,10 +34,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const headersList = await headers()
   const host = headersList.get('host')?.split(':')[0]
   const isCmsHost = host === 'cms.ashokrimal.com.np'
+  // Navigation, brand, footer and contact details all come from the CMS.
+  const site = await getSiteConfig()
   return (
     <html lang="en" className="scroll-smooth">
       <body className="leading-relaxed tracking-wide">
-        <LayoutShell isCmsHost={isCmsHost}>{children}</LayoutShell>
+        <LayoutShell site={site} isCmsHost={isCmsHost}>{children}</LayoutShell>
       </body>
     </html>
   );

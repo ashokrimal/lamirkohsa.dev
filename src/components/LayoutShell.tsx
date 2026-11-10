@@ -11,13 +11,15 @@ import DevConsoleHUD from '@/components/devmode/DevConsoleHUD';
 import DevModeTrigger from '@/components/devmode/DevModeTrigger';
 import OfflineFlappy from '@/components/OfflineFlappy';
 import CmsShell from '@/components/CmsShell';
+import type { SiteConfig } from '@/lib/site-content';
 
 interface LayoutShellProps {
   children: ReactNode;
+  site: SiteConfig;
   isCmsHost?: boolean;
 }
 
-export default function LayoutShell({ children, isCmsHost = false }: LayoutShellProps) {
+export default function LayoutShell({ children, site, isCmsHost = false }: LayoutShellProps) {
   const isCmsRoute = usePathname().startsWith('/admin')
   const showCmsShell = isCmsHost || isCmsRoute
   return (
@@ -28,10 +30,15 @@ export default function LayoutShell({ children, isCmsHost = false }: LayoutShell
             <CmsShell>{children}</CmsShell>
           ) : (
             <>
-              <SiteHeader />
+              <SiteHeader brand={site.brand} navigation={site.navigation} contact={site.contact} />
               {/* Pages own their own <main> landmark; wrapping them in another nested one. */}
               <div className="min-h-screen">{children}</div>
-              <SiteFooter />
+              <SiteFooter
+                brand={site.brand}
+                navigation={site.navigation}
+                footer={site.footer}
+                contact={site.contact}
+              />
             </>
           )}
           <div className="fixed bottom-6 right-6 z-40">

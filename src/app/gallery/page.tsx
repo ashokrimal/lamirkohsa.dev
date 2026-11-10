@@ -4,6 +4,7 @@ import { getPublishedGallery } from '@/app/actions/content'
 import EmptyCollectionState from '@/components/EmptyCollectionState'
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { getPageCopy } from '@/lib/site-content'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,7 +24,11 @@ type GalleryRow = {
 }
 
 export default async function GalleryPage() {
-  const rows = (await getPublishedGallery()) as GalleryRow[]
+  const [rows, copy] = await Promise.all([
+    getPublishedGallery() as Promise<GalleryRow[]>,
+    getPageCopy(),
+  ])
+  const pageCopy = copy.gallery
 
   const photos = rows
     .filter((item) => Boolean(item.imageUrl))
@@ -39,11 +44,11 @@ export default async function GalleryPage() {
   return (
     <PageShell>
       <PageHero
-        eyebrow="Archive / Photography"
-        krEyebrow="사진"
-        title="A collection of"
-        accent="frames."
-        description="Landscapes, workspaces and quiet geometry collected along the way — the visual journal behind the software."
+        eyebrow={pageCopy?.eyebrow ?? ''}
+        krEyebrow={pageCopy?.krEyebrow}
+        title={pageCopy?.title ?? ''}
+        accent={pageCopy?.accent}
+        description={pageCopy?.description}
         meta={
           photos.length ? <MetaChip icon={Camera}>{photos.length} photographs</MetaChip> : undefined
         }
@@ -62,7 +67,7 @@ export default async function GalleryPage() {
         )}
       </div>
 
-      <PageNav backLabel="Return home" nextHref="/media" nextLabel="Browse the media library" />
+      <PageNav />
     </PageShell>
   )
 }

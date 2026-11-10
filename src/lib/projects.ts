@@ -1,77 +1,65 @@
 import type { CmsRecord } from '@/app/actions/content-cms'
 import { toSlug } from '@/lib/slug'
 
-export type ProjectCategory = 'Web' | 'Mobile'
-
 export interface ProjectPhase {
-  phase: string
+  phase?: string
   name: string
-  period: string
-  description: string
-  completed: boolean
+  period?: string
+  description?: string
+  completed?: boolean
 }
 
 export interface ProjectEntry {
   id: number
   slug: string
   title: string
-  category: ProjectCategory
-  image: string
-  completionDate: string
-  period: string
-  status: string
-  challenge: string
-  solution: string
+  category?: string
+  image?: string
+  completionDate?: string
+  period?: string
+  status?: string
+  challenge?: string
+  solution?: string
   phases: ProjectPhase[]
   features: string[]
   techStack: string[]
-  github: string
+  github?: string
   live?: string
 }
 
-const FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1200&auto=format&fit=crop&q=80'
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+}
 
+function optionalString(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value : undefined
+}
+
+/**
+ * Maps a CMS project record to the view model. Missing fields stay missing —
+ * the UI omits them rather than filling in placeholder copy.
+ */
 export function mapProjectRecord(record: CmsRecord): ProjectEntry {
-  const p = record.payload || {}
-
-  const phases: ProjectPhase[] = Array.isArray(p.phases) ? (p.phases as ProjectPhase[]) : []
-  const features: string[] = Array.isArray(p.features) ? (p.features as string[]) : []
-  const techStack: string[] = Array.isArray(p.techStack) ? (p.techStack as string[]) : []
+  const payload = record.payload ?? {}
 
   return {
     id: record.id,
     slug: record.slug || toSlug(record.title),
     title: record.title,
-    category: (p.category === 'Mobile' ? 'Mobile' : 'Web') as ProjectCategory,
-    image:
-      typeof p.image === 'string'
-        ? p.image
-        : typeof p.imageUrl === 'string'
-          ? p.imageUrl
-          : FALLBACK_IMAGE,
-    completionDate: typeof p.completionDate === 'string' ? p.completionDate : '2024',
-    period: typeof p.period === 'string' ? p.period : '2024',
-    status: typeof p.status === 'string' ? p.status : 'Active',
-    challenge:
-      typeof p.challenge === 'string'
-        ? p.challenge
-        : typeof p.description === 'string'
-          ? p.description
-          : 'Engineering requirements and problem definition.',
-    solution:
-      typeof p.solution === 'string'
-        ? p.solution
-        : typeof p.summary === 'string'
-          ? p.summary
-          : 'Architectural implementation and user experience.',
-    phases,
-    features: features.length
-      ? features
-      : ['Accessible and responsive layout', 'Optimized data operations and state handling'],
-    techStack: techStack.length ? techStack : ['React', 'Next.js', 'TypeScript', 'Tailwind CSS'],
-    github: typeof p.github === 'string' ? p.github : 'https://github.com/ashokrimal',
-    live: typeof p.live === 'string' ? p.live : undefined,
+    category: optionalString(payload.category),
+    image: optionalString(payload.image) ?? optionalString(payload.imageUrl),
+    completionDate: optionalString(payload.completionDate),
+    period: optionalString(payload.period),
+    status: optionalString(payload.status),
+    challenge: optionalString(payload.challenge) ?? optionalString(payload.description),
+    solution: optionalString(payload.solution) ?? optionalString(payload.summary),
+    phases: Array.isArray(payload.phases)
+      ? (payload.phases as ProjectPhase[]).filter((phase) => Boolean(phase?.name))
+      : [],
+    features: stringArray(payload.features),
+    techStack: stringArray(payload.techStack),
+    github: optionalString(payload.github),
+    live: optionalString(payload.live),
   }
 }
 

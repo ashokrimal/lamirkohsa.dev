@@ -5,6 +5,7 @@ import EmptyCollectionState from '@/components/EmptyCollectionState'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { getPublishedCmsContent } from '@/app/actions/content-cms'
 import { toSlug } from '@/lib/slug'
+import { getPageCopy } from '@/lib/site-content'
 
 export const dynamic = 'force-dynamic'
 
@@ -90,16 +91,18 @@ function getBlogDate(blog: Blog): string | undefined {
 }
 
 export default async function BlogsPage() {
-  const blogs = (await getPublishedCmsContent('Blogs')) as Blog[]
+  const [blogsRaw, copy] = await Promise.all([getPublishedCmsContent('Blogs'), getPageCopy()])
+  const blogs = blogsRaw as Blog[]
+  const pageCopy = copy.journal
 
   return (
     <PageShell>
       <PageHero
-        eyebrow="Journal / Essays & Notes"
-        krEyebrow="글"
-        title="Notes in"
-        accent="progress."
-        description="Essays, architectural experiments, and field observations on software design, pedagogical robotics, and calm digital craft."
+        eyebrow={pageCopy?.eyebrow ?? ''}
+        krEyebrow={pageCopy?.krEyebrow}
+        title={pageCopy?.title ?? ''}
+        accent={pageCopy?.accent}
+        description={pageCopy?.description}
         meta={
           blogs.length ? (
             <MetaChip icon={Clock}>{blogs.length} published notes</MetaChip>
@@ -176,7 +179,7 @@ export default async function BlogsPage() {
         />
       )}
 
-      <PageNav backLabel="Return home" nextHref="/contact" nextLabel="Start a conversation" />
+      <PageNav />
     </PageShell>
   )
 }

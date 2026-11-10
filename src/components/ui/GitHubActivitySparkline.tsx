@@ -31,91 +31,27 @@ interface GitHubActivityData {
     date: string
     url: string
   }[]
-  topLanguages: { name: string; pct: number }[]
-}
-
-const DEFAULT_GITHUB_DATA: GitHubActivityData = {
-  username: 'ashokrimal',
-  publicRepos: 18,
-  totalStars: 14,
-  activeStreak: 6,
-  total30DayCommits: 58,
-  sparkline: [
-    { date: '2024-10-10', dayLabel: 'Oct 10', count: 2 },
-    { date: '2024-10-11', dayLabel: 'Oct 11', count: 4 },
-    { date: '2024-10-12', dayLabel: 'Oct 12', count: 1 },
-    { date: '2024-10-13', dayLabel: 'Oct 13', count: 3 },
-    { date: '2024-10-14', dayLabel: 'Oct 14', count: 0 },
-    { date: '2024-10-15', dayLabel: 'Oct 15', count: 5 },
-    { date: '2024-10-16', dayLabel: 'Oct 16', count: 3 },
-    { date: '2024-10-17', dayLabel: 'Oct 17', count: 2 },
-    { date: '2024-10-18', dayLabel: 'Oct 18', count: 6 },
-    { date: '2024-10-19', dayLabel: 'Oct 19', count: 4 },
-    { date: '2024-10-20', dayLabel: 'Oct 20', count: 2 },
-    { date: '2024-10-21', dayLabel: 'Oct 21', count: 1 },
-    { date: '2024-10-22', dayLabel: 'Oct 22', count: 0 },
-    { date: '2024-10-23', dayLabel: 'Oct 23', count: 4 },
-    { date: '2024-10-24', dayLabel: 'Oct 24', count: 3 },
-    { date: '2024-10-25', dayLabel: 'Oct 25', count: 5 },
-    { date: '2024-10-26', dayLabel: 'Oct 26', count: 2 },
-    { date: '2024-10-27', dayLabel: 'Oct 27', count: 1 },
-    { date: '2024-10-28', dayLabel: 'Oct 28', count: 4 },
-    { date: '2024-10-29', dayLabel: 'Oct 29', count: 3 },
-    { date: '2024-10-30', dayLabel: 'Oct 30', count: 2 },
-    { date: '2024-10-31', dayLabel: 'Oct 31', count: 0 },
-    { date: '2024-11-01', dayLabel: 'Nov 01', count: 3 },
-    { date: '2024-11-02', dayLabel: 'Nov 02', count: 2 },
-    { date: '2024-11-03', dayLabel: 'Nov 03', count: 4 },
-    { date: '2024-11-04', dayLabel: 'Nov 04', count: 1 },
-    { date: '2024-11-05', dayLabel: 'Nov 05', count: 5 },
-    { date: '2024-11-06', dayLabel: 'Nov 06', count: 4 },
-    { date: '2024-11-07', dayLabel: 'Nov 07', count: 6 },
-    { date: '2024-11-08', dayLabel: 'Nov 08', count: 3 },
-  ],
-  recentActivities: [
-    {
-      repo: 'ashokrimal/lamirkohsa.dev',
-      message: 'feat: add apple-like minimalist design and spatial 3d motions',
-      date: 'Recent',
-      url: 'https://github.com/ashokrimal/lamirkohsa.dev',
-    },
-    {
-      repo: 'ashokrimal/karyamantra',
-      message: 'perf: optimize optimistic state updates and drag-drop handlers',
-      date: 'Recent',
-      url: 'https://github.com/ashokrimal',
-    },
-    {
-      repo: 'ashokrimal/arss',
-      message: 'refactor: pos billing calculations and automated receipt templates',
-      date: 'Recent',
-      url: 'https://github.com/ashokrimal/arss',
-    },
-  ],
-  topLanguages: [
-    { name: 'TypeScript', pct: 54 },
-    { name: 'React / Next.js', pct: 28 },
-    { name: 'Python', pct: 18 },
-  ],
 }
 
 interface GitHubActivitySparklineProps {
+  username?: string
   className?: string
   showRecentCommits?: boolean
 }
 
 export function GitHubActivitySparkline({
+  username,
   className = '',
   showRecentCommits = true,
 }: GitHubActivitySparklineProps) {
-  const [data, setData] = useState<GitHubActivityData>(DEFAULT_GITHUB_DATA)
+  const [data, setData] = useState<GitHubActivityData | null>(null)
   const [hoveredDay, setHoveredDay] = useState<SparklineDay | null>(null)
 
   useEffect(() => {
     let mounted = true
     const fetchGitHub = async () => {
       try {
-        const username = 'ashokrimal'
+        if (!username) return
         const [profileRes, reposRes, eventsRes] = await Promise.all([
           fetch(`https://api.github.com/users/${username}`),
           fetch(`https://api.github.com/users/${username}/repos?sort=pushed&per_page=10`),
@@ -151,10 +87,10 @@ export function GitHubActivitySparkline({
                 const firstMsg = evt.payload?.commits?.[0]?.message || 'Code commit'
                 if (pushEvents.length < 3) {
                   pushEvents.push({
-                    repo: evt.repo?.name || 'ashokrimal/project',
+                    repo: evt.repo?.name || '',
                     message: firstMsg.split('\n')[0].slice(0, 70),
                     date: dateKey,
-                    url: `https://github.com/${evt.repo?.name || 'ashokrimal'}`,
+                    url: `https://github.com/${evt.repo?.name || username}`,
                   })
                 }
               }
@@ -169,18 +105,24 @@ export function GitHubActivitySparkline({
 
           const stars = Array.isArray(repos)
             ? repos.reduce((sum: number, r: { stargazers_count?: number }) => sum + (r.stargazers_count || 0), 0)
-            : 14
+            : 0
+
+          // Streak: consecutive days with commits, counting back from today.
+          let streak = 0
+          for (let i = sparklineList.length - 1; i >= 0; i--) {
+            if (sparklineList[i].count > 0) streak += 1
+            else break
+          }
 
           if (mounted) {
             setData({
               username,
-              publicRepos: profile.public_repos || 18,
+              publicRepos: profile.public_repos ?? 0,
               totalStars: stars,
-              activeStreak: Math.min(Math.max(events.length > 0 ? 5 : 3, 3), 14),
-              total30DayCommits: totalCommits > 0 ? totalCommits : 58,
-              sparkline: sparklineList.some((s) => s.count > 0) ? sparklineList : DEFAULT_GITHUB_DATA.sparkline,
-              recentActivities: pushEvents.length > 0 ? pushEvents : DEFAULT_GITHUB_DATA.recentActivities,
-              topLanguages: DEFAULT_GITHUB_DATA.topLanguages,
+              total30DayCommits: totalCommits,
+              activeStreak: streak,
+              sparkline: sparklineList,
+              recentActivities: pushEvents,
             })
           }
         }
@@ -191,9 +133,11 @@ export function GitHubActivitySparkline({
     return () => {
       mounted = false
     }
-  }, [])
+  }, [username])
 
-  const maxCommitDay = Math.max(...data.sparkline.map((d) => d.count), 4)
+  if (!data) return null
+
+  const maxCommitDay = Math.max(...data.sparkline.map((d) => d.count), 1)
 
   const handleHoverDay = (day: SparklineDay | null) => {
     if (day && day !== hoveredDay) {
@@ -334,7 +278,7 @@ export function GitHubActivitySparkline({
                 <div className="flex items-center gap-2.5 min-w-0">
                   <GitBranch className="w-3.5 h-3.5 text-accent shrink-0" />
                   <span className="font-semibold text-xs text-ink group-hover:text-accent transition-colors truncate">
-                    {act.repo.replace('ashokrimal/', '')}
+                    {act.repo.split('/').pop()}
                   </span>
                   <span className="text-xs text-muted truncate max-w-xs hidden sm:inline">
                     · {act.message}

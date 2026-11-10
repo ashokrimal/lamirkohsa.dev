@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 
 const categoryGroups = [
   { name: 'Identity', description: 'The pieces that define your public presence.', collections: ['Profile', 'Social Links', 'Site Settings'] },
+  { name: 'Site', description: 'Navigation, page copy and media collections shown across the site.', collections: ['Page Copy', 'Media Collections'] },
   { name: 'Career', description: 'Your education, experience, and proof of work.', collections: ['Experience', 'Education', 'Skills', 'Certificates', 'Awards'] },
   { name: 'Work', description: 'Projects and visual work worth showing.', collections: ['Projects', 'Gallery'] },
   { name: 'Media', description: 'The things you listen to, watch, and read.', collections: ['Music', 'Movies', 'Anime', 'Manga'] },

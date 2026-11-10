@@ -2,7 +2,6 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { getAdminContent } from '@/app/actions/content'
 import { getSettingsForAdmin } from '@/app/actions/settings'
-import { ensureCmsSeedData } from '@/app/actions/content-cms'
 import AdminWorkspace from '@/components/admin/AdminWorkspace'
 
 export const dynamic = 'force-dynamic'
@@ -16,7 +15,6 @@ export default async function AdminPage({ searchParams }: { searchParams?: { sec
     // In dev / unconfigured DB, proceed to Admin Workspace in Demo Admin mode
   }
 
-  await ensureCmsSeedData()
   const content = await getAdminContent()
   const settings = await getSettingsForAdmin()
   const section = searchParams?.section ?? 'overview'

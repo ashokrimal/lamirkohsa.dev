@@ -1,2 +1,7 @@
-import PublicCollectionPage from '@/components/PublicCollectionPage';
-export default function EducationPage() { return <PublicCollectionPage type="education" />; }
+import CollectionPage from '@/components/pages/CollectionPage'
+
+export const dynamic = 'force-dynamic'
+
+export default function EducationPage() {
+  return <CollectionPage kind="education" />
+}

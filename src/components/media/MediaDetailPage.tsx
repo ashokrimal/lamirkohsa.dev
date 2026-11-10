@@ -4,6 +4,7 @@ import { getMediaData } from '@/app/actions/media'
 import { getMediaPreviews } from '@/app/actions/content-cms'
 import EmptyCollectionState from '@/components/EmptyCollectionState'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { getPageCopy, type PageCopy } from '@/lib/site-content'
 
 type Category = 'music' | 'anime' | 'manga' | 'github'
 type CmsPreviews = Awaited<ReturnType<typeof getMediaPreviews>>
@@ -37,43 +38,28 @@ function unique<T>(items: T[], key: (item: T) => string) {
 }
 
 function DetailShell({
-  eyebrow,
-  krEyebrow,
-  title,
-  accent,
-  intro,
+  copy,
   meta,
   children,
   backHref = '/media',
-  backLabel = 'Back to media',
 }: {
-  eyebrow: string
-  krEyebrow: string
-  title: string
-  accent: string
-  intro: string
+  copy?: PageCopy
   meta?: ReactNode
   children: ReactNode
   backHref?: string
-  backLabel?: string
 }) {
   return (
     <PageShell>
       <PageHero
-        eyebrow={eyebrow}
-        krEyebrow={krEyebrow}
-        title={title}
-        accent={accent}
-        description={intro}
+        eyebrow={copy?.eyebrow ?? ''}
+        krEyebrow={copy?.krEyebrow}
+        title={copy?.title ?? ''}
+        accent={copy?.accent}
+        description={copy?.description}
         meta={meta}
       />
       <div className="mt-8 md:mt-10">{children}</div>
-      <PageNav
-        backHref={backHref}
-        backLabel={backLabel}
-        nextHref="/contact"
-        nextLabel="Start a conversation"
-      />
+      <PageNav backHref={backHref} />
     </PageShell>
   )
 }
@@ -81,9 +67,11 @@ function DetailShell({
 function MusicPage({
   data,
   cms,
+  copy,
 }: {
   data: Awaited<ReturnType<typeof getMediaData>>
   cms: CmsPreviews
+  copy?: PageCopy
 }) {
   const lastfm = (
     data.lastfmRecent as Array<{
@@ -137,11 +125,7 @@ function MusicPage({
 
   return (
     <DetailShell
-      eyebrow="Media / Music"
-      krEyebrow="음악"
-      title="Every track,"
-      accent="unified."
-      intro="CMS picks, ListenBrainz and Last.fm are merged into one deduplicated listening shelf."
+      copy={copy}
       meta={tracks.length ? <MetaChip>{tracks.length} tracks</MetaChip> : undefined}
     >
       {tracks.length ? (
@@ -188,10 +172,12 @@ function MusicPage({
 function LibraryPage({
   data,
   cms,
+  copy,
   kind,
 }: {
   data: Awaited<ReturnType<typeof getMediaData>>
   cms: CmsPreviews
+  copy?: PageCopy
   kind: 'anime' | 'manga'
 }) {
   const malItems = Object.values(
@@ -246,12 +232,8 @@ function LibraryPage({
 
   return (
     <DetailShell
-      eyebrow={kind === 'anime' ? 'Media / Anime' : 'Media / Manga'}
-      krEyebrow={kind === 'anime' ? '애니' : '만화'}
-      title="Stories,"
-      accent="without repeats."
-      intro="Curated CMS entries plus MyAnimeList and AniList, synchronized into one deduplicated shelf."
-      meta={cards.length ? <MetaChip>{cards.length} titles</MetaChip> : undefined}
+      copy={copy}
+      meta={cards.length ? <MetaChip>{cards.length}</MetaChip> : undefined}
     >
       {cards.length ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -295,7 +277,13 @@ function LibraryPage({
   )
 }
 
-function GitHubPage({ data }: { data: Awaited<ReturnType<typeof getMediaData>> }) {
+function GitHubPage({
+  data,
+  copy,
+}: {
+  data: Awaited<ReturnType<typeof getMediaData>>
+  copy?: PageCopy
+}) {
   const profile = data.github?.profile
   const events = data.github?.events?.slice(0, 5) ?? []
   const stars =
@@ -306,11 +294,7 @@ function GitHubPage({ data }: { data: Awaited<ReturnType<typeof getMediaData>> }
 
   return (
     <DetailShell
-      eyebrow="Media / GitHub"
-      krEyebrow="깃허브"
-      title="Code in"
-      accent="motion."
-      intro="A compact view of public momentum, repositories, stars, and recent activity."
+      copy={copy}
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
@@ -346,18 +330,25 @@ function GitHubPage({ data }: { data: Awaited<ReturnType<typeof getMediaData>> }
 }
 
 export default async function MediaDetailPage({ category }: { category: Category }) {
-  const [data, cms] = await Promise.all([getMediaData(), getMediaPreviews()])
-  if (category === 'music') return <MusicPage data={data} cms={cms} />
-  if (category === 'anime') return <LibraryPage data={data} cms={cms} kind="anime" />
-  if (category === 'manga') return <LibraryPage data={data} cms={cms} kind="manga" />
-  if (category === 'github') return <GitHubPage data={data} />
+  const [data, cms, pages] = await Promise.all([getMediaData(), getMediaPreviews(), getPageCopy()])
+  const copyKey =
+    category === 'music'
+      ? 'media-music'
+      : category === 'anime'
+        ? 'media-anime'
+        : category === 'manga'
+          ? 'media-manga'
+          : category === 'github'
+            ? 'media-github'
+            : 'media-gallery'
+  const copy = pages[copyKey]
+  if (category === 'music') return <MusicPage data={data} cms={cms} copy={copy} />
+  if (category === 'anime') return <LibraryPage data={data} cms={cms} copy={copy} kind="anime" />
+  if (category === 'manga') return <LibraryPage data={data} cms={cms} copy={copy} kind="manga" />
+  if (category === 'github') return <GitHubPage data={data} copy={copy} />
   return (
     <DetailShell
-      eyebrow="Media / Gallery"
-      krEyebrow="사진"
-      title="Frames in"
-      accent="between."
-      intro="A visual collection of places, details, and moments collected along the way."
+      copy={copy}
     >
       <Link className="apple-btn-primary" href="/gallery">
         Open all photography

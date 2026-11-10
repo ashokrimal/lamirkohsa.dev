@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import ContactContent from '@/components/pages/ContactContent'
-import { getProfileContent, getSocialLinks } from '@/app/actions/content-cms'
+import { getSocialLinks } from '@/app/actions/content-cms'
+import { getPageCopy, getSiteConfig } from '@/lib/site-content'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,21 +11,19 @@ export const metadata: Metadata = {
 }
 
 export default async function ContactPage() {
-  const [profile, socialLinksRaw] = await Promise.all([
-    getProfileContent(),
+  const [socialLinksRaw, copy, site] = await Promise.all([
     getSocialLinks(),
+    getPageCopy(),
+    getSiteConfig(),
   ])
 
-  const socialLinks = socialLinksRaw.map((s) => ({
-    label: typeof s.payload?.label === 'string' ? s.payload.label : s.title,
-    href: typeof s.payload?.href === 'string' ? s.payload.href : '#',
-    handle: typeof s.payload?.handle === 'string' ? s.payload.handle : undefined,
-  }))
+  const socials = socialLinksRaw
+    .map((s) => ({
+      label: typeof s.payload?.label === 'string' ? s.payload.label : s.title,
+      href: typeof s.payload?.href === 'string' ? s.payload.href : '',
+      kind: s.slug,
+    }))
+    .filter((link) => link.label && link.href)
 
-  return (
-    <ContactContent
-      profile={profile}
-      socialLinks={socialLinks}
-    />
-  )
+  return <ContactContent copy={copy.contact} contact={site.contact} socials={socials} />
 }

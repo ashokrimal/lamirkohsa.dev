@@ -23,7 +23,7 @@ export interface ProjectData {
   status?: string
   featured?: boolean
   completionDate?: string
-  phases?: Array<{ phase: string; name: string; completed?: boolean }>
+  phases?: Array<{ phase?: string; name: string; completed?: boolean }>
 }
 
 interface ProjectCardProps {
@@ -97,11 +97,11 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
             </h3>
 
             {/* Description */}
-            <p className="mt-2.5 text-sm text-muted leading-relaxed line-clamp-3 font-normal">
-              {project.summary ||
-                project.description ||
-                'A full-stack software application built with attention to performance, human-centric interfaces, and scalable architecture.'}
-            </p>
+            {(project.summary || project.description) && (
+              <p className="mt-2.5 text-sm text-muted leading-relaxed line-clamp-3 font-normal">
+                {project.summary || project.description}
+              </p>
+            )}
 
             {/* Phases Pill */}
             {project.phases && project.phases.length > 0 && (

@@ -4,16 +4,16 @@ import React, { useState } from 'react'
 import { Calendar, CheckCircle2, ChevronRight, Clock, GitCommit, Layers, ArrowUpRight } from 'lucide-react'
 
 export interface ProjectPhase {
-  phase: string
+  phase?: string
   name: string
-  period: string
-  description: string
-  completed: boolean
+  period?: string
+  description?: string
+  completed?: boolean
 }
 
 export interface TimelineProject {
   title: string
-  category: 'Web' | 'Mobile'
+  category?: string
   completionDate?: string
   period?: string
   status?: string

@@ -4,11 +4,16 @@ import type { Metadata } from 'next'
 import { ArrowUpRight, Calendar, CheckCircle2, Circle, Github, Layers, Target } from 'lucide-react'
 import { getPublishedCmsContent } from '@/app/actions/content-cms'
 import { mapProjectRecords } from '@/lib/projects'
-import { MetaChip, PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
+import { getPageCopy } from '@/lib/site-content'
+import {
+  MetaChip,
+  PageHero,
+  PageNav,
+  PageSection,
+  PageShell,
+} from '@/components/ui/PageChrome'
 
 export const dynamic = 'force-dynamic'
-
-const FALLBACK_TITLE = 'Project Case Study - Ashok Rimal'
 
 async function findProject(slug: string) {
   const records = await getPublishedCmsContent('Projects')
@@ -21,106 +26,129 @@ export async function generateMetadata({
   params: { slug: string }
 }): Promise<Metadata> {
   const project = await findProject(params.slug)
-  if (!project) return { title: FALLBACK_TITLE }
+  if (!project) return {}
   return {
-    title: `${project.title} — Case Study | Ashok Rimal`,
+    title: project.title,
     description: project.challenge,
   }
 }
 
 export default async function ProjectCaseStudyPage({ params }: { params: { slug: string } }) {
-  const project = await findProject(params.slug)
+  const [project, copy] = await Promise.all([findProject(params.slug), getPageCopy()])
   if (!project) notFound()
+
+  const pageCopy = copy['project-case-study']
+  const sections = pageCopy?.sections
 
   return (
     <PageShell>
       <PageHero
-        eyebrow={`${project.category} Case Study`}
-        krEyebrow="프로젝트 사례"
+        eyebrow={pageCopy?.eyebrow ?? ''}
+        krEyebrow={pageCopy?.krEyebrow}
         title={project.title}
-        description={project.challenge}
+        accent={pageCopy?.accent}
+        description={pageCopy?.description || project.challenge}
         meta={
-          <>
-            <MetaChip icon={Calendar}>{project.period || project.completionDate}</MetaChip>
-            <MetaChip icon={CheckCircle2}>{project.status}</MetaChip>
-            <MetaChip icon={Layers}>{project.phases.length || 0} delivery phases</MetaChip>
-          </>
+          project.period || project.status || project.phases.length ? (
+            <>
+              {project.period && <MetaChip icon={Calendar}>{project.period}</MetaChip>}
+              {project.status && <MetaChip icon={CheckCircle2}>{project.status}</MetaChip>}
+              {project.phases.length > 0 && (
+                <MetaChip icon={Layers}>{project.phases.length}</MetaChip>
+              )}
+            </>
+          ) : undefined
         }
         actions={
-          <>
-            {project.live && project.live !== '#' && (
-              <a href={project.live} target="_blank" rel="noreferrer" className="apple-btn-primary">
-                <span>View live product</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </a>
-            )}
-            <a
-              href={project.github}
-              target="_blank"
-              rel="noreferrer"
-              className="apple-btn-secondary"
-            >
-              <Github className="w-3.5 h-3.5 text-muted" />
-              <span>Source code</span>
-            </a>
-          </>
+          project.live || project.github ? (
+            <>
+              {project.live && (
+                <a
+                  href={project.live}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="apple-btn-primary"
+                >
+                  <span>Live</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </a>
+              )}
+              {project.github && (
+                <a
+                  href={project.github}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="apple-btn-secondary"
+                >
+                  <Github className="w-3.5 h-3.5 text-muted" />
+                  <span>GitHub</span>
+                </a>
+              )}
+            </>
+          ) : undefined
         }
       />
 
-      <div className="mt-10 md:mt-14 apple-card overflow-hidden">
-        <div className="relative aspect-[16/9] bg-overlay-faint">
-          <Image
-            src={project.image}
-            alt={`${project.title} interface preview`}
-            fill
-            sizes="(max-width: 1024px) 100vw, 1200px"
-            referrerPolicy="no-referrer"
-            className="object-cover"
-            priority
-          />
+      {project.image && (
+        <div className="mt-10 md:mt-14 apple-card overflow-hidden">
+          <div className="relative aspect-[16/9] bg-overlay-faint">
+            <Image
+              src={project.image}
+              alt={project.title}
+              fill
+              sizes="(max-width: 1024px) 100vw, 1200px"
+              referrerPolicy="no-referrer"
+              className="object-cover"
+              priority
+            />
+          </div>
         </div>
-      </div>
+      )}
 
-      <PageSection
-        eyebrow="01 / Problem & Approach"
-        krEyebrow="문제와 해결"
-        title="The brief and the"
-        accent="build."
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <article className="apple-card p-6 md:p-7">
-            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-              Challenge
-            </h3>
-            <p className="mt-3 text-sm text-ink-secondary leading-relaxed">{project.challenge}</p>
-          </article>
-          <article className="apple-card p-6 md:p-7">
-            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-              Solution
-            </h3>
-            <p className="mt-3 text-sm text-ink-secondary leading-relaxed">{project.solution}</p>
-          </article>
-        </div>
-      </PageSection>
-
-      {project.phases.length > 0 && (
+      {(project.challenge || project.solution) && sections?.problem?.title && (
         <PageSection
-          eyebrow="02 / Delivery"
-          krEyebrow="진행 단계"
-          title="Phase by"
-          accent="phase."
-          description="The milestones that carried the build from concept to release."
+          eyebrow={sections.problem.eyebrow}
+          krEyebrow={sections.problem.krEyebrow}
+          title={sections.problem.title}
+          accent={sections.problem.accent}
+          description={sections.problem.description}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {project.challenge && (
+              <article className="apple-card p-6 md:p-7">
+                <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
+                  {sections.problem.primaryLabel}
+                </h3>
+                <p className="mt-3 text-sm text-ink-secondary leading-relaxed">
+                  {project.challenge}
+                </p>
+              </article>
+            )}
+            {project.solution && (
+              <article className="apple-card p-6 md:p-7">
+                <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
+                  {sections.problem.secondaryLabel}
+                </h3>
+                <p className="mt-3 text-sm text-ink-secondary leading-relaxed">{project.solution}</p>
+              </article>
+            )}
+          </div>
+        </PageSection>
+      )}
+
+      {project.phases.length > 0 && sections?.phases?.title && (
+        <PageSection
+          eyebrow={sections.phases.eyebrow}
+          krEyebrow={sections.phases.krEyebrow}
+          title={sections.phases.title}
+          accent={sections.phases.accent}
+          description={sections.phases.description}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {project.phases.map((phase, index) => (
-              <article
-                key={`${phase.phase}-${phase.name}`}
-                className="apple-card p-5 flex flex-col gap-2"
-              >
+              <article key={`${phase.name}-${index}`} className="apple-card p-5 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] text-muted">
-                    {phase.phase || `0${index + 1}`}
-                  </span>
+                  <span className="font-mono text-[11px] text-muted">{phase.phase}</span>
                   {phase.completed ? (
                     <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
                   ) : (
@@ -142,51 +170,53 @@ export default async function ProjectCaseStudyPage({ params }: { params: { slug:
         </PageSection>
       )}
 
-      <PageSection
-        eyebrow="03 / Details"
-        krEyebrow="세부 사항"
-        title="Capabilities and"
-        accent="stack."
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 items-start">
-          <article className="apple-card p-6 md:p-7">
-            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-              Key capabilities
-            </h3>
-            <ul className="mt-4 space-y-2.5 text-sm text-ink-secondary">
-              {project.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2.5">
-                  <Target className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
-                  <span className="leading-relaxed">{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
+      {(project.features.length > 0 || project.techStack.length > 0) && sections?.details?.title && (
+        <PageSection
+          eyebrow={sections.details.eyebrow}
+          krEyebrow={sections.details.krEyebrow}
+          title={sections.details.title}
+          accent={sections.details.accent}
+          description={sections.details.description}
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 items-start">
+            {project.features.length > 0 && (
+              <article className="apple-card p-6 md:p-7">
+                <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
+                  {sections.details.primaryLabel}
+                </h3>
+                <ul className="mt-4 space-y-2.5 text-sm text-ink-secondary">
+                  {project.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2.5">
+                      <Target className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
+                      <span className="leading-relaxed">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            )}
 
-          <article className="apple-card p-6 md:p-7">
-            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-              Technologies
-            </h3>
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {project.techStack.map((tech) => (
-                <span
-                  key={tech}
-                  className="inline-flex items-center rounded-full border border-line-subtle bg-overlay px-3 py-1 text-[11px] font-medium text-ink-secondary"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </article>
-        </div>
-      </PageSection>
+            {project.techStack.length > 0 && (
+              <article className="apple-card p-6 md:p-7">
+                <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
+                  {sections.details.secondaryLabel}
+                </h3>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {project.techStack.map((tech) => (
+                    <span
+                      key={tech}
+                      className="inline-flex items-center rounded-full border border-line-subtle bg-overlay px-3 py-1 text-[11px] font-medium text-ink-secondary"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            )}
+          </div>
+        </PageSection>
+      )}
 
-      <PageNav
-        backHref="/projects"
-        backLabel="All case studies"
-        nextHref="/contact"
-        nextLabel="Start a conversation"
-      />
+      <PageNav backHref="/projects" />
     </PageShell>
   )
 }

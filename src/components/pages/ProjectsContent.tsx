@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useMemo } from 'react'
-import { Calendar, Layers } from 'lucide-react'
+import { Layers } from 'lucide-react'
 import ScrollObserver from '@/components/ScrollObserver'
 import ErrorBoundary from '@/components/ErrorBoundaryWrapper'
 import { Loading } from '@/components/Loading'
@@ -11,9 +11,11 @@ import { useDevMode } from '@/contexts/DevModeContext'
 import { ProjectCard } from '@/components/ui/ProjectCard'
 import { MetaChip, PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
 import type { ProjectEntry } from '@/lib/projects'
+import type { PageCopy } from '@/lib/site-content'
 
 interface ProjectsContentProps {
   projects: ProjectEntry[]
+  copy?: PageCopy
 }
 
 const PAGE_KEY = 'projects'
@@ -21,7 +23,8 @@ const DEFAULT_SECTIONS = ['intro', 'work', 'timeline'] as const
 
 type SectionId = (typeof DEFAULT_SECTIONS)[number]
 
-export default function ProjectsContent({ projects }: ProjectsContentProps) {
+export default function ProjectsContent({ projects, copy }: ProjectsContentProps) {
+  const sections = copy?.sections
   const { mode, registerPageSections, getSectionOrder } = useDevMode()
 
   useEffect(() => {
@@ -36,30 +39,22 @@ export default function ProjectsContent({ projects }: ProjectsContentProps) {
     return filtered.length ? filtered : [...DEFAULT_SECTIONS]
   }, [getSectionOrder])
 
-  const webCount = projects.filter((project) => project.category === 'Web').length
-  const mobileCount = projects.filter((project) => project.category === 'Mobile').length
-
   const intro = (
     <DevSection
       pageKey={PAGE_KEY}
       sectionId="intro"
-      label="Intro"
+      label={copy?.eyebrow ?? ''}
       fallbackAccent="var(--accent-secondary)"
       className="pt-0"
     >
       <PageHero
-        eyebrow="Selected Work · Case Studies"
-        krEyebrow="주요 프로젝트"
-        title="Engineering ideas into"
-        accent="reality."
-        description="Case studies from discovery to deployment, where architecture, performance and interface craft meet real-world utility. Every record is managed through the CMS."
+        eyebrow={copy?.eyebrow ?? ''}
+        krEyebrow={copy?.krEyebrow}
+        title={copy?.title ?? ''}
+        accent={copy?.accent}
+        description={copy?.description}
         meta={
-          <>
-            <MetaChip icon={Layers}>{projects.length} case studies</MetaChip>
-            <MetaChip>{webCount} web</MetaChip>
-            <MetaChip>{mobileCount} mobile</MetaChip>
-            <MetaChip icon={Calendar}>2019 — today</MetaChip>
-          </>
+          projects.length ? <MetaChip icon={Layers}>{projects.length}</MetaChip> : undefined
         }
       />
     </DevSection>
@@ -74,11 +69,11 @@ export default function ProjectsContent({ projects }: ProjectsContentProps) {
       className="pt-0"
     >
       <PageSection
-        eyebrow="Archive"
-        krEyebrow="전체 사례"
-        title="Selected"
-        accent="case studies."
-        description="Open a project to read its challenge, solution, delivery phases and technical stack."
+        eyebrow={sections?.work?.eyebrow}
+        krEyebrow={sections?.work?.krEyebrow}
+        title={sections?.work?.title ?? ''}
+        accent={sections?.work?.accent}
+        description={sections?.work?.description}
       >
         {projects.length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -88,7 +83,7 @@ export default function ProjectsContent({ projects }: ProjectsContentProps) {
           </div>
         ) : (
           <div className="apple-card p-10 text-center text-sm text-muted">
-            Case studies will appear here as they are published in the CMS.
+            No records yet.
           </div>
         )}
       </PageSection>
@@ -104,11 +99,11 @@ export default function ProjectsContent({ projects }: ProjectsContentProps) {
       className="pt-0"
     >
       <PageSection
-        eyebrow="Process"
-        krEyebrow="진행 단계"
-        title="Delivery"
-        accent="timeline."
-        description="How each build moved from the first phase through to release."
+        eyebrow={sections?.timeline?.eyebrow}
+        krEyebrow={sections?.timeline?.krEyebrow}
+        title={sections?.timeline?.title ?? ''}
+        accent={sections?.timeline?.accent}
+        description={sections?.timeline?.description}
       >
         <ProjectsTimeline projects={projects} />
       </PageSection>
@@ -132,8 +127,7 @@ export default function ProjectsContent({ projects }: ProjectsContentProps) {
             ) : (
               orderedSections.map((sectionId) => <div key={sectionId}>{sectionMap[sectionId]}</div>)
             )}
-          </div>
-          <PageNav backLabel="Return home" nextHref="/contact" nextLabel="Start a conversation" />
+          </div>            <PageNav />
         </PageShell>
       </Suspense>
     </ErrorBoundary>

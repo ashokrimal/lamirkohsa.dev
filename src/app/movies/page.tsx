@@ -3,6 +3,7 @@ import { Film } from 'lucide-react'
 import { getMediaData } from '@/app/actions/media'
 import EmptyCollectionState from '@/components/EmptyCollectionState'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { getPageCopy } from '@/lib/site-content'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,7 +15,8 @@ export const metadata: Metadata = {
 type Movie = { id: number; title: string; payload: Record<string, unknown> }
 
 export default async function MoviesPage() {
-  const { movies } = await getMediaData()
+  const [{ movies }, copy] = await Promise.all([getMediaData(), getPageCopy()])
+  const pageCopy = copy['media-films']
   const records = Array.from(
     new Map(
       (movies as Movie[]).map((movie) => [
@@ -27,11 +29,11 @@ export default async function MoviesPage() {
   return (
     <PageShell>
       <PageHero
-        eyebrow="Media / Films"
-        krEyebrow="영화"
-        title="Films I've"
-        accent="watched."
-        description="A personal shelf of films watched, remembered, and worth returning to."
+        eyebrow={pageCopy?.eyebrow ?? ''}
+        krEyebrow={pageCopy?.krEyebrow}
+        title={pageCopy?.title ?? ''}
+        accent={pageCopy?.accent}
+        description={pageCopy?.description}
         meta={records.length ? <MetaChip icon={Film}>{records.length} films</MetaChip> : undefined}
       />
 

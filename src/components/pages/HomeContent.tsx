@@ -20,6 +20,7 @@ import {
   getMediaPreviews,
   getSocialLinks,
 } from '@/app/actions/content-cms'
+import { getSiteConfig } from '@/lib/site-content'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { ProjectCard, type ProjectData } from '@/components/ui/ProjectCard'
 import { ProjectsPreviewGrid } from '@/components/ui/ProjectsPreviewGrid'
@@ -48,6 +49,7 @@ export default async function HomeContent() {
     skillsRaw,
     mediaPreviews,
     socialLinksRaw,
+    site,
   ] = await Promise.all([
     getHeroSectionConfig(),
     getHomepageSectionsConfig(),
@@ -58,14 +60,14 @@ export default async function HomeContent() {
     getSkillsContent(),
     getMediaPreviews(),
     getSocialLinks(),
+    getSiteConfig(),
   ])
 
   // Extract hero image style per existing design
-  const heroImageUrl =
-    typeof heroData.imageUrl === 'string' && heroData.imageUrl
-      ? heroData.imageUrl
-      : '/images/hero-ashok.png'
-  const heroStyle = { '--hero-image': `url("${heroImageUrl}")` } as CSSProperties
+  const heroImageUrl = typeof heroData.imageUrl === 'string' ? heroData.imageUrl : undefined
+  const heroStyle = (heroImageUrl
+    ? { '--hero-image': `url("${heroImageUrl}")` }
+    : {}) as CSSProperties
 
   // Transform CMS projects to ProjectData
   const featuredProjects: ProjectData[] = featuredProjectsRaw.map((p) => {
@@ -165,14 +167,17 @@ export default async function HomeContent() {
     synopsis: item.payload.synopsis ? String(item.payload.synopsis) : undefined,
   }))
 
-  // Section Ordering and Visibility from CMS
-  const {
-    order = ['about', 'gallery', 'projects', 'media', 'experience', 'contact'],
-    enabled = {},
-  } = sectionsConfig
+  // Section order, visibility and copy all come from the CMS. There are no
+  // local fallbacks: an empty configuration simply renders no sections.
+  const { order = [], enabled = {} } = sectionsConfig
   const meta = sectionsConfig.sectionMeta || {}
 
-  // Helper to render sections dynamically
+  const profileData = profile as Record<string, unknown>
+  const profileText = (key: string) => {
+    const raw = profileData[key]
+    return typeof raw === 'string' && raw.trim() ? (raw as string) : undefined
+  }
+
   const renderSection = (key: string) => {
     if (enabled[key] === false) return null
 
@@ -186,97 +191,72 @@ export default async function HomeContent() {
             aria-labelledby="about-preview-heading"
           >
             <SectionHeader
-              eyebrow={meta.about?.eyebrow || '01 / About Me'}
-              krEyebrow="소개 및 철학"
-              title={meta.about?.title || 'Useful by design.'}
-              accent={meta.about?.accent || 'Quietly ambitious.'}
-              description={
-                meta.about?.description ||
-                'I like the space between a rough idea and the moment it becomes obvious to use.'
-              }
-              linkHref="/about"
-              linkLabel="Read complete biography & approach"
+              eyebrow={meta.about?.eyebrow}
+              krEyebrow={meta.about?.kr}
+              title={meta.about?.title ?? ''}
+              accent={meta.about?.accent}
+              description={meta.about?.description}
+              linkHref={meta.about?.href}
+              linkLabel={meta.about?.primaryLabel}
             />
 
             <div className="mt-10 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 items-start">
-              {/* Left Column: Short introduction & professional background */}
               <div className="space-y-6 text-sm md:text-base text-muted leading-relaxed">
-                <p className="text-base md:text-xl text-ink font-normal leading-relaxed tracking-tight">
-                  {profile.summary ||
-                    'A Bachelor of Computer Applications student and full-stack software developer focused on thoughtful interfaces, dependable backend systems, and human-centric software.'}
-                </p>
-                <p>
-                  {profile.bio ||
-                    'My work sits between interface craft, backend architecture, and teaching. I build accessible interfaces, dependable systems, and practical technology that helps people move forward.'}
-                </p>
-                <div className="pt-2 flex flex-wrap gap-3 text-xs">
-                  <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
-                    <Compass className="w-3.5 h-3.5 text-accent" />
-                    <span>Based in {profile.location || 'Nepal'}</span>
-                    <span lang="ko" className="font-korean text-[10px] text-muted">
-                      네팔
-                    </span>
-                  </span>
-                  <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
-                    <Code2 className="w-3.5 h-3.5 text-accent" />
-                    <span>{profile.headline || 'Full-Stack Developer'}</span>
-                    <span lang="ko" className="font-korean text-[10px] text-muted">
-                      개발자
-                    </span>
-                  </span>
-                </div>
+                {profileText('summary') && (
+                  <p className="text-base md:text-xl text-ink font-normal leading-relaxed tracking-tight">
+                    {profileText('summary')}
+                  </p>
+                )}
+                {profileText('bio') && <p>{profileText('bio')}</p>}
+
+                {(profileText('location') || profileText('headline')) && (
+                  <div className="pt-2 flex flex-wrap gap-3 text-xs">
+                    {profileText('location') && (
+                      <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
+                        <Compass className="w-3.5 h-3.5 text-accent" />
+                        <span>{profileText('location')}</span>
+                      </span>
+                    )}
+                    {profileText('headline') && (
+                      <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
+                        <Code2 className="w-3.5 h-3.5 text-accent" />
+                        <span>{profileText('headline')}</span>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Right Column: Apple 3D Interactive Spatial Mesh & Principles */}
               <Card3D maxTilt={5}>
                 <div className="apple-card p-6 md:p-7 space-y-5">
-                  <div className="flex items-center justify-between pb-3 border-b border-line-subtle">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs uppercase tracking-wider text-muted font-medium">
-                        Status &amp; Focus
-                      </span>
-                      <span lang="ko" className="font-korean text-[10px] text-muted">
-                        · 상태
-                      </span>
+                  {(meta.about?.secondaryLabel || profileText('availability')) && (
+                    <div className="flex items-center justify-between gap-3 pb-3 border-b border-line-subtle">
+                      {meta.about?.secondaryLabel && (
+                        <span className="text-xs uppercase tracking-wider text-muted font-medium">
+                          {meta.about.secondaryLabel}
+                        </span>
+                      )}
+                      {profileText('availability') && (
+                        <span className="text-xs text-emerald-600 font-medium flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          {profileText('availability')}
+                        </span>
+                      )}
                     </div>
-                    <span className="text-xs text-emerald-600 font-medium flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Available for Work
-                    </span>
-                  </div>
+                  )}
 
-                  {/* Three.js Interactive 3D Spatial Canvas */}
                   <div className="relative h-44 w-full rounded-2xl bg-overlay-faint border border-line-faint overflow-hidden flex items-center justify-center">
                     <Apple3DCanvas className="w-full h-full" />
-                    <div className="absolute bottom-2.5 right-3 text-[10px] font-korean text-muted bg-surface/80 backdrop-blur-md px-2 py-0.5 rounded-full shadow-xs">
-                      3D 공간 반응
-                    </div>
                   </div>
 
-                  <div className="space-y-3.5 text-xs leading-relaxed">
-                    <div>
-                      <h4 className="font-semibold text-ink">Core Engineering Stack</h4>
-                      <p className="text-muted text-xs mt-0.5 font-normal">
-                        Next.js · React · TypeScript · Node.js · PostgreSQL · Tailwind CSS
-                      </p>
+                  {(profileText('focus') || profileText('education')) && (
+                    <div className="space-y-3 text-xs leading-relaxed">
+                      {profileText('focus') && <p className="text-ink">{profileText('focus')}</p>}
+                      {profileText('education') && (
+                        <p className="text-muted">{profileText('education')}</p>
+                      )}
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-ink">Educational Foundation</h4>
-                      <p className="text-muted text-xs mt-0.5 font-normal">
-                        Bachelor of Computer Applications (BCA) · Crimson College of Technology
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="pt-2">
-                    <Link
-                      href="/about"
-                      className="apple-btn-secondary w-full justify-between !py-2.5"
-                    >
-                      <span>Read full credentials &amp; toolkit</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-muted" />
-                    </Link>
-                  </div>
+                  )}
                 </div>
               </Card3D>
             </div>
@@ -292,16 +272,13 @@ export default async function HomeContent() {
             aria-labelledby="gallery-preview-heading"
           >
             <SectionHeader
-              eyebrow={meta.gallery?.eyebrow || '02 / Visual Journal'}
-              krEyebrow="사진 및 시각 기록"
-              title={meta.gallery?.title || 'Moments in'}
-              accent={meta.gallery?.accent || 'perspective.'}
-              description={
-                meta.gallery?.description ||
-                'Personal photographs capturing quiet geometry, architecture, and light across Nepal.'
-              }
-              linkHref="/media"
-              linkLabel="View all photographs"
+              eyebrow={meta.gallery?.eyebrow}
+              krEyebrow={meta.gallery?.kr}
+              title={meta.gallery?.title ?? ''}
+              accent={meta.gallery?.accent}
+              description={meta.gallery?.description}
+              linkHref={meta.gallery?.href}
+              linkLabel={meta.gallery?.primaryLabel}
             />
             <div className="mt-8">
               <GalleryGrid items={galleryItems} columns={4} />
@@ -318,35 +295,31 @@ export default async function HomeContent() {
             aria-labelledby="projects-preview-heading"
           >
             <SectionHeader
-              eyebrow={meta.projects?.eyebrow || '03 / Selected Work'}
-              krEyebrow="주요 프로젝트"
-              title={meta.projects?.title || 'Systems built with'}
-              accent={meta.projects?.accent || 'conviction.'}
-              description={
-                meta.projects?.description ||
-                'Web and mobile applications engineered from user research to production delivery.'
-              }
-              linkHref="/projects"
-              linkLabel="Browse project archive & execution timeline"
+              eyebrow={meta.projects?.eyebrow}
+              krEyebrow={meta.projects?.kr}
+              title={meta.projects?.title ?? ''}
+              accent={meta.projects?.accent}
+              description={meta.projects?.description}
+              linkHref={meta.projects?.href}
+              linkLabel={meta.projects?.primaryLabel}
             />
 
             <div className="mt-8">
               <ProjectsPreviewGrid projects={featuredProjects} />
             </div>
 
-            <div className="mt-8 pt-4 flex justify-end">
-              <Link href="/projects" className="apple-btn-primary">
-                <span>Browse all case studies &amp; milestones</span>
-                <span lang="ko" className="font-korean text-xs opacity-75">
-                  전체 작업
-                </span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+            {meta.projects?.secondaryLabel && meta.projects?.href && (
+              <div className="mt-8 pt-4 flex justify-end">
+                <Link href={meta.projects.href} className="apple-btn-primary">
+                  <span>{meta.projects.secondaryLabel}</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            )}
           </section>
         )
 
-      // 4. MEDIA PREVIEW (Interactive Filterable Shelf)
+      // 4. MEDIA PREVIEW
       case 'media':
         return (
           <section
@@ -355,16 +328,13 @@ export default async function HomeContent() {
             aria-labelledby="media-preview-heading"
           >
             <SectionHeader
-              eyebrow={meta.media?.eyebrow || '04 / Cultural Influences'}
-              krEyebrow="음악 및 미디어"
-              title={meta.media?.title || 'Soundtrack &'}
-              accent={meta.media?.accent || 'Stories.'}
-              description={
-                meta.media?.description ||
-                'Interactive media shelf with real-time Spotify listening, music rotation, anime, and manga records.'
-              }
-              linkHref="/media"
-              linkLabel="Open complete media collections"
+              eyebrow={meta.media?.eyebrow}
+              krEyebrow={meta.media?.kr}
+              title={meta.media?.title ?? ''}
+              accent={meta.media?.accent}
+              description={meta.media?.description}
+              linkHref={meta.media?.href}
+              linkLabel={meta.media?.primaryLabel}
             />
 
             <div className="mt-8">
@@ -386,60 +356,45 @@ export default async function HomeContent() {
             aria-labelledby="experience-preview-heading"
           >
             <SectionHeader
-              eyebrow={meta.experience?.eyebrow || '05 / Career & Toolkit'}
-              krEyebrow="경력 및 기술"
-              title={meta.experience?.title || 'Work in'}
-              accent={meta.experience?.accent || 'practice.'}
-              description={
-                meta.experience?.description ||
-                'Roles, teaching commitments, and practical technical proficiencies.'
-              }
-              linkHref="/about"
-              linkLabel="View complete career & qualifications"
+              eyebrow={meta.experience?.eyebrow}
+              krEyebrow={meta.experience?.kr}
+              title={meta.experience?.title ?? ''}
+              accent={meta.experience?.accent}
+              description={meta.experience?.description}
+              linkHref={meta.experience?.href}
+              linkLabel={meta.experience?.primaryLabel}
             />
 
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 items-start">
-              {/* Left Column: Timeline items */}
               <div>
-                <h3 className="text-xs uppercase tracking-wider text-muted font-medium mb-4 flex items-center justify-between">
-                  <span>Selected Milestones</span>
-                  <span lang="ko" className="font-korean text-[10px] text-muted">
-                    · 주요 이력
-                  </span>
-                </h3>
+                {meta.experience?.secondaryLabel && (
+                  <h3 className="text-xs uppercase tracking-wider text-muted font-medium mb-4">
+                    {meta.experience.secondaryLabel}
+                  </h3>
+                )}
                 <ExperienceTimeline items={experienceItems.slice(0, 2)} type="experience" />
               </div>
 
-              {/* Right Column: Skills preview */}
               <div className="space-y-4">
-                <h3 className="text-xs uppercase tracking-wider text-muted font-medium mb-4 flex items-center justify-between">
-                  <span>Core Disciplines</span>
-                  <span lang="ko" className="font-korean text-[10px] text-muted">
-                    · 핵심 기술
-                  </span>
-                </h3>
+                {meta.experience?.meta && (
+                  <h3 className="text-xs uppercase tracking-wider text-muted font-medium mb-4">
+                    {meta.experience.meta}
+                  </h3>
+                )}
                 <SkillDisplay skills={skills} limit={2} />
 
-                {/* Dither Kit: 30-Day Engineering Cadence Sparkline */}
-                <div className="mt-4">
-                  <DitherSparkline label="30-Day Engineering Cadence" />
-                </div>
-
-                <div className="apple-card p-5 flex items-center justify-between text-xs text-muted">
-                  <span>Want to see verified credentials &amp; tools?</span>
-                  <Link
-                    href="/about"
-                    className="font-semibold text-accent hover:underline inline-flex items-center gap-1"
-                  >
-                    About page <ArrowUpRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
+                {meta.experience?.primaryLabel && (
+                  <div className="mt-4">
+                    <DitherSparkline label={meta.experience.primaryLabel} />
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* GitHub Activity Sparkline & Recent Open-Source Dispatches */}
             <div className="mt-8">
-              <GitHubActivitySparkline showRecentCommits={true} />
+              {profile.github && (
+                <GitHubActivitySparkline username={profile.github} showRecentCommits={true} />
+              )}
             </div>
           </section>
         )
@@ -453,15 +408,15 @@ export default async function HomeContent() {
             aria-labelledby="contact-preview-heading"
           >
             <ContactSection
-              eyebrow={meta.contact?.eyebrow || '06 / Direct Dispatch'}
-              title={meta.contact?.title || "Let's build something"}
-              accent={meta.contact?.accent || 'thoughtful.'}
-              description={
-                meta.contact?.description ||
-                'Open to software engineering roles, independent client contracts, and collaborative open-source builds.'
-              }
+              eyebrow={meta.contact?.eyebrow}
+              title={meta.contact?.title ?? ''}
+              accent={meta.contact?.accent}
+              description={meta.contact?.description}
               socialLinks={socialLinks}
-              showForm={true}
+              email={site.contact.email}
+              location={site.contact.location}
+              timeZone={site.contact.timeZone || site.contact.timezone}
+              timezoneLabel={site.contact.timezoneLabel}
             />
           </section>
         )
@@ -473,68 +428,59 @@ export default async function HomeContent() {
 
   return (
     <div className="portfolio-home home-redesign">
-      {/* ========================================================================= */}
-      {/* HERO SECTION: PRESERVED EXACTLY AS IS (DESIGN, TYPOGRAPHY, LAYOUT & META) */}
-      {/* ========================================================================= */}
-      <section
-        className="hero-section shell-width"
-        style={heroStyle}
-        aria-labelledby="hero-heading"
-      >
+      <section className="hero-section shell-width" style={heroStyle} aria-labelledby="hero-heading">
         <div className="hero-editorial">
           <div className="hero-copy-block">
-            <div className="hero-stats">
-              <span>
-                <strong>{heroData.stats?.[0]?.value || '03+'}</strong>
-                <small>{heroData.stats?.[0]?.label || 'Selected projects'}</small>
-              </span>
-              <span>
-                <strong>{heroData.stats?.[1]?.value || '04'}</strong>
-                <small>{heroData.stats?.[1]?.label || 'Creative disciplines'}</small>
-              </span>
-            </div>
-            <h1 id="hero-heading" className="hero-heading">
-              {heroData.heading ? heroData.heading.replace(/\.$/, '') : 'Hello'}
-              <span>.</span>
-            </h1>
-            <p className="hero-subtitle">
-              {heroData.subtitle ||
-                "I'm Ashok, a developer building calm, useful digital experiences."}
-            </p>
+            {heroData.stats && heroData.stats.length > 0 && (
+              <div className="hero-stats">
+                {heroData.stats.map((stat, index) => (
+                  <span key={index}>
+                    <strong>{stat.value}</strong>
+                    <small>{stat.label}</small>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {heroData.heading && (
+              <h1 id="hero-heading" className="hero-heading">
+                {heroData.heading.replace(/\.$/, '')}
+                <span>.</span>
+              </h1>
+            )}
+
+            {heroData.subtitle && <p className="hero-subtitle">{heroData.subtitle}</p>}
           </div>
+
           <div className="hero-portrait">
             <div className="portrait-frame">
-              <span className="portrait-initials" aria-hidden="true">
-                {heroData.initials || 'AR'}
-              </span>
+              {heroData.initials && (
+                <span className="portrait-initials" aria-hidden="true">
+                  {heroData.initials}
+                </span>
+              )}
             </div>
-            <p>
-              {heroData.location ? (
-                heroData.location.split('\n').map((line: string, i: number) => (
-                  <span key={i}>
+            {heroData.location && (
+              <p>
+                {heroData.location.split('\n').map((line, index) => (
+                  <span key={index}>
                     {line}
                     <br />
                   </span>
-                ))
-              ) : (
-                <>
-                  Butwal, Nepal
-                  <br />
-                  Available for thoughtful collaborations
-                </>
-              )}
-            </p>
+                ))}
+              </p>
+            )}
           </div>
         </div>
-        <div className="hero-meta">
-          <span>{heroData.metaLeft || 'Scroll to explore ↓'}</span>
-          <span>{heroData.metaRight || 'Selected work · 01 / 06'}</span>
-        </div>
+
+        {(heroData.metaLeft || heroData.metaRight) && (
+          <div className="hero-meta">
+            <span>{heroData.metaLeft}</span>
+            <span>{heroData.metaRight}</span>
+          </div>
+        )}
       </section>
 
-      {/* ========================================================================= */}
-      {/* DYNAMIC HOMEPAGE SECTIONS DRIVEN BY CMS (ORDER & VISIBILITY CONFIGURABLE)  */}
-      {/* ========================================================================= */}
       <div className="shell-width">{order.map((sectionKey) => renderSection(sectionKey))}</div>
     </div>
   )

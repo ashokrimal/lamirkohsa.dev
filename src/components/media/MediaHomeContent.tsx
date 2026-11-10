@@ -5,7 +5,8 @@ import { getMediaData } from '@/app/actions/media'
 import { getMediaPreviews } from '@/app/actions/content-cms'
 import EmptyCollectionState from '@/components/EmptyCollectionState'
 import { ArrowUpRight, BookOpen, Disc3, Film, Sparkles } from 'lucide-react'
-import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 
 type Track = {
   track_metadata?: {
@@ -142,7 +143,13 @@ function CollectionPreview({
 }
 
 export default async function MediaHomeContent() {
-  const [mediaApiData, cmsPreviews] = await Promise.all([getMediaData(), getMediaPreviews()])
+  const [mediaApiData, cmsPreviews, collections, copy] = await Promise.all([
+    getMediaData(),
+    getMediaPreviews(),
+    getMediaCollections(),
+    getPageCopy(),
+  ])
+  const pageCopy = copy.media
 
   const {
     recent,
@@ -266,61 +273,51 @@ export default async function MediaHomeContent() {
     ).values(),
   )
 
+  // The CMS decides which collections exist, in which order, and what they say.
+  const itemsByKey: Record<string, Item[]> = {
+    music: musicItems,
+    anime,
+    manga,
+    films: movieItems,
+  }
+
+  const icons: Record<string, React.ComponentType<{ className?: string }>> = {
+    music: Disc3,
+    anime: Film,
+    manga: BookOpen,
+    films: Sparkles,
+    movies: Sparkles,
+  }
+
   return (
     <PageShell>
       <PageHero
-        eyebrow="Media & Cultural Library"
-        krEyebrow="미디어 기록"
-        title="What I'm"
-        accent="into."
-        description="Curated listening rotation, anime, manga, and films that inspire focus and visual storytelling. Every record is managed dynamically through the CMS."
-        meta={
-          <>
-            <MetaChip icon={Disc3}>{musicItems.length} tracks</MetaChip>
-            <MetaChip icon={Film}>{anime.length} series</MetaChip>
-            <MetaChip icon={BookOpen}>{manga.length} titles</MetaChip>
-            <MetaChip icon={Sparkles}>{movieItems.length} films</MetaChip>
-          </>
-        }
+        eyebrow={pageCopy?.eyebrow ?? ''}
+        krEyebrow={pageCopy?.krEyebrow}
+        title={pageCopy?.title ?? ''}
+        accent={pageCopy?.accent}
+        description={pageCopy?.description}
       />
 
-      <CollectionPreview
-        number="01"
-        title="Music"
-        description="Favorite listening, recent rotation, and personal soundscapes."
-        href="/media/music"
-        items={musicItems}
-        icon={Disc3}
-      />
+      {collections.length === 0 && (
+        <div className="mt-10 apple-card p-10 text-center text-sm text-muted">
+          No collections yet.
+        </div>
+      )}
 
-      <CollectionPreview
-        number="02"
-        title="Anime"
-        description="Favorite, currently watching, completed, and plan-to-watch series."
-        href="/media/anime"
-        items={anime}
-        icon={Film}
-      />
+      {collections.map((collection) => (
+        <CollectionPreview
+          key={collection.key}
+          number={collection.number ?? ''}
+          title={collection.label}
+          description={collection.description ?? ''}
+          href={collection.href}
+          items={itemsByKey[collection.key] ?? []}
+          icon={icons[collection.key] ?? Sparkles}
+        />
+      ))}
 
-      <CollectionPreview
-        number="03"
-        title="Manga &amp; Manhwa"
-        description="Favorite graphic novels, currently reading series, and masterworks."
-        href="/media/manga"
-        items={manga}
-        icon={BookOpen}
-      />
-
-      <CollectionPreview
-        number="04"
-        title="Films"
-        description="Cinematic films watched, remembered, and worth revisiting."
-        href="/movies"
-        items={movieItems}
-        icon={Sparkles}
-      />
-
-      <PageNav backLabel="Return home" nextHref="/contact" nextLabel="Start a conversation" />
+      <PageNav />
     </PageShell>
   )
 }
