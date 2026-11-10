@@ -16,6 +16,8 @@ import { PhotoCard } from '@/components/ui/PhotoCard'
 import { MediaPoster } from '@/components/ui/MediaPoster'
 import { HorizontalCollection } from '@/components/ui/HorizontalCollection'
 import { ContactSection } from '@/components/ui/ContactSection'
+import { HeroFacts } from '@/components/ui/HeroFacts'
+import { Reveal } from '@/components/ui/Reveal'
 
 const PREVIEW_COUNT = 5
 
@@ -306,17 +308,6 @@ export default async function HomeContent() {
       <section className="hero-section shell-width" style={heroStyle} aria-labelledby="hero-heading">
         <div className="hero-editorial">
           <div className="hero-copy-block">
-            {heroData.stats && heroData.stats.length > 0 && (
-              <div className="hero-stats">
-                {heroData.stats.map((stat, index) => (
-                  <span key={index}>
-                    <strong>{stat.value}</strong>
-                    <small>{stat.label}</small>
-                  </span>
-                ))}
-              </div>
-            )}
-
             {heroData.heading && (
               <h1 id="hero-heading" className="hero-heading">
                 {heroData.heading.replace(/\.$/, '')}
@@ -335,16 +326,6 @@ export default async function HomeContent() {
                 </span>
               )}
             </div>
-            {heroData.location && (
-              <p>
-                {heroData.location.split('\n').map((line, index) => (
-                  <span key={index}>
-                    {line}
-                    <br />
-                  </span>
-                ))}
-              </p>
-            )}
           </div>
         </div>
 
@@ -356,7 +337,13 @@ export default async function HomeContent() {
         )}
       </section>
 
-      <div className="shell-width">{order.map((sectionKey) => renderSection(sectionKey))}</div>
+      <HeroFacts stats={heroData.stats} location={heroData.location} />
+
+      <div className="shell-width">
+        {order.map((sectionKey) => (
+          <Reveal key={sectionKey}>{renderSection(sectionKey)}</Reveal>
+        ))}
+      </div>
     </div>
   )
 }

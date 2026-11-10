@@ -50,7 +50,7 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               referrerPolicy="no-referrer"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
             />
 
             {/* Apple Frosted Glass Pill Badges */}

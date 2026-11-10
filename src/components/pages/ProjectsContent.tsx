@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useMemo } from 'react'
+import EmptyCollectionState from '@/components/EmptyCollectionState'
 import { Layers } from 'lucide-react'
 import ScrollObserver from '@/components/ScrollObserver'
 import ErrorBoundary from '@/components/ErrorBoundaryWrapper'
@@ -82,9 +83,11 @@ export default function ProjectsContent({ projects, copy }: ProjectsContentProps
             ))}
           </div>
         ) : (
-          <div className="apple-card p-10 text-center text-sm text-muted">
-            No records yet.
-          </div>
+          <EmptyCollectionState
+            eyebrow="Projects / Empty"
+            title="No case studies yet."
+            description="Published projects appear here with their stack, links and case study pages."
+          />
         )}
       </PageSection>
     </DevSection>

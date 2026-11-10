@@ -19,7 +19,7 @@ export function PhotoCard({ item, sizes = '(max-width: 640px) 80vw, 320px' }: Ph
             fill
             sizes={sizes}
             referrerPolicy="no-referrer"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
           />
           {item.category && (
             <div className="absolute top-3 left-3 bg-surface/85 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-medium tracking-tight text-ink shadow-xs">

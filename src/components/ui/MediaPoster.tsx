@@ -43,7 +43,7 @@ export function MediaPoster({ kind, item, sizes = '(max-width: 640px) 78vw, 260p
             fill
             sizes={sizes}
             referrerPolicy="no-referrer"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted">

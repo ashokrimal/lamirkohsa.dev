@@ -27,7 +27,7 @@ export async function MediaGallerySection() {
                 fill
                 sizes="(max-width: 640px) 100vw, 320px"
                 referrerPolicy="no-referrer"
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
               />
             </div>
             <span>{item.title}</span>

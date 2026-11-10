@@ -118,6 +118,13 @@ body {
 a { color: inherit; text-decoration: none; }
 button, a { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 9999px; }
+/* Comfortable touch targets on coarse pointers without changing desktop rhythm. */
+@media (pointer: coarse) {
+  .glass-nav a, .glass-nav button, .mobile-menu a, .mobile-menu button { min-height: 44px; display: inline-flex; align-items: center; }
+  .mobile-menu a { min-height: 48px; }
+  footer a { min-height: 40px; display: inline-flex; align-items: center; }
+}
+a, button { -webkit-tap-highlight-color: transparent; }
 .shell-width { width: min(1280px, calc(100% - 48px)); margin-inline: auto; }
 
 /* Korean typography — Pretendard owns Hangul. The Latin-tuned negative tracking
@@ -226,7 +233,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
    the page behind the drawer shows through while it scrolls. */
 .mobile-menu > div { background-color: var(--paper, #f4f1eb); }
 .mobile-menu-scrim {
-  background: rgb(var(--paper-rgb) / 0.72);
+  background: rgb(var(--paper-rgb) / 0.92);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   opacity: 0;
@@ -242,6 +249,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hero-section::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(var(--surface-rgb) / .72), transparent 35%, rgb(var(--surface-rgb) / .15)); pointer-events: none; }
 @keyframes hero-drift { from { transform: scale(1); } to { transform: scale(1.04); } }
 .hero-meta, .hero-stats, .hero-editorial { position: relative; z-index: 1; }
+/* Supporting hero data moved out of the hero into calm, asymmetric cards. */
+.hero-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.hero-fact-card { display: flex; flex-direction: column; justify-content: center; gap: 6px; min-height: 112px; padding: 22px 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+.hero-fact-card strong { font-size: 30px; line-height: 1; font-weight: 500; letter-spacing: -.05em; color: var(--ink); }
+.hero-fact-card span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.hero-fact-card--location { justify-content: flex-end; gap: 4px; background: transparent; border-style: dashed; }
+.hero-fact-card--location strong { font-size: 18px; letter-spacing: -.02em; }
+.hero-fact-card--location .hero-fact-eyebrow { font-size: 10px; }
+.hero-fact-card--location .hero-fact-note { font-size: 12px; letter-spacing: 0; text-transform: none; color: var(--ink-secondary); }
+@media (min-width: 900px) { .hero-facts { grid-template-columns: 1fr 1fr 1.4fr; } }
+@media (max-width: 640px) { .hero-facts { grid-template-columns: 1fr; } .hero-fact-card { min-height: 88px; padding: 18px 20px; } }
 .hero-editorial { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr); gap: 44px; align-items: flex-end; margin-block: auto; padding-block: 100px 58px; }
 .hero-vertical { align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; color: var(--muted); font-size: 10px; writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: .08em; }
 .hero-copy-block { max-width: 570px; }
