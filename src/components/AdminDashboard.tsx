@@ -1,11 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Buffer } from 'buffer';
 import MessagesTable, { Message } from '@/components/MessagesTable';
-
-const ADMIN_EMAIL = 'admin@lamirkohsa.dev';
-const ADMIN_PASSWORD = 'ashokrimal9847177515';
 
 const STAT_CARDS = [
   {
@@ -29,7 +25,8 @@ export default function AdminDashboard() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [authHeader, setAuthHeader] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -38,13 +35,13 @@ export default function AdminDashboard() {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   const fetchMessages = useCallback(async () => {
-    if (!authHeader) return;
+    if (!isAuthenticated) return;
     setFetchError(null);
     setIsRefreshing(true);
     try {
       const response = await fetch('/api/messages', {
-        headers: { Authorization: authHeader },
         cache: 'no-store',
+        credentials: 'same-origin',
       });
 
       if (!response.ok) {
@@ -66,13 +63,13 @@ export default function AdminDashboard() {
       setIsRefreshing(false);
       setIsLoading(false);
     }
-  }, [authHeader]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!authHeader) return;
+    if (!isAuthenticated) return;
     setIsLoading(true);
     fetchMessages();
-  }, [authHeader, fetchMessages]);
+  }, [isAuthenticated, fetchMessages]);
 
   const stats = useMemo(() => {
     const total = messages.length;
@@ -81,20 +78,34 @@ export default function AdminDashboard() {
     return { total, unique, recent };
   }, [messages]);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  // Credentials are checked by the server; this component only forwards them once.
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      const encoded = typeof window !== 'undefined' && typeof window.btoa === 'function'
-        ? window.btoa(`${email}:${password}`)
-        : Buffer.from(`${email}:${password}`).toString('base64');
-      setAuthHeader(`Basic ${encoded}`);
-      setError(null);
-    } else {
-      setError('Invalid credentials.');
+    setError(null);
+    setIsSigningIn(true);
+    try {
+      const response = await fetch('/api/admin/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error ?? 'Invalid credentials.');
+      }
+
+      setPassword('');
+      setIsAuthenticated(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid credentials.');
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
-  if (!authHeader) {
+  if (!isAuthenticated) {
     return (
       <div className="mx-auto max-w-xl">
         <div className="rounded-3xl border border-gray-200 bg-surface p-10 shadow-lg">
@@ -137,9 +148,10 @@ export default function AdminDashboard() {
             </div>
             <button
               type="submit"
-              className="w-full rounded-xl bg-blue-600 py-3 text-base font-semibold text-inverse shadow hover:bg-blue-700 transition"
+              disabled={isSigningIn}
+              className="w-full rounded-xl bg-blue-600 py-3 text-base font-semibold text-inverse shadow hover:bg-blue-700 transition disabled:opacity-60"
             >
-              Access dashboard
+              {isSigningIn ? 'Checking…' : 'Access dashboard'}
             </button>
           </form>
 
