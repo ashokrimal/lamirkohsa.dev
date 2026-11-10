@@ -15,6 +15,7 @@ export interface ProjectEntry {
   title: string
   category?: string
   image?: string
+  altText?: string
   completionDate?: string
   period?: string
   status?: string
@@ -48,6 +49,7 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
     title: record.title,
     category: optionalString(payload.category),
     image: optionalString(payload.image) ?? optionalString(payload.imageUrl),
+    altText: optionalString(payload.altText),
     completionDate: optionalString(payload.completionDate),
     period: optionalString(payload.period),
     status: optionalString(payload.status),

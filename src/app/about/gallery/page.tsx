@@ -21,6 +21,7 @@ type GalleryRow = {
   category?: string
   description?: string
   location?: string
+  altText?: string
 }
 
 export default async function GalleryPage() {
@@ -39,6 +40,7 @@ export default async function GalleryPage() {
       category: item.category,
       description: item.description,
       location: item.location,
+      altText: item.altText,
     }))
 
   return (

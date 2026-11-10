@@ -61,6 +61,7 @@ function mapRecord(record: CmsRecord): MediaPosterData {
     title: record.title,
     subtitle: text(payload, 'artist') || text(payload, 'subtitle') || text(payload, 'creator'),
     description: text(payload, 'description') || text(payload, 'synopsis'),
+    altText: text(payload, 'altText'),
     imageUrl:
       text(payload, 'coverUrl') || text(payload, 'imageUrl') || text(payload, 'posterUrl'),
     rating: text(payload, 'rating') || text(payload, 'score'),

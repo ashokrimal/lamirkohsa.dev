@@ -10,6 +10,7 @@ export interface GalleryItemData {
   description?: string
   location?: string
   featured?: boolean
+  altText?: string
 }
 
 interface GalleryGridProps {
@@ -48,7 +49,7 @@ export function GalleryGrid({ items, columns = 4 }: GalleryGridProps) {
               <div className="relative aspect-[4/3] overflow-hidden bg-overlay-faint">
                 <Image
                   src={item.imageUrl}
-                  alt={item.title || ''}
+                  alt={item.altText || item.title || ''}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   referrerPolicy="no-referrer"

@@ -15,7 +15,7 @@ export function PhotoCard({ item, sizes = '(max-width: 640px) 80vw, 320px' }: Ph
         <div className="relative aspect-[4/3] overflow-hidden bg-overlay-faint">
           <Image
             src={item.imageUrl}
-            alt={item.title || ''}
+            alt={item.altText || item.title || ''}
             fill
             sizes={sizes}
             referrerPolicy="no-referrer"

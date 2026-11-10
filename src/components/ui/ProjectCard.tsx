@@ -18,6 +18,7 @@ export interface ProjectData {
   solution?: string
   techStack?: string[]
   image?: string
+  altText?: string
   live?: string
   github?: string
   status?: string
@@ -30,23 +31,29 @@ interface ProjectCardProps {
   project: ProjectData
   variant?: 'featured' | 'standard' | 'compact'
   index?: number
-  onQuickView?: (project: ProjectData) => void
 }
 
-export function ProjectCard({ project, variant = 'standard', index, onQuickView }: ProjectCardProps) {
+export function ProjectCard({ project, variant = 'standard', index }: ProjectCardProps) {
   const isFeatured = variant === 'featured' || project.featured
   // Every card opens the case study route, never an inline expansion.
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
 
   return (
     <Card3D maxTilt={6} className={isFeatured ? 'md:col-span-2' : ''}>
-      <article className="apple-card group overflow-hidden flex flex-col justify-between h-full">
+      <article className="apple-card group relative overflow-hidden flex flex-col justify-between h-full">
+        {/* The whole card is the link; the overlay keeps the markup valid without
+            nesting the demo and source links inside an anchor. */}
+        <Link
+          href={detailHref}
+          className="absolute inset-0 z-10"
+          aria-label={`Open the ${project.title} case study`}
+        />
         {/* Top Image Preview if available */}
         {project.image && (
           <div className="relative overflow-hidden aspect-[16/10] max-h-[300px] bg-overlay-faint">
             <Image
               src={project.image}
-              alt={`${project.title} preview`}
+              alt={project.altText || `${project.title} preview`}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               referrerPolicy="no-referrer"
@@ -78,7 +85,6 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
               {index !== undefined && (
                 <div className="flex items-center gap-1.5 text-[11px] text-muted">
                   <span className="font-mono">0{index + 1}</span>
-                  <span lang="ko" className="font-korean">· 프로젝트</span>
                 </div>
               )}
               {project.completionDate && (
@@ -90,10 +96,8 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
             </div>
 
             {/* Title */}
-            <h3 className="text-xl md:text-2xl font-semibold text-ink tracking-tight leading-snug transition-colors">
-              <Link href={detailHref} className="hover:text-accent transition-colors">
-                {project.title}
-              </Link>
+            <h3 className="text-xl md:text-2xl font-semibold text-ink tracking-tight leading-snug">
+              {project.title}
             </h3>
 
             {/* Description */}
@@ -134,7 +138,7 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
           )}
 
           {/* Actions with Anti-Boxy Apple Pill Buttons */}
-          <div className="pt-4 border-t border-line-subtle flex items-center justify-between gap-3 text-xs">
+          <div className="relative z-20 pt-4 border-t border-line-hairline flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               {project.live && project.live !== '#' && (
                 <a
@@ -163,28 +167,10 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
               )}
             </div>
 
-            {onQuickView ? (
-              <button
-                type="button"
-                onClick={() => {
-                  sensoryAudio.playModal()
-                  onQuickView(project)
-                }}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline cursor-pointer"
-              >
-                <span>Details</span>
-                <span lang="ko" className="font-korean text-[10px] text-muted font-normal">상세</span>
-                <ArrowUpRight className="w-3 h-3" />
-              </button>
-            ) : (
-              <Link
-                href={detailHref}
-                className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"
-              >
-                <span>Read case study</span>
-                <ArrowUpRight className="w-3 h-3" />
-              </Link>
-            )}
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
+              <span>View case study</span>
+              <ArrowUpRight className="w-3 h-3" />
+            </span>
           </div>
         </div>
       </article>

@@ -14,6 +14,7 @@ export interface MediaPosterData {
   rating?: string
   status?: string
   href?: string
+  altText?: string
 }
 
 const icons = {
@@ -39,7 +40,7 @@ export function MediaPoster({ kind, item, sizes = '(max-width: 640px) 78vw, 260p
         {item.imageUrl ? (
           <Image
             src={item.imageUrl}
-            alt={item.title}
+            alt={item.altText || item.title}
             fill
             sizes={sizes}
             referrerPolicy="no-referrer"

@@ -71,6 +71,7 @@ export default async function HomeContent() {
           : typeof payload.imageUrl === 'string'
             ? payload.imageUrl
             : undefined,
+      altText: typeof payload.altText === 'string' ? payload.altText : undefined,
       live: typeof payload.live === 'string' ? payload.live : undefined,
       github: typeof payload.github === 'string' ? payload.github : undefined,
       status: typeof payload.status === 'string' ? payload.status : undefined,
@@ -85,6 +86,7 @@ export default async function HomeContent() {
       id: g.id,
       title: g.title,
       imageUrl: typeof g.payload?.imageUrl === 'string' ? g.payload.imageUrl : '',
+      altText: typeof g.payload?.altText === 'string' ? g.payload.altText : undefined,
       category: typeof g.payload?.category === 'string' ? g.payload.category : undefined,
       description: typeof g.payload?.description === 'string' ? g.payload.description : '',
       location: typeof g.payload?.location === 'string' ? g.payload.location : undefined,
