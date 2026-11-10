@@ -2,7 +2,8 @@ import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { MediaPoster, type MediaKind } from '@/components/ui/MediaPoster'
 import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSection } from '@/lib/media-content'
-import EmptyCollectionState from '@/components/EmptyCollectionState'
+import { ImageOff } from 'lucide-react'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const COPY_KEY: Record<MediaKind, string> = {
   music: 'media-music',
@@ -47,11 +48,7 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
         </div>
       ) : (
         <div className="mt-12">
-          <EmptyCollectionState
-            eyebrow={`${section.label} / Empty`}
-            title="Nothing published yet."
-            description={`New ${section.label.toLowerCase()} entries appear here as soon as they are published in the CMS.`}
-          />
+          <EmptyState icon={ImageOff} message={`${section.label} updating...`} />
         </div>
       )}
 

@@ -2,7 +2,8 @@ import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { HorizontalCollection } from '@/components/ui/HorizontalCollection'
 import { MediaPoster } from '@/components/ui/MediaPoster'
-import EmptyCollectionState from '@/components/EmptyCollectionState'
+import { ImageOff } from 'lucide-react'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSections } from '@/lib/media-content'
 
@@ -32,11 +33,7 @@ export default async function MediaHomeContent() {
 
       {sections.length === 0 && (
         <div className="mt-12">
-          <EmptyCollectionState
-            eyebrow="Media / Empty"
-            title="The shelves are ready."
-            description="Music, movies, anime and manga appear here as soon as they are published in the CMS."
-          />
+          <EmptyState icon={ImageOff} message="Media collections updating..." />
         </div>
       )}
 

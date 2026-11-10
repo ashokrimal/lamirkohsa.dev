@@ -161,16 +161,9 @@ export default function SiteHeader({
         </div>
       </nav>
 
-      {/* Cream scrim behind the drawer so the page never bleeds through */}
-      <div
-        onClick={() => setIsOpen(false)}
-        aria-hidden="true"
-        className={`mobile-menu-scrim fixed inset-0 z-40 md:hidden ${isOpen ? 'open' : ''}`}
-      />
-
       <div
         id="mobile-navigation"
-        className={`mobile-menu fixed inset-y-0 right-0 z-50 w-[min(88vw,340px)] p-6 md:hidden shadow-2xl flex flex-col justify-between ${
+        className={`mobile-menu fixed inset-0 z-[100] w-full p-6 md:hidden flex flex-col justify-between ${
           isOpen ? 'open' : ''
         }`}
       >

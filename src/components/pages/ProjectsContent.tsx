@@ -1,8 +1,8 @@
 'use client'
 
 import { Suspense, useEffect, useMemo } from 'react'
-import EmptyCollectionState from '@/components/EmptyCollectionState'
-import { Layers } from 'lucide-react'
+import { FolderGit2, Layers } from 'lucide-react'
+import { EmptyState } from '@/components/ui/EmptyState'
 import ScrollObserver from '@/components/ScrollObserver'
 import ErrorBoundary from '@/components/ErrorBoundaryWrapper'
 import { Loading } from '@/components/Loading'
@@ -83,11 +83,7 @@ export default function ProjectsContent({ projects, copy }: ProjectsContentProps
             ))}
           </div>
         ) : (
-          <EmptyCollectionState
-            eyebrow="Projects / Empty"
-            title="No case studies yet."
-            description="Published projects appear here with their stack, links and case study pages."
-          />
+          <EmptyState icon={FolderGit2} message="Projects syncing..." hint="Published case studies appear here automatically." />
         )}
       </PageSection>
     </DevSection>

@@ -3,12 +3,10 @@ import {
   getExperienceItems,
   getEducationItems,
   getSkillsContent,
-  getPublishedCmsContent,
   getSocialLinks,
 } from '@/app/actions/content-cms'
 import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { SkillDisplay } from '@/components/ui/SkillDisplay'
-import { CertificateCard } from '@/components/ui/CertificateCard'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
 import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy } from '@/lib/site-content'
@@ -25,22 +23,20 @@ function stringValue(payload: Record<string, unknown> | undefined, key: string) 
 
 /**
  * About page, in the required order: biography, profile information, education,
- * experience, skills, certificates, interests, social links, then GitHub last.
+ * experience, skills, interests, social links, then GitHub last.
  * Each block is shown only when the CMS has content for it.
  */
 export default async function AboutContent() {
   const copy = (await getPageCopy()).about
   const sections = copy?.sections
 
-  const [profile, experienceRaw, educationRaw, skillsRaw, certificatesRaw, socialRaw] =
-    await Promise.all([
-      getProfileContent(),
-      getExperienceItems(),
-      getEducationItems(),
-      getSkillsContent(),
-      getPublishedCmsContent('Certificates'),
-      getSocialLinks(),
-    ])
+  const [profile, experienceRaw, educationRaw, skillsRaw, socialRaw] = await Promise.all([
+    getProfileContent(),
+    getExperienceItems(),
+    getEducationItems(),
+    getSkillsContent(),
+    getSocialLinks(),
+  ])
 
   function dedupeItems<T>(items: T[], keyFn: (item: T) => string | number | undefined): T[] {
     const seen = new Set<string | number>()
@@ -90,19 +86,6 @@ export default async function AboutContent() {
     })),
     (s) => s.category,
   ).filter((s) => s.items.length > 0)
-
-  const certificates = dedupeItems(
-    certificatesRaw.map((c) => ({
-      id: c.id,
-      title: c.title,
-      organization: stringValue(c.payload, 'organization'),
-      date: stringValue(c.payload, 'date') || undefined,
-      credentialUrl: stringValue(c.payload, 'credentialUrl') || undefined,
-      credentialId: stringValue(c.payload, 'credentialId') || undefined,
-      description: stringValue(c.payload, 'description') || undefined,
-    })),
-    (c) => c.title,
-  )
 
   const socialLinks = dedupeItems(
     socialRaw.map((s) => ({
@@ -225,25 +208,7 @@ export default async function AboutContent() {
         </PageSection>
       )}
 
-      {/* 5. CERTIFICATES & ACHIEVEMENTS */}
-      {sections?.certificates?.title && certificates.length > 0 && (
-        <PageSection
-          id="certificates"
-          eyebrow={sections.certificates.eyebrow}
-          krEyebrow={sections.certificates.krEyebrow}
-          title={sections.certificates.title}
-          accent={sections.certificates.accent}
-          description={sections.certificates.description}
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {certificates.map((cert) => (
-              <CertificateCard key={cert.id || cert.title} certificate={cert} />
-            ))}
-          </div>
-        </PageSection>
-      )}
-
-      {/* 6. PERSONAL INTERESTS */}
+      {/* 5. PERSONAL INTERESTS */}
       {sections?.interests?.title && interests.length > 0 && (
         <PageSection
           id="interests"
@@ -266,7 +231,7 @@ export default async function AboutContent() {
         </PageSection>
       )}
 
-      {/* 7. SOCIAL LINKS */}
+      {/* 6. SOCIAL LINKS */}
       {sections?.socials?.title && socialLinks.length > 0 && (
         <PageSection
           id="socials"
@@ -294,7 +259,7 @@ export default async function AboutContent() {
         </PageSection>
       )}
 
-      {/* 8. GITHUB ACTIVITY — always the final section */}
+      {/* 7. GITHUB ACTIVITY — always the final section */}
       {sections?.github?.title && profile.github && (
         <PageSection
           id="github"

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import { Camera } from 'lucide-react'
+import { Camera, ImageOff } from 'lucide-react'
 import { getPublishedGallery } from '@/app/actions/content'
-import EmptyCollectionState from '@/components/EmptyCollectionState'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy } from '@/lib/site-content'
@@ -58,12 +58,7 @@ export default async function GalleryPage() {
         {photos.length ? (
           <GalleryGrid items={photos} columns={3} />
         ) : (
-          <EmptyCollectionState
-            eyebrow="Gallery / Empty"
-            title="The archive is taking shape."
-            description="Photographs, experiments, and selected work will appear here as they are published."
-            action={{ label: 'Return to About', href: '/about' }}
-          />
+          <EmptyState icon={ImageOff} message="Gallery updating..." />
         )}
       </div>
 
