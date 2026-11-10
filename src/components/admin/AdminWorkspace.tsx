@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Plus,
@@ -108,6 +108,31 @@ interface CmsRecordItem {
   status: string
 }
 
+// Records whose payload is a JSON object rather than a single description.
+const STRUCTURED_COLLECTIONS = ['Site Settings', 'Page Copy', 'Media Collections']
+// Records the public site looks up by an explicit key instead of the title.
+const KEYED_COLLECTIONS = ['Page Copy', 'Media Collections']
+
+function isStructuredCollection(collection: string) {
+  return STRUCTURED_COLLECTIONS.includes(collection)
+}
+
+function isKeyedCollection(collection: string) {
+  return KEYED_COLLECTIONS.includes(collection)
+}
+
+/** Returns the parsed object, or null when the text is not a JSON object. */
+function parseStructuredPayload(text: string): Record<string, unknown> | null {
+  if (!text.trim()) return {}
+  try {
+    const parsed = JSON.parse(text)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null
+    return parsed as Record<string, unknown>
+  } catch {
+    return null
+  }
+}
+
 interface AdminWorkspaceProps {
   section: string
   content: {
@@ -156,12 +181,14 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
   const [createGalleryModalOpen, setCreateGalleryModalOpen] = useState(false)
   const [createMusicModalOpen, setCreateMusicModalOpen] = useState(false)
   const [editingRecord, setEditingRecord] = useState<any | null>(null)
+  const [editPayloadText, setEditPayloadText] = useState('')
   const [deleteConfirmItem, setDeleteConfirmItem] = useState<{ id: number; title: string; type: 'cms' | 'gallery' | 'music' | 'project' } | null>(null)
   const [lightboxImage, setLightboxImage] = useState<string | null>(null)
   const [inboxMessageModal, setInboxMessageModal] = useState<any | null>(null)
 
   // Form states for Create Record Modal
   const [newTitle, setNewTitle] = useState('')
+  const [newKey, setNewKey] = useState('')
   const [newCollection, setNewCollection] = useState('Projects')
   const [newDescription, setNewDescription] = useState('')
   const [newImageUrl, setNewImageUrl] = useState('')
@@ -202,6 +229,18 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
     [cmsRecords, galleryItems, musicTracks, projectsList]
   )
 
+  // Keep the structured JSON editor in sync with the record being edited.
+  useEffect(() => {
+    if (!editingRecord) return
+    setEditPayloadText(
+      isStructuredCollection(editingRecord.collection)
+        ? JSON.stringify(editingRecord.payload ?? {}, null, 2)
+        : typeof editingRecord.payload === 'object' && editingRecord.payload
+          ? editingRecord.payload.description || ''
+          : '',
+    )
+  }, [editingRecord])
+
   // Optimistic Handlers
   const handleCreateCmsRecord = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -213,7 +252,9 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
       id: optimisticId,
       collection: newCollection,
       title: newTitle.trim(),
-      payload: { description: newDescription.trim(), imageUrl: newImageUrl.trim() },
+      payload: isStructuredCollection(newCollection)
+        ? parseStructuredPayload(newDescription) ?? { description: newDescription.trim() }
+        : { description: newDescription.trim(), imageUrl: newImageUrl.trim() },
       status: newStatus,
     }
 
@@ -230,6 +271,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
     setNewTitle('')
     setNewDescription('')
     setNewImageUrl('')
+    setNewKey('')
     setIsSubmitting(false)
 
     // Background server action
@@ -240,6 +282,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
       formData.set('payload', newDescription)
       formData.set('imageUrl', newImageUrl)
       formData.set('status', newStatus)
+      if (newKey.trim()) formData.set('key', newKey.trim())
       await createCmsContent(formData)
     } catch (err) {
       console.warn('Server sync error:', err)
@@ -249,9 +292,28 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
   const handleUpdateRecord = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingRecord) return
+
+    const structured = isStructuredCollection(editingRecord.collection)
+    let payload = editingRecord.payload
+
+    if (structured) {
+      const parsed = parseStructuredPayload(editPayloadText)
+      if (!parsed) {
+        toast({
+          title: 'Invalid JSON',
+          description: 'This record stores a structured payload. Fix the JSON before saving.',
+          variant: 'error',
+        })
+        return
+      }
+      payload = parsed
+    } else {
+      payload = { ...(editingRecord.payload || {}), description: editPayloadText }
+    }
+
     setIsSubmitting(true)
 
-    const updated = { ...editingRecord }
+    const updated = { ...editingRecord, payload }
     setCmsRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
     setEditingRecord(null)
     setIsSubmitting(false)
@@ -268,7 +330,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
       formData.set('title', updated.title)
       const desc = typeof updated.payload === 'object' && updated.payload ? (updated.payload as any).description || '' : ''
       const img = typeof updated.payload === 'object' && updated.payload ? (updated.payload as any).imageUrl || '' : ''
-      formData.set('payload', desc)
+      formData.set('payload', structured ? JSON.stringify(updated.payload ?? {}) : desc)
       formData.set('imageUrl', img)
       formData.set('status', updated.status)
       await updateCmsContent(updated.id, formData)
@@ -401,6 +463,8 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
     { id: 'Certificates', label: 'Certificates', count: cmsRecords.filter((r) => r.collection === 'Certificates' || r.collection === 'Awards').length },
     { id: 'Blogs', label: 'Publishing', count: cmsRecords.filter((r) => r.collection === 'Blogs').length },
     { id: 'Site Settings', label: 'Site Settings', count: cmsRecords.filter((r) => r.collection === 'Site Settings').length },
+    { id: 'Page Copy', label: 'Page Copy', count: cmsRecords.filter((r) => r.collection === 'Page Copy').length },
+    { id: 'Media Collections', label: 'Media Collections', count: cmsRecords.filter((r) => r.collection === 'Media Collections').length },
   ]
 
   // Columns for CMS Records Table
@@ -1293,6 +1357,8 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                 { label: 'Social Links', value: 'Social Links' },
                 { label: 'Blogs / Journal', value: 'Blogs' },
                 { label: 'Site Settings', value: 'Site Settings' },
+                { label: 'Page Copy', value: 'Page Copy' },
+                { label: 'Media Collections', value: 'Media Collections' },
               ]}
             />
           </CmsFormField>
@@ -1306,12 +1372,38 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             />
           </CmsFormField>
 
-          <CmsFormField label="Description &amp; Content" hint="Markdown or plain text">
+          {isKeyedCollection(newCollection) && (
+            <CmsFormField
+              label="Key"
+              required
+              hint="The public site looks the record up by this key, e.g. about or music"
+            >
+              <CmsInput
+                value={newKey}
+                onChange={(e) => setNewKey(e.target.value)}
+                placeholder={newCollection === 'Page Copy' ? 'e.g. about' : 'e.g. music'}
+                required
+              />
+            </CmsFormField>
+          )}
+
+          <CmsFormField
+            label={isStructuredCollection(newCollection) ? 'JSON Payload' : 'Description & Content'}
+            hint={
+              isStructuredCollection(newCollection)
+                ? 'Must be a valid JSON object'
+                : 'Markdown or plain text'
+            }
+          >
             <CmsTextarea
               value={newDescription}
               onChange={(e) => setNewDescription(e.target.value)}
-              placeholder="Provide context, deliverables, or highlights..."
-              rows={4}
+              placeholder={
+                isStructuredCollection(newCollection)
+                  ? '{ "eyebrow": "…", "title": "…", "accent": "…", "description": "…" }'
+                  : 'Provide context, deliverables, or highlights...'
+              }
+              rows={isStructuredCollection(newCollection) ? 10 : 4}
             />
           </CmsFormField>
 
@@ -1370,25 +1462,23 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
               <CmsInput value={editingRecord.collection} disabled className="bg-slate-50 text-slate-500" />
             </CmsFormField>
 
-            <CmsFormField label="Description">
-              <CmsTextarea
-                value={
-                  typeof editingRecord.payload === 'object' && editingRecord.payload
-                    ? (editingRecord.payload as any).description || ''
-                    : ''
-                }
-                onChange={(e) =>
-                  setEditingRecord({
-                    ...editingRecord,
-                    payload: {
-                      ...(typeof editingRecord.payload === 'object' ? editingRecord.payload : {}),
-                      description: e.target.value,
-                    },
-                  })
-                }
-                rows={4}
-              />
-            </CmsFormField>
+            {isStructuredCollection(editingRecord.collection) ? (
+              <CmsFormField label="JSON Payload" hint="Must be a valid JSON object">
+                <CmsTextarea
+                  value={editPayloadText}
+                  onChange={(e) => setEditPayloadText(e.target.value)}
+                  rows={14}
+                />
+              </CmsFormField>
+            ) : (
+              <CmsFormField label="Description">
+                <CmsTextarea
+                  value={editPayloadText}
+                  onChange={(e) => setEditPayloadText(e.target.value)}
+                  rows={4}
+                />
+              </CmsFormField>
+            )}
 
             <CmsFormField label="Status">
               <CmsSelect

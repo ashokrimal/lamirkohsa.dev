@@ -364,13 +364,22 @@ export async function createCmsContent(formData: FormData) {
 
   let payload: Record<string, unknown> = {}
   const rawPayload = formData.get('payload')
-  if (typeof rawPayload === 'string') {
+  if (typeof rawPayload === 'string' && rawPayload.trim()) {
     try {
-      payload = JSON.parse(rawPayload)
+      const parsed = JSON.parse(rawPayload)
+      payload =
+        parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+          ? (parsed as Record<string, unknown>)
+          : { description: rawPayload.trim() }
     } catch {
       payload = { description: rawPayload.trim() }
     }
   }
+
+  // Page Copy and Media Collections are looked up by key, not by title, so the
+  // key is taken from the form when present.
+  const key = String(formData.get('key') || '').trim().toLowerCase()
+  if (key) payload.key = key
 
   // Also extract explicit common fields from form if present
   const imageUrl = formData.get('imageUrl')
@@ -405,18 +414,31 @@ export async function updateCmsContent(id: number, formData: FormData) {
   const title = String(formData.get('title') || '').trim()
   const status = String(formData.get('status') || '').trim()
 
-  let payloadUpdates: Record<string, unknown> = {}
+  // A JSON body replaces the payload. Plain text only changes the description and
+  // leaves every other field of the record intact, so editing a structured record
+  // from the simple form can never wipe its configuration.
+  let replacement: Record<string, unknown> | undefined
+  let description: string | undefined
   const rawPayload = formData.get('payload')
-  if (typeof rawPayload === 'string') {
+  if (typeof rawPayload === 'string' && rawPayload.trim()) {
     try {
-      payloadUpdates = JSON.parse(rawPayload)
+      const parsed = JSON.parse(rawPayload)
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        replacement = parsed as Record<string, unknown>
+      } else {
+        description = rawPayload.trim()
+      }
     } catch {
-      payloadUpdates = { description: rawPayload.trim() }
+      description = rawPayload.trim()
     }
   }
 
-  const imageUrl = formData.get('imageUrl')
-  if (imageUrl) payloadUpdates.imageUrl = String(imageUrl).trim()
+  const imageUrl = String(formData.get('imageUrl') || '').trim()
+
+  let payloadUpdates: Record<string, unknown> =
+    replacement ?? ((getMemoryRepo().getById(id)?.payload as Record<string, unknown>) ?? {})
+  if (description !== undefined) payloadUpdates = { ...payloadUpdates, description }
+  if (imageUrl) payloadUpdates = { ...payloadUpdates, imageUrl }
 
   const repo = getMemoryRepo()
   const updates: Partial<CmsRecord> = { payload: payloadUpdates }
@@ -428,13 +450,27 @@ export async function updateCmsContent(id: number, formData: FormData) {
 
   try {
     const userId = await requireUser()
+
+    // The memory repo is never seeded, so the stored payload has to come from the
+    // database when the form only supplied a description.
+    const [current] = await db
+      .select({ payload: cmsContent.payload })
+      .from(cmsContent)
+      .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
+      .limit(1)
+
+    let storedPayload: Record<string, unknown> =
+      replacement ?? ((current?.payload as Record<string, unknown>) ?? {})
+    if (description !== undefined) storedPayload = { ...storedPayload, description }
+    if (imageUrl) storedPayload = { ...storedPayload, imageUrl }
+
     await db
       .update(cmsContent)
       .set({
         ...(title ? { title } : {}),
         ...(collection ? { collection } : {}),
         ...(status ? { status } : {}),
-        payload: payloadUpdates,
+        payload: storedPayload,
         updatedAt: new Date(),
       })
       .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
