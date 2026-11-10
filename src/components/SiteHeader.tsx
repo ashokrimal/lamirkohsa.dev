@@ -20,6 +20,11 @@ export default function SiteHeader() {
   const [isMuted, setIsMuted] = useState(false)
   const pathname = usePathname()
 
+  // Reflect the stored sound preference, not just the in-session toggle
+  useEffect(() => {
+    setIsMuted(!sensoryAudio.isEnabled())
+  }, [])
+
   const isCurrent = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href))
 
   useEffect(() => {
@@ -47,8 +52,8 @@ export default function SiteHeader() {
   }
 
   const toggleSound = () => {
-    const muted = sensoryAudio.toggleMute()
-    setIsMuted(muted)
+    // toggle() returns whether audio is now ENABLED; the icon reflects mute state
+    setIsMuted(!sensoryAudio.toggle())
   }
 
   return (
