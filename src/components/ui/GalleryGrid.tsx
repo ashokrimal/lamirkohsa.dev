@@ -28,8 +28,8 @@ export function GalleryGrid({
 }: GalleryGridProps) {
   if (!items || items.length === 0) {
     return (
-      <div className="p-8 rounded-[24px] border border-black/[0.06] bg-white/70 backdrop-blur-md text-center text-sm text-[#86868b]">
-        <Camera className="w-6 h-6 mx-auto mb-2 text-[#86868b]" />
+      <div className="p-8 rounded-[24px] border border-line-subtle bg-surface/70 backdrop-blur-md text-center text-sm text-muted">
+        <Camera className="w-6 h-6 mx-auto mb-2 text-muted" />
         <p>No photographs currently published in this collection.</p>
       </div>
     )
@@ -49,7 +49,7 @@ export function GalleryGrid({
           <Card3D key={item.id || index} maxTilt={6}>
             <article className="apple-card overflow-hidden flex flex-col justify-between h-full group">
               {/* Image frame */}
-              <div className="relative aspect-[4/3] overflow-hidden bg-black/[0.02]">
+              <div className="relative aspect-[4/3] overflow-hidden bg-overlay-faint">
                 <Image
                   src={item.imageUrl}
                   alt={item.title || 'Photograph by Ashok Rimal'}
@@ -59,7 +59,7 @@ export function GalleryGrid({
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
                 {item.category && (
-                  <div className="absolute top-3 left-3 bg-white/85 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-medium tracking-tight text-[#1d1d1f] shadow-xs">
+                  <div className="absolute top-3 left-3 bg-surface/85 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-medium tracking-tight text-ink shadow-xs">
                     {item.category}
                   </div>
                 )}
@@ -68,19 +68,19 @@ export function GalleryGrid({
               {/* Caption & Location metadata */}
               <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
                 <div>
-                  <h4 className="text-sm font-semibold text-[#1d1d1f] tracking-tight leading-snug group-hover:text-[#0071e3] transition-colors">
+                  <h4 className="text-sm font-semibold text-ink tracking-tight leading-snug group-hover:text-accent transition-colors">
                     {item.title || 'Untitled Photograph'}
                   </h4>
                   {item.description && (
-                    <p className="mt-1 text-xs text-[#86868b] leading-relaxed line-clamp-2">
+                    <p className="mt-1 text-xs text-muted leading-relaxed line-clamp-2">
                       {item.description}
                     </p>
                   )}
                 </div>
 
                 {item.location && (
-                  <div className="pt-2.5 border-t border-black/[0.04] flex items-center gap-1.5 text-[11px] text-[#86868b]">
-                    <MapPin className="w-3.5 h-3.5 text-[#0071e3]" />
+                  <div className="pt-2.5 border-t border-line-faint flex items-center gap-1.5 text-[11px] text-muted">
+                    <MapPin className="w-3.5 h-3.5 text-accent" />
                     <span>{item.location}</span>
                   </div>
                 )}
@@ -97,8 +97,8 @@ export function GalleryGrid({
             className="apple-btn-secondary"
           >
             <span>View all photographs in Media library</span>
-            <span className="font-korean text-[10px] text-[#86868b]">미디어 기록</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-[#86868b]" />
+            <span className="font-korean text-[10px] text-muted">미디어 기록</span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-muted" />
           </Link>
         </div>
       )}

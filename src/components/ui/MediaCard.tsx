@@ -58,10 +58,10 @@ export function MediaCard({ type, item }: MediaCardProps) {
   if (type === 'music') {
     const music = item as MusicItemData
     return (
-      <article className="apple-card p-4 flex flex-col justify-between hover:border-black/10 transition-all group">
+      <article className="apple-card p-4 flex flex-col justify-between hover:border-line-medium transition-all group">
         <div className="flex items-start gap-3.5">
           {/* Cover Art Frame */}
-          <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-black/[0.04] shrink-0 border border-black/[0.05] shadow-xs">
+          <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-overlay shrink-0 border border-line-soft shadow-xs">
             {music.coverUrl ? (
               <Image
                 src={music.coverUrl}
@@ -72,15 +72,15 @@ export function MediaCard({ type, item }: MediaCardProps) {
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-[#86868b]">
-                <Disc3 className="w-6 h-6 text-[#0071e3] animate-spin-slow" />
+              <div className="w-full h-full flex items-center justify-center text-muted">
+                <Disc3 className="w-6 h-6 text-accent animate-spin-slow" />
               </div>
             )}
             {music.audioUrl && (
               <button
                 type="button"
                 onClick={togglePlay}
-                className="absolute inset-0 bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-opacity"
+                className="absolute inset-0 bg-scrim/40 hover:bg-scrim/60 flex items-center justify-center text-inverse transition-opacity"
                 title={isPlaying ? 'Pause preview' : 'Play audio preview'}
               >
                 {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
@@ -91,28 +91,28 @@ export function MediaCard({ type, item }: MediaCardProps) {
           {/* Details */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-medium uppercase tracking-wide text-[#0071e3]">
+              <span className="text-[10px] font-medium uppercase tracking-wide text-accent">
                 {music.mood || 'Track'}
               </span>
               {music.audioUrl && (
                 isPlaying ? (
                   <span className="flex items-end gap-0.5 h-3">
-                    <span className="w-0.5 h-2 bg-[#0071e3] animate-pulse" />
-                    <span className="w-0.5 h-3 bg-[#0071e3] animate-pulse delay-75" />
-                    <span className="w-0.5 h-1.5 bg-[#0071e3] animate-pulse delay-150" />
+                    <span className="w-0.5 h-2 bg-accent animate-pulse" />
+                    <span className="w-0.5 h-3 bg-accent animate-pulse delay-75" />
+                    <span className="w-0.5 h-1.5 bg-accent animate-pulse delay-150" />
                   </span>
                 ) : null
               )}
             </div>
 
-            <h4 className="text-sm font-semibold text-[#1d1d1f] tracking-tight truncate mt-0.5">
+            <h4 className="text-sm font-semibold text-ink tracking-tight truncate mt-0.5">
               {music.title}
             </h4>
-            <p className="text-xs text-[#86868b] truncate mt-0.5 font-normal">
+            <p className="text-xs text-muted truncate mt-0.5 font-normal">
               {music.artist}
             </p>
             {music.album && (
-              <p className="text-[11px] text-[#86868b]/75 truncate mt-0.5 font-normal">
+              <p className="text-[11px] text-muted/75 truncate mt-0.5 font-normal">
                 {music.album}
               </p>
             )}
@@ -136,8 +136,8 @@ export function MediaCard({ type, item }: MediaCardProps) {
   if (type === 'anime') {
     const anime = item as AnimeItemData
     return (
-      <article className="apple-card overflow-hidden flex flex-col justify-between hover:border-black/10 transition-all group">
-        <div className="relative aspect-[3/4] max-h-[170px] bg-black/[0.03] overflow-hidden">
+      <article className="apple-card overflow-hidden flex flex-col justify-between hover:border-line-medium transition-all group">
+        <div className="relative aspect-[3/4] max-h-[170px] bg-overlay-hairline overflow-hidden">
           {anime.imageUrl ? (
             <Image
               src={anime.imageUrl}
@@ -148,12 +148,12 @@ export function MediaCard({ type, item }: MediaCardProps) {
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#86868b]">
-              <Film className="w-8 h-8 text-[#0071e3]" />
+            <div className="w-full h-full flex items-center justify-center text-muted">
+              <Film className="w-8 h-8 text-accent" />
             </div>
           )}
           {anime.score && (
-            <div className="absolute top-2.5 right-2.5 bg-black/75 backdrop-blur-md text-white px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 shadow-sm">
+            <div className="absolute top-2.5 right-2.5 bg-scrim/75 backdrop-blur-md text-inverse px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 shadow-sm">
               <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
               {anime.score}
             </div>
@@ -162,22 +162,22 @@ export function MediaCard({ type, item }: MediaCardProps) {
 
         <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
           <div>
-            <div className="flex items-center justify-between text-[10px] text-[#86868b] mb-1 font-medium">
-              <span className="uppercase text-[#0071e3] tracking-wide">Anime</span>
+            <div className="flex items-center justify-between text-[10px] text-muted mb-1 font-medium">
+              <span className="uppercase text-accent tracking-wide">Anime</span>
               <span>{anime.status || 'Library'}</span>
             </div>
-            <h4 className="text-xs font-semibold text-[#1d1d1f] line-clamp-1 tracking-tight">
+            <h4 className="text-xs font-semibold text-ink line-clamp-1 tracking-tight">
               {anime.title}
             </h4>
             {anime.synopsis && (
-              <p className="mt-1 text-[11px] text-[#86868b] line-clamp-2 leading-relaxed">
+              <p className="mt-1 text-[11px] text-muted line-clamp-2 leading-relaxed">
                 {anime.synopsis}
               </p>
             )}
           </div>
 
           {anime.progress && (
-            <div className="pt-2 border-t border-black/[0.04] text-[10px] text-[#86868b]">
+            <div className="pt-2 border-t border-line-faint text-[10px] text-muted">
               {anime.progress}
             </div>
           )}
@@ -189,8 +189,8 @@ export function MediaCard({ type, item }: MediaCardProps) {
   // --- 3. MANGA / MANHWA VARIANT ---
   const manga = item as MangaItemData
   return (
-    <article className="apple-card overflow-hidden flex flex-col justify-between hover:border-black/10 transition-all group">
-      <div className="relative aspect-[3/4] max-h-[170px] bg-black/[0.03] overflow-hidden">
+    <article className="apple-card overflow-hidden flex flex-col justify-between hover:border-line-medium transition-all group">
+      <div className="relative aspect-[3/4] max-h-[170px] bg-overlay-hairline overflow-hidden">
         {manga.imageUrl ? (
           <Image
             src={manga.imageUrl}
@@ -201,12 +201,12 @@ export function MediaCard({ type, item }: MediaCardProps) {
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[#86868b]">
-            <BookOpen className="w-8 h-8 text-[#0071e3]" />
+          <div className="w-full h-full flex items-center justify-center text-muted">
+            <BookOpen className="w-8 h-8 text-accent" />
           </div>
         )}
         {manga.score && (
-          <div className="absolute top-2.5 right-2.5 bg-black/75 backdrop-blur-md text-white px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 shadow-sm">
+          <div className="absolute top-2.5 right-2.5 bg-scrim/75 backdrop-blur-md text-inverse px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 shadow-sm">
             <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
             {manga.score}
           </div>
@@ -215,24 +215,24 @@ export function MediaCard({ type, item }: MediaCardProps) {
 
       <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
         <div>
-          <div className="flex items-center justify-between text-[10px] text-[#86868b] mb-1 font-medium">
-            <span className="uppercase text-[#0071e3] tracking-wide">
+          <div className="flex items-center justify-between text-[10px] text-muted mb-1 font-medium">
+            <span className="uppercase text-accent tracking-wide">
               {manga.kind || 'Manga'}
             </span>
             <span>{manga.status || 'Reading'}</span>
           </div>
-          <h4 className="text-xs font-semibold text-[#1d1d1f] line-clamp-1 tracking-tight">
+          <h4 className="text-xs font-semibold text-ink line-clamp-1 tracking-tight">
             {manga.title}
           </h4>
           {manga.synopsis && (
-            <p className="mt-1 text-[11px] text-[#86868b] line-clamp-2 leading-relaxed">
+            <p className="mt-1 text-[11px] text-muted line-clamp-2 leading-relaxed">
               {manga.synopsis}
             </p>
           )}
         </div>
 
         {manga.progress && (
-          <div className="pt-2 border-t border-black/[0.04] text-[10px] text-[#86868b]">
+          <div className="pt-2 border-t border-line-faint text-[10px] text-muted">
             {manga.progress}
           </div>
         )}

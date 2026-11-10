@@ -55,7 +55,7 @@ export default function MessagesTable({
         <button
           type="button"
           onClick={onRefresh}
-          className="mt-6 inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 transition"
+          className="mt-6 inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-inverse shadow hover:bg-red-700 transition"
         >
           Try again
         </button>
@@ -66,7 +66,7 @@ export default function MessagesTable({
   if (isLoading && messages.length === 0) {
     return (
       <div className="grid gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm">
           <div className="h-6 w-32 animate-pulse rounded bg-gray-200" />
           <div className="mt-4 space-y-4">
             {Array.from({ length: 4 }).map((_, index) => (
@@ -80,7 +80,7 @@ export default function MessagesTable({
             ))}
           </div>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm">
           <div className="h-6 w-40 animate-pulse rounded bg-gray-200" />
           <div className="mt-6 space-y-3">
             {Array.from({ length: 6 }).map((_, index) => (
@@ -94,7 +94,7 @@ export default function MessagesTable({
 
   if (messages.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center shadow-sm">
+      <div className="rounded-2xl border border-dashed border-gray-300 bg-surface p-12 text-center shadow-sm">
         <h2 className="text-xl font-semibold text-gray-900">No messages yet</h2>
         <p className="mt-3 text-sm text-gray-600">
           Once someone reaches out through your contact form, their message will appear here.
@@ -147,7 +147,7 @@ export default function MessagesTable({
             <div
               key={message.id}
               className={`rounded-2xl border p-5 shadow-sm transition ${
-                isActive ? 'border-blue-200 bg-blue-50/60' : 'border-gray-200 bg-white'
+                isActive ? 'border-blue-200 bg-blue-50/60' : 'border-gray-200 bg-surface'
               }`}
             >
               <button
@@ -157,7 +157,7 @@ export default function MessagesTable({
               >
                 <span
                   className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold ${
-                    isActive ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
+                    isActive ? 'bg-blue-600 text-inverse' : 'bg-blue-100 text-blue-600'
                   }`}
                 >
                   {initials}
@@ -180,7 +180,7 @@ export default function MessagesTable({
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <a
                       href={`mailto:${message.email}?subject=${encodeURIComponent(`Re: ${message.subject}`)}`}
-                      className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 transition"
+                      className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-inverse shadow hover:bg-blue-700 transition"
                     >
                       Reply via email
                     </a>
@@ -200,7 +200,7 @@ export default function MessagesTable({
       </div>
 
       <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
-        <aside className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <aside className="overflow-hidden rounded-2xl border border-gray-200 bg-surface shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-blue-500">Inbox</p>
@@ -241,7 +241,7 @@ export default function MessagesTable({
                   }`}
                 >
                   <span className={`mt-1 flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${
-                    isActive ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
+                    isActive ? 'bg-blue-600 text-inverse' : 'bg-blue-100 text-blue-600'
                   }`}>
                     {initials}
                   </span>
@@ -261,7 +261,7 @@ export default function MessagesTable({
           </div>
         </aside>
 
-        <section className="flex min-h-[360px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <section className="flex min-h-[360px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-surface shadow-sm">
           {selectedMessage ? (
             <>
               <div className="border-b border-gray-100 px-6 py-6">
@@ -290,7 +290,7 @@ export default function MessagesTable({
               <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 px-6 py-4">
                 <a
                   href={`mailto:${selectedMessage.email}?subject=${encodeURIComponent(`Re: ${selectedMessage.subject}`)}`}
-                  className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 transition"
+                  className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-inverse shadow hover:bg-blue-700 transition"
                 >
                   Reply via email
                 </a>

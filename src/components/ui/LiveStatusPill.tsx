@@ -59,22 +59,22 @@ export function LiveStatusPill({
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs">
       {/* Live Nepal Clock Pill */}
-      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 border border-black/[0.06] text-[#424245] shadow-xs">
+      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink-secondary shadow-xs">
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-        <Clock className="w-3.5 h-3.5 text-[#0071e3]" />
-        <span className="text-[#1d1d1f] font-medium">
+        <Clock className="w-3.5 h-3.5 text-accent" />
+        <span className="text-ink font-medium">
           NPT {timeStr || '12:00 PM'}
         </span>
-        <span className="text-black/20">·</span>
-        <span className="text-[#86868b]">{location}</span>
-        <span className="font-korean text-[10px] text-[#86868b]">네팔</span>
+        <span className="text-scrim/20">·</span>
+        <span className="text-muted">{location}</span>
+        <span className="font-korean text-[10px] text-muted">네팔</span>
       </div>
 
       {/* Copy Email Button Pill */}
       <button
         type="button"
         onClick={copyEmail}
-        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 border border-black/[0.06] hover:border-black/15 text-[#424245] hover:text-[#1d1d1f] transition-all shadow-xs cursor-pointer active:scale-95 group"
+        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle hover:border-line-strong text-ink-secondary hover:text-ink transition-all shadow-xs cursor-pointer active:scale-95 group"
         title="Click to copy email address"
       >
         {copied ? (
@@ -84,9 +84,9 @@ export function LiveStatusPill({
           </>
         ) : (
           <>
-            <Copy className="w-3.5 h-3.5 text-[#86868b] group-hover:text-[#0071e3]" />
+            <Copy className="w-3.5 h-3.5 text-muted group-hover:text-accent" />
             <span className="truncate max-w-[140px] sm:max-w-none">{email}</span>
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-black/[0.04] text-[#86868b]">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-overlay text-muted">
               Copy
             </span>
           </>
@@ -99,19 +99,19 @@ export function LiveStatusPill({
         onClick={toggleSound}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all cursor-pointer shadow-xs active:scale-95 ${
           soundOn
-            ? 'border-[#0071e3]/30 bg-[#0071e3]/10 text-[#0071e3] font-medium'
-            : 'border-black/[0.06] bg-white/80 text-[#86868b] hover:text-[#1d1d1f]'
+            ? 'border-accent/30 bg-accent/10 text-accent font-medium'
+            : 'border-line-subtle bg-surface/80 text-muted hover:text-ink'
         }`}
         title={soundOn ? 'Sensory interface audio enabled' : 'Sensory interface audio muted (Click to enable)'}
       >
         {soundOn ? (
           <>
-            <Volume2 className="w-3.5 h-3.5 text-[#0071e3]" />
+            <Volume2 className="w-3.5 h-3.5 text-accent" />
             <span className="text-xs">Audio On</span>
           </>
         ) : (
           <>
-            <VolumeX className="w-3.5 h-3.5 text-[#86868b]" />
+            <VolumeX className="w-3.5 h-3.5 text-muted" />
             <span className="text-xs">Muted</span>
           </>
         )}

@@ -80,7 +80,7 @@ export function CmsToastProvider({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={() => dismiss(item.id)}
-              className="shrink-0 p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-black/5 transition-colors"
+              className="shrink-0 p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-overlay-soft transition-colors"
               aria-label="Dismiss notification"
             >
               <X className="w-3.5 h-3.5" />

@@ -69,7 +69,7 @@ export function CmsModal({
       {/* Modal Dialog */}
       <div
         ref={modalRef}
-        className={`relative w-full ${widthClasses} bg-white rounded-2xl border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-all animate-in fade-in-0 zoom-in-95`}
+        className={`relative w-full ${widthClasses} bg-surface rounded-2xl border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-all animate-in fade-in-0 zoom-in-95`}
       >
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-slate-100">

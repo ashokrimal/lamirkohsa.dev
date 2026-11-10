@@ -204,47 +204,47 @@ export function GitHubActivitySparkline({
 
   return (
     <div
-      className={`apple-card p-6 md:p-7 space-y-5 hover:border-black/10 ${className}`}
+      className={`apple-card p-6 md:p-7 space-y-5 hover:border-line-medium ${className}`}
     >
       {/* Top Header Row with Korean Tenztan Accent */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-black/[0.06] text-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line-subtle text-xs">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-2xl bg-black/[0.04] text-[#0071e3] border border-black/[0.04] flex items-center justify-center shrink-0">
+          <span className="w-10 h-10 rounded-2xl bg-overlay text-accent border border-line-faint flex items-center justify-center shrink-0">
             <Github className="w-5 h-5" />
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-base text-[#1d1d1f] tracking-tight">
+              <span className="font-semibold text-base text-ink tracking-tight">
                 github.com/{data.username}
               </span>
               <a
                 href={`https://github.com/${data.username}`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[#86868b] hover:text-[#0071e3]"
+                className="text-muted hover:text-accent"
                 title="View GitHub profile"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
-            <p className="text-xs text-[#86868b] flex items-center gap-1.5 mt-0.5">
+            <p className="text-xs text-muted flex items-center gap-1.5 mt-0.5">
               <span>Open-source activity &amp; commit cadence</span>
-              <span className="font-korean text-[10px] text-[#86868b]">· 깃허브 기록</span>
+              <span className="font-korean text-[10px] text-muted">· 깃허브 기록</span>
             </p>
           </div>
         </div>
 
         {/* Quick Stats Apple Pills */}
         <div className="flex items-center gap-2 text-xs">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.04] text-[#0071e3] font-medium border border-black/[0.03]">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-overlay text-accent font-medium border border-line-hairline">
             <Flame className="w-3.5 h-3.5 fill-current" />
             <span>{data.activeStreak}d Streak</span>
           </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.04] text-[#1d1d1f] font-medium border border-black/[0.03]">
-            <FolderGit2 className="w-3.5 h-3.5 text-[#86868b]" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-overlay text-ink font-medium border border-line-hairline">
+            <FolderGit2 className="w-3.5 h-3.5 text-muted" />
             <span>{data.publicRepos} Repos</span>
           </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.04] text-[#1d1d1f] font-medium border border-black/[0.03]">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-overlay text-ink font-medium border border-line-hairline">
             <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
             <span>{data.totalStars}</span>
           </span>
@@ -255,28 +255,28 @@ export function GitHubActivitySparkline({
       <div className="space-y-2.5">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wide text-[#86868b] font-medium flex items-center gap-1.5">
-              <GitCommit className="w-3.5 h-3.5 text-[#0071e3]" />
+            <span className="text-xs uppercase tracking-wide text-muted font-medium flex items-center gap-1.5">
+              <GitCommit className="w-3.5 h-3.5 text-accent" />
               <span>30-Day Activity Heat</span>
             </span>
-            <span className="text-xs font-medium text-[#0071e3] px-2.5 py-0.5 rounded-full bg-[#0071e3]/10">
+            <span className="text-xs font-medium text-accent px-2.5 py-0.5 rounded-full bg-accent/10">
               {data.total30DayCommits} Commits
             </span>
           </div>
 
-          <div className="text-xs text-[#86868b] min-h-[20px]">
+          <div className="text-xs text-muted min-h-[20px]">
             {hoveredDay ? (
-              <span className="text-[#1d1d1f] font-medium bg-white px-2.5 py-1 rounded-full shadow-xs border border-black/[0.06]">
+              <span className="text-ink font-medium bg-surface px-2.5 py-1 rounded-full shadow-xs border border-line-subtle">
                 {hoveredDay.dayLabel}: <strong>{hoveredDay.count} commit{hoveredDay.count === 1 ? '' : 's'}</strong>
               </span>
             ) : (
-              <span className="hidden sm:inline text-[#86868b]">Hover bars to inspect daily commits</span>
+              <span className="hidden sm:inline text-muted">Hover bars to inspect daily commits</span>
             )}
           </div>
         </div>
 
         {/* Bar Matrix with Smooth Squircle Container */}
-        <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/[0.04]">
+        <div className="p-4 rounded-2xl bg-overlay-faint border border-line-faint">
           <div className="flex items-end gap-[3px] sm:gap-2 h-16 w-full">
             {data.sparkline.map((day) => {
               const heightPct = Math.max((day.count / maxCommitDay) * 100, day.count > 0 ? 20 : 8)
@@ -294,10 +294,10 @@ export function GitHubActivitySparkline({
                     style={{ height: `${heightPct}%` }}
                     className={`w-full rounded-full transition-all duration-300 ${
                       isHovered
-                        ? 'bg-[#0071e3] scale-y-110 shadow-sm'
+                        ? 'bg-accent scale-y-110 shadow-sm'
                         : hasActivity
-                        ? 'bg-[#0071e3]/80 group-hover:bg-[#0071e3]'
-                        : 'bg-black/[0.08] group-hover:bg-black/[0.15]'
+                        ? 'bg-accent/80 group-hover:bg-accent'
+                        : 'bg-overlay-medium group-hover:bg-overlay-heavy'
                     }`}
                   />
                 </div>
@@ -305,9 +305,9 @@ export function GitHubActivitySparkline({
             })}
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-black/[0.04] text-[10px] text-[#86868b]">
+          <div className="flex items-center justify-between pt-3 border-t border-line-faint text-[10px] text-muted">
             <span>{data.sparkline[0]?.dayLabel || '30 days ago'}</span>
-            <span className="text-[#0071e3] font-medium font-korean">기여도 활동 (Commit Activity)</span>
+            <span className="text-accent font-medium font-korean">기여도 활동 (Commit Activity)</span>
             <span>Today</span>
           </div>
         </div>
@@ -315,12 +315,12 @@ export function GitHubActivitySparkline({
 
       {/* Recent Open-Source Commits */}
       {showRecentCommits && data.recentActivities.length > 0 && (
-        <div className="pt-3 border-t border-black/[0.06] space-y-2.5">
+        <div className="pt-3 border-t border-line-subtle space-y-2.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-xs uppercase tracking-wide text-[#86868b] font-medium">
+            <span className="text-xs uppercase tracking-wide text-muted font-medium">
               Recent Open-Source Dispatches
             </span>
-            <span className="font-korean text-[10px] text-[#86868b]">최근 커밋</span>
+            <span className="font-korean text-[10px] text-muted">최근 커밋</span>
           </div>
           <div className="space-y-2 text-xs">
             {data.recentActivities.map((act, i) => (
@@ -329,18 +329,18 @@ export function GitHubActivitySparkline({
                 href={act.url}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-between p-3 rounded-2xl bg-white/70 border border-black/[0.05] hover:border-black/15 transition-all shadow-xs group"
+                className="flex items-center justify-between p-3 rounded-2xl bg-surface/70 border border-line-soft hover:border-line-strong transition-all shadow-xs group"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <GitBranch className="w-3.5 h-3.5 text-[#0071e3] shrink-0" />
-                  <span className="font-semibold text-xs text-[#1d1d1f] group-hover:text-[#0071e3] transition-colors truncate">
+                  <GitBranch className="w-3.5 h-3.5 text-accent shrink-0" />
+                  <span className="font-semibold text-xs text-ink group-hover:text-accent transition-colors truncate">
                     {act.repo.replace('ashokrimal/', '')}
                   </span>
-                  <span className="text-xs text-[#86868b] truncate max-w-xs hidden sm:inline">
+                  <span className="text-xs text-muted truncate max-w-xs hidden sm:inline">
                     · {act.message}
                   </span>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-[#86868b] group-hover:text-[#0071e3] shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <ExternalLink className="w-3.5 h-3.5 text-muted group-hover:text-accent shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
             ))}
           </div>

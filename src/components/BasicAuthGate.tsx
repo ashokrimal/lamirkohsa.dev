@@ -39,7 +39,7 @@ export default function BasicAuthGate({ render }: BasicAuthGateProps) {
   }
 
   return (
-    <div className="max-w-md mx-auto rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+    <div className="max-w-md mx-auto rounded-2xl border border-gray-200 bg-surface p-8 shadow-sm">
       <h1 className="text-2xl font-semibold text-gray-900 text-center">Admin Login</h1>
       <p className="mt-2 text-sm text-gray-600 text-center">Enter credentials to view submitted messages.</p>
       <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -73,7 +73,7 @@ export default function BasicAuthGate({ render }: BasicAuthGateProps) {
         </div>
         <button
           type="submit"
-          className="w-full rounded-lg bg-blue-600 py-2 text-white font-semibold hover:bg-blue-700 transition"
+          className="w-full rounded-lg bg-blue-600 py-2 text-inverse font-semibold hover:bg-blue-700 transition"
         >
           Login
         </button>

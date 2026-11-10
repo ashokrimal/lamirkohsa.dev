@@ -41,9 +41,9 @@ export default function AuthForm() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-xl p-8 space-y-6">
+      <div className="w-full max-w-md bg-surface rounded-2xl border border-slate-200 shadow-xl p-8 space-y-6">
         <div className="text-center space-y-1.5">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 text-white font-bold text-lg mb-2 shadow-sm">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 text-inverse font-bold text-lg mb-2 shadow-sm">
             AR
           </div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900">
@@ -66,7 +66,7 @@ export default function AuthForm() {
           <button
             type="button"
             onClick={enterDemoAdmin}
-            className="w-full py-2 px-3 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors"
+            className="w-full py-2 px-3 rounded-lg bg-teal-600 hover:bg-teal-700 text-inverse text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors"
           >
             <span>Enter Admin Dashboard (Demo)</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -75,7 +75,7 @@ export default function AuthForm() {
 
         <div className="relative flex items-center justify-center">
           <div className="border-t border-slate-200 w-full" />
-          <span className="bg-white px-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold absolute">
+          <span className="bg-surface px-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold absolute">
             or sign in
           </span>
         </div>
@@ -90,7 +90,7 @@ export default function AuthForm() {
               autoComplete="email"
               placeholder="admin@ashokrimal.com.np"
               defaultValue="admin@ashokrimal.com.np"
-              className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
+              className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-surface text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
             />
           </div>
 
@@ -107,7 +107,7 @@ export default function AuthForm() {
               required
               autoComplete="current-password"
               placeholder="••••••••"
-              className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
+              className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-surface text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
             />
           </div>
 
@@ -120,7 +120,7 @@ export default function AuthForm() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+            className="w-full py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-inverse text-xs font-semibold shadow-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
           >
             <Lock className="w-3.5 h-3.5" />
             <span>{pending ? 'Authenticating...' : 'Sign In with Password'}</span>

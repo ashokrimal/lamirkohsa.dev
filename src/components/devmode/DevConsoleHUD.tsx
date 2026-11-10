@@ -85,7 +85,7 @@ const BatteryIcon = ({ level }: { level: number | null }) => {
   const fillWidth = `${Math.max(6, (safeLevel / 100) * 38)}px`;
   const isLow = safeLevel <= 15;
   return (
-    <svg width="46" height="16" viewBox="0 0 46 16" className="text-white" aria-hidden="true">
+    <svg width="46" height="16" viewBox="0 0 46 16" className="text-inverse" aria-hidden="true">
       <rect x="1" y="1" width="40" height="14" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5" />
       <rect
         x="3"
@@ -101,7 +101,7 @@ const BatteryIcon = ({ level }: { level: number | null }) => {
 };
 
 const WifiIcon = ({ connected }: { connected: boolean }) => (
-  <svg width="22" height="16" viewBox="0 0 22 16" className="text-white" aria-hidden="true">
+  <svg width="22" height="16" viewBox="0 0 22 16" className="text-inverse" aria-hidden="true">
     <path
       d="M11 13.5c-1.1 0-2-.9-2-2 0-.5.2-1 .6-1.4C9.9 9.8 10.4 9.5 11 9.5s1.1.3 1.4.6c.4.4.6.9.6 1.4 0 1.1-.9 2-2 2z"
       className={connected ? 'fill-emerald-400' : 'fill-slate-500'}
@@ -152,9 +152,9 @@ const SafariIcon = () => (
 
 const MailIcon = () => (
   <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700 shadow-[0_10px_20px_rgba(30,64,175,0.4)]">
-    <div className="absolute inset-2 rounded-xl border border-white/40 bg-white/10" />
+    <div className="absolute inset-2 rounded-xl border border-inverse/40 bg-surface/10" />
     <div className="absolute inset-2 flex items-center justify-center">
-      <div className="h-8 w-8 -rotate-45 border border-white/70" />
+      <div className="h-8 w-8 -rotate-45 border border-inverse/70" />
     </div>
   </div>
 );
@@ -172,7 +172,7 @@ const TerminalIcon = () => (
 const TrashIcon = () => (
   <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-gradient-to-br from-slate-300 via-slate-200 to-slate-500 shadow-[0_10px_20px_rgba(100,116,139,0.4)]">
     <div className="absolute inset-x-2 top-2 h-2 rounded-full bg-slate-500/70" />
-    <div className="absolute inset-x-3 top-4 bottom-2 rounded-lg border border-white/50 bg-white/40" />
+    <div className="absolute inset-x-3 top-4 bottom-2 rounded-lg border border-inverse/50 bg-surface/40" />
     <div className="absolute inset-x-5 top-6 bottom-3 rounded bg-slate-600/30" />
   </div>
 );
@@ -599,20 +599,20 @@ export default function DevConsoleHUD() {
     <div className="fixed inset-0 z-50 overflow-hidden text-slate-100">
       <div className="absolute inset-0 bg-[url('/wallpaper.jpg')] bg-cover bg-center" />
       <div className="relative flex h-full flex-col">
-        <header className="flex items-center justify-between bg-slate-950/60 px-6 py-3 text-xs text-white backdrop-blur">
+        <header className="flex items-center justify-between bg-slate-950/60 px-6 py-3 text-xs text-inverse backdrop-blur">
           <div className="flex items-center gap-3 font-medium">
             <span className="text-base"></span>
             <span className="font-semibold">Terminal</span>
-            <span className="text-white/60">Shell</span>
-            <span className="text-white/60">Edit</span>
-            <span className="text-white/60">View</span>
-            <span className="text-white/60">Window</span>
-            <span className="text-white/60">Help</span>
+            <span className="text-inverse/60">Shell</span>
+            <span className="text-inverse/60">Edit</span>
+            <span className="text-inverse/60">View</span>
+            <span className="text-inverse/60">Window</span>
+            <span className="text-inverse/60">Help</span>
           </div>
-          <div className="flex items-center gap-4 font-mono text-white/80">
+          <div className="flex items-center gap-4 font-mono text-inverse/80">
             <WifiIcon connected={isOnline} />
             <BatteryIcon level={batteryLevel} />
-            <span className="uppercase tracking-[0.25em] text-white/60">{connectionType}</span>
+            <span className="uppercase tracking-[0.25em] text-inverse/60">{connectionType}</span>
             <span>{formattedTime}</span>
             <span>{formattedDate}</span>
           </div>
@@ -622,7 +622,7 @@ export default function DevConsoleHUD() {
           {isOpen && !isMinimized && (
             <main className="flex flex-1 items-center justify-center">
               <div
-                className="group relative rounded-[26px] border border-white/10 text-[#c5c8c6] shadow-[0_42px_70px_rgba(0,0,0,0.5)]"
+                className="group relative rounded-[26px] border border-inverse/10 text-[#c5c8c6] shadow-[0_42px_70px_rgba(0,0,0,0.5)]"
                 style={terminalStyle}
               >
                 <div className="absolute inset-0 rounded-[26px] bg-[#1e1e1e]" aria-hidden />
@@ -640,39 +640,39 @@ export default function DevConsoleHUD() {
                   className="relative flex h-full flex-col overflow-hidden rounded-[26px]"
                   style={{ fontFamily: '"SF Mono", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace' }}
                 >
-                  <div className="flex items-center gap-3 bg-[#2c2c2c]/90 px-5 py-3 font-sans text-sm text-white/75">
+                  <div className="flex items-center gap-3 bg-[#2c2c2c]/90 px-5 py-3 font-sans text-sm text-inverse/75">
                     <div className="flex items-center gap-2.5">
                       <button
                         type="button"
                         aria-label="Close"
-                        className="h-3.5 w-3.5 rounded-full bg-[#ff5f57] shadow-inner shadow-black/40 transition group-hover:brightness-110"
+                        className="h-3.5 w-3.5 rounded-full bg-[#ff5f57] shadow-inner shadow-scrim/40 transition group-hover:brightness-110"
                         onClick={handleClose}
                       />
                       <button
                         type="button"
                         aria-label="Minimize"
-                        className="h-3.5 w-3.5 rounded-full bg-[#febb2e] shadow-inner shadow-black/40 transition group-hover:brightness-110"
+                        className="h-3.5 w-3.5 rounded-full bg-[#febb2e] shadow-inner shadow-scrim/40 transition group-hover:brightness-110"
                         onClick={handleMinimize}
                       />
                       <button
                         type="button"
                         aria-label="Restore default size"
-                        className="h-3.5 w-3.5 rounded-full bg-[#28c840] shadow-inner shadow-black/40 transition group-hover:brightness-110"
+                        className="h-3.5 w-3.5 rounded-full bg-[#28c840] shadow-inner shadow-scrim/40 transition group-hover:brightness-110"
                         onClick={handleRestoreDefault}
                       />
                     </div>
                     <div className="mx-auto flex flex-1 flex-col items-center justify-center">
-                      <span className="font-medium text-white/80">Dev Console</span>
-                      <span className="text-xs text-white/40">lamirkohsa.dev — zsh</span>
+                      <span className="font-medium text-inverse/80">Dev Console</span>
+                      <span className="text-xs text-inverse/40">lamirkohsa.dev — zsh</span>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-white/50" />
+                    <div className="flex items-center gap-3 text-xs text-inverse/50" />
                   </div>
 
                   <div className="flex h-full flex-col font-mono text-[13px]">
                     <div className="relative flex-1 overflow-hidden">
                       <div className="absolute inset-0 overflow-y-auto px-6 py-6">
                         {visibleLogs.length === 0 ? (
-                          <div className="text-white/60">
+                          <div className="text-inverse/60">
                             Welcome to Dev Console. Type <span className="text-emerald-300">help</span> to discover available commands.
                           </div>
                         ) : (
@@ -692,7 +692,7 @@ export default function DevConsoleHUD() {
                       </div>
                     </div>
 
-                    <div className="border-t border-white/10 bg-[#161616]/90 px-4 py-3" onClick={() => inputRef.current?.focus()}>
+                    <div className="border-t border-inverse/10 bg-[#161616]/90 px-4 py-3" onClick={() => inputRef.current?.focus()}>
                       <div className="flex items-center gap-2">
                         <span className="text-[#98c379]">{PROMPT_PREFIX}</span>
                         <div className="relative flex-1 text-[#abb2bf]">
@@ -722,7 +722,7 @@ export default function DevConsoleHUD() {
                         spellCheck={false}
                         aria-hidden
                       />
-                      <div className="mt-2 flex gap-3 text-xs text-white/40">
+                      <div className="mt-2 flex gap-3 text-xs text-inverse/40">
                         <span>⏎ execute</span>
                         <span>↑/↓ history</span>
                         <span>Ctrl+C clear line</span>
@@ -780,7 +780,7 @@ export default function DevConsoleHUD() {
           )}
 
           {isOpen && isMinimized && (
-            <div className="pointer-events-auto rounded-2xl border border-white/15 bg-black/40 px-6 py-4 text-sm text-white/70 backdrop-blur">
+            <div className="pointer-events-auto rounded-2xl border border-inverse/15 bg-scrim/40 px-6 py-4 text-sm text-inverse/70 backdrop-blur">
               <button
                 type="button"
                 className="flex items-center gap-3"
@@ -789,7 +789,7 @@ export default function DevConsoleHUD() {
                   setTimeout(() => inputRef.current?.focus(), 0);
                 }}
               >
-                <span className="rounded-md bg-white/10 px-2 py-1 text-xs uppercase tracking-[0.3em] text-white/60">Terminal</span>
+                <span className="rounded-md bg-surface/10 px-2 py-1 text-xs uppercase tracking-[0.3em] text-inverse/60">Terminal</span>
                 <span>Minimized — click to resume session</span>
               </button>
             </div>
@@ -797,7 +797,7 @@ export default function DevConsoleHUD() {
         </div>
 
         <div className="absolute inset-x-0 bottom-0 flex justify-center pb-6">
-          <div className="pointer-events-auto rounded-3xl border border-white/10 bg-black/30 px-6 py-4 backdrop-blur">
+          <div className="pointer-events-auto rounded-3xl border border-inverse/10 bg-scrim/30 px-6 py-4 backdrop-blur">
             <div className="flex items-end gap-4">
               {DOCK_APPS.map(app => {
                 const Icon = app.renderIcon;
@@ -819,7 +819,7 @@ export default function DevConsoleHUD() {
                     <span className="flex items-center justify-center">
                       <Icon />
                     </span>
-                    <span className="mt-1 text-[10px] uppercase tracking-[0.25em] text-white/70">{app.label}</span>
+                    <span className="mt-1 text-[10px] uppercase tracking-[0.25em] text-inverse/70">{app.label}</span>
                   </button>
                 );
               })}

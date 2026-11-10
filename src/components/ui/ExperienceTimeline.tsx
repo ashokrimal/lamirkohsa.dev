@@ -27,7 +27,7 @@ export function ExperienceTimeline({
 }: ExperienceTimelineProps) {
   if (!items || items.length === 0) {
     return (
-      <div className="p-8 rounded-[24px] border border-black/[0.06] bg-white/70 backdrop-blur-md text-center text-sm text-[#86868b]">
+      <div className="p-8 rounded-[24px] border border-line-subtle bg-surface/70 backdrop-blur-md text-center text-sm text-muted">
         No records published in this section yet.
       </div>
     )
@@ -54,29 +54,29 @@ export function ExperienceTimeline({
             return (
               <div key={item.id || index} className="relative flex items-start gap-3.5">
                 {/* LinkedIn-style Company Squircle Logo Avatar */}
-                <div className="relative z-10 w-11 h-11 rounded-2xl bg-white border border-black/[0.08] shadow-sm flex items-center justify-center shrink-0">
-                  <Icon className="w-5 h-5 text-[#0071e3]" />
+                <div className="relative z-10 w-11 h-11 rounded-2xl bg-surface border border-line shadow-sm flex items-center justify-center shrink-0">
+                  <Icon className="w-5 h-5 text-accent" />
                 </div>
 
                 {/* Content Block */}
                 <div className="flex-1 min-w-0 pt-0.5">
-                  <h4 className="text-[15px] font-semibold text-[#1d1d1f] tracking-tight leading-snug">
+                  <h4 className="text-[15px] font-semibold text-ink tracking-tight leading-snug">
                     {item.title}
                   </h4>
-                  <p className="text-[13px] font-medium text-[#424245] mt-0.5">
+                  <p className="text-[13px] font-medium text-ink-secondary mt-0.5">
                     {item.organization}
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-x-2 text-[12px] text-[#86868b] mt-1">
+                  <div className="flex flex-wrap items-center gap-x-2 text-[12px] text-muted mt-1">
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-[#0071e3]" />
+                      <Calendar className="w-3 h-3 text-accent" />
                       {item.period}
                     </span>
                     {item.location && (
                       <>
                         <span>·</span>
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-[#86868b]" />
+                          <MapPin className="w-3 h-3 text-muted" />
                           {item.location}
                         </span>
                       </>
@@ -90,11 +90,11 @@ export function ExperienceTimeline({
                   )}
 
                   {item.highlights && item.highlights.length > 0 && (
-                    <ul className="mt-3 space-y-1.5 text-[12px] text-[#1d1d1f]">
+                    <ul className="mt-3 space-y-1.5 text-[12px] text-ink">
                       {item.highlights.map((h, hIdx) => (
                         <li key={hIdx} className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#0071e3] mt-1.5 shrink-0" />
-                          <span className="leading-snug text-[#424245]">{h}</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 shrink-0" />
+                          <span className="leading-snug text-ink-secondary">{h}</span>
                         </li>
                       ))}
                     </ul>
@@ -113,28 +113,28 @@ export function ExperienceTimeline({
         {items.map((item, index) => (
           <Card3D key={item.id || index} maxTilt={5}>
             <article className="apple-card p-6 lg:p-7 space-y-4">
-              <div className="flex items-start justify-between gap-4 pb-4 border-b border-black/[0.06]">
+              <div className="flex items-start justify-between gap-4 pb-4 border-b border-line-subtle">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-black/[0.04] border border-black/[0.04] flex items-center justify-center text-[#0071e3] shadow-xs">
+                  <div className="w-12 h-12 rounded-2xl bg-overlay border border-line-faint flex items-center justify-center text-accent shadow-xs">
                     <Icon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-[#1d1d1f] tracking-tight">
+                    <h3 className="text-lg font-semibold text-ink tracking-tight">
                       {item.title}
                     </h3>
-                    <p className="text-sm font-medium text-[#0071e3]">
+                    <p className="text-sm font-medium text-accent">
                       {item.organization}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex flex-col items-end gap-1">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.04] text-xs font-medium text-[#424245] border border-black/[0.04]">
-                    <Calendar className="w-3.5 h-3.5 text-[#0071e3]" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-overlay text-xs font-medium text-ink-secondary border border-line-faint">
+                    <Calendar className="w-3.5 h-3.5 text-accent" />
                     <span>{item.period}</span>
                   </span>
                   {item.location && (
-                    <span className="text-[11px] text-[#86868b] flex items-center gap-1">
+                    <span className="text-[11px] text-muted flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
                       {item.location}
                     </span>
@@ -142,23 +142,23 @@ export function ExperienceTimeline({
                 </div>
               </div>
 
-              <p className="text-sm text-[#424245] leading-relaxed">
+              <p className="text-sm text-ink-secondary leading-relaxed">
                 {item.description}
               </p>
 
               {item.highlights && item.highlights.length > 0 && (
-                <div className="pt-3 border-t border-black/[0.04] space-y-2">
-                  <span className="text-[11px] font-korean uppercase tracking-wider text-[#86868b] block font-medium">
+                <div className="pt-3 border-t border-line-faint space-y-2">
+                  <span className="text-[11px] font-korean uppercase tracking-wider text-muted block font-medium">
                     {typeLabelKr} · 핵심 성과
                   </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#1d1d1f]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-ink">
                     {item.highlights.map((h, hIdx) => (
                       <div
                         key={hIdx}
-                        className="flex items-start gap-2 p-2.5 rounded-xl bg-black/[0.02] border border-black/[0.03]"
+                        className="flex items-start gap-2 p-2.5 rounded-xl bg-overlay-faint border border-line-hairline"
                       >
-                        <CheckCircle2 className="w-4 h-4 text-[#0071e3] mt-0.5 shrink-0" />
-                        <span className="leading-snug text-[#424245]">{h}</span>
+                        <CheckCircle2 className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                        <span className="leading-snug text-ink-secondary">{h}</span>
                       </div>
                     ))}
                   </div>

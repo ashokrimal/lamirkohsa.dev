@@ -113,7 +113,7 @@ function CommitSparklineChart({
         </div>
         <div className="text-[11px] text-slate-500 min-h-[18px]">
           {hovered ? (
-            <span className="font-medium text-teal-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+            <span className="font-medium text-teal-900 bg-surface px-2 py-0.5 rounded border border-slate-200">
               {hovered.dayLabel}: <strong>{hovered.count} commit{hovered.count === 1 ? '' : 's'}</strong>
             </span>
           ) : (
@@ -238,7 +238,7 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
             type="button"
             onClick={handleManualRefresh}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 bg-surface hover:bg-slate-50 transition-colors disabled:opacity-50"
             title="Refresh GitHub stats"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
@@ -318,7 +318,7 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
 
           {/* 4 Quick Stat Counters */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3 rounded-xl border border-slate-200/80 bg-white">
+            <div className="p-3 rounded-xl border border-slate-200/80 bg-surface">
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[11px] font-medium uppercase tracking-wider">Repositories</span>
                 <FolderGit2 className="w-3.5 h-3.5 text-teal-600" />
@@ -327,7 +327,7 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
               <p className="text-[10px] text-slate-400 mt-0.5">Open source code</p>
             </div>
 
-            <div className="p-3 rounded-xl border border-slate-200/80 bg-white">
+            <div className="p-3 rounded-xl border border-slate-200/80 bg-surface">
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[11px] font-medium uppercase tracking-wider">Total Stars</span>
                 <Star className="w-3.5 h-3.5 text-amber-500" />
@@ -336,7 +336,7 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
               <p className="text-[10px] text-slate-400 mt-0.5">Received on projects</p>
             </div>
 
-            <div className="p-3 rounded-xl border border-slate-200/80 bg-white">
+            <div className="p-3 rounded-xl border border-slate-200/80 bg-surface">
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[11px] font-medium uppercase tracking-wider">Forks</span>
                 <GitFork className="w-3.5 h-3.5 text-sky-600" />
@@ -345,7 +345,7 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
               <p className="text-[10px] text-slate-400 mt-0.5">Community forks</p>
             </div>
 
-            <div className="p-3 rounded-xl border border-slate-200/80 bg-white">
+            <div className="p-3 rounded-xl border border-slate-200/80 bg-surface">
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[11px] font-medium uppercase tracking-wider">Activity Streak</span>
                 <Flame className="w-3.5 h-3.5 text-rose-500" />
@@ -396,7 +396,7 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
                 {data.topLanguages.map((lang, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] font-medium text-slate-700"
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-surface border border-slate-200 text-[11px] font-medium text-slate-700"
                   >
                     <span
                       className="w-2 h-2 rounded-full"
@@ -421,7 +421,7 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
 
             {/* Tab 1: Recent Activity Events */}
             {activeTab === 'events' && (
-              <div className="divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white overflow-hidden">
+              <div className="divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-surface overflow-hidden">
                 {data.events.length === 0 ? (
                   <div className="p-6 text-center text-xs text-slate-500">
                     No recent public activity detected.
@@ -464,7 +464,7 @@ export function CmsGitHubStats({ initialUsername = 'ashokrimal', className = '' 
                 {data.repos.map((repo) => (
                   <div
                     key={repo.id}
-                    className="p-3.5 rounded-xl border border-slate-200/80 bg-white hover:border-teal-500/50 hover:shadow-2xs transition-all flex flex-col justify-between"
+                    className="p-3.5 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500/50 hover:shadow-2xs transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-2">

@@ -114,7 +114,7 @@ export function CmsCommandPalette({
         aria-hidden="true"
       />
 
-      <div className="relative w-full max-w-xl bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col animate-in fade-in-0 zoom-in-95">
+      <div className="relative w-full max-w-xl bg-surface rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col animate-in fade-in-0 zoom-in-95">
         {/* Search Input bar */}
         <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
@@ -177,10 +177,10 @@ export function CmsCommandPalette({
           <span>Navigate with mouse or keyboard</span>
           <div className="flex items-center gap-3">
             <span>
-              <kbd className="font-mono bg-white px-1 rounded border border-slate-200">↵</kbd> select
+              <kbd className="font-mono bg-surface px-1 rounded border border-slate-200">↵</kbd> select
             </span>
             <span>
-              <kbd className="font-mono bg-white px-1 rounded border border-slate-200">esc</kbd> close
+              <kbd className="font-mono bg-surface px-1 rounded border border-slate-200">esc</kbd> close
             </span>
           </div>
         </div>

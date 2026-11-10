@@ -110,7 +110,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col antialiased">
       {/* Mobile Top Navigation */}
-      <header className="lg:hidden sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs">
+      <header className="lg:hidden sticky top-0 z-40 bg-surface border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -121,7 +121,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
             {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-md bg-teal-600 text-white font-bold text-xs flex items-center justify-center">
+            <span className="w-6 h-6 rounded-md bg-teal-600 text-inverse font-bold text-xs flex items-center justify-center">
               A
             </span>
             <span className="text-sm font-semibold text-slate-900">Studio CMS</span>
@@ -152,7 +152,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex w-full relative">
         {/* Desktop & Mobile Drawer Sidebar */}
         <aside
-          className={`fixed lg:sticky top-0 left-0 z-40 h-screen w-64 bg-white border-r border-slate-200/90 flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0 ${
+          className={`fixed lg:sticky top-0 left-0 z-40 h-screen w-64 bg-surface border-r border-slate-200/90 flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0 ${
             mobileNavOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
           }`}
         >
@@ -160,7 +160,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
           <div className="p-4 border-b border-slate-100">
             <div className="flex items-center justify-between">
               <Link href="/admin" className="flex items-center gap-2.5 group">
-                <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm tracking-tight group-hover:bg-teal-600 transition-colors shadow-xs">
+                <div className="w-8 h-8 rounded-lg bg-slate-900 text-inverse flex items-center justify-center font-bold text-sm tracking-tight group-hover:bg-teal-600 transition-colors shadow-xs">
                   AR
                 </div>
                 <div>
@@ -188,7 +188,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
                 <Search className="w-3.5 h-3.5 text-slate-400" />
                 <span>Search dashboard...</span>
               </span>
-              <kbd className="text-[10px] font-mono text-slate-400 bg-white px-1.5 py-0.2 rounded border border-slate-200 shadow-2xs">
+              <kbd className="text-[10px] font-mono text-slate-400 bg-surface px-1.5 py-0.2 rounded border border-slate-200 shadow-2xs">
                 ⌘K
               </kbd>
             </button>
@@ -243,7 +243,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
               className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 currentSection === 'settings'
                   ? 'bg-teal-50 text-teal-900 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-surface'
               }`}
             >
               <span className="flex items-center gap-2.5">
@@ -259,13 +259,13 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={() => setHelpModalOpen(true)}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition-colors"
+              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-surface transition-colors"
             >
               <span className="flex items-center gap-2.5">
                 <HelpCircle className="w-4 h-4 shrink-0 text-slate-400" />
                 <span>Support &amp; Docs</span>
               </span>
-              <kbd className="text-[10px] font-mono text-slate-400 bg-white px-1 rounded border border-slate-200">
+              <kbd className="text-[10px] font-mono text-slate-400 bg-surface px-1 rounded border border-slate-200">
                 ?
               </kbd>
             </button>
@@ -273,7 +273,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
             {/* Profile User Card */}
             <div className="pt-2 mt-2 border-t border-slate-200/60 flex items-center justify-between px-2 py-1">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-full bg-teal-600 text-inverse font-bold text-xs flex items-center justify-center shrink-0">
                   AR
                 </div>
                 <div className="min-w-0">
@@ -306,7 +306,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
           {/* Top Bar on Desktop */}
-          <header className="hidden lg:flex sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-8 py-3.5 items-center justify-between">
+          <header className="hidden lg:flex sticky top-0 z-30 bg-surface/95 backdrop-blur-md border-b border-slate-200/80 px-8 py-3.5 items-center justify-between">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-xs text-slate-500">
               <Link href="/admin" className="hover:text-slate-800 font-medium">
@@ -329,12 +329,12 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
                   aria-label="View notifications"
                 >
                   <Bell className="w-4 h-4" />
-                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-teal-500 ring-2 ring-white" />
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-teal-500 ring-2 ring-inverse" />
                 </button>
 
                 {/* Notification Dropdown Popover */}
                 {notificationsOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl border border-slate-200 shadow-xl p-3 z-50 animate-in fade-in-0 zoom-in-95">
+                  <div className="absolute right-0 mt-2 w-80 bg-surface rounded-xl border border-slate-200 shadow-xl p-3 z-50 animate-in fade-in-0 zoom-in-95">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-100 text-xs">
                       <span className="font-semibold text-slate-800">Activity &amp; Notifications</span>
                       <button
@@ -366,7 +366,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
                 href="https://ashokrimal.com.np"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-surface hover:bg-slate-50 transition-colors"
               >
                 <span>Preview Site</span>
                 <ExternalLink className="w-3.5 h-3.5 text-slate-400" />

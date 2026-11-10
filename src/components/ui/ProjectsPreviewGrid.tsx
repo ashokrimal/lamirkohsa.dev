@@ -29,20 +29,20 @@ export function ProjectsPreviewGrid({ projects }: ProjectsPreviewGridProps) {
       {/* Apple-style segmented view mode control */}
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
-          <span className="text-[#86868b] font-medium">
+          <span className="text-muted font-medium">
             Showing {projects.length} featured works
           </span>
-          <span className="font-korean text-[11px] text-[#86868b]">· 주요 작업</span>
+          <span className="font-korean text-[11px] text-muted">· 주요 작업</span>
         </div>
 
-        <div className="flex items-center gap-1 p-1 rounded-full bg-black/[0.04] border border-black/[0.04] backdrop-blur-md">
+        <div className="flex items-center gap-1 p-1 rounded-full bg-overlay border border-line-faint backdrop-blur-md">
           <button
             type="button"
             onClick={() => handleSetViewMode('grid')}
             className={`p-1.5 rounded-full transition-all cursor-pointer ${
               viewMode === 'grid'
-                ? 'bg-white text-[#1d1d1f] shadow-xs'
-                : 'text-[#86868b] hover:text-[#1d1d1f]'
+                ? 'bg-surface text-ink shadow-xs'
+                : 'text-muted hover:text-ink'
             }`}
             title="Grid view"
             aria-label="Grid view"
@@ -54,8 +54,8 @@ export function ProjectsPreviewGrid({ projects }: ProjectsPreviewGridProps) {
             onClick={() => handleSetViewMode('list')}
             className={`p-1.5 rounded-full transition-all cursor-pointer ${
               viewMode === 'list'
-                ? 'bg-white text-[#1d1d1f] shadow-xs'
-                : 'text-[#86868b] hover:text-[#1d1d1f]'
+                ? 'bg-surface text-ink shadow-xs'
+                : 'text-muted hover:text-ink'
             }`}
             title="Compact list view"
             aria-label="Compact list view"
@@ -78,17 +78,17 @@ export function ProjectsPreviewGrid({ projects }: ProjectsPreviewGridProps) {
           ))}
         </div>
       ) : (
-        <div className="apple-card divide-y divide-black/[0.06] overflow-hidden">
+        <div className="apple-card divide-y divide-line-subtle overflow-hidden">
           {projects.map((project, idx) => (
             <div
               key={project.id || project.title}
-              className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-black/[0.02] transition-colors group cursor-pointer"
+              className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-overlay-faint transition-colors group cursor-pointer"
               onClick={() => handleSelectProject(project)}
             >
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xs font-mono text-[#86868b]">0{idx + 1}</span>
-                  <span className="text-base font-semibold text-[#1d1d1f] group-hover:text-[#0071e3] transition-colors tracking-tight">
+                  <span className="text-xs font-mono text-muted">0{idx + 1}</span>
+                  <span className="text-base font-semibold text-ink group-hover:text-accent transition-colors tracking-tight">
                     {project.title}
                   </span>
                   {project.status && (
@@ -97,14 +97,14 @@ export function ProjectsPreviewGrid({ projects }: ProjectsPreviewGridProps) {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-[#86868b] line-clamp-1 max-w-xl">
+                <p className="text-sm text-muted line-clamp-1 max-w-xl">
                   {project.summary || project.description}
                 </p>
               </div>
 
               <div className="flex items-center gap-3 shrink-0 text-xs">
                 {project.category && (
-                  <span className="px-3 py-1 rounded-full bg-black/[0.04] text-[11px] font-medium text-[#424245]">
+                  <span className="px-3 py-1 rounded-full bg-overlay text-[11px] font-medium text-ink-secondary">
                     {project.category}
                   </span>
                 )}

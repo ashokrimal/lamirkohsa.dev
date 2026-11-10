@@ -40,7 +40,7 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
       <article className="apple-card group overflow-hidden flex flex-col justify-between h-full">
         {/* Top Image Preview if available */}
         {project.image && (
-          <div className="relative overflow-hidden aspect-[16/10] max-h-[300px] bg-black/[0.02]">
+          <div className="relative overflow-hidden aspect-[16/10] max-h-[300px] bg-overlay-faint">
             <Image
               src={project.image}
               alt={`${project.title} preview`}
@@ -53,13 +53,13 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
             {/* Apple Frosted Glass Pill Badges */}
             <div className="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none">
               {project.category && (
-                <div className="px-3 py-1 rounded-full bg-white/85 dark:bg-black/80 backdrop-blur-xl border border-black/[0.06] text-[11px] font-medium tracking-tight text-[#1d1d1f] shadow-xs flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#0071e3]" />
+                <div className="px-3 py-1 rounded-full bg-surface/85 dark:bg-scrim/80 backdrop-blur-xl border border-line-subtle text-[11px] font-medium tracking-tight text-ink shadow-xs flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                   <span>{project.category}</span>
                 </div>
               )}
               {project.status && (
-                <div className="px-3 py-1 rounded-full bg-white/85 dark:bg-black/80 backdrop-blur-xl border border-black/[0.06] text-[11px] font-medium text-emerald-600 shadow-xs">
+                <div className="px-3 py-1 rounded-full bg-surface/85 dark:bg-scrim/80 backdrop-blur-xl border border-line-subtle text-[11px] font-medium text-emerald-600 shadow-xs">
                   {project.status}
                 </div>
               )}
@@ -73,26 +73,26 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
             {/* Meta Row with Korean Subtitle */}
             <div className="flex items-center justify-between gap-2 text-xs mb-2.5">
               {index !== undefined && (
-                <div className="flex items-center gap-1.5 text-[11px] text-[#86868b]">
+                <div className="flex items-center gap-1.5 text-[11px] text-muted">
                   <span className="font-mono">0{index + 1}</span>
                   <span className="font-korean">· 프로젝트</span>
                 </div>
               )}
               {project.completionDate && (
-                <span className="inline-flex items-center gap-1 text-[11px] text-[#86868b] ml-auto">
-                  <Calendar className="w-3 h-3 text-[#0071e3]" />
+                <span className="inline-flex items-center gap-1 text-[11px] text-muted ml-auto">
+                  <Calendar className="w-3 h-3 text-accent" />
                   {project.completionDate}
                 </span>
               )}
             </div>
 
             {/* Title */}
-            <h3 className="text-xl md:text-2xl font-semibold text-[#1d1d1f] tracking-tight leading-snug group-hover:text-[#0071e3] transition-colors">
+            <h3 className="text-xl md:text-2xl font-semibold text-ink tracking-tight leading-snug group-hover:text-accent transition-colors">
               {project.title}
             </h3>
 
             {/* Description */}
-            <p className="mt-2.5 text-sm text-[#86868b] leading-relaxed line-clamp-3 font-normal">
+            <p className="mt-2.5 text-sm text-muted leading-relaxed line-clamp-3 font-normal">
               {project.summary ||
                 project.description ||
                 'A full-stack software application built with attention to performance, human-centric interfaces, and scalable architecture.'}
@@ -100,8 +100,8 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
 
             {/* Phases Pill */}
             {project.phases && project.phases.length > 0 && (
-              <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.03] text-[11px] text-[#424245]">
-                <Layers className="w-3 h-3 text-[#0071e3]" />
+              <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-overlay-hairline text-[11px] text-ink-secondary">
+                <Layers className="w-3 h-3 text-accent" />
                 <span>{project.phases.length} Execution Phases</span>
               </div>
             )}
@@ -114,13 +114,13 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
                 {project.techStack.slice(0, 5).map((tech) => (
                   <span
                     key={tech}
-                    className="inline-flex items-center rounded-full bg-black/[0.04] px-3 py-1 text-[11px] font-medium text-[#424245] border border-black/[0.03]"
+                    className="inline-flex items-center rounded-full bg-overlay px-3 py-1 text-[11px] font-medium text-ink-secondary border border-line-hairline"
                   >
                     {tech}
                   </span>
                 ))}
                 {project.techStack.length > 5 && (
-                  <span className="text-[11px] text-[#86868b] self-center px-1">
+                  <span className="text-[11px] text-muted self-center px-1">
                     +{project.techStack.length - 5}
                   </span>
                 )}
@@ -129,7 +129,7 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
           )}
 
           {/* Actions with Anti-Boxy Apple Pill Buttons */}
-          <div className="pt-4 border-t border-black/[0.06] flex items-center justify-between gap-3 text-xs">
+          <div className="pt-4 border-t border-line-subtle flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               {project.live && project.live !== '#' && (
                 <a
@@ -152,7 +152,7 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
                   className="apple-btn-secondary !py-1.5 !px-3 !text-xs"
                   title="View Source Code"
                 >
-                  <Github className="w-3.5 h-3.5 text-[#86868b]" />
+                  <Github className="w-3.5 h-3.5 text-muted" />
                   <span>Code</span>
                 </a>
               )}
@@ -165,16 +165,16 @@ export function ProjectCard({ project, variant = 'standard', index, onQuickView 
                   sensoryAudio.playModal()
                   onQuickView(project)
                 }}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0071e3] hover:underline cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline cursor-pointer"
               >
                 <span>Details</span>
-                <span className="font-korean text-[10px] text-[#86868b] font-normal">상세</span>
+                <span className="font-korean text-[10px] text-muted font-normal">상세</span>
                 <ArrowUpRight className="w-3 h-3" />
               </button>
             ) : (
               <Link
                 href="/projects"
-                className="inline-flex items-center gap-1 text-xs font-medium text-[#0071e3] hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"
               >
                 <span>Details</span>
                 <ArrowUpRight className="w-3 h-3" />

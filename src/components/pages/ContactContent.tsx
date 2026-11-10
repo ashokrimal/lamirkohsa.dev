@@ -17,9 +17,9 @@ const DEFAULT_SECTIONS = ['intro', 'terminal', 'channel'] as const
 type SectionId = (typeof DEFAULT_SECTIONS)[number]
 
 const SECTION_ACCENTS: Record<SectionId, string> = {
-  intro: '#52725d',
+  intro: 'var(--accent-secondary)',
   terminal: '#17252b',
-  channel: '#52725d',
+  channel: 'var(--accent-secondary)',
 }
 
 interface SocialLink {
@@ -80,7 +80,7 @@ function TerminalSection({ profile }: { profile?: Record<string, unknown> }) {
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-[#e26d5c]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#e9c46a]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#52725d]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-accent-secondary" />
             <span className="ml-3 font-mono text-xs text-[#8ca3af]">ashok@workstation — zsh</span>
           </div>
           <span className="font-mono text-[10px] text-[#6d8491] flex items-center gap-1.5">

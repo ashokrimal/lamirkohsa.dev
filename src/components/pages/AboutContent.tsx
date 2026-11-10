@@ -116,28 +116,28 @@ export default async function AboutContent() {
           </div>
 
           <div className="apple-card p-6 md:p-7 space-y-4 text-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-black/[0.06]">
-              <h3 className="text-xs uppercase tracking-wider text-[#86868b] font-medium">
+            <div className="flex items-center justify-between pb-3 border-b border-line-subtle">
+              <h3 className="text-xs uppercase tracking-wider text-muted font-medium">
                 Quick Coordinates
               </h3>
-              <span className="font-korean text-[10px] text-[#86868b]">기본 정보</span>
+              <span className="font-korean text-[10px] text-muted">기본 정보</span>
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[#86868b]">Location:</span>
-                <span className="font-semibold text-[#1d1d1f]">{profile.location || 'Butwal, Nepal'}</span>
+                <span className="text-muted">Location:</span>
+                <span className="font-semibold text-ink">{profile.location || 'Butwal, Nepal'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#86868b]">Focus:</span>
-                <span className="font-semibold text-[#1d1d1f]">Full-Stack &amp; Interface Craft</span>
+                <span className="text-muted">Focus:</span>
+                <span className="font-semibold text-ink">Full-Stack &amp; Interface Craft</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#86868b]">Availability:</span>
+                <span className="text-muted">Availability:</span>
                 <span className="font-medium text-emerald-600">Open for collaborations</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#86868b]">Education:</span>
-                <span className="font-semibold text-[#1d1d1f]">BCA · Crimson College</span>
+                <span className="text-muted">Education:</span>
+                <span className="font-semibold text-ink">BCA · Crimson College</span>
               </div>
             </div>
           </div>

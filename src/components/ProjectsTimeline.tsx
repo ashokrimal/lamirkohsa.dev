@@ -89,7 +89,7 @@ export function ProjectsTimeline({
                   <div
                     className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold font-mono transition-transform duration-200 ${
                       isSelected
-                        ? 'bg-[var(--accent)] text-white scale-110 shadow-xs'
+                        ? 'bg-[var(--accent)] text-inverse scale-110 shadow-xs'
                         : 'bg-[var(--surface)] border-2 border-[var(--line)] text-[var(--muted)] group-hover:border-[var(--accent)]'
                     }`}
                   >
@@ -107,7 +107,7 @@ export function ProjectsTimeline({
                   )}
 
                   {proj.status && (
-                    <span className="mt-1 text-[9px] uppercase tracking-wider font-semibold text-[var(--accent)] bg-white px-2 py-0.5 rounded-xs border border-[var(--line)]">
+                    <span className="mt-1 text-[9px] uppercase tracking-wider font-semibold text-[var(--accent)] bg-surface px-2 py-0.5 rounded-xs border border-[var(--line)]">
                       {proj.status}
                     </span>
                   )}

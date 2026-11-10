@@ -97,7 +97,7 @@ export default function AdminDashboard() {
   if (!authHeader) {
     return (
       <div className="mx-auto max-w-xl">
-        <div className="rounded-3xl border border-gray-200 bg-white p-10 shadow-lg">
+        <div className="rounded-3xl border border-gray-200 bg-surface p-10 shadow-lg">
           <div className="text-center">
             <p className="text-xs uppercase tracking-[0.3em] text-blue-500">Secure access</p>
             <h1 className="mt-3 text-3xl font-bold text-gray-900">Portfolio Admin</h1>
@@ -137,7 +137,7 @@ export default function AdminDashboard() {
             </div>
             <button
               type="submit"
-              className="w-full rounded-xl bg-blue-600 py-3 text-base font-semibold text-white shadow hover:bg-blue-700 transition"
+              className="w-full rounded-xl bg-blue-600 py-3 text-base font-semibold text-inverse shadow hover:bg-blue-700 transition"
             >
               Access dashboard
             </button>
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-10">
-      <header className="rounded-3xl border border-gray-200 bg-gradient-to-br from-blue-50 via-white to-white p-10 shadow-sm">
+      <header className="rounded-3xl border border-gray-200 bg-gradient-to-br from-blue-50 via-surface to-surface p-10 shadow-sm">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-blue-500">Contact inbox</p>
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
 
         <div className="mt-10 grid gap-4 sm:grid-cols-3">
           {STAT_CARDS.map(card => (
-            <div key={card.key} className="rounded-2xl border border-gray-200 bg-white/80 p-5 shadow-sm backdrop-blur">
+            <div key={card.key} className="rounded-2xl border border-gray-200 bg-surface/80 p-5 shadow-sm backdrop-blur">
               <p className="text-xs uppercase tracking-[0.2em] text-gray-500">{card.label}</p>
               <p className="mt-3 text-3xl font-semibold text-gray-900">
                 {card.key === 'total' && stats.total}

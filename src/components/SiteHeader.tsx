@@ -64,20 +64,20 @@ export default function SiteHeader() {
             onClick={handleNavClick}
             className="flex items-center gap-2 group transition-transform active:scale-95"
           >
-            <span className="font-semibold text-[15px] tracking-tight text-[#1d1d1f] group-hover:text-[#0071e3] transition-colors">
+            <span className="font-semibold text-[15px] tracking-tight text-ink group-hover:text-accent transition-colors">
               Ashok Rimal
             </span>
-            <span className="text-[11px] font-korean text-[#86868b] tracking-normal font-normal">
+            <span className="text-[11px] font-korean text-muted tracking-normal font-normal">
               아쇼크 리말
             </span>
           </Link>
 
           {/* Apple Live Availability Capsule */}
-          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/[0.04] text-[11px] text-[#424245] border border-black/[0.04]">
+          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-overlay text-[11px] text-ink-secondary border border-line-faint">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-medium">NPT {nepalTime || 'UTC+5:45'}</span>
-            <span className="text-black/20">·</span>
-            <span className="font-korean text-[#86868b]">가용</span>
+            <span className="text-scrim/20">·</span>
+            <span className="font-korean text-muted">가용</span>
           </div>
         </div>
 
@@ -92,16 +92,16 @@ export default function SiteHeader() {
                 onClick={() => sensoryAudio.playClick()}
                 className={`flex items-baseline gap-1 text-[13px] font-medium tracking-tight transition-all duration-200 ${
                   active
-                    ? 'text-[#0071e3] font-semibold'
-                    : 'text-[#424245] hover:text-[#1d1d1f]'
+                    ? 'text-accent font-semibold'
+                    : 'text-ink-secondary hover:text-ink'
                 }`}
               >
                 <span>{link.label}</span>
-                <span className="text-[10px] font-korean text-[#86868b] opacity-75 font-normal">
+                <span className="text-[10px] font-korean text-muted opacity-75 font-normal">
                   {link.kr}
                 </span>
                 {active && (
-                  <span className="inline-block w-1 h-1 rounded-full bg-[#0071e3] ml-0.5" />
+                  <span className="inline-block w-1 h-1 rounded-full bg-accent ml-0.5" />
                 )}
               </Link>
             )
@@ -111,7 +111,7 @@ export default function SiteHeader() {
           <button
             type="button"
             onClick={toggleSound}
-            className="p-1.5 rounded-full bg-black/[0.04] hover:bg-black/[0.08] text-[#86868b] hover:text-[#1d1d1f] transition-all cursor-pointer"
+            className="p-1.5 rounded-full bg-overlay hover:bg-overlay-medium text-muted hover:text-ink transition-all cursor-pointer"
             title={isMuted ? 'Unmute Sensory UI Audio' : 'Mute Sensory UI Audio'}
             aria-label="Toggle sensory sound effects"
           >
@@ -124,7 +124,7 @@ export default function SiteHeader() {
           <button
             type="button"
             onClick={toggleSound}
-            className="p-1.5 rounded-full bg-black/[0.04] text-[#86868b]"
+            className="p-1.5 rounded-full bg-overlay text-muted"
             aria-label="Toggle audio"
           >
             {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
@@ -135,7 +135,7 @@ export default function SiteHeader() {
               sensoryAudio.playToggle()
               setIsOpen((open) => !open)
             }}
-            className="p-2 rounded-full bg-black/[0.05] text-[#1d1d1f] transition-transform active:scale-90"
+            className="p-2 rounded-full bg-overlay-soft text-ink transition-transform active:scale-90"
             aria-expanded={isOpen}
             aria-label={isOpen ? 'Close menu' : 'Open menu'}
           >
@@ -152,17 +152,17 @@ export default function SiteHeader() {
         }`}
       >
         <div>
-          <div className="flex items-center justify-between pb-4 border-b border-black/[0.06]">
+          <div className="flex items-center justify-between pb-4 border-b border-line-subtle">
             <div>
-              <span className="text-sm font-semibold tracking-tight text-[#1d1d1f]">
+              <span className="text-sm font-semibold tracking-tight text-ink">
                 Ashok Rimal
               </span>
-              <p className="text-[11px] font-korean text-[#86868b]">아쇼크 리말 · 메뉴</p>
+              <p className="text-[11px] font-korean text-muted">아쇼크 리말 · 메뉴</p>
             </div>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="p-2 rounded-full bg-black/[0.05] text-[#1d1d1f]"
+              className="p-2 rounded-full bg-overlay-soft text-ink"
               aria-label="Close menu"
             >
               <X className="w-4 h-4" />
@@ -179,14 +179,14 @@ export default function SiteHeader() {
                     onClick={handleNavClick}
                     className={`flex items-center justify-between p-3 rounded-2xl transition-all ${
                       active
-                        ? 'bg-[#0071e3] text-white font-medium shadow-sm'
-                        : 'text-[#1d1d1f] hover:bg-black/[0.04]'
+                        ? 'bg-accent text-inverse font-medium shadow-sm'
+                        : 'text-ink hover:bg-overlay'
                     }`}
                   >
                     <span className="text-lg tracking-tight font-medium">{link.label}</span>
                     <span
                       className={`text-xs font-korean ${
-                        active ? 'text-white/80' : 'text-[#86868b]'
+                        active ? 'text-inverse/80' : 'text-muted'
                       }`}
                     >
                       {link.kr}
@@ -199,10 +199,10 @@ export default function SiteHeader() {
         </div>
 
         {/* Mobile Drawer Footer with Apple Status */}
-        <div className="pt-6 border-t border-black/[0.06] text-xs text-[#86868b] space-y-2">
+        <div className="pt-6 border-t border-line-subtle text-xs text-muted space-y-2">
           <div className="flex items-center justify-between">
             <span>Local Time:</span>
-            <span className="font-semibold text-[#1d1d1f]">Nepal {nepalTime || 'NPT'}</span>
+            <span className="font-semibold text-ink">Nepal {nepalTime || 'NPT'}</span>
           </div>
           <div className="flex items-center justify-between">
             <span>Availability:</span>

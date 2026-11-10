@@ -533,7 +533,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
               <button
                 type="button"
                 onClick={() => setCreateRecordModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-white text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>New Record</span>
@@ -542,7 +542,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                 href="https://ashokrimal.com.np"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-surface hover:bg-slate-50 transition-colors"
               >
                 <span>Live View</span>
                 <ExternalLink className="w-3 h-3 text-slate-400" />
@@ -613,7 +613,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             <button
               type="button"
               onClick={() => setCreateRecordModalOpen(true)}
-              className="p-3 rounded-xl border border-slate-200/80 bg-white hover:border-teal-500 hover:shadow-xs text-left transition-all group"
+              className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
             >
               <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
                 <Plus className="w-4 h-4" />
@@ -625,7 +625,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             <button
               type="button"
               onClick={() => setCreateGalleryModalOpen(true)}
-              className="p-3 rounded-xl border border-slate-200/80 bg-white hover:border-teal-500 hover:shadow-xs text-left transition-all group"
+              className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
             >
               <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
                 <ImageIcon className="w-4 h-4" />
@@ -637,7 +637,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             <button
               type="button"
               onClick={() => setCreateMusicModalOpen(true)}
-              className="p-3 rounded-xl border border-slate-200/80 bg-white hover:border-teal-500 hover:shadow-xs text-left transition-all group"
+              className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
             >
               <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
                 <Music className="w-4 h-4" />
@@ -648,7 +648,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
 
             <Link
               href="/admin?section=settings"
-              className="p-3 rounded-xl border border-slate-200/80 bg-white hover:border-teal-500 hover:shadow-xs text-left transition-all group"
+              className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
             >
               <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
                 <Settings className="w-4 h-4" />
@@ -702,7 +702,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             <button
               type="button"
               onClick={() => setCreateRecordModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-white text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Record</span>
@@ -775,7 +775,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             <button
               type="button"
               onClick={() => setCreateProjectModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-white text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>New Project</span>
@@ -786,7 +786,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             {projectsList.map((project) => (
               <div
                 key={project.id}
-                className="p-5 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 shadow-xs transition-all flex flex-col justify-between"
+                className="p-5 rounded-xl border border-slate-200/90 bg-surface hover:border-slate-300 shadow-xs transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
@@ -860,7 +860,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white">
+              <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-surface">
                 <button
                   type="button"
                   onClick={() => setGalleryViewMode('grid')}
@@ -885,7 +885,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
               <button
                 type="button"
                 onClick={() => setCreateGalleryModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-white text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Upload Artwork</span>
@@ -898,7 +898,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
               {galleryItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group relative rounded-xl border border-slate-200/90 bg-white overflow-hidden shadow-xs hover:border-slate-300 transition-all"
+                  className="group relative rounded-xl border border-slate-200/90 bg-surface overflow-hidden shadow-xs hover:border-slate-300 transition-all"
                 >
                   <div
                     className="aspect-4/3 bg-slate-100 relative overflow-hidden cursor-pointer"
@@ -909,7 +909,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                       alt={item.title || 'Gallery item'}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                    <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-inverse">
                       <Eye className="w-6 h-6" />
                     </div>
                   </div>
@@ -1002,7 +1002,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             <button
               type="button"
               onClick={() => setCreateMusicModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-white text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Track</span>
@@ -1032,7 +1032,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                         <button
                           type="button"
                           onClick={() => setNowPlayingTrackId(isPlaying ? null : track.id)}
-                          className="absolute inset-0 bg-slate-900/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity"
+                          className="absolute inset-0 bg-slate-900/40 flex items-center justify-center text-inverse opacity-0 hover:opacity-100 transition-opacity"
                         >
                           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                         </button>
@@ -1532,7 +1532,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
             <button
               type="button"
               onClick={handleDeleteConfirmed}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-600 text-white hover:bg-rose-700 shadow-xs transition-colors"
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-600 text-inverse hover:bg-rose-700 shadow-xs transition-colors"
             >
               Delete Permanently
             </button>
@@ -1560,7 +1560,7 @@ function WorkspaceInner({ section, content, settings, isDemoSession }: AdminWork
                 href={`mailto:${inboxMessageModal.email}?subject=${encodeURIComponent(
                   `Re: ${inboxMessageModal.subject}`
                 )}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse font-semibold hover:bg-teal-700 transition-colors"
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>Reply via Email ↗</span>

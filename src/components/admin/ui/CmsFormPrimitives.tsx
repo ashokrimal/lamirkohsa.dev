@@ -41,7 +41,7 @@ export function CmsInput({
       className={`w-full text-xs px-3 py-2 rounded-lg border transition-all placeholder:text-slate-400 focus:outline-none focus:ring-1 ${
         hasError
           ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500 bg-rose-50/20'
-          : 'border-slate-200 focus:border-teal-500 focus:ring-teal-500 bg-white'
+          : 'border-slate-200 focus:border-teal-500 focus:ring-teal-500 bg-surface'
       } ${className}`}
     />
   )
@@ -58,7 +58,7 @@ export function CmsTextarea({
       className={`w-full text-xs p-3 rounded-lg border transition-all placeholder:text-slate-400 focus:outline-none focus:ring-1 resize-y ${
         hasError
           ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500 bg-rose-50/20'
-          : 'border-slate-200 focus:border-teal-500 focus:ring-teal-500 bg-white'
+          : 'border-slate-200 focus:border-teal-500 focus:ring-teal-500 bg-surface'
       } ${className}`}
     />
   )
@@ -74,7 +74,7 @@ export function CmsSelect({
   return (
     <select
       {...props}
-      className={`w-full text-xs px-3 py-2 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 ${className}`}
+      className={`w-full text-xs px-3 py-2 rounded-lg border border-slate-200 bg-surface focus:outline-none focus:ring-1 focus:ring-teal-500 ${className}`}
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>
@@ -112,7 +112,7 @@ export function CmsToggle({
         }`}
       >
         <span
-          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-surface shadow-sm ring-0 transition duration-200 ease-in-out ${
             checked ? 'translate-x-4' : 'translate-x-0'
           }`}
         />
@@ -150,7 +150,7 @@ export function CmsTagInput({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg border border-slate-200 bg-white focus-within:ring-1 focus-within:ring-teal-500">
+    <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg border border-slate-200 bg-surface focus-within:ring-1 focus-within:ring-teal-500">
       {tags.map((tag, idx) => (
         <span
           key={idx}
@@ -191,9 +191,9 @@ export function CmsSubmitButton({
   const base =
     'inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none'
   const variants = {
-    primary: 'bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500 shadow-xs',
+    primary: 'bg-teal-600 text-inverse hover:bg-teal-700 focus:ring-teal-500 shadow-xs',
     secondary: 'bg-slate-100 text-slate-700 hover:bg-slate-200 focus:ring-slate-400',
-    danger: 'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500',
+    danger: 'bg-rose-600 text-inverse hover:bg-rose-700 focus:ring-rose-500',
   }
 
   return (

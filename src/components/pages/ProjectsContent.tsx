@@ -51,7 +51,7 @@ function IntroSection({
       pageKey={PAGE_KEY}
       sectionId="intro"
       label="Intro"
-      fallbackAccent="#52725d"
+      fallbackAccent="var(--accent-secondary)"
       className="pt-6 pb-2"
     >
       <header className="max-w-4xl space-y-3">
@@ -68,7 +68,7 @@ function TimelineSection({ projects }: { projects: Project[] }) {
       pageKey={PAGE_KEY}
       sectionId="timeline"
       label="Timeline & Milestones"
-      fallbackAccent="#52725d"
+      fallbackAccent="var(--accent-secondary)"
       className="py-2"
     >
       <ProjectsTimeline projects={projects} />
@@ -88,7 +88,7 @@ function ShowcaseSection({
       pageKey={PAGE_KEY}
       sectionId="showcase"
       label="Case Studies Showcase"
-      fallbackAccent="#52725d"
+      fallbackAccent="var(--accent-secondary)"
       className="py-4"
     >
       <ProjectsShowcase projects={projects} filters={filters} />

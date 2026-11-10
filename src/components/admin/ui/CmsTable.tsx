@@ -157,7 +157,7 @@ export function CmsTable<T extends Record<string, any>>({
   return (
     <div className="w-full flex flex-col">
       {/* Table Toolbar */}
-      <div className="p-3.5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-white">
+      <div className="p-3.5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-surface">
         <div className="flex items-center gap-2 flex-1 min-w-[220px] max-w-sm">
           <div className="relative w-full">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -169,7 +169,7 @@ export function CmsTable<T extends Record<string, any>>({
                 setCurrentPage(1)
               }}
               placeholder={searchPlaceholder}
-              className="w-full text-xs pl-8.5 pr-7 py-1.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:bg-white transition-all"
+              className="w-full text-xs pl-8.5 pr-7 py-1.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:bg-surface transition-all"
             />
             {searchTerm && (
               <button
@@ -200,7 +200,7 @@ export function CmsTable<T extends Record<string, any>>({
                   setSelectedFilter(e.target.value)
                   setCurrentPage(1)
                 }}
-                className="text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                className="text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-surface text-slate-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
               >
                 <option value="ALL">All ({data.length})</option>
                 {filterOptions.options.map((opt) => (
@@ -243,7 +243,7 @@ export function CmsTable<T extends Record<string, any>>({
                   batchActions.onPublish?.(Array.from(selectedKeys))
                   setSelectedKeys(new Set())
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-teal-200 text-teal-800 hover:bg-teal-100/50 font-medium transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface border border-teal-200 text-teal-800 hover:bg-teal-100/50 font-medium transition-colors"
               >
                 <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
                 Publish
@@ -256,7 +256,7 @@ export function CmsTable<T extends Record<string, any>>({
                   batchActions.onDelete?.(Array.from(selectedKeys))
                   setSelectedKeys(new Set())
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 font-medium transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface border border-rose-200 text-rose-700 hover:bg-rose-50 font-medium transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Delete
@@ -326,7 +326,7 @@ export function CmsTable<T extends Record<string, any>>({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-100 bg-white">
+          <tbody className="divide-y divide-slate-100 bg-surface">
             {paginatedData.length === 0 ? (
               <tr>
                 <td
@@ -343,7 +343,7 @@ export function CmsTable<T extends Record<string, any>>({
                       <button
                         type="button"
                         onClick={onEmptyAction}
-                        className="mt-4 px-3 py-1.5 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors"
+                        className="mt-4 px-3 py-1.5 text-xs font-medium text-inverse bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors"
                       >
                         {emptyActionLabel}
                       </button>
@@ -404,7 +404,7 @@ export function CmsTable<T extends Record<string, any>>({
       </div>
 
       {/* Table Pagination Footer */}
-      <div className="px-4 py-3 border-t border-slate-100 bg-white flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+      <div className="px-4 py-3 border-t border-slate-100 bg-surface flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
         <div>
           Showing{' '}
           <span className="font-semibold text-slate-700">

@@ -162,7 +162,7 @@ export default async function HomeContent() {
       // 1. ABOUT ME PREVIEW
       case 'about':
         return (
-          <section key="about" className="py-16 md:py-24 border-t border-black/[0.08]" aria-labelledby="about-preview-heading">
+          <section key="about" className="py-16 md:py-24 border-t border-line" aria-labelledby="about-preview-heading">
             <SectionHeader
               eyebrow={meta.about?.eyebrow || '01 / About Me'}
               krEyebrow="소개 및 철학"
@@ -175,8 +175,8 @@ export default async function HomeContent() {
 
             <div className="mt-10 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 items-start">
               {/* Left Column: Short introduction & professional background */}
-              <div className="space-y-6 text-sm md:text-base text-[#86868b] leading-relaxed">
-                <p className="text-base md:text-xl text-[#1d1d1f] font-normal leading-relaxed tracking-tight">
+              <div className="space-y-6 text-sm md:text-base text-muted leading-relaxed">
+                <p className="text-base md:text-xl text-ink font-normal leading-relaxed tracking-tight">
                   {profile.summary ||
                     'A Bachelor of Computer Applications student and full-stack software developer focused on thoughtful interfaces, dependable backend systems, and human-centric software.'}
                 </p>
@@ -185,15 +185,15 @@ export default async function HomeContent() {
                     'My work sits between interface craft, backend architecture, and teaching. I build accessible interfaces, dependable systems, and practical technology that helps people move forward.'}
                 </p>
                 <div className="pt-2 flex flex-wrap gap-3 text-xs">
-                  <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 border border-black/[0.06] text-[#1d1d1f] shadow-xs">
-                    <Compass className="w-3.5 h-3.5 text-[#0071e3]" />
+                  <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
+                    <Compass className="w-3.5 h-3.5 text-accent" />
                     <span>Based in {profile.location || 'Nepal'}</span>
-                    <span className="font-korean text-[10px] text-[#86868b]">네팔</span>
+                    <span className="font-korean text-[10px] text-muted">네팔</span>
                   </span>
-                  <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 border border-black/[0.06] text-[#1d1d1f] shadow-xs">
-                    <Code2 className="w-3.5 h-3.5 text-[#0071e3]" />
+                  <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
+                    <Code2 className="w-3.5 h-3.5 text-accent" />
                     <span>{profile.headline || 'Full-Stack Developer'}</span>
-                    <span className="font-korean text-[10px] text-[#86868b]">개발자</span>
+                    <span className="font-korean text-[10px] text-muted">개발자</span>
                   </span>
                 </div>
               </div>
@@ -201,12 +201,12 @@ export default async function HomeContent() {
               {/* Right Column: Apple 3D Interactive Spatial Mesh & Principles */}
               <Card3D maxTilt={5}>
                 <div className="apple-card p-6 md:p-7 space-y-5">
-                  <div className="flex items-center justify-between pb-3 border-b border-black/[0.06]">
+                  <div className="flex items-center justify-between pb-3 border-b border-line-subtle">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs uppercase tracking-wider text-[#86868b] font-medium">
+                      <span className="text-xs uppercase tracking-wider text-muted font-medium">
                         Status &amp; Focus
                       </span>
-                      <span className="font-korean text-[10px] text-[#86868b]">· 상태</span>
+                      <span className="font-korean text-[10px] text-muted">· 상태</span>
                     </div>
                     <span className="text-xs text-emerald-600 font-medium flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -215,23 +215,23 @@ export default async function HomeContent() {
                   </div>
 
                   {/* Three.js Interactive 3D Spatial Canvas */}
-                  <div className="relative h-44 w-full rounded-2xl bg-black/[0.02] border border-black/[0.04] overflow-hidden flex items-center justify-center">
+                  <div className="relative h-44 w-full rounded-2xl bg-overlay-faint border border-line-faint overflow-hidden flex items-center justify-center">
                     <Apple3DCanvas className="w-full h-full" />
-                    <div className="absolute bottom-2.5 right-3 text-[10px] font-korean text-[#86868b] bg-white/80 backdrop-blur-md px-2 py-0.5 rounded-full shadow-xs">
+                    <div className="absolute bottom-2.5 right-3 text-[10px] font-korean text-muted bg-surface/80 backdrop-blur-md px-2 py-0.5 rounded-full shadow-xs">
                       3D 공간 반응
                     </div>
                   </div>
 
                   <div className="space-y-3.5 text-xs leading-relaxed">
                     <div>
-                      <h4 className="font-semibold text-[#1d1d1f]">Core Engineering Stack</h4>
-                      <p className="text-[#86868b] text-xs mt-0.5 font-normal">
+                      <h4 className="font-semibold text-ink">Core Engineering Stack</h4>
+                      <p className="text-muted text-xs mt-0.5 font-normal">
                         Next.js · React · TypeScript · Node.js · PostgreSQL · Tailwind CSS
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-[#1d1d1f]">Educational Foundation</h4>
-                      <p className="text-[#86868b] text-xs mt-0.5 font-normal">
+                      <h4 className="font-semibold text-ink">Educational Foundation</h4>
+                      <p className="text-muted text-xs mt-0.5 font-normal">
                         Bachelor of Computer Applications (BCA) · Crimson College of Technology
                       </p>
                     </div>
@@ -243,7 +243,7 @@ export default async function HomeContent() {
                       className="apple-btn-secondary w-full justify-between !py-2.5"
                     >
                       <span>Read full credentials &amp; toolkit</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-[#86868b]" />
+                      <ArrowUpRight className="w-3.5 h-3.5 text-muted" />
                     </Link>
                   </div>
                 </div>
@@ -255,7 +255,7 @@ export default async function HomeContent() {
       // 2. GALLERY PREVIEW
       case 'gallery':
         return (
-          <section key="gallery" className="py-16 md:py-24 border-t border-black/[0.08]" aria-labelledby="gallery-preview-heading">
+          <section key="gallery" className="py-16 md:py-24 border-t border-line" aria-labelledby="gallery-preview-heading">
             <SectionHeader
               eyebrow={meta.gallery?.eyebrow || '02 / Visual Journal'}
               krEyebrow="사진 및 시각 기록"
@@ -274,7 +274,7 @@ export default async function HomeContent() {
       // 3. PROJECTS PREVIEW
       case 'projects':
         return (
-          <section key="projects" className="py-16 md:py-24 border-t border-black/[0.08]" aria-labelledby="projects-preview-heading">
+          <section key="projects" className="py-16 md:py-24 border-t border-line" aria-labelledby="projects-preview-heading">
             <SectionHeader
               eyebrow={meta.projects?.eyebrow || '03 / Selected Work'}
               krEyebrow="주요 프로젝트"
@@ -305,7 +305,7 @@ export default async function HomeContent() {
       // 4. MEDIA PREVIEW (Interactive Filterable Shelf)
       case 'media':
         return (
-          <section key="media" className="py-16 md:py-24 border-t border-black/[0.08]" aria-labelledby="media-preview-heading">
+          <section key="media" className="py-16 md:py-24 border-t border-line" aria-labelledby="media-preview-heading">
             <SectionHeader
               eyebrow={meta.media?.eyebrow || '04 / Cultural Influences'}
               krEyebrow="음악 및 미디어"
@@ -329,7 +329,7 @@ export default async function HomeContent() {
       // 5. EXPERIENCE & HIGHLIGHTS PREVIEW
       case 'experience':
         return (
-          <section key="experience" className="py-16 md:py-24 border-t border-black/[0.08]" aria-labelledby="experience-preview-heading">
+          <section key="experience" className="py-16 md:py-24 border-t border-line" aria-labelledby="experience-preview-heading">
             <SectionHeader
               eyebrow={meta.experience?.eyebrow || '05 / Career & Toolkit'}
               krEyebrow="경력 및 기술"
@@ -343,18 +343,18 @@ export default async function HomeContent() {
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 items-start">
               {/* Left Column: Timeline items */}
               <div>
-                <h3 className="text-xs uppercase tracking-wider text-[#86868b] font-medium mb-4 flex items-center justify-between">
+                <h3 className="text-xs uppercase tracking-wider text-muted font-medium mb-4 flex items-center justify-between">
                   <span>Selected Milestones</span>
-                  <span className="font-korean text-[10px] text-[#86868b]">· 주요 이력</span>
+                  <span className="font-korean text-[10px] text-muted">· 주요 이력</span>
                 </h3>
                 <ExperienceTimeline items={experienceItems.slice(0, 2)} type="experience" />
               </div>
 
               {/* Right Column: Skills preview */}
               <div className="space-y-4">
-                <h3 className="text-xs uppercase tracking-wider text-[#86868b] font-medium mb-4 flex items-center justify-between">
+                <h3 className="text-xs uppercase tracking-wider text-muted font-medium mb-4 flex items-center justify-between">
                   <span>Core Disciplines</span>
-                  <span className="font-korean text-[10px] text-[#86868b]">· 핵심 기술</span>
+                  <span className="font-korean text-[10px] text-muted">· 핵심 기술</span>
                 </h3>
                 <SkillDisplay skills={skills} limit={2} />
 
@@ -363,9 +363,9 @@ export default async function HomeContent() {
                   <DitherSparkline label="30-Day Engineering Cadence" />
                 </div>
 
-                <div className="apple-card p-5 flex items-center justify-between text-xs text-[#86868b]">
+                <div className="apple-card p-5 flex items-center justify-between text-xs text-muted">
                   <span>Want to see verified credentials &amp; tools?</span>
-                  <Link href="/about" className="font-semibold text-[#0071e3] hover:underline inline-flex items-center gap-1">
+                  <Link href="/about" className="font-semibold text-accent hover:underline inline-flex items-center gap-1">
                     About page <ArrowUpRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -382,7 +382,7 @@ export default async function HomeContent() {
       // 6. CONTACT PREVIEW
       case 'contact':
         return (
-          <section key="contact" className="py-16 md:py-24 border-t border-black/[0.08]" aria-labelledby="contact-preview-heading">
+          <section key="contact" className="py-16 md:py-24 border-t border-line" aria-labelledby="contact-preview-heading">
             <ContactSection
               eyebrow={meta.contact?.eyebrow || '06 / Direct Dispatch'}
               title={meta.contact?.title || "Let's build something"}

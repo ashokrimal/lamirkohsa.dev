@@ -42,8 +42,8 @@ export function FilterableMediaShelf({ music, anime, manga }: FilterableMediaShe
   return (
     <div className="space-y-6">
       {/* Apple-style Segmented Capsule Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-black/[0.06]">
-        <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-full bg-black/[0.04] border border-black/[0.04] backdrop-blur-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-line-subtle">
+        <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-full bg-overlay border border-line-faint backdrop-blur-xl">
           {tabConfigs.map((tab) => {
             const Icon = tab.icon
             const isActive = activeTab === tab.key
@@ -54,16 +54,16 @@ export function FilterableMediaShelf({ music, anime, manga }: FilterableMediaShe
                 onClick={() => handleTabChange(tab.key)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                   isActive
-                    ? 'bg-white text-[#1d1d1f] shadow-sm font-semibold'
-                    : 'text-[#86868b] hover:text-[#1d1d1f]'
+                    ? 'bg-surface text-ink shadow-sm font-semibold'
+                    : 'text-muted hover:text-ink'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#0071e3]' : ''}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-accent' : ''}`} />
                 <span>{tab.label}</span>
                 <span className="font-korean text-[10px] opacity-75">{tab.kr}</span>
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                    isActive ? 'bg-black/[0.05] text-[#1d1d1f]' : 'bg-black/[0.03] text-[#86868b]'
+                    isActive ? 'bg-overlay-soft text-ink' : 'bg-overlay-hairline text-muted'
                   }`}
                 >
                   {tab.count}
@@ -78,7 +78,7 @@ export function FilterableMediaShelf({ music, anime, manga }: FilterableMediaShe
           className="apple-btn-secondary !py-2 !px-4 text-xs shrink-0"
         >
           <span>Explore {currentTabConfig.label}</span>
-          <ArrowUpRight className="w-3.5 h-3.5 text-[#86868b]" />
+          <ArrowUpRight className="w-3.5 h-3.5 text-muted" />
         </Link>
       </div>
 
@@ -87,15 +87,15 @@ export function FilterableMediaShelf({ music, anime, manga }: FilterableMediaShe
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
           {/* Music Column */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] text-xs text-[#86868b]">
-              <span className="font-semibold text-[#1d1d1f] flex items-center gap-1.5">
-                <Disc3 className="w-3.5 h-3.5 text-[#0071e3]" />
+            <div className="flex items-center justify-between pb-2 border-b border-line-subtle text-xs text-muted">
+              <span className="font-semibold text-ink flex items-center gap-1.5">
+                <Disc3 className="w-3.5 h-3.5 text-accent" />
                 <span>Spotify Rotation</span>
               </span>
               <button
                 type="button"
                 onClick={() => handleTabChange('music')}
-                className="text-[#0071e3] hover:underline text-[11px] font-medium"
+                className="text-accent hover:underline text-[11px] font-medium"
               >
                 View all →
               </button>
@@ -108,15 +108,15 @@ export function FilterableMediaShelf({ music, anime, manga }: FilterableMediaShe
 
           {/* Anime Column */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] text-xs text-[#86868b]">
-              <span className="font-semibold text-[#1d1d1f] flex items-center gap-1.5">
-                <Film className="w-3.5 h-3.5 text-[#0071e3]" />
+            <div className="flex items-center justify-between pb-2 border-b border-line-subtle text-xs text-muted">
+              <span className="font-semibold text-ink flex items-center gap-1.5">
+                <Film className="w-3.5 h-3.5 text-accent" />
                 <span>Anime Watchlist</span>
               </span>
               <button
                 type="button"
                 onClick={() => handleTabChange('anime')}
-                className="text-[#0071e3] hover:underline text-[11px] font-medium"
+                className="text-accent hover:underline text-[11px] font-medium"
               >
                 View all →
               </button>
@@ -130,15 +130,15 @@ export function FilterableMediaShelf({ music, anime, manga }: FilterableMediaShe
 
           {/* Manga Column */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] text-xs text-[#86868b]">
-              <span className="font-semibold text-[#1d1d1f] flex items-center gap-1.5">
-                <BookOpen className="w-3.5 h-3.5 text-[#0071e3]" />
+            <div className="flex items-center justify-between pb-2 border-b border-line-subtle text-xs text-muted">
+              <span className="font-semibold text-ink flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-accent" />
                 <span>Manga &amp; Manhwa</span>
               </span>
               <button
                 type="button"
                 onClick={() => handleTabChange('manga')}
-                className="text-[#0071e3] hover:underline text-[11px] font-medium"
+                className="text-accent hover:underline text-[11px] font-medium"
               >
                 View all →
               </button>

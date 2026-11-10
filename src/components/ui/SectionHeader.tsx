@@ -26,30 +26,30 @@ export function SectionHeader({
   actions,
 }: SectionHeaderProps) {
   return (
-    <div className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-black/[0.08] ${className}`}>
+    <div className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-line ${className}`}>
       <div className="max-w-2xl space-y-2">
         {eyebrow && (
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#86868b]">
+            <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted">
               {eyebrow}
             </span>
             {krEyebrow && (
-              <span className="text-[11px] font-korean text-[#86868b] tracking-normal font-normal">
+              <span className="text-[11px] font-korean text-muted tracking-normal font-normal">
                 · {krEyebrow}
               </span>
             )}
           </div>
         )}
-        <h2 className="text-3xl md:text-5xl font-semibold text-[#1d1d1f] tracking-[-0.04em] leading-[1.05]">
+        <h2 className="text-3xl md:text-5xl font-semibold text-ink tracking-[-0.04em] leading-[1.05]">
           {title}{' '}
           {accent && (
-            <span className="font-serif italic font-normal text-[#0071e3]">
+            <span className="font-serif italic font-normal text-accent">
               {accent}
             </span>
           )}
         </h2>
         {description && (
-          <p className="mt-2 text-sm md:text-base text-[#86868b] leading-relaxed font-normal">
+          <p className="mt-2 text-sm md:text-base text-muted leading-relaxed font-normal">
             {description}
           </p>
         )}
@@ -63,7 +63,7 @@ export function SectionHeader({
             className="apple-btn-secondary group"
           >
             <span>{linkLabel}</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-[#86868b] group-hover:text-[#1d1d1f] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            <ArrowUpRight className="w-3.5 h-3.5 text-muted group-hover:text-ink transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         )}
       </div>

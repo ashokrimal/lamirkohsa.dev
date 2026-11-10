@@ -46,20 +46,20 @@ export function ContactSection({
         <div className="space-y-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#86868b]">
+              <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted">
                 {eyebrow}
               </span>
-              <span className="font-korean text-[11px] text-[#86868b]">
+              <span className="font-korean text-[11px] text-muted">
                 · 연락 및 협업
               </span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-semibold text-[#1d1d1f] tracking-tight leading-tight">
+            <h2 className="text-3xl md:text-5xl font-semibold text-ink tracking-tight leading-tight">
               {title}{' '}
-              <span className="font-serif italic font-normal text-[#0071e3]">
+              <span className="font-serif italic font-normal text-accent">
                 {accent}
               </span>
             </h2>
-            <p className="mt-3 text-sm md:text-base text-[#86868b] leading-relaxed max-w-xl font-normal">
+            <p className="mt-3 text-sm md:text-base text-muted leading-relaxed max-w-xl font-normal">
               {description}
             </p>
           </div>
@@ -79,35 +79,35 @@ export function ContactSection({
                   href={link.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-between p-4 rounded-2xl bg-white/80 border border-black/[0.06] hover:border-black/15 shadow-xs hover:shadow-sm text-[#1d1d1f] transition-all group"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-surface/80 border border-line-subtle hover:border-line-strong shadow-xs hover:shadow-sm text-ink transition-all group"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-xl bg-black/[0.04] text-[#0071e3] flex items-center justify-center shrink-0">
+                    <span className="w-9 h-9 rounded-xl bg-overlay text-accent flex items-center justify-center shrink-0">
                       <Icon className="w-4 h-4" />
                     </span>
                     <div>
-                      <span className="block text-[10px] uppercase tracking-wide text-[#86868b] font-medium">
+                      <span className="block text-[10px] uppercase tracking-wide text-muted font-medium">
                         {link.label}
                       </span>
-                      <span className="font-semibold text-sm group-hover:text-[#0071e3] transition-colors">
+                      <span className="font-semibold text-sm group-hover:text-accent transition-colors">
                         {link.handle || link.href}
                       </span>
                     </div>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-[#86868b] group-hover:text-[#0071e3] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <ArrowUpRight className="w-4 h-4 text-muted group-hover:text-accent transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
               )
             })}
 
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/80 border border-black/[0.06] shadow-xs text-[#1d1d1f]">
-              <span className="w-9 h-9 rounded-xl bg-black/[0.04] text-[#0071e3] flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3 p-4 rounded-2xl bg-surface/80 border border-line-subtle shadow-xs text-ink">
+              <span className="w-9 h-9 rounded-xl bg-overlay text-accent flex items-center justify-center shrink-0">
                 <MapPin className="w-4 h-4" />
               </span>
               <div>
-                <span className="block text-[10px] uppercase tracking-wide text-[#86868b] font-medium">
+                <span className="block text-[10px] uppercase tracking-wide text-muted font-medium">
                   Coordinates · 위치
                 </span>
-                <span className="text-sm text-[#1d1d1f] font-semibold">
+                <span className="text-sm text-ink font-semibold">
                   Kathmandu &amp; Butwal, Nepal · Remote Friendly
                 </span>
               </div>
@@ -122,11 +122,11 @@ export function ContactSection({
           ) : (
             <Card3D maxTilt={5}>
               <div className="apple-card p-8 space-y-4">
-                <h3 className="text-xl font-semibold text-[#1d1d1f] tracking-tight">
+                <h3 className="text-xl font-semibold text-ink tracking-tight">
                   Have a project or opportunity in{' '}
-                  <span className="font-serif italic text-[#0071e3]">mind?</span>
+                  <span className="font-serif italic text-accent">mind?</span>
                 </h3>
-                <p className="text-sm text-[#86868b] leading-relaxed">
+                <p className="text-sm text-muted leading-relaxed">
                   Whether you want to discuss a full-time role, a contracting project, or exchange thoughts on architecture, I am always glad to connect.
                 </p>
                 <div className="pt-2">

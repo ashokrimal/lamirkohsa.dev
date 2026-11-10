@@ -41,8 +41,8 @@ export function CmsTabs({
               onClick={() => onChange(tab.id)}
               className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all shrink-0 ${
                 isActive
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                  ? 'bg-surface text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-surface/50'
               }`}
             >
               {tab.icon && <span className="w-3.5 h-3.5 shrink-0">{tab.icon}</span>}

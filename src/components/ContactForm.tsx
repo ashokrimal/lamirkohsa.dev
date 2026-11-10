@@ -65,70 +65,70 @@ export default function ContactForm({
     <div className="apple-card p-6 md:p-8 space-y-6">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-semibold text-xl md:text-2xl text-[#1d1d1f] tracking-tight">
+          <span className="font-semibold text-xl md:text-2xl text-ink tracking-tight">
             Send a direct message
           </span>
-          <span className="font-korean text-xs text-[#86868b] font-normal">
+          <span className="font-korean text-xs text-muted font-normal">
             · 문의하기
           </span>
         </div>
-        <p className="text-xs text-[#86868b]">
+        <p className="text-xs text-muted">
           Typically responding within 24 hours.
         </p>
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="name" className="block text-xs font-medium text-[#424245] mb-1.5">
+          <label htmlFor="name" className="block text-xs font-medium text-ink-secondary mb-1.5">
             Full Name
           </label>
           <input
             type="text"
             id="name"
             name="name"
-            className="w-full rounded-2xl border border-black/[0.08] bg-black/[0.02] px-4 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:bg-white focus:outline-none transition-all placeholder:text-[#86868b]/60"
+            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60"
             placeholder="e.g. Maya Sharma"
             required
           />
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-xs font-medium text-[#424245] mb-1.5">
+          <label htmlFor="email" className="block text-xs font-medium text-ink-secondary mb-1.5">
             Email Address
           </label>
           <input
             type="email"
             id="email"
             name="email"
-            className="w-full rounded-2xl border border-black/[0.08] bg-black/[0.02] px-4 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:bg-white focus:outline-none transition-all placeholder:text-[#86868b]/60"
+            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60"
             placeholder="e.g. maya@example.com"
             required
           />
         </div>
 
         <div>
-          <label htmlFor="subject" className="block text-xs font-medium text-[#424245] mb-1.5">
+          <label htmlFor="subject" className="block text-xs font-medium text-ink-secondary mb-1.5">
             Topic or Project
           </label>
           <input
             type="text"
             id="subject"
             name="subject"
-            className="w-full rounded-2xl border border-black/[0.08] bg-black/[0.02] px-4 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:bg-white focus:outline-none transition-all placeholder:text-[#86868b]/60"
+            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60"
             placeholder="e.g. Full-stack engineering / Project collaboration"
             required
           />
         </div>
 
         <div>
-          <label htmlFor="message" className="block text-xs font-medium text-[#424245] mb-1.5">
+          <label htmlFor="message" className="block text-xs font-medium text-ink-secondary mb-1.5">
             Message Details
           </label>
           <textarea
             id="message"
             name="message"
             rows={4}
-            className="w-full rounded-2xl border border-black/[0.08] bg-black/[0.02] px-4 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:bg-white focus:outline-none transition-all leading-relaxed placeholder:text-[#86868b]/60"
+            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all leading-relaxed placeholder:text-muted/60"
             placeholder="Tell me about what you're building, timelines, or thoughts..."
             required
           />

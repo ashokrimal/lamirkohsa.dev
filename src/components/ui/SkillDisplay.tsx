@@ -32,24 +32,24 @@ export function SkillDisplay({ skills, className = '', limit }: SkillDisplayProp
         const Icon = getSkillIcon(group.category)
         return (
           <Card3D key={group.category || index} maxTilt={5}>
-            <article className="apple-card p-6 flex flex-col justify-between h-full hover:border-black/10 transition-all">
+            <article className="apple-card p-6 flex flex-col justify-between h-full hover:border-line-medium transition-all">
               <div>
                 <div className="flex items-center justify-between gap-2 mb-4">
                   <div className="flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-2xl bg-black/[0.04] text-[#0071e3] border border-black/[0.04] flex items-center justify-center shrink-0">
+                    <span className="w-10 h-10 rounded-2xl bg-overlay text-accent border border-line-faint flex items-center justify-center shrink-0">
                       <Icon className="w-5 h-5" />
                     </span>
                     <div>
-                      <h4 className="text-sm font-semibold text-[#1d1d1f] tracking-tight">
+                      <h4 className="text-sm font-semibold text-ink tracking-tight">
                         {group.category}
                       </h4>
-                      <span className="font-korean text-[10px] text-[#86868b] font-normal">
+                      <span className="font-korean text-[10px] text-muted font-normal">
                         기술 영역
                       </span>
                     </div>
                   </div>
                   {group.level && (
-                    <span className="text-[11px] font-medium px-3 py-1 rounded-full bg-blue-500/10 text-[#0071e3]">
+                    <span className="text-[11px] font-medium px-3 py-1 rounded-full bg-blue-500/10 text-accent">
                       {group.level}
                     </span>
                   )}
@@ -59,7 +59,7 @@ export function SkillDisplay({ skills, className = '', limit }: SkillDisplayProp
                   {group.items.map((item) => (
                     <span
                       key={item}
-                      className="inline-flex items-center rounded-full bg-black/[0.04] border border-black/[0.03] px-3 py-1 text-xs font-medium text-[#424245]"
+                      className="inline-flex items-center rounded-full bg-overlay border border-line-hairline px-3 py-1 text-xs font-medium text-ink-secondary"
                     >
                       {item}
                     </span>

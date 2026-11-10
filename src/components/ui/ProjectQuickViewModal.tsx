@@ -33,7 +33,7 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-scrim/40 backdrop-blur-md animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           sensoryAudio.playClick()
@@ -41,13 +41,13 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
         }
       }}
     >
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-black/[0.08] bg-white/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 space-y-6">
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-line bg-surface/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 space-y-6">
         {/* Header bar */}
-        <div className="flex items-start justify-between gap-4 pb-4 border-b border-black/[0.06]">
+        <div className="flex items-start justify-between gap-4 pb-4 border-b border-line-subtle">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2 text-xs">
               {project.category && (
-                <span className="px-3 py-1 rounded-full bg-black/[0.04] text-[#0071e3] font-medium text-[11px] uppercase tracking-wide">
+                <span className="px-3 py-1 rounded-full bg-overlay text-accent font-medium text-[11px] uppercase tracking-wide">
                   {project.category}
                 </span>
               )}
@@ -57,13 +57,13 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
                 </span>
               )}
               {project.completionDate && (
-                <span className="text-[11px] text-[#86868b] flex items-center gap-1 ml-auto sm:ml-2">
-                  <Calendar className="w-3 h-3 text-[#0071e3]" />
+                <span className="text-[11px] text-muted flex items-center gap-1 ml-auto sm:ml-2">
+                  <Calendar className="w-3 h-3 text-accent" />
                   {project.completionDate}
                 </span>
               )}
             </div>
-            <h2 id="modal-title" className="text-2xl sm:text-3xl font-semibold text-[#1d1d1f] tracking-tight">
+            <h2 id="modal-title" className="text-2xl sm:text-3xl font-semibold text-ink tracking-tight">
               {project.title}
             </h2>
           </div>
@@ -74,7 +74,7 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
               sensoryAudio.playClick()
               onClose()
             }}
-            className="p-2 rounded-full bg-black/[0.05] hover:bg-black/[0.09] text-[#1d1d1f] transition-all cursor-pointer"
+            className="p-2 rounded-full bg-overlay-soft hover:bg-overlay-strong text-ink transition-all cursor-pointer"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -83,7 +83,7 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
 
         {/* Hero image */}
         {project.image && (
-          <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden bg-black/[0.02] border border-black/[0.04]">
+          <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden bg-overlay-faint border border-line-faint">
             <Image
               src={project.image}
               alt={`${project.title} preview`}
@@ -97,20 +97,20 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
 
         {/* Challenge & Solution Architecture */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs leading-relaxed">
-          <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/[0.04] space-y-1.5">
-            <span className="text-[11px] font-korean uppercase tracking-wider text-[#86868b] font-medium">
+          <div className="p-4 rounded-2xl bg-overlay-faint border border-line-faint space-y-1.5">
+            <span className="text-[11px] font-korean uppercase tracking-wider text-muted font-medium">
               문제 정의 · The Challenge
             </span>
-            <p className="text-[#1d1d1f] text-sm">
+            <p className="text-ink text-sm">
               {project.challenge || project.description || 'Solving real-world performance, usability, and workflow friction through thoughtful engineering.'}
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/[0.04] space-y-1.5">
-            <span className="text-[11px] font-korean uppercase tracking-wider text-[#86868b] font-medium">
+          <div className="p-4 rounded-2xl bg-overlay-faint border border-line-faint space-y-1.5">
+            <span className="text-[11px] font-korean uppercase tracking-wider text-muted font-medium">
               기술 해결책 · Solution
             </span>
-            <p className="text-[#1d1d1f] text-sm">
+            <p className="text-ink text-sm">
               {project.solution || 'Engineered with clean separation of concerns, optimistic UI updates, and dependable backend integrity.'}
             </p>
           </div>
@@ -118,13 +118,13 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
 
         {/* Execution Phases Timeline */}
         {project.phases && project.phases.length > 0 && (
-          <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/[0.04] space-y-3">
+          <div className="p-4 rounded-2xl bg-overlay-faint border border-line-faint space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-[#1d1d1f] flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-[#0071e3]" />
+              <span className="font-semibold text-ink flex items-center gap-1.5">
+                <Layers className="w-4 h-4 text-accent" />
                 <span>Execution Phases</span>
               </span>
-              <span className="text-[11px] text-[#86868b]">
+              <span className="text-[11px] text-muted">
                 {project.phases.filter((p) => p.completed).length} / {project.phases.length} Complete
               </span>
             </div>
@@ -133,26 +133,26 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
               {project.phases.map((ph, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-black/[0.04] text-xs"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-surface border border-line-faint text-xs"
                 >
                   <div className="flex items-center gap-2">
                     <span
                       className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium ${
                         ph.completed
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-black/[0.06] text-[#86868b]'
+                          ? 'bg-emerald-500 text-inverse'
+                          : 'bg-overlay-subtle text-muted'
                       }`}
                     >
                       {ph.completed ? <Check className="w-3 h-3" /> : idx + 1}
                     </span>
-                    <span className="font-medium text-[#1d1d1f]">{ph.phase}</span>
-                    <span className="text-[#86868b]">· {ph.name}</span>
+                    <span className="font-medium text-ink">{ph.phase}</span>
+                    <span className="text-muted">· {ph.name}</span>
                   </div>
                   <span
                     className={`text-[10px] px-2 py-0.5 rounded-full ${
                       ph.completed
                         ? 'bg-emerald-500/10 text-emerald-600'
-                        : 'bg-black/[0.04] text-[#86868b]'
+                        : 'bg-overlay text-muted'
                     }`}
                   >
                     {ph.completed ? 'Delivered' : 'Planned'}
@@ -166,14 +166,14 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
         {/* Tech Stack Pills */}
         {project.techStack && project.techStack.length > 0 && (
           <div className="space-y-2">
-            <span className="text-[11px] font-korean uppercase tracking-wider text-[#86868b] font-medium block">
+            <span className="text-[11px] font-korean uppercase tracking-wider text-muted font-medium block">
               사용 기술 스택 · Technology Stack
             </span>
             <div className="flex flex-wrap gap-1.5">
               {project.techStack.map((tech) => (
                 <span
                   key={tech}
-                  className="px-3 py-1 rounded-full bg-black/[0.04] text-xs font-medium text-[#424245] border border-black/[0.03]"
+                  className="px-3 py-1 rounded-full bg-overlay text-xs font-medium text-ink-secondary border border-line-hairline"
                 >
                   {tech}
                 </span>
@@ -183,7 +183,7 @@ export function ProjectQuickViewModal({ project, onClose }: ProjectQuickViewModa
         )}
 
         {/* Modal footer CTA */}
-        <div className="pt-4 border-t border-black/[0.06] flex items-center justify-between gap-3">
+        <div className="pt-4 border-t border-line-subtle flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             {project.live && project.live !== '#' && (
               <a

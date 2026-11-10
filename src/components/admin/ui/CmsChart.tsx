@@ -174,7 +174,7 @@ export function CmsTrafficChart({
         {/* Hover Tooltip Overlay */}
         {activePoint && (
           <div
-            className="absolute top-2 pointer-events-none bg-slate-900 text-white px-2.5 py-1.5 rounded-lg shadow-xl text-xs z-20 transition-all duration-150 transform -translate-x-1/2"
+            className="absolute top-2 pointer-events-none bg-slate-900 text-inverse px-2.5 py-1.5 rounded-lg shadow-xl text-xs z-20 transition-all duration-150 transform -translate-x-1/2"
             style={{
               left: `${(activePoint.x / width) * 100}%`,
             }}

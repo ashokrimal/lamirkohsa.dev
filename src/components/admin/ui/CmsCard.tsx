@@ -38,7 +38,7 @@ export function CmsStatCard({
           onClick?.()
         }
       }}
-      className={`group relative p-4 rounded-xl border bg-white transition-all duration-200 text-left ${
+      className={`group relative p-4 rounded-xl border bg-surface transition-all duration-200 text-left ${
         active
           ? 'border-teal-500 ring-2 ring-teal-500/20 shadow-sm'
           : 'border-slate-200/80 hover:border-slate-300 hover:shadow-sm'
@@ -107,7 +107,7 @@ export function CmsSectionCard({
   noPadding = false,
 }: SectionCardProps) {
   return (
-    <section className={`bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden ${className}`}>
+    <section className={`bg-surface rounded-xl border border-slate-200/80 shadow-xs overflow-hidden ${className}`}>
       <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
