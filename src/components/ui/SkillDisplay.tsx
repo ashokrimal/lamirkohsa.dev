@@ -49,7 +49,7 @@ export function SkillDisplay({ skills, className = '', limit }: SkillDisplayProp
                     </div>
                   </div>
                   {group.level && (
-                    <span className="text-[11px] font-medium px-3 py-1 rounded-full bg-blue-500/10 text-accent">
+                    <span className="text-[11px] font-medium px-3 py-1 rounded-full bg-accent-soft text-accent">
                       {group.level}
                     </span>
                   )}

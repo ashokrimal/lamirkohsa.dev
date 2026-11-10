@@ -19,12 +19,12 @@
   color-scheme: light;
 
   /* ---- Layer 1: primitives ---- */
-  --paper-rgb: 245 245 247;            /* #f5f5f7 */
-  --surface-rgb: 255 255 255;          /* #ffffff */
+  --paper-rgb: 244 241 235;            /* #f4f1eb — cream */
+  --surface-rgb: 251 250 247;          /* #fbfaf7 — warm off-white */
   --ink-rgb: 29 29 31;                 /* #1d1d1f */
   --ink-secondary-rgb: 66 66 69;       /* #424245 */
   --muted-rgb: 134 134 139;            /* #86868b */
-  --accent-rgb: 0 113 227;             /* #0071e3 */
+  --accent-rgb: 82 114 93;             /* #52725d — sage green */
   --accent-secondary-rgb: 82 114 93;   /* #52725d */
   --inverse-rgb: 255 255 255;          /* #ffffff */
   --scrim-rgb: 0 0 0;                  /* #000000 */
@@ -37,14 +37,14 @@
   --accent: rgb(var(--accent-rgb));                     /* #0071e3 */
   --accent-blue: var(--accent);                         /* legacy alias */
   --accent-secondary: rgb(var(--accent-secondary-rgb)); /* #52725d */
-  --accent-soft: rgb(var(--accent-rgb) / 0.08);         /* rgba(0,113,227,.08) */
+  --accent-soft: #e5eadf;                               /* soft sage wash */
   --surface-glass: rgb(var(--surface-rgb) / 0.82);      /* rgba(255,255,255,.82) */
   --line: rgb(var(--scrim-rgb) / 0.08);                 /* rgba(0,0,0,.08) */
 
   /* ---- Layer 2: semantic roles ---- */
   /* Surfaces */
-  --color-background: var(--paper);                     /* page: #f5f5f7 */
-  --color-surface: var(--surface);                      /* cards/panels: #ffffff */
+  --color-background: var(--paper);                     /* page: #f4f1eb */
+  --color-surface: var(--surface);                      /* cards/panels: #fbfaf7 */
   --color-surface-glass: var(--surface-glass);          /* translucent: #ffffff @82% */
   --color-surface-dark: #112f32;                        /* dark panels: #112f32 */
   --color-surface-dark-deep: #0c1316;                   /* deepest dark: #0c1316 */
@@ -69,9 +69,9 @@
   --color-secondary-foreground: rgb(var(--inverse-rgb));/* #ffffff */
 
   /* Accents */
-  --color-accent: var(--accent);                        /* link/accent: #0071e3 */
+  --color-accent: var(--accent);                        /* link/accent: #52725d */
   --color-accent-secondary: var(--accent-secondary);    /* section accent: #52725d */
-  --color-accent-soft: var(--accent-soft);              /* #0071e3 @8% */
+  --color-accent-soft: var(--accent-soft);              /* soft sage wash: #e5eadf */
   --color-accent-foreground: rgb(var(--inverse-rgb));   /* #ffffff */
 
   /* Borders — neutral scale, values unchanged */
@@ -191,8 +191,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 .glass-nav { 
-  background: rgba(255, 255, 255, 0.8); 
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08); 
+  background: rgb(var(--paper-rgb) / 0.86); 
+  border-bottom: 1px solid var(--color-border); 
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); 
   backdrop-filter: blur(20px); 
   -webkit-backdrop-filter: blur(20px);
@@ -200,18 +200,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .mobile-menu { 
   transition: transform .35s cubic-bezier(0.16, 1, 0.3, 1); 
   transform: translateX(100%); 
-  background: rgba(255, 255, 255, 0.95); 
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border-left: 1px solid rgba(0, 0, 0, 0.08); 
+  background: var(--color-background); 
+  border-left: 1px solid var(--color-border); 
 }
 .mobile-menu.open { transform: translateX(0); }
 
 .portfolio-home, .collection-page, .resume-page { background: var(--paper) !important; color: var(--ink) !important; }
 .portfolio-home { overflow: hidden; }
 .hero-section { min-height: 760px; padding: 38px 44px 30px; margin-top: 24px; border: 1px solid var(--line); border-radius: 0; display: flex; flex-direction: column; justify-content: space-between; position: relative; isolation: isolate; overflow: hidden; box-shadow: 0 24px 70px rgba(16,42,45,.1); }
-.hero-section::before { content: ''; position: absolute; inset: -12%; z-index: -2; background: linear-gradient(90deg, rgba(248,251,250,.99) 0%, rgba(248,251,250,.96) 38%, rgba(248,251,250,.18) 100%), var(--hero-image, url('/images/hero-ashok.png')) 68% center / cover; filter: grayscale(1) contrast(.92); animation: hero-drift 16s ease-in-out infinite alternate; }
-.hero-section::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(248,251,250,.72), transparent 35%, rgba(248,251,250,.15)); pointer-events: none; }
+.hero-section::before { content: ''; position: absolute; inset: -12%; z-index: -2; background: linear-gradient(90deg, rgb(var(--surface-rgb) / .99) 0%, rgb(var(--surface-rgb) / .96) 38%, rgb(var(--surface-rgb) / .18) 100%), var(--hero-image, url('/images/hero-ashok.png')) 68% center / cover; filter: grayscale(1) contrast(.92); animation: hero-drift 16s ease-in-out infinite alternate; }
+.hero-section::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(var(--surface-rgb) / .72), transparent 35%, rgb(var(--surface-rgb) / .15)); pointer-events: none; }
 @keyframes hero-drift { from { transform: scale(1); } to { transform: scale(1.04); } }
 .hero-meta, .hero-stats, .hero-editorial { position: relative; z-index: 1; }
 .hero-editorial { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr); gap: 44px; align-items: end; margin-block: auto; padding-block: 100px 58px; }
@@ -423,7 +421,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .media-feature-card { border: 1px solid var(--line); border-radius: 18px; padding: 32px; background: var(--surface); min-height: 250px; }
 .media-feature-card h3 { font-size: clamp(2rem, 4vw, 4rem); letter-spacing: -.08em; line-height: .95; font-weight: 400; margin: 28px 0 12px; }
 .listening-now { background: linear-gradient(135deg, #edf5fb, var(--color-surface)); }
-.listening-now.is-quiet { background: #f4f1eb; }
+.listening-now.is-quiet { background: var(--color-background); }
 .listening-now > p:not(.section-label) { color: var(--muted); }
 .playing-pulse { display: inline-block; margin-top: 36px; font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--accent); }
 .playing-pulse::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 8px; }
