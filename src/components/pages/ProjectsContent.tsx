@@ -9,7 +9,7 @@ import { Loading } from '@/components/Loading'
 import { ProjectsTimeline } from '@/components/ProjectsTimeline'
 import DevSection from '@/components/devmode/DevSection'
 import { useDevMode } from '@/contexts/DevModeContext'
-import { ProjectCard } from '@/components/ui/ProjectCard'
+import { ProjectRow } from '@/components/ui/ProjectRow'
 import { MetaChip, PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
 import type { ProjectEntry } from '@/lib/projects'
 import type { PageCopy } from '@/lib/site-content'
@@ -77,9 +77,9 @@ export default function ProjectsContent({ projects, copy }: ProjectsContentProps
         description={sections?.work?.description}
       >
         {projects.length ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
             {projects.map((project, index) => (
-              <ProjectCard key={project.slug || project.title} project={project} index={index} />
+              <ProjectRow key={project.slug || project.title} project={project} index={index} />
             ))}
           </div>
         ) : (
