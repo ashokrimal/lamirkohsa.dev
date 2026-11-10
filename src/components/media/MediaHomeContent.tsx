@@ -54,7 +54,7 @@ function CollectionPreview({
   icon: Icon,
 }: CollectionProps) {
   return (
-    <section className="mt-10 md:mt-14 pt-10 md:pt-14 border-t border-line">
+    <section className="mt-8 md:mt-10 pt-10 md:pt-12 border-t border-line">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-line">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -82,7 +82,11 @@ function CollectionPreview({
       </div>
 
       {items.length ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+        <div
+          className={`grid grid-cols-2 gap-4 mt-6 ${
+            items.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'
+          }`}
+        >
           {items.slice(0, 4).map((item, index) => {
             const imageUrl = item.images?.jpg?.image_url
             return (
@@ -101,8 +105,13 @@ function CollectionPreview({
                       className="object-cover group-hover:scale-104 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[var(--muted)]">
-                      <Icon className="w-6 h-6 text-[var(--accent)]" />
+                    /* Records without artwork still deserve a deliberate tile,
+                       not an empty frame with a pin-sized icon. */
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-accent-soft text-accent">
+                      <Icon className="w-7 h-7" />
+                      <span className="font-mono text-[9px] uppercase tracking-[0.18em]">
+                        No artwork
+                      </span>
                     </div>
                   )}
                   <div className="absolute top-2 left-2 rounded-full bg-surface/85 backdrop-blur-xl border border-line-subtle px-2 py-0.5 text-[9px] font-mono text-ink">

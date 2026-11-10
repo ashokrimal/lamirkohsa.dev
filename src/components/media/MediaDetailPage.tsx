@@ -1,10 +1,27 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { getMediaData } from '@/app/actions/media'
+import { getMediaPreviews } from '@/app/actions/content-cms'
 import EmptyCollectionState from '@/components/EmptyCollectionState'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 
 type Category = 'music' | 'anime' | 'manga' | 'github'
+type CmsPreviews = Awaited<ReturnType<typeof getMediaPreviews>>
+
+function cmsImage(payload: Record<string, unknown> | undefined) {
+  if (!payload) return undefined
+  const value = payload.imageUrl ?? payload.coverUrl
+  return typeof value === 'string' ? value : undefined
+}
+
+function cmsCaption(payload: Record<string, unknown> | undefined) {
+  if (!payload) return undefined
+  if (typeof payload.description === 'string' && payload.description) return payload.description
+  const parts = [payload.score, payload.status, payload.artist, payload.album].filter(
+    (value): value is string => typeof value === 'string' && value.length > 0,
+  )
+  return parts.length ? parts.join(' · ') : undefined
+}
 
 function unique<T>(items: T[], key: (item: T) => string) {
   const seen = new Set<string>()
@@ -50,7 +67,7 @@ function DetailShell({
         description={intro}
         meta={meta}
       />
-      <div className="mt-10 md:mt-14">{children}</div>
+      <div className="mt-8 md:mt-10">{children}</div>
       <PageNav
         backHref={backHref}
         backLabel={backLabel}
@@ -61,7 +78,13 @@ function DetailShell({
   )
 }
 
-function MusicPage({ data }: { data: Awaited<ReturnType<typeof getMediaData>> }) {
+function MusicPage({
+  data,
+  cms,
+}: {
+  data: Awaited<ReturnType<typeof getMediaData>>
+  cms: CmsPreviews
+}) {
   const lastfm = (
     data.lastfmRecent as Array<{
       name?: string
@@ -99,8 +122,16 @@ function MusicPage({ data }: { data: Awaited<ReturnType<typeof getMediaData>> })
     cover: track.coverUrl ?? undefined,
   }))
 
+  // CMS music records belong in the same shelf as the synced listening history.
+  const cmsTracks = cms.music.map((record) => ({
+    title: record.title,
+    artist: typeof record.payload?.artist === 'string' ? record.payload.artist : undefined,
+    album: typeof record.payload?.album === 'string' ? record.payload.album : undefined,
+    cover: cmsImage(record.payload),
+  }))
+
   const tracks = unique(
-    [...catalogTracks, ...listenbrainz, ...lastfm],
+    [...cmsTracks, ...catalogTracks, ...listenbrainz, ...lastfm],
     (track) => `${track.title}-${track.artist}`,
   ).slice(0, 30)
 
@@ -110,7 +141,7 @@ function MusicPage({ data }: { data: Awaited<ReturnType<typeof getMediaData>> })
       krEyebrow="음악"
       title="Every track,"
       accent="unified."
-      intro="ListenBrainz and Last.fm are merged into one deduplicated listening history."
+      intro="CMS picks, ListenBrainz and Last.fm are merged into one deduplicated listening shelf."
       meta={tracks.length ? <MetaChip>{tracks.length} tracks</MetaChip> : undefined}
     >
       {tracks.length ? (
@@ -156,9 +187,11 @@ function MusicPage({ data }: { data: Awaited<ReturnType<typeof getMediaData>> })
 
 function LibraryPage({
   data,
+  cms,
   kind,
 }: {
   data: Awaited<ReturnType<typeof getMediaData>>
+  cms: CmsPreviews
   kind: 'anime' | 'manga'
 }) {
   const malItems = Object.values(
@@ -187,8 +220,16 @@ function LibraryPage({
     ),
   )
 
+  // CMS records come first: they are the hand-picked entries managed in the studio.
+  const cmsCards = (kind === 'anime' ? cms.anime : cms.manga).map((record) => ({
+    title: record.title,
+    description: cmsCaption(record.payload),
+    image: cmsImage(record.payload),
+  }))
+
   const cards = unique(
     [
+      ...cmsCards,
       ...malItems.map((item) => ({
         title: item.title || 'Untitled',
         description: item.synopsis,
@@ -209,7 +250,7 @@ function LibraryPage({
       krEyebrow={kind === 'anime' ? '애니' : '만화'}
       title="Stories,"
       accent="without repeats."
-      intro="MyAnimeList and AniList are synchronized into one clean, deduplicated shelf."
+      intro="Curated CMS entries plus MyAnimeList and AniList, synchronized into one deduplicated shelf."
       meta={cards.length ? <MetaChip>{cards.length} titles</MetaChip> : undefined}
     >
       {cards.length ? (
@@ -305,10 +346,10 @@ function GitHubPage({ data }: { data: Awaited<ReturnType<typeof getMediaData>> }
 }
 
 export default async function MediaDetailPage({ category }: { category: Category }) {
-  const data = await getMediaData()
-  if (category === 'music') return <MusicPage data={data} />
-  if (category === 'anime') return <LibraryPage data={data} kind="anime" />
-  if (category === 'manga') return <LibraryPage data={data} kind="manga" />
+  const [data, cms] = await Promise.all([getMediaData(), getMediaPreviews()])
+  if (category === 'music') return <MusicPage data={data} cms={cms} />
+  if (category === 'anime') return <LibraryPage data={data} cms={cms} kind="anime" />
+  if (category === 'manga') return <LibraryPage data={data} cms={cms} kind="manga" />
   if (category === 'github') return <GitHubPage data={data} />
   return (
     <DetailShell
