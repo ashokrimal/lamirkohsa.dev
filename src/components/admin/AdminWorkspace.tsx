@@ -136,8 +136,8 @@ const CREATABLE_COLLECTIONS = [
 
 /** Maps a specific collection to the group tab that contains it. */
 const TAB_FOR_COLLECTION: Record<string, string> = {
-  [CMS_COLLECTIONS.profile]: 'Profile',
-  [CMS_COLLECTIONS.socialLinks]: 'Profile',
+  [CMS_COLLECTIONS.profile]: CMS_COLLECTIONS.profile,
+  [CMS_COLLECTIONS.socialLinks]: CMS_COLLECTIONS.profile,
   [CMS_COLLECTIONS.experience]: 'Career',
   [CMS_COLLECTIONS.education]: 'Career',
   [CMS_COLLECTIONS.skills]: 'Career',
@@ -145,16 +145,16 @@ const TAB_FOR_COLLECTION: Record<string, string> = {
   [CMS_COLLECTIONS.movies]: 'Media',
   [CMS_COLLECTIONS.anime]: 'Media',
   [CMS_COLLECTIONS.manga]: 'Media',
-  [CMS_COLLECTIONS.certificates]: 'Certificates',
-  Awards: 'Certificates',
-  [CMS_COLLECTIONS.blogs]: 'Blogs',
+  [CMS_COLLECTIONS.certificates]: CMS_COLLECTIONS.certificates,
+  Awards: CMS_COLLECTIONS.certificates,
+  [CMS_COLLECTIONS.blogs]: CMS_COLLECTIONS.blogs,
 }
 
 function collectionForTab(tab: string) {
   if (CREATABLE_COLLECTIONS.includes(tab)) return tab
   if (tab === 'Career') return CMS_COLLECTIONS.experience
   if (tab === 'Media') return CMS_COLLECTIONS.music
-  if (tab === 'Certificates') return CMS_COLLECTIONS.certificates
+  if (tab === CMS_COLLECTIONS.certificates) return CMS_COLLECTIONS.certificates
   if (tab === 'Publishing') return CMS_COLLECTIONS.blogs
   return CMS_COLLECTIONS.projects
 }
@@ -202,7 +202,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
   const galleryItems = useMemo<GalleryItem[]>(
     () =>
       cmsRecords
-        .filter((record) => record.collection === 'Gallery')
+        .filter((record) => record.collection === CMS_COLLECTIONS.gallery)
         .map((record) => {
           const payload = (record.payload || {}) as Record<string, unknown>
           return {
@@ -258,11 +258,11 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
   // Content distribution metrics
   const distributionItems = useMemo(
     () => [
-      { label: 'Projects & Work', count: cmsRecords.filter((r) => r.collection === 'Projects').length, color: '#0d9488' },
+      { label: 'Projects & Work', count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.projects).length, color: '#0d9488' },
       { label: 'Gallery Artworks', count: galleryItems.length, color: '#0284c7' },
       { label: 'Music Tracks', count: musicTracks.length, color: '#8b5cf6' },
-      { label: 'Career & Profile', count: cmsRecords.filter((r) => r.collection === 'Experience' || r.collection === 'Education').length, color: '#f59e0b' },
-      { label: 'Skills & Journal', count: cmsRecords.filter((r) => r.collection === 'Skills' || r.collection === 'Blogs').length, color: '#ec4899' },
+      { label: 'Career & Profile', count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.experience || r.collection === CMS_COLLECTIONS.education).length, color: '#f59e0b' },
+      { label: 'Skills & Journal', count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.skills || r.collection === CMS_COLLECTIONS.blogs).length, color: '#ec4899' },
     ],
     [cmsRecords, galleryItems, musicTracks]
   )
@@ -271,7 +271,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
   const cmsProjects = useMemo<ProjectItem[]>(
     () =>
       cmsRecords
-        .filter((record) => record.collection === 'Projects')
+        .filter((record) => record.collection === CMS_COLLECTIONS.projects)
         .map((record) => {
           const payload = (record.payload || {}) as Record<string, unknown>
           return {
@@ -325,8 +325,8 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
     }
     setIsSubmitting(true)
 
-    const careerCollection = newCollection === 'Experience' || newCollection === 'Education'
-    const mediaCollection = ['Music', 'Movies', 'Anime', 'Manga'].includes(newCollection)
+    const careerCollection = newCollection === CMS_COLLECTIONS.experience || newCollection === CMS_COLLECTIONS.education
+    const mediaCollection = ([CMS_COLLECTIONS.music, CMS_COLLECTIONS.movies, CMS_COLLECTIONS.anime, CMS_COLLECTIONS.manga] as string[]).includes(newCollection)
     const structuredPayload = isStructuredCollection(newCollection)
       ? parseStructuredPayload(newDescription) ?? { description: newDescription.trim() }
       : null
@@ -335,11 +335,11 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       description: newDescription.trim(),
       imageUrl: newImageUrl.trim(),
       ...(fields.altText ? { altText: fields.altText } : {}),
-      ...(newCollection === 'Gallery' && fields.category ? { category: fields.category } : {}),
-      ...(newCollection === 'Projects' && fields.category ? { category: fields.category } : {}),
-      ...(newCollection === 'Projects' && fields.techStack.length ? { techStack: fields.techStack } : {}),
-      ...(newCollection === 'Projects' && fields.live ? { live: fields.live } : {}),
-      ...(newCollection === 'Projects' && fields.github ? { github: fields.github } : {}),
+      ...(newCollection === CMS_COLLECTIONS.gallery && fields.category ? { category: fields.category } : {}),
+      ...(newCollection === CMS_COLLECTIONS.projects && fields.category ? { category: fields.category } : {}),
+      ...(newCollection === CMS_COLLECTIONS.projects && fields.techStack.length ? { techStack: fields.techStack } : {}),
+      ...(newCollection === CMS_COLLECTIONS.projects && fields.live ? { live: fields.live } : {}),
+      ...(newCollection === CMS_COLLECTIONS.projects && fields.github ? { github: fields.github } : {}),
       ...(careerCollection && fields.organization ? { organization: fields.organization } : {}),
       ...(careerCollection && fields.period ? { period: fields.period } : {}),
       ...(careerCollection && fields.location ? { location: fields.location } : {}),
@@ -479,7 +479,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
     const payload = { imageUrl, category, description }
     const newRecord = {
       id: Date.now(),
-      collection: 'Gallery',
+      collection: CMS_COLLECTIONS.gallery,
       title,
       payload,
       status: 'published',
@@ -496,7 +496,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
 
     try {
       const formData = new FormData()
-      formData.set('collection', 'Gallery')
+      formData.set('collection', CMS_COLLECTIONS.gallery)
       formData.set('title', title)
       formData.set('payload', JSON.stringify(payload))
       formData.set('imageUrl', imageUrl)
@@ -563,16 +563,16 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
   // Navigation tab groups for Content section
   const contentTabs = [
     { id: 'ALL', label: 'All Records', count: cmsRecords.length },
-    { id: 'Profile', label: 'Identity', count: cmsRecords.filter((r) => r.collection === 'Profile' || r.collection === 'Social Links').length },
-    { id: 'Projects', label: 'Projects', count: cmsRecords.filter((r) => r.collection === 'Projects').length },
-    { id: 'Gallery', label: 'Gallery', count: cmsRecords.filter((r) => r.collection === 'Gallery').length },
-    { id: 'Career', label: 'Career', count: cmsRecords.filter((r) => r.collection === 'Experience' || r.collection === 'Education' || r.collection === 'Skills').length },
-    { id: 'Media', label: 'Media', count: cmsRecords.filter((r) => ['Music', 'Movies', 'Anime', 'Manga'].includes(r.collection)).length },
-    { id: 'Certificates', label: 'Certificates', count: cmsRecords.filter((r) => r.collection === 'Certificates' || r.collection === 'Awards').length },
-    { id: 'Blogs', label: 'Publishing', count: cmsRecords.filter((r) => r.collection === 'Blogs').length },
-    { id: 'Site Settings', label: 'Site Settings', count: cmsRecords.filter((r) => r.collection === 'Site Settings').length },
-    { id: 'Page Copy', label: 'Page Copy', count: cmsRecords.filter((r) => r.collection === 'Page Copy').length },
-    { id: 'Media Collections', label: 'Media Collections', count: cmsRecords.filter((r) => r.collection === 'Media Collections').length },
+    { id: CMS_COLLECTIONS.profile, label: 'Identity', count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.profile || r.collection === CMS_COLLECTIONS.socialLinks).length },
+    { id: CMS_COLLECTIONS.projects, label: CMS_COLLECTIONS.projects, count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.projects).length },
+    { id: CMS_COLLECTIONS.gallery, label: CMS_COLLECTIONS.gallery, count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.gallery).length },
+    { id: 'Career', label: 'Career', count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.experience || r.collection === CMS_COLLECTIONS.education || r.collection === CMS_COLLECTIONS.skills).length },
+    { id: 'Media', label: 'Media', count: cmsRecords.filter((r) => ([CMS_COLLECTIONS.music, CMS_COLLECTIONS.movies, CMS_COLLECTIONS.anime, CMS_COLLECTIONS.manga] as string[]).includes(r.collection)).length },
+    { id: CMS_COLLECTIONS.certificates, label: CMS_COLLECTIONS.certificates, count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.certificates || r.collection === 'Awards').length },
+    { id: CMS_COLLECTIONS.blogs, label: 'Publishing', count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.blogs).length },
+    { id: CMS_COLLECTIONS.siteSettings, label: CMS_COLLECTIONS.siteSettings, count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.siteSettings).length },
+    { id: CMS_COLLECTIONS.pageCopy, label: CMS_COLLECTIONS.pageCopy, count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.pageCopy).length },
+    { id: CMS_COLLECTIONS.mediaCollections, label: CMS_COLLECTIONS.mediaCollections, count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.mediaCollections).length },
   ]
 
   // Columns for CMS Records Table
@@ -658,16 +658,16 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
   const filteredCmsRecords = useMemo(() => {
     if (activeContentCategory === 'ALL') return cmsRecords
     if (activeContentCategory === 'Career') {
-      return cmsRecords.filter((r) => r.collection === 'Experience' || r.collection === 'Education' || r.collection === 'Skills')
+      return cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.experience || r.collection === CMS_COLLECTIONS.education || r.collection === CMS_COLLECTIONS.skills)
     }
-    if (activeContentCategory === 'Profile') {
-      return cmsRecords.filter((r) => r.collection === 'Profile' || r.collection === 'Social Links')
+    if (activeContentCategory === CMS_COLLECTIONS.profile) {
+      return cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.profile || r.collection === CMS_COLLECTIONS.socialLinks)
     }
     if (activeContentCategory === 'Media') {
-      return cmsRecords.filter((r) => ['Music', 'Movies', 'Anime', 'Manga'].includes(r.collection))
+      return cmsRecords.filter((r) => ([CMS_COLLECTIONS.music, CMS_COLLECTIONS.movies, CMS_COLLECTIONS.anime, CMS_COLLECTIONS.manga] as string[]).includes(r.collection))
     }
-    if (activeContentCategory === 'Certificates') {
-      return cmsRecords.filter((r) => r.collection === 'Certificates' || r.collection === 'Awards')
+    if (activeContentCategory === CMS_COLLECTIONS.certificates) {
+      return cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.certificates || r.collection === 'Awards')
     }
     return cmsRecords.filter((r) => r.collection === activeContentCategory)
   }, [cmsRecords, activeContentCategory])
@@ -675,10 +675,10 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
   const settingRecord = (title: string) =>
     cmsRecords.find(
       (record) =>
-        record.collection === 'Site Settings' && record.payload?.key === CMS_KEYS.hero,
+        record.collection === CMS_COLLECTIONS.siteSettings && record.payload?.key === CMS_KEYS.hero,
     )
 
-  const openCreateRecord = (collection = 'Projects') => {
+  const openCreateRecord = (collection: string = CMS_COLLECTIONS.projects) => {
     setNewCollection(collection)
     setCreateRecordModalOpen(true)
   }
@@ -732,7 +732,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
           <ContentSetupGuide
             records={cmsRecords}
             galleryCount={galleryItems.length}
-            projectCount={cmsRecords.filter((r) => r.collection === 'Projects').length}
+            projectCount={cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.projects).length}
             musicCount={musicTracks.length}
             onNewRecord={openCreateRecord}
             onNewGallery={openGalleryUpload}
@@ -770,7 +770,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
               </Link>
               <button
                 type="button"
-                onClick={() => openCreateRecord('Projects')}
+                onClick={() => openCreateRecord(CMS_COLLECTIONS.projects)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -832,7 +832,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
                   {[
                     { label: 'CMS records', value: cmsRecords.length },
                     { label: 'Photos', value: galleryItems.length },
-                    { label: 'Projects', value: cmsRecords.filter((r) => r.collection === 'Projects').length },
+                    { label: CMS_COLLECTIONS.projects, value: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.projects).length },
                     { label: 'Tracks', value: musicTracks.length },
                   ].map((item) => (
                     <div key={item.label} className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
@@ -858,7 +858,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <button
               type="button"
-              onClick={() => openCreateRecord('Projects')}
+              onClick={() => openCreateRecord(CMS_COLLECTIONS.projects)}
               className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
             >
               <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
@@ -1022,7 +1022,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             </div>
             <button
               type="button"
-              onClick={() => openCreateRecord('Projects')}
+              onClick={() => openCreateRecord(CMS_COLLECTIONS.projects)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -1039,7 +1039,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
               </p>
               <button
                 type="button"
-                onClick={() => openCreateRecord('Projects')}
+                onClick={() => openCreateRecord(CMS_COLLECTIONS.projects)}
                 className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-inverse hover:bg-teal-700"
               >
                 <Plus className="w-3.5 h-3.5" /> New Project
@@ -1546,22 +1546,22 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
               value={newCollection}
               onChange={(e) => setNewCollection(e.target.value)}
               options={[
-                { label: 'Projects', value: 'Projects' },
-                { label: 'Profile (Bio & Identity)', value: 'Profile' },
-                { label: 'Gallery (Photographs)', value: 'Gallery' },
-                { label: 'Experience (Work)', value: 'Experience' },
-                { label: 'Education', value: 'Education' },
-                { label: 'Skills', value: 'Skills' },
-                { label: 'Certificates & Awards', value: 'Certificates' },
-                { label: 'Music (Media)', value: 'Music' },
-                { label: 'Movies (Media)', value: 'Movies' },
-                { label: 'Anime (Media)', value: 'Anime' },
-                { label: 'Manga / Manhwa (Media)', value: 'Manga' },
-                { label: 'Social Links', value: 'Social Links' },
-                { label: 'Blogs / Journal', value: 'Blogs' },
-                { label: 'Site Settings', value: 'Site Settings' },
-                { label: 'Page Copy', value: 'Page Copy' },
-                { label: 'Media Collections', value: 'Media Collections' },
+                { label: CMS_COLLECTIONS.projects, value: CMS_COLLECTIONS.projects },
+                { label: 'Profile (Bio & Identity)', value: CMS_COLLECTIONS.profile },
+                { label: 'Gallery (Photographs)', value: CMS_COLLECTIONS.gallery },
+                { label: 'Experience (Work)', value: CMS_COLLECTIONS.experience },
+                { label: CMS_COLLECTIONS.education, value: CMS_COLLECTIONS.education },
+                { label: CMS_COLLECTIONS.skills, value: CMS_COLLECTIONS.skills },
+                { label: 'Certificates & Awards', value: CMS_COLLECTIONS.certificates },
+                { label: 'Music (Media)', value: CMS_COLLECTIONS.music },
+                { label: 'Movies (Media)', value: CMS_COLLECTIONS.movies },
+                { label: 'Anime (Media)', value: CMS_COLLECTIONS.anime },
+                { label: 'Manga / Manhwa (Media)', value: CMS_COLLECTIONS.manga },
+                { label: CMS_COLLECTIONS.socialLinks, value: CMS_COLLECTIONS.socialLinks },
+                { label: 'Blogs / Journal', value: CMS_COLLECTIONS.blogs },
+                { label: CMS_COLLECTIONS.siteSettings, value: CMS_COLLECTIONS.siteSettings },
+                { label: CMS_COLLECTIONS.pageCopy, value: CMS_COLLECTIONS.pageCopy },
+                { label: CMS_COLLECTIONS.mediaCollections, value: CMS_COLLECTIONS.mediaCollections },
               ]}
             />
           </CmsFormField>
@@ -1584,7 +1584,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
               <CmsInput
                 value={newKey}
                 onChange={(e) => setNewKey(e.target.value)}
-                placeholder={newCollection === 'Page Copy' ? 'e.g. about' : 'e.g. music'}
+                placeholder={newCollection === CMS_COLLECTIONS.pageCopy ? 'e.g. about' : 'e.g. music'}
                 required
               />
             </CmsFormField>
@@ -1617,7 +1617,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             hint="Optional. Upload from your device or paste an image URL."
           />
 
-          {newCollection === 'Projects' && (
+          {newCollection === CMS_COLLECTIONS.projects && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <CmsFormField label="Category" hint="e.g. Web app">
                 <CmsInput name="category" placeholder="e.g. Full-stack" />
@@ -1634,7 +1634,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             </div>
           )}
 
-          {(newCollection === 'Experience' || newCollection === 'Education') && (
+          {(newCollection === CMS_COLLECTIONS.experience || newCollection === CMS_COLLECTIONS.education) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <CmsFormField label="Organization" hint="Company or school">
                 <CmsInput name="organization" placeholder="e.g. Acme Studio" />
@@ -1648,13 +1648,13 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             </div>
           )}
 
-          {newCollection === 'Gallery' && (
+          {newCollection === CMS_COLLECTIONS.gallery && (
             <CmsFormField label="Category" hint="e.g. Photography">
               <CmsInput name="category" placeholder="e.g. Photography" />
             </CmsFormField>
           )}
 
-          {['Music', 'Movies', 'Anime', 'Manga'].includes(newCollection) && (
+          {([CMS_COLLECTIONS.music, CMS_COLLECTIONS.movies, CMS_COLLECTIONS.anime, CMS_COLLECTIONS.manga] as string[]).includes(newCollection) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <CmsFormField label="Creator / Artist" hint="Shown under the title">
                 <CmsInput name="creator" placeholder="e.g. Director or artist" />

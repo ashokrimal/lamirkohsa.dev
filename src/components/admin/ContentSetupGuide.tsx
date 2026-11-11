@@ -1,5 +1,6 @@
 'use client'
 
+import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 import { useMemo } from 'react'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle2, Circle, Plus, Sparkles } from 'lucide-react'
@@ -25,7 +26,7 @@ const SINGLETON_GROUPS = [
   {
     title: 'Site identity & navigation',
     hint: 'The name, menu and footer every page shares.',
-    collection: 'Site Settings',
+    collection: CMS_COLLECTIONS.siteSettings,
     items: [
       { slug: 'brand', label: 'Brand name and domain' },
       { slug: 'navigation', label: 'Navigation and social links' },
@@ -37,7 +38,7 @@ const SINGLETON_GROUPS = [
   {
     title: 'Page copy',
     hint: 'Headlines and intros for each public page.',
-    collection: 'Page Copy',
+    collection: CMS_COLLECTIONS.pageCopy,
     items: [
       { slug: 'about', label: 'About page copy' },
       { slug: 'projects', label: 'Projects page copy' },
@@ -52,26 +53,26 @@ const COLLECTION_GROUPS = [
   {
     title: 'About you',
     hint: 'Biography, career and the details visitors read.',
-    collection: 'Profile',
+    collection: CMS_COLLECTIONS.profile,
     items: [
-      { collection: 'Profile', label: 'Profile & biography' },
-      { collection: 'Education', label: 'Education' },
-      { collection: 'Experience', label: 'Experience' },
-      { collection: 'Skills', label: 'Skills' },
+      { collection: CMS_COLLECTIONS.profile, label: 'Profile & biography' },
+      { collection: CMS_COLLECTIONS.education, label: CMS_COLLECTIONS.education },
+      { collection: CMS_COLLECTIONS.experience, label: CMS_COLLECTIONS.experience },
+      { collection: CMS_COLLECTIONS.skills, label: CMS_COLLECTIONS.skills },
       { collection: 'Interests', label: 'Interests' },
-      { collection: 'Social Links', label: 'Social links' },
+      { collection: CMS_COLLECTIONS.socialLinks, label: 'Social links' },
     ],
   },
   {
     title: 'Work & media',
     hint: 'Projects, photographs and the four media shelves.',
-    collection: 'Projects',
+    collection: CMS_COLLECTIONS.projects,
     items: [
-      { collection: 'Projects', label: 'Case studies' },
-      { collection: 'Music', label: 'Music shelf' },
-      { collection: 'Movies', label: 'Movies shelf' },
-      { collection: 'Anime', label: 'Anime shelf' },
-      { collection: 'Manga', label: 'Manga shelf' },
+      { collection: CMS_COLLECTIONS.projects, label: 'Case studies' },
+      { collection: CMS_COLLECTIONS.music, label: 'Music shelf' },
+      { collection: CMS_COLLECTIONS.movies, label: 'Movies shelf' },
+      { collection: CMS_COLLECTIONS.anime, label: 'Anime shelf' },
+      { collection: CMS_COLLECTIONS.manga, label: 'Manga shelf' },
     ],
   },
 ]
@@ -241,10 +242,10 @@ export default function ContentSetupGuide({
                 const count = mediaCounts[item.collection]
                 const filled = count !== undefined ? count > 0 : item.filled
                 const action =
-                  item.collection === 'Projects' ? (
+                  item.collection === CMS_COLLECTIONS.projects ? (
                     <button
                       type="button"
-                      onClick={() => onNewRecord('Projects')}
+                      onClick={() => onNewRecord(CMS_COLLECTIONS.projects)}
                       className="inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-teal-500 hover:text-teal-700"
                     >
                       <Plus className="h-3 w-3" aria-hidden="true" />
