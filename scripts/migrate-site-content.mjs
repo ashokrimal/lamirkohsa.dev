@@ -13,7 +13,7 @@
 import { Client } from 'pg'
 import { loadCmsSchema } from './load-cms-schema.mjs'
 
-const { CMS_COLLECTIONS, CMS_SCHEMA } = await loadCmsSchema()
+const { CMS_COLLECTIONS, CMS_SCHEMA, SECTIONS } = await loadCmsSchema()
 
 const siteSettings = [
   {
@@ -75,6 +75,7 @@ const siteSettings = [
     payload: {
       name: 'Ashok Rimal',
       korean: '아쇼크 리말',
+      role: 'Software Developer',
       domain: 'ashokrimal.com.np',
     },
   },
@@ -89,6 +90,8 @@ const siteSettings = [
       timezoneLabel: 'NPT',
       availability: 'Available for select work',
       email: 'contact@lamirkohsa.com',
+      responseTime: 'Typically responding within 24 hours.',
+      formEnabled: true,
     },
   },
   {
@@ -102,12 +105,6 @@ const siteSettings = [
       location: 'Butwal, Nepal\nAvailable for thoughtful collaborations',
       initials: 'AR',
       imageUrl: '/images/hero-ashok.png',
-      stats: [
-        { label: 'Selected projects', value: '04+' },
-        { label: 'Creative disciplines', value: '04' },
-      ],
-      metaLeft: 'Scroll to explore ↓',
-      metaRight: 'Selected work · 01 / 06',
     },
   },
   {
@@ -116,14 +113,10 @@ const siteSettings = [
     slug: 'homepage-sections',
     sortOrder: 1,
     payload: {
-      order: ['gallery', 'about', 'projects', 'media', 'contact'],
-      enabled: {
-        gallery: true,
-        about: true,
-        projects: true,
-        media: true,
-        contact: true,
-      },
+      // Section order is owned by the code SECTIONS registry. This list is kept
+      // for reference only; the homepage ignores it.
+      order: SECTIONS.map((section) => section.id),
+      enabled: Object.fromEntries(SECTIONS.map((section) => [section.id, true])),
       sectionMeta: {
         about: {
           eyebrow: '01 / About Me',
@@ -202,6 +195,9 @@ const pageCopy = [
     accent: 'matter.',
     description:
       'A Bachelor of Computer Applications student and full-stack software developer focused on thoughtful interfaces, dependable backend systems, and the details that make software feel human.',
+    seoTitle: 'About',
+    seoDescription:
+      'About Ashok Rimal, a full-stack software developer building thoughtful interfaces and dependable backend systems.',
     sections: {
       coordinates: { title: 'Coordinates' },
       experience: {
@@ -238,12 +234,16 @@ const pageCopy = [
     accent: 'reality.',
     description:
       'Case studies from discovery to deployment, where architecture, performance and interface craft meet real-world utility.',
+    seoTitle: 'Projects & Case Studies',
+    seoDescription:
+      'Technical case studies from discovery to deployment, where architecture, performance and interface craft meet real-world utility.',
   },
   {
     key: 'project-case-study',
     eyebrow: 'Case Study',
     accent: 'in detail.',
     description: 'How the work moved from the first brief to a shipped build.',
+    seoTitle: 'Case Study',
     sections: {
       problem: {
         eyebrow: '01 / Problem & Approach',
@@ -278,6 +278,9 @@ const pageCopy = [
     accent: 'into.',
     description:
       'Curated listening rotation, anime, manga, and films that inspire focus and visual storytelling.',
+    seoTitle: 'Media & Cultural Library',
+    seoDescription:
+      'A curated listening rotation, anime, manga, and films that inspire focus and visual storytelling.',
   },
   {
     key: 'media-music',
@@ -286,6 +289,7 @@ const pageCopy = [
     title: 'Listening',
     accent: 'rotation.',
     description: 'Favorite listening, recent rotation, and personal soundscapes.',
+    seoTitle: 'Music',
   },
   {
     key: 'media-anime',
@@ -294,6 +298,7 @@ const pageCopy = [
     title: 'Watching',
     accent: 'closely.',
     description: 'Favorite, currently watching, completed, and plan-to-watch series.',
+    seoTitle: 'Anime',
   },
   {
     key: 'media-manga',
@@ -302,6 +307,7 @@ const pageCopy = [
     title: 'Reading',
     accent: 'closely.',
     description: 'Favorite graphic novels, currently reading series, and masterworks.',
+    seoTitle: 'Manga',
   },
   {
     key: 'media-github',
@@ -310,6 +316,7 @@ const pageCopy = [
     title: 'Building in',
     accent: 'public.',
     description: 'Open-source activity and commit cadence pulled live from GitHub.',
+    seoTitle: 'GitHub Activity',
   },
   {
     key: 'media-films',
@@ -318,6 +325,7 @@ const pageCopy = [
     title: "Films I've",
     accent: 'watched.',
     description: 'A personal shelf of films watched, remembered, and worth returning to.',
+    seoTitle: 'Films',
   },
   {
     key: 'journal',
@@ -327,6 +335,7 @@ const pageCopy = [
     accent: 'progress.',
     description:
       'Essays, architectural experiments, and field observations on software design, pedagogical robotics, and calm digital craft.',
+    seoTitle: 'Journal & Notes',
   },
   {
     key: 'gallery',
@@ -336,6 +345,7 @@ const pageCopy = [
     accent: 'frames.',
     description:
       'Landscapes, workspaces and quiet geometry collected along the way — the visual journal behind the software.',
+    seoTitle: 'Photography Archive',
   },
   {
     key: 'contact',
@@ -345,6 +355,7 @@ const pageCopy = [
     accent: 'thoughtful.',
     description:
       'Open to software engineering roles, independent client builds, and open-source initiatives. Send a message or reach out across any channel.',
+    seoTitle: 'Contact',
     sections: { coordinates: { title: 'Coordinates' } },
   },
   {
@@ -353,6 +364,7 @@ const pageCopy = [
     title: 'A career built through curiosity.',
     description:
       'A chronological view of the roles, responsibilities, and experiments shaping my path.',
+    seoTitle: 'Experience',
   },
   {
     key: 'education',
@@ -360,6 +372,7 @@ const pageCopy = [
     title: 'Learning with intention.',
     description:
       'The classrooms and communities that gave me a foundation for building useful things.',
+    seoTitle: 'Education',
   },
   {
     key: 'skills',
@@ -367,12 +380,14 @@ const pageCopy = [
     title: 'Tools for turning ideas real.',
     description:
       'Owner-entered self-assessments across the technologies and disciplines I am actively exploring.',
+    seoTitle: 'Skills & Interests',
   },
   {
     key: 'certificates',
     eyebrow: '06 / Certificates',
     title: 'Proof of steady progress.',
     description: 'Credentials and learning milestones will live here as the library grows.',
+    seoTitle: 'Certificates',
   },
   {
     key: 'resume',
@@ -380,6 +395,7 @@ const pageCopy = [
     title: 'An evolving CV.',
     description:
       'A concise, portfolio-derived view of my experience, education, and current direction.',
+    seoTitle: 'Résumé',
   },
 ]
 

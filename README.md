@@ -78,8 +78,22 @@ links to its editor.
 - the locked `payload.key` for keyed collections (`Site Settings`, `Page Copy`,
   `Media Collections`),
 - required and optional fields per record,
-- which public section reads each collection,
+- the `SECTIONS` registry: the homepage's fixed section order, route, renderer,
+  collection and empty state (plus `ABOUT_SECTIONS` for the about page),
+- the `NAV_PAGES` registry of every route the site owns,
 - the exact empty-state message, hint and admin action for that section.
+
+Structure is code; the CMS supplies values. Section numbers (`01`, `02`, …) and
+counts such as the hero's project/discipline totals and "N Execution Phases" are
+derived from the registry and published records, never typed into the CMS. The
+CMS `Homepage Sections` record only carries section copy; its `order` and
+`enabled` values are ignored. Navigation labels and routes come from `NAV_PAGES`;
+the CMS navigation record decides which of those routes appear in each group.
+
+Interface strings (labels, buttons, aria labels, system messages) live in
+`src/lib/ui-strings.ts` with English and Korean variants. Per-page SEO comes from
+the Page Copy record: `seoTitle`, `seoDescription` and `ogImage` fall back to the
+page title and description.
 
 The public getters return:
 
@@ -126,12 +140,16 @@ DATABASE_URL=postgres://... pnpm cms:check
 DATABASE_URL=postgres://... pnpm cms:check -- --strict
 ```
 
-The check imports `CMS_SCHEMA` and validates the published CMS against it. It
-fails with exit code `1` for missing required records, missing required fields,
-duplicate or missing keys, invalid field types, navigation links without a label
-or href, media collections without an href, and project phases without a name. A
-database connection/read failure exits `2`. Warnings (empty optional collections,
-unknown keys, draft-only collections) fail only with `--strict`.
+The check imports `CMS_SCHEMA`, `SECTIONS` and `NAV_PAGES` and validates the
+published CMS against them. It fails with exit code `1` for missing required
+records, missing required fields (including a project image), duplicate or
+missing keys, invalid field types, navigation links without an href or pointing
+at a route the site does not own, media collections without an href, and project
+phases without a name. A database connection/read failure exits `2`. Warnings
+(empty optional collections, unknown keys, draft-only collections, images without
+alt text, profile URLs used as project source links, and images hosted on known
+stock-photo services such as Unsplash, Pexels, Pixabay or placeholder hosts) fail
+only with `--strict`.
 
 `pnpm build` runs `scripts/prebuild-cms-check.mjs`. It executes the health
 check when `DATABASE_URL` is configured and skips it with a warning for local
@@ -142,15 +160,32 @@ builds without a database.
 1. Add the collection name to `CMS_COLLECTIONS` and a definition to
    `CMS_SCHEMA.collections` in `src/lib/cms-schema.ts` (fields, required fields,
    empty state, and whether it is keyed).
-2. If a public page reads it, add the section definition under
-   `CMS_SCHEMA.sections` and use its empty state in the page.
+2. If a public page reads it, add the section definition to `SECTIONS` (or
+   `ABOUT_SECTIONS`) so it keeps a fixed position, number and empty state.
 3. Add a result-aware getter that calls `getPublishedCmsContentResult` and
    returns `CmsResult`.
 4. Render the three states: data, `EmptyState`, and `CmsErrorState`.
-5. Add the collection to the admin studio's creatable collections and, if it is
+5. Add the route to `NAV_PAGES` if the section should be reachable and can be
+   toggled into the navigation.
+6. Add the collection to the admin studio's creatable collections and, if it is
    keyed, to the keyed collection list.
-6. Add seed records or a migration for existing deployments.
-7. Run `pnpm cms:check` and `pnpm build`.
+7. Add seed records or a migration for existing deployments.
+8. Run `pnpm cms:check` and `pnpm build`.
+
+## Migrating existing content
+
+The seed script only normalises legacy field names. The owner still needs to add
+the following in the CMS after deploying:
+
+- `Site Settings → Brand → role` (used in the default metadata title).
+- `Site Settings → Contact Details → responseTime` and `formEnabled` (the form
+  shows by default; set `formEnabled` to false to hide it).
+- `Page Copy → seoTitle / seoDescription / ogImage` for each page.
+- A project image (`imageUrl`) on every published project, and alt text on
+  project and gallery images.
+- A repository URL (not a profile URL) for project `github` fields.
+- Replace stock-image URLs with your own uploads; the health check warns about
+  the known stock hosts but never invents replacement images.
 
 ## Scripts
 
