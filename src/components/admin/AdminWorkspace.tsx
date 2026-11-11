@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect } from 'react'
-import { CMS_KEYS } from '@/lib/cms-schema'
+import { CMS_COLLECTIONS, CMS_KEYS } from '@/lib/cms-schema'
 import Link from 'next/link'
 import NextImage from 'next/image'
 import {
@@ -111,9 +111,13 @@ interface CmsRecordItem {
 }
 
 // Records whose payload is a JSON object rather than a single description.
-const STRUCTURED_COLLECTIONS = ['Site Settings', 'Page Copy', 'Media Collections']
+const STRUCTURED_COLLECTIONS: string[] = [
+  CMS_COLLECTIONS.siteSettings,
+  CMS_COLLECTIONS.pageCopy,
+  CMS_COLLECTIONS.mediaCollections,
+]
 // Records the public site looks up by an explicit key instead of the title.
-const KEYED_COLLECTIONS = ['Page Copy', 'Media Collections']
+const KEYED_COLLECTIONS: string[] = [CMS_COLLECTIONS.pageCopy, CMS_COLLECTIONS.mediaCollections]
 
 function isStructuredCollection(collection: string) {
   return STRUCTURED_COLLECTIONS.includes(collection)
@@ -126,47 +130,33 @@ function isKeyedCollection(collection: string) {
 // Collections the add form can write to. Deep links from public empty states use
 // /admin?section=content&collection=<name> so the right collection is selected.
 const CREATABLE_COLLECTIONS = [
-  'Projects',
-  'Profile',
-  'Gallery',
-  'Experience',
-  'Education',
-  'Skills',
-  'Certificates',
-  'Music',
-  'Movies',
-  'Anime',
-  'Manga',
-  'Social Links',
-  'Blogs',
-  'Site Settings',
-  'Page Copy',
-  'Media Collections',
+  ...Object.values(CMS_COLLECTIONS),
+  'Awards',
 ]
 
 /** Maps a specific collection to the group tab that contains it. */
 const TAB_FOR_COLLECTION: Record<string, string> = {
-  Profile: 'Profile',
-  'Social Links': 'Profile',
-  Experience: 'Career',
-  Education: 'Career',
-  Skills: 'Career',
-  Music: 'Media',
-  Movies: 'Media',
-  Anime: 'Media',
-  Manga: 'Media',
-  Certificates: 'Certificates',
+  [CMS_COLLECTIONS.profile]: 'Profile',
+  [CMS_COLLECTIONS.socialLinks]: 'Profile',
+  [CMS_COLLECTIONS.experience]: 'Career',
+  [CMS_COLLECTIONS.education]: 'Career',
+  [CMS_COLLECTIONS.skills]: 'Career',
+  [CMS_COLLECTIONS.music]: 'Media',
+  [CMS_COLLECTIONS.movies]: 'Media',
+  [CMS_COLLECTIONS.anime]: 'Media',
+  [CMS_COLLECTIONS.manga]: 'Media',
+  [CMS_COLLECTIONS.certificates]: 'Certificates',
   Awards: 'Certificates',
-  Blogs: 'Blogs',
+  [CMS_COLLECTIONS.blogs]: 'Blogs',
 }
 
 function collectionForTab(tab: string) {
   if (CREATABLE_COLLECTIONS.includes(tab)) return tab
-  if (tab === 'Career') return 'Experience'
-  if (tab === 'Media') return 'Music'
-  if (tab === 'Certificates') return 'Certificates'
-  if (tab === 'Publishing') return 'Blogs'
-  return 'Projects'
+  if (tab === 'Career') return CMS_COLLECTIONS.experience
+  if (tab === 'Media') return CMS_COLLECTIONS.music
+  if (tab === 'Certificates') return CMS_COLLECTIONS.certificates
+  if (tab === 'Publishing') return CMS_COLLECTIONS.blogs
+  return CMS_COLLECTIONS.projects
 }
 
 /** Returns the parsed object, or null when the text is not a JSON object. */
@@ -251,7 +241,9 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
   const [newTitle, setNewTitle] = useState('')
   const [newKey, setNewKey] = useState('')
   const [newCollection, setNewCollection] = useState(
-    initialCategory && CREATABLE_COLLECTIONS.includes(initialCategory) ? initialCategory : 'Projects',
+    initialCategory && CREATABLE_COLLECTIONS.includes(initialCategory)
+      ? initialCategory
+      : CMS_COLLECTIONS.projects,
   )
   const [newDescription, setNewDescription] = useState('')
   const [newImageUrl, setNewImageUrl] = useState('')

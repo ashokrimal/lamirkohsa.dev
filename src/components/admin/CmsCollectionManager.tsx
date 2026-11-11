@@ -4,12 +4,16 @@ import { useState, type ChangeEvent } from 'react'
 import Image from 'next/image'
 import { createCmsContent, deleteCmsContent, saveCmsImage, updateCmsContent } from '@/app/actions/content-cms'
 import { Button } from '@/components/ui/button'
-import { CMS_KEYS } from '@/lib/cms-schema'
+import { CMS_COLLECTIONS, CMS_KEYS } from '@/lib/cms-schema'
 
 // Collections whose payload is a JSON object edited as a whole, not a single description.
-const structuredCollections = ['Site Settings', 'Page Copy', 'Media Collections']
+const structuredCollections: string[] = [
+  CMS_COLLECTIONS.siteSettings,
+  CMS_COLLECTIONS.pageCopy,
+  CMS_COLLECTIONS.mediaCollections,
+]
 // Collections keyed by an explicit slug rather than the record title.
-const keyedCollections = ['Page Copy', 'Media Collections']
+const keyedCollections: string[] = [CMS_COLLECTIONS.pageCopy, CMS_COLLECTIONS.mediaCollections]
 
 function payloadFor(record: Record) {
   if (structuredCollections.includes(record.collection)) {
@@ -23,12 +27,12 @@ function isStructured(collection: string) {
 }
 
 const categoryGroups = [
-  { name: 'Identity', description: 'The pieces that define your public presence.', collections: ['Profile', 'Social Links', 'Site Settings'] },
-  { name: 'Site', description: 'Navigation, page copy and media collections shown across the site.', collections: ['Page Copy', 'Media Collections'] },
-  { name: 'Career', description: 'Your education, experience, and proof of work.', collections: ['Experience', 'Education', 'Skills', 'Certificates', 'Awards'] },
-  { name: 'Work', description: 'Projects and visual work worth showing.', collections: ['Projects', 'Gallery'] },
-  { name: 'Media', description: 'The things you listen to, watch, and read.', collections: ['Music', 'Movies', 'Anime', 'Manga'] },
-  { name: 'Publishing', description: 'Notes, essays, and longer-form writing.', collections: ['Blogs'] },
+  { name: 'Identity', description: 'The pieces that define your public presence.', collections: [CMS_COLLECTIONS.profile, CMS_COLLECTIONS.socialLinks, CMS_COLLECTIONS.siteSettings] },
+  { name: 'Site', description: 'Navigation, page copy and media collections shown across the site.', collections: [CMS_COLLECTIONS.pageCopy, CMS_COLLECTIONS.mediaCollections] },
+  { name: 'Career', description: 'Your education, experience, and proof of work.', collections: [CMS_COLLECTIONS.experience, CMS_COLLECTIONS.education, CMS_COLLECTIONS.skills, CMS_COLLECTIONS.certificates, 'Awards'] },
+  { name: 'Work', description: 'Projects and visual work worth showing.', collections: [CMS_COLLECTIONS.projects, CMS_COLLECTIONS.gallery] },
+  { name: 'Media', description: 'The things you listen to, watch, and read.', collections: [CMS_COLLECTIONS.music, CMS_COLLECTIONS.movies, CMS_COLLECTIONS.anime, CMS_COLLECTIONS.manga] },
+  { name: 'Publishing', description: 'Notes, essays, and longer-form writing.', collections: [CMS_COLLECTIONS.blogs] },
 ]
 
 type Record = { id: number; collection: string; title: string; payload?: unknown; status: string }
@@ -43,12 +47,12 @@ function HeroImageManager({ initialUrl }: { initialUrl: string }) { const [url, 
 
 export default function CmsCollectionManager({ records }: { records: Record[] }) {
   const [activeGroup, setActiveGroup] = useState('Identity')
-  const [activeCollection, setActiveCollection] = useState('Profile')
+  const [activeCollection, setActiveCollection] = useState<string>(CMS_COLLECTIONS.profile)
   const group = categoryGroups.find((item) => item.name === activeGroup) ?? categoryGroups[0]
   const visibleRecords = records.filter((record) => record.collection === activeCollection)
   const publishedCount = records.filter((record) => record.status === 'published').length
   const draftCount = records.filter((record) => record.status !== 'published').length
-  const heroRecord = records.find((record) => record.collection === 'Site Settings' && (record.payload as { key?: string } | undefined)?.key === CMS_KEYS.hero)
+  const heroRecord = records.find((record) => record.collection === CMS_COLLECTIONS.siteSettings && (record.payload as { key?: string } | undefined)?.key === CMS_KEYS.hero)
   const chooseGroup = (name: string) => { const next = categoryGroups.find((item) => item.name === name) ?? categoryGroups[0]; setActiveGroup(next.name); setActiveCollection(next.collections[0]) }
 
   return <section className="cms-workspace"><header className="cms-workspace-header"><div><p className="section-label">Content system</p><h2>Organize the <span className="accent-text">whole story.</span></h2><p className="cms-lede">One place for every public record, grouped by what it means on the site.</p></div><div className="cms-overview"><span><strong>{records.length}</strong> records</span><span><strong>{publishedCount}</strong> live</span><span><strong>{draftCount}</strong> drafts</span><div className="cms-health-chart" aria-label="Publishing health"><i style={{ height: `${Math.max(18, Math.min(100, publishedCount * 12))}%` }} /><i style={{ height: `${Math.max(18, Math.min(100, records.filter((record) => record.collection === 'Blogs').length * 24))}%` }} /><i style={{ height: `${Math.max(18, Math.min(100, records.filter((record) => record.collection === 'Media').length * 20))}%` }} /><i style={{ height: `${Math.max(18, Math.min(100, records.filter((record) => record.collection === 'Projects').length * 22))}%` }} /></div></div></header><HeroImageManager initialUrl={imageFor(heroRecord ?? { id: 0, collection: 'Site Settings', title: 'Hero Section', status: 'published', payload: {} })} /><div className="cms-shell"><nav className="cms-category-nav" aria-label="CMS categories">{categoryGroups.map((item) => <Button type="button" className={item.name === activeGroup ? 'is-active' : ''} key={item.name} onClick={() => chooseGroup(item.name)}><span>{item.name}</span><small>{item.collections.reduce((total, collection) => total + records.filter((record) => record.collection === collection).length, 0)}</small></Button>)}</nav><div className="cms-main"><div className="cms-main-heading"><div><p className="section-label">{group.name}</p><h3>{group.description}</h3></div><span>{visibleRecords.length} in {activeCollection}</span></div><div className="cms-collection-tabs" role="tablist" aria-label={`${group.name} collections`}>{group.collections.map((collection) => <Button type="button" role="tab" aria-selected={collection === activeCollection} className={collection === activeCollection ? 'is-active' : ''} key={collection} onClick={() => setActiveCollection(collection)}>{collection}<small>{records.filter((record) => record.collection === collection).length}</small></Button>)}</div><div className="cms-record-grid">{visibleRecords.map((record) => <article className="cms-record-card" key={record.id}><div className="cms-record-card-top"><span className={`cms-status ${record.status}`}>{record.status}</span><span>#{String(record.id).padStart(3, '0')}</span></div><h4>{record.title}</h4>{imageFor(record) && (isPdf(imageFor(record)) ? <a className="cms-record-file" href={imageFor(record)} target="_blank" rel="noreferrer">Open uploaded PDF ↗</a> : <div className="relative w-full h-36 rounded-xl overflow-hidden my-2"><Image className="object-cover" src={imageFor(record)} alt={record.title} fill sizes="(max-width: 768px) 100vw, 300px" referrerPolicy="no-referrer" /></div>)}<p>{descriptionFor(record) || 'No description added yet.'}</p><div className="cms-record-actions"><details><summary>Edit</summary><form className="cms-inline-form" action={updateCmsContent.bind(null, record.id)}><input type="hidden" name="collection" value={record.collection} /><label>Title<input name="title" defaultValue={record.title} required /></label><CmsImageInput initialUrl={imageFor(record)} label={record.collection === 'Certificates' || record.collection === 'Awards' ? 'Document or image URL' : undefined} accept={record.collection === 'Certificates' || record.collection === 'Awards' ? 'image/*,application/pdf' : 'image/*'} /><label>{isStructured(record.collection) ? 'JSON payload' : 'Details'}<textarea name="payload" defaultValue={payloadFor(record)} rows={isStructured(record.collection) ? 12 : 4} placeholder={isStructured(record.collection) ? 'Edit the structured JSON for this record.' : undefined} /></label><label>Status<select name="status" defaultValue={record.status}><option value="draft">Draft</option><option value="published">Published</option></select></label><Button type="submit">Update record</Button></form></details><form action={deleteCmsContent.bind(null, record.id)}><Button className="delete-button" type="submit">Remove</Button></form></div></article>)}{visibleRecords.length === 0 && <div className="cms-empty"><p className="section-label">No records in {activeCollection}</p><h4>Start this collection with one clear entry.</h4><p>Published records appear automatically in the relevant public section.</p></div>}</div><div className="cms-create-card"><div><p className="section-label">Add to {activeCollection}</p><h4>Create a new record</h4></div><form className="cms-form cms-create-form" action={createCmsContent}><input type="hidden" name="collection" value={activeCollection} /><label>Title<input name="title" placeholder={`e.g. ${activeCollection === 'Movies' ? 'A film worth remembering' : 'A clear record title'}`} required /></label><CmsImageInput label={activeCollection === 'Certificates' || activeCollection === 'Awards' ? 'Document or image URL' : undefined} accept={activeCollection === 'Certificates' || activeCollection === 'Awards' ? 'image/*,application/pdf' : 'image/*'} />{keyedCollections.includes(activeCollection) && <label>Key<input name="key" required placeholder={activeCollection === 'Page Copy' ? 'e.g. about' : 'e.g. music'} /></label>}<label>{isStructured(activeCollection) ? 'JSON payload' : 'Details'}<textarea name="payload" rows={isStructured(activeCollection) ? 12 : 3} placeholder={isStructured(activeCollection) ? '{ "eyebrow": "…", "title": "…", "accent": "…", "description": "…" }' : 'Add the description shown on the public page.'} /></label><label>Status<select name="status" defaultValue="draft"><option value="draft">Draft</option><option value="published">Publish now</option></select></label><Button type="submit">Save {activeCollection} record <span>↗</span></Button></form></div></div></div></section>
