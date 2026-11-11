@@ -21,20 +21,19 @@ state, never placeholder copy such as "N/A" or "Untitled".
 
 ## Local setup
 
-Requirements: Node.js `>=20.18.1`, PostgreSQL, and either npm or pnpm.
+Requirements: Node.js `>=20.18.1`, pnpm, and PostgreSQL. `pnpm-lock.yaml` is the
+only committed lockfile.
 
 ```bash
 git clone https://github.com/ashokrimal/lamirkohsa.dev.git
 cd lamirkohsa.dev
 
-# Use the lockfile that is committed in the repository.
-npm ci
-# or: pnpm install --frozen-lockfile
+pnpm install --frozen-lockfile
 
 cp .env.example .env.local
 # Fill in DATABASE_URL and BETTER_AUTH_SECRET at minimum.
 
-npm run dev
+pnpm dev
 ```
 
 Open <http://localhost:3000>. The owner studio is at `/admin`.
@@ -123,8 +122,8 @@ DATABASE_URL=postgres://... node scripts/reset-content.mjs --apply
 ### Content health check
 
 ```bash
-DATABASE_URL=postgres://... npm run cms:check
-DATABASE_URL=postgres://... npm run cms:check -- --strict
+DATABASE_URL=postgres://... pnpm cms:check
+DATABASE_URL=postgres://... pnpm cms:check -- --strict
 ```
 
 The check imports `CMS_SCHEMA` and validates the published CMS against it. It
@@ -134,7 +133,7 @@ or href, media collections without an href, and project phases without a name. A
 database connection/read failure exits `2`. Warnings (empty optional collections,
 unknown keys, draft-only collections) fail only with `--strict`.
 
-`npm run build` runs `scripts/prebuild-cms-check.mjs`. It executes the health
+`pnpm build` runs `scripts/prebuild-cms-check.mjs`. It executes the health
 check when `DATABASE_URL` is configured and skips it with a warning for local
 builds without a database.
 
@@ -151,14 +150,14 @@ builds without a database.
 5. Add the collection to the admin studio's creatable collections and, if it is
    keyed, to the keyed collection list.
 6. Add seed records or a migration for existing deployments.
-7. Run `npm run cms:check` and `npm run build`.
+7. Run `pnpm cms:check` and `pnpm build`.
 
 ## Scripts
 
 | Command | Description |
 | --- | --- |
-| `npm run dev` | Start Next.js on `0.0.0.0:3000`. |
-| `npm run build` | Production build; runs the CMS prebuild check when configured. |
-| `npm start` | Start the production server on `0.0.0.0:3000`. |
-| `npm run lint` | ESLint. |
-| `npm run cms:check` | Validate published CMS content against the schema. |
+| `pnpm dev` | Start Next.js on `0.0.0.0:3000`. |
+| `pnpm build` | Production build; runs the CMS prebuild check when configured. |
+| `pnpm start` | Start the production server on `0.0.0.0:3000`. |
+| `pnpm lint` | ESLint. |
+| `pnpm cms:check` | Validate published CMS content against the schema. |
