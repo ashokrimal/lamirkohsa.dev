@@ -5,7 +5,9 @@ import { db } from '@/lib/db'
 import { cmsContent, galleryItem, inboxMessage, musicTrack, portfolioProject } from '@/lib/db/schema'
 import { and, desc, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { CMS_CACHE_TAG, cmsCollectionTag } from '@/lib/cms-cache'
+import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 import { getAdminActorId } from '@/lib/admin-auth'
 
 async function requireUser(): Promise<string> {
@@ -68,6 +70,8 @@ export async function createGalleryItem(formData: FormData) {
   }
   revalidatePath('/about/gallery')
   revalidatePath('/admin')
+  revalidateTag(CMS_CACHE_TAG)
+  revalidateTag(cmsCollectionTag(CMS_COLLECTIONS.gallery))
 }
 
 export async function createMusicTrack(formData: FormData) {
@@ -83,6 +87,8 @@ export async function createMusicTrack(formData: FormData) {
   }
   revalidatePath('/media')
   revalidatePath('/admin')
+  revalidateTag(CMS_CACHE_TAG)
+  revalidateTag(cmsCollectionTag(CMS_COLLECTIONS.music))
 }
 
 export async function deleteMusicTrack(id: number) {
@@ -94,6 +100,8 @@ export async function deleteMusicTrack(id: number) {
   }
   revalidatePath('/media')
   revalidatePath('/admin')
+  revalidateTag(CMS_CACHE_TAG)
+  revalidateTag(cmsCollectionTag(CMS_COLLECTIONS.music))
 }
 
 export async function deleteGalleryItem(id: number) {
@@ -105,4 +113,6 @@ export async function deleteGalleryItem(id: number) {
   }
   revalidatePath('/about/gallery')
   revalidatePath('/admin')
+  revalidateTag(CMS_CACHE_TAG)
+  revalidateTag(cmsCollectionTag(CMS_COLLECTIONS.gallery))
 }

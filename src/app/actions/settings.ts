@@ -5,7 +5,9 @@ import { db } from '@/lib/db'
 import { profileSettings } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { CMS_CACHE_TAG, cmsCollectionTag } from '@/lib/cms-cache'
+import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 import { getAdminActorId } from '@/lib/admin-auth'
 
 async function getAdminUser(): Promise<string> {
@@ -76,5 +78,7 @@ export async function saveProfileSettings(formData: FormData) {
 
   revalidatePath('/media')
   revalidatePath('/admin')
+  revalidateTag(CMS_CACHE_TAG)
+  revalidateTag(cmsCollectionTag(CMS_COLLECTIONS.siteSettings))
   return { success: true }
 }

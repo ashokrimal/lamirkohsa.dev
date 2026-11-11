@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server'
 import { getAdminActorId } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 import { galleryItem } from '@/lib/db/schema'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { CMS_CACHE_TAG, cmsCollectionTag } from '@/lib/cms-cache'
+import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 
 const MAX_IMAGE_SIZE = 12 * 1024 * 1024
 
@@ -44,6 +46,8 @@ export async function POST(request: Request) {
     revalidatePath('/about/gallery')
     revalidatePath('/media')
     revalidatePath('/admin')
+    revalidateTag(CMS_CACHE_TAG)
+    revalidateTag(cmsCollectionTag(CMS_COLLECTIONS.gallery))
     return NextResponse.json({ urls: uploaded, count: uploaded.length })
   } catch (error) {
     console.error('[v0] Gallery upload failed:', error)
