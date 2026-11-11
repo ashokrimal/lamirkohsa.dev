@@ -5,7 +5,8 @@ import { getMediaSection } from '@/lib/media-content'
 import { ImageOff } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
-import { CMS_MEDIA_RECORDS, CMS_SCHEMA } from '@/lib/cms-schema'
+import { CMS_MEDIA_RECORDS } from '@/lib/cms-schema'
+import { uiStrings } from '@/lib/ui-strings'
 
 
 const COPY_KEY: Record<MediaKind, string> = {
@@ -37,7 +38,7 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
         meta={
           section.items.length ? (
             <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted">
-              {section.items.length} {section.items.length === 1 ? 'entry' : 'entries'}
+              {uiStrings.media.entries(section.items.length)}
             </span>
           ) : undefined
         }

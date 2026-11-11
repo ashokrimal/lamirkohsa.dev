@@ -3,31 +3,44 @@ import type { ReactNode } from 'react';
 import './globals.css';
 import LayoutShell from '@/components/LayoutShell';
 import { EMPTY_SITE_CONFIG, getSiteConfig } from '@/lib/site-content';
+import { SITE_URL, SEO_TITLE_TEMPLATE } from '@/lib/seo';
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#f6f7f8' };
 
-export const metadata: Metadata = {
-  title: {
-    default: 'Ashok Rimal - Software Developer Portfolio',
-    template: '%s | Ashok Rimal',
-  },
-  description:
-    'Premium personal portfolio and content management studio for software developer Ashok Rimal.',
-  metadataBase: new URL('https://ashokrimal.com.np'),
-  openGraph: {
-    title: 'Ashok Rimal - Software Developer Portfolio',
-    description:
-      'Premium personal portfolio and content management studio for software developer Ashok Rimal.',
-    url: 'https://ashokrimal.com.np',
-    siteName: 'Ashok Rimal Portfolio',
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    creator: '@lamirkohsa',
-  },
-};
+/**
+ * Site-wide metadata. The brand name, role line and tagline come from the CMS;
+ * only the title template and the URL are structural. Per-page titles and
+ * descriptions come from each page's Page Copy record.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const siteResult = await getSiteConfig();
+  const site = siteResult.status === 'ok' ? siteResult.data : EMPTY_SITE_CONFIG;
+
+  const name = site.brand.name || 'Ashok Rimal';
+  const defaultTitle = site.brand.role ? `${name} — ${site.brand.role}` : name;
+  const description = site.footer.tagline;
+
+  return {
+    title: {
+      default: defaultTitle,
+      template: SEO_TITLE_TEMPLATE,
+    },
+    ...(description ? { description } : {}),
+    metadataBase: new URL(SITE_URL),
+    openGraph: {
+      title: defaultTitle,
+      ...(description ? { description } : {}),
+      url: SITE_URL,
+      siteName: name,
+      locale: 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      creator: '@lamirkohsa',
+    },
+  };
+}
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   // Navigation, brand, footer and contact details all come from the CMS. Reading
@@ -41,5 +54,5 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <LayoutShell site={site}>{children}</LayoutShell>
       </body>
     </html>
-  );
+  )
 }

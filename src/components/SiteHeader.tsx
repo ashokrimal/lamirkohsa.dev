@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { Menu, X, Volume2, VolumeX } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import type { ContactDetails, SiteBrand, SiteNavigation } from '@/lib/site-content'
+import { uiStrings } from '@/lib/ui-strings'
 
 export default function SiteHeader({
   brand,
@@ -66,7 +67,7 @@ export default function SiteHeader({
     <header className="fixed top-0 inset-x-0 w-full z-50 glass-nav transition-all duration-300">
       <nav
         className="w-full max-w-[1400px] mx-auto px-5 sm:px-8 lg:px-12 h-14 flex items-center justify-between"
-        aria-label="Primary"
+        aria-label={uiStrings.nav.primary.en}
       >
         <div className="flex items-center gap-3">
           <Link
@@ -130,8 +131,8 @@ export default function SiteHeader({
             type="button"
             onClick={toggleSound}
             className="p-1.5 rounded-full bg-overlay hover:bg-overlay-medium text-muted hover:text-ink transition-all cursor-pointer"
-            title={isMuted ? 'Unmute sensory UI audio' : 'Mute sensory UI audio'}
-            aria-label="Toggle sensory sound effects"
+            title={isMuted ? uiStrings.nav.unmuteSound.en : uiStrings.nav.muteSound.en}
+            aria-label={uiStrings.nav.toggleSound.en}
           >
             {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
@@ -142,7 +143,7 @@ export default function SiteHeader({
             type="button"
             onClick={toggleSound}
             className="p-1.5 rounded-full bg-overlay text-muted"
-            aria-label="Toggle audio"
+            aria-label={uiStrings.nav.toggleAudio.en}
           >
             {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
@@ -154,7 +155,7 @@ export default function SiteHeader({
             }}
             className="p-2 rounded-full bg-overlay-soft text-ink transition-transform active:scale-90"
             aria-expanded={isOpen}
-            aria-label={isOpen ? 'Close menu' : 'Open menu'}
+            aria-label={isOpen ? uiStrings.nav.closeMenu.en : uiStrings.nav.openMenu.en}
           >
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -181,7 +182,7 @@ export default function SiteHeader({
               type="button"
               onClick={() => setIsOpen(false)}
               className="p-2 rounded-full bg-overlay-soft text-ink"
-              aria-label="Close menu"
+              aria-label={uiStrings.nav.closeMenu.en}
             >
               <X className="w-4 h-4" />
             </button>
@@ -219,19 +220,19 @@ export default function SiteHeader({
           <div className="pt-6 border-t border-line-subtle text-xs text-muted space-y-2">
             {contact.timeZone && (
               <div className="flex items-center justify-between">
-                <span>Local time</span>
+                <span>{uiStrings.nav.localTime.en}</span>
                 <span className="font-semibold text-ink">{localTime || contact.timeZone}</span>
               </div>
             )}
             {contact.location && (
               <div className="flex items-center justify-between">
-                <span>Location</span>
+                <span>{uiStrings.nav.location.en}</span>
                 <span className="font-semibold text-ink">{contact.location}</span>
               </div>
             )}
             {contact.availability && (
               <div className="flex items-center justify-between">
-                <span>Availability</span>
+                <span>{uiStrings.nav.availability.en}</span>
                 <span lang="ko" className="font-medium text-emerald-600 font-korean">
                   {contact.availability}
                 </span>

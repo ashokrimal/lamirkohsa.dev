@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SectionHeader } from '@/components/ui/SectionHeader'
+import { uiStrings } from '@/lib/ui-strings'
 
 /**
  * The shared page frame. Every public page renders through these primitives so
@@ -77,6 +78,7 @@ export function MetaChip({
 
 export function PageSection({
   id,
+  number,
   eyebrow,
   krEyebrow,
   title,
@@ -89,6 +91,7 @@ export function PageSection({
   className,
 }: {
   id?: string
+  number?: number
   eyebrow?: string
   krEyebrow?: string
   title: string
@@ -103,6 +106,7 @@ export function PageSection({
   return (
     <section id={id} className={cn('pt-12 md:pt-16', className)}>
       <SectionHeader
+        number={number}
         eyebrow={eyebrow}
         krEyebrow={krEyebrow}
         title={title}
@@ -119,7 +123,7 @@ export function PageSection({
 
 export function PageNav({
   backHref = '/',
-  backLabel = 'Return home',
+  backLabel = uiStrings.pageNav.back.en,
   nextHref,
   nextLabel,
 }: {

@@ -8,13 +8,14 @@ import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChro
 import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
 import { toSlug } from '@/lib/slug'
 import { getPageCopy } from '@/lib/site-content'
+import { uiStrings } from '@/lib/ui-strings'
+import { pageMetadata } from '@/lib/seo'
 
 export const revalidate = 300
 
-export const metadata: Metadata = {
-  title: 'Journal & Notes - Ashok Rimal',
-  description:
-    'Essays, field observations, and architectural notes by Ashok Rimal with estimated reading times.',
+export async function generateMetadata(): Promise<Metadata> {
+  const copyResult = await getPageCopy()
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.journal : undefined)
 }
 
 interface BlogPayload {
@@ -43,7 +44,7 @@ function calculateReadingTime(
   wordsPerMinute: number = 200,
 ): { minutes: number; text: string; words: number } {
   if (!content || typeof content !== 'string') {
-    return { minutes: 1, text: '1 min read', words: 0 }
+    return { minutes: 1, text: uiStrings.journal.minRead(1), words: 0 }
   }
 
   // Strip HTML tags and markdown formatting to count real words
@@ -58,7 +59,7 @@ function calculateReadingTime(
 
   return {
     minutes,
-    text: `${minutes} min read`,
+    text: uiStrings.journal.minRead(minutes),
     words,
   }
 }
@@ -73,15 +74,15 @@ function getBlogText(blog: Blog): string {
   if (typeof blog.payload === 'string') {
     return blog.payload
   }
-  return 'A new note from the studio.'
+  return ''
 }
 
-function getBlogCategory(blog: Blog): string {
+function getBlogCategory(blog: Blog): string | undefined {
   if (typeof blog.payload === 'object' && blog.payload !== null) {
     const p = blog.payload as Record<string, unknown>
     if (typeof p.category === 'string' && p.category) return p.category
   }
-  return 'Note'
+  return undefined
 }
 
 function getBlogDate(blog: Blog): string | undefined {
@@ -110,7 +111,7 @@ export default async function BlogsPage() {
         description={pageCopy?.description}
         meta={
           blogs.length ? (
-            <MetaChip icon={Clock}>{blogs.length} published notes</MetaChip>
+            <MetaChip icon={Clock}>{uiStrings.journal.publishedNotes(blogs.length)}</MetaChip>
           ) : undefined
         }
       />
@@ -138,12 +139,13 @@ export default async function BlogsPage() {
                   {/* Card meta: index, category, reading time */}
                   <div className="flex items-center justify-between gap-3 pb-4 mb-4 border-b border-line-subtle">
                     <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-                      {String(index + 1).padStart(2, '0')} / {category}
+                      {String(index + 1).padStart(2, '0')}
+                      {category ? ` / ${category}` : ''}
                     </span>
 
                     <div
                       className="inline-flex items-center gap-1.5 rounded-full bg-overlay px-3 py-1 text-[11px] font-mono text-ink-secondary border border-line-subtle"
-                      title={`Estimated reading time: ~${readingTime.words} words at 200 WPM`}
+                      title={uiStrings.journal.readingTimeTitle(readingTime.words)}
                     >
                       <Clock className="w-3 h-3 text-accent" />
                       <span>{readingTime.text}</span>
@@ -156,9 +158,11 @@ export default async function BlogsPage() {
                     </Link>
                   </h2>
 
-                  <p className="mt-3 text-xs md:text-sm text-muted leading-relaxed line-clamp-4">
-                    {body}
-                  </p>
+                  {body && (
+                    <p className="mt-3 text-xs md:text-sm text-muted leading-relaxed line-clamp-4">
+                      {body}
+                    </p>
+                  )}
                 </div>
 
                 <div className="px-6 md:px-7 pb-6 pt-4 flex items-center justify-between border-t border-line-subtle text-xs">
@@ -166,13 +170,13 @@ export default async function BlogsPage() {
                     href={href}
                     className="inline-flex items-center gap-1.5 font-semibold text-accent hover:underline"
                   >
-                    Read note
+                    {uiStrings.journal.readNote.en}
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </Link>
 
                   <div className="flex items-center gap-2 text-[10px] font-mono text-muted">
                     {date && <span>{date} · </span>}
-                    <span>~{readingTime.words} words</span>
+                    <span>{uiStrings.journal.words(readingTime.words)}</span>
                   </div>
                 </div>
               </article>

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { uiStrings } from '@/lib/ui-strings'
 
 export interface HorizontalCollectionProps {
   /** Cards in display order. Only the first `previewCount` are rendered. */
@@ -37,8 +38,10 @@ export function HorizontalCollection({
 }: HorizontalCollectionProps) {
   const limit = Math.max(1, previewCount)
   const visible = items.slice(0, limit)
+  // Only offer "View all" when there is actually more to see.
+  const showViewAll = Boolean(viewAllHref) && items.length > limit
 
-  if (visible.length === 0 && !viewAllHref) {
+  if (visible.length === 0 && !showViewAll) {
     return <>{emptyState ?? null}</>
   }
 
@@ -56,11 +59,11 @@ export function HorizontalCollection({
           </li>
         ))}
 
-        {viewAllHref && (
+        {showViewAll && viewAllHref && (
           <li className="horizontal-collection-item horizontal-collection-item--action">
             <Link href={viewAllHref} className="horizontal-collection-view-all">
               <span className="horizontal-collection-view-all-label">
-                {viewAllLabel || 'View all'}
+                {viewAllLabel || uiStrings.collection.viewAll.en}
               </span>
               <span className="horizontal-collection-view-all-icon" aria-hidden="true">
                 <ArrowRight className="w-4 h-4" />

@@ -6,6 +6,7 @@ import type {
   SiteFooterConfig,
   SiteNavigation,
 } from '@/lib/site-content'
+import { uiStrings } from '@/lib/ui-strings'
 
 const icons = {
   github: Github,
@@ -80,9 +81,9 @@ export default function SiteFooter({
           </div>
 
           {navigation.footer.length > 0 && (
-            <nav aria-label="Footer navigation">
+            <nav aria-label={uiStrings.footer.footerNavigation.en}>
               <h2 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-                Navigate
+                {uiStrings.footer.navigate.en}
               </h2>
               <ul className="mt-4 space-y-2.5 text-sm">
                 {navigation.footer.map((link) => (
@@ -105,9 +106,9 @@ export default function SiteFooter({
           )}
 
           {navigation.collections.length > 0 && (
-            <nav aria-label="Footer collections">
+            <nav aria-label={uiStrings.footer.footerCollections.en}>
               <h2 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-                Collections
+                {uiStrings.footer.collections.en}
               </h2>
               <ul className="mt-4 space-y-2.5 text-sm">
                 {navigation.collections.map((link) => (
@@ -132,7 +133,7 @@ export default function SiteFooter({
           {hasContactCard && (
             <div>
               <h2 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-                Elsewhere
+                {uiStrings.footer.elsewhere.en}
               </h2>
               <div className="mt-4 apple-card p-5">
                 {footer.availabilityLabel && (

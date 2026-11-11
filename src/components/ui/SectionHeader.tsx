@@ -1,8 +1,11 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { ArrowUpRight } from 'lucide-react'
+import { withSectionNumber } from '@/lib/cms-schema'
 
 interface SectionHeaderProps {
+  /** Zero-based registry position; renders as the `01 /` prefix. */
+  number?: number
   eyebrow?: string
   krEyebrow?: string
   title: string
@@ -15,6 +18,7 @@ interface SectionHeaderProps {
 }
 
 export function SectionHeader({
+  number,
   eyebrow,
   krEyebrow,
   title,
@@ -25,16 +29,21 @@ export function SectionHeader({
   className = '',
   actions,
 }: SectionHeaderProps) {
+  // The number comes from the section registry, never from CMS copy.
+  const renderedEyebrow = number === undefined ? eyebrow : withSectionNumber(number, eyebrow)
+
   // An empty CMS record should not leave a blank heading and rule behind.
-  if (!eyebrow && !title && !description && !actions && !(linkHref && linkLabel)) return null
+  if (!renderedEyebrow && !title && !description && !actions && !(linkHref && linkLabel)) {
+    return null
+  }
 
   return (
     <div className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-line ${className}`}>
       <div className="max-w-2xl space-y-2">
-        {eyebrow && (
+        {renderedEyebrow && (
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted">
-              {eyebrow}
+              {renderedEyebrow}
             </span>
             {krEyebrow && (
               <span lang="ko" className="text-[11px] font-korean text-muted tracking-normal font-normal">

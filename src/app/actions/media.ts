@@ -1,7 +1,7 @@
 import { db } from '@/lib/db'
 import { cmsContent, musicTrack, profileSettings } from '@/lib/db/schema'
 import { asc, eq, and } from 'drizzle-orm'
-import { CMS_COLLECTIONS } from '@/lib/cms-schema'
+import { CMS_COLLECTIONS, type CmsResult } from '@/lib/cms-schema'
 
 export async function getPublicProfileSettings() {
   try {
@@ -9,6 +9,29 @@ export async function getPublicProfileSettings() {
     return rows[0] ?? null
   } catch {
     return null
+  }
+}
+
+export type PublicProfileSettings = Awaited<ReturnType<typeof getPublicProfileSettings>>
+
+/**
+ * Result-aware profile settings read. The compatibility getter above returns
+ * null both when nothing is configured and when the database fails, which is
+ * enough for optional media lookups but not for a section that must tell the two
+ * apart.
+ */
+export async function getPublicProfileSettingsResult(): Promise<
+  CmsResult<PublicProfileSettings>
+> {
+  try {
+    const rows = await db.select().from(profileSettings).limit(1)
+    return { status: 'ok', data: rows[0] ?? null }
+  } catch (error) {
+    console.error('[Profile] Could not read public profile settings', error)
+    return {
+      status: 'error',
+      message: 'Profile settings are temporarily unavailable.',
+    }
   }
 }
 

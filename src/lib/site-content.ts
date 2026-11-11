@@ -3,8 +3,10 @@ import {
   CMS_COLLECTIONS,
   CMS_KEYS,
   CMS_SCHEMA,
+  NAV_PAGES,
   indexCmsRecordsByKey,
   type CmsResult,
+  type NavGroup,
 } from '@/lib/cms-schema'
 
 /**
@@ -38,6 +40,7 @@ export interface SiteNavigation {
 export interface SiteBrand {
   name?: string
   korean?: string
+  role?: string
   domain?: string
 }
 
@@ -58,6 +61,8 @@ export interface ContactDetails {
   availability?: string
   email?: string
   phone?: string
+  /** Expected reply time, shown above the contact form. */
+  responseTime?: string
   /** Whether the contact form is shown on the contact page and preview. */
   formEnabled?: boolean
 }
@@ -72,6 +77,10 @@ export interface PageCopy {
   href?: string
   primaryLabel?: string
   secondaryLabel?: string
+  /** Per-page SEO. Falls back to the title and description above when absent. */
+  seoTitle?: string
+  seoDescription?: string
+  ogImage?: string
   /** Named sub-sections, e.g. `experience` or `github`, each with its own copy. */
   sections?: Record<string, Omit<PageCopy, 'sections'>>
 }
@@ -162,7 +171,31 @@ function parseCopy(payload: Record<string, unknown> | undefined): PageCopy {
     href: text(payload, 'href'),
     primaryLabel: text(payload, 'primaryLabel'),
     secondaryLabel: text(payload, 'secondaryLabel'),
+    seoTitle: text(payload, 'seoTitle'),
+    seoDescription: text(payload, 'seoDescription'),
+    ogImage: text(payload, 'ogImage'),
   }
+}
+
+/**
+ * Navigation comes from the code-owned route list. The CMS record decides which
+ * of those routes appear in each group; labels and routes never come from it.
+ * A missing record falls back to the default navigation so the site is usable
+ * before the CMS is authored.
+ */
+function navigationForGroup(
+  record: { payload?: Record<string, unknown> } | undefined,
+  group: NavGroup,
+): NavLink[] {
+  const configured = record?.payload?.[group]
+  const hrefs = Array.isArray(configured)
+    ? new Set(links(record?.payload, group).map((link) => link.href))
+    : undefined
+
+  return NAV_PAGES.filter((page) => {
+    if (!page.groups.includes(group)) return false
+    return hrefs ? hrefs.has(page.route) : page.defaultVisible
+  }).map((page) => ({ label: page.label, kr: page.kr, href: page.route }))
 }
 
 function parseSections(payload: Record<string, unknown> | undefined) {
@@ -206,12 +239,13 @@ export async function getSiteConfig(): Promise<CmsResult<SiteConfig>> {
       brand: {
         name: text(brand?.payload, 'name'),
         korean: text(brand?.payload, 'korean'),
+        role: text(brand?.payload, 'role'),
         domain: text(brand?.payload, 'domain'),
       },
       navigation: {
-        primary: links(navigation?.payload, 'primary'),
-        footer: links(navigation?.payload, 'footer'),
-        collections: links(navigation?.payload, 'collections'),
+        primary: navigationForGroup(navigation, 'primary'),
+        footer: navigationForGroup(navigation, 'footer'),
+        collections: navigationForGroup(navigation, 'collections'),
         socials: socials(navigation?.payload),
       },
       footer: {
@@ -230,6 +264,7 @@ export async function getSiteConfig(): Promise<CmsResult<SiteConfig>> {
         availability: text(contact?.payload, 'availability'),
         email: text(contact?.payload, 'email'),
         phone: text(contact?.payload, 'phone'),
+        responseTime: text(contact?.payload, 'responseTime'),
         formEnabled: booleanValue(contact?.payload, 'formEnabled'),
       },
     },

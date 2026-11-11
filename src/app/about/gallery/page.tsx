@@ -4,16 +4,17 @@ import { getGalleryResult } from '@/lib/gallery'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_SCHEMA } from '@/lib/cms-schema'
+import { uiStrings } from '@/lib/ui-strings'
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy } from '@/lib/site-content'
+import { pageMetadata } from '@/lib/seo'
 
 export const revalidate = 300
 
-export const metadata: Metadata = {
-  title: 'Photography Archive - Ashok Rimal',
-  description:
-    'A visual archive of photographs by Ashok Rimal: landscape, workspace and quiet geometry across Nepal.',
+export async function generateMetadata(): Promise<Metadata> {
+  const copyResult = await getPageCopy()
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.gallery : undefined)
 }
 
 export default async function GalleryPage() {
@@ -30,7 +31,9 @@ export default async function GalleryPage() {
         accent={pageCopy?.accent}
         description={pageCopy?.description}
         meta={
-          photos.length ? <MetaChip icon={Camera}>{photos.length} photographs</MetaChip> : undefined
+          photos.length ? (
+            <MetaChip icon={Camera}>{uiStrings.gallery.photographs(photos.length)}</MetaChip>
+          ) : undefined
         }
       />
 

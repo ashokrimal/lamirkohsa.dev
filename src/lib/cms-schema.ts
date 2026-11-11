@@ -191,6 +191,9 @@ const copyFields = (): CmsFieldDefinition[] => [
   text('accent', 'Accent'),
   text('description', 'Description'),
   object('sections', 'Named sub-sections'),
+  text('seoTitle', 'SEO title'),
+  text('seoDescription', 'SEO description'),
+  image('ogImage', 'Social sharing image'),
 ]
 
 function pageCopyRecord(key: string, label: string, titleRequired = true): CmsRecordDefinition {
@@ -264,7 +267,11 @@ export const CMS_SCHEMA: CmsSchema = {
           label: 'Brand',
           required: true,
           requiredFields: [text('name', 'Name', true)],
-          optionalFields: [text('korean', 'Korean name'), text('domain', 'Domain')],
+          optionalFields: [
+            text('korean', 'Korean name'),
+            text('role', 'Role line'),
+            text('domain', 'Domain'),
+          ],
           emptyState: {
             message: 'Brand details are not published yet.',
             hint: 'Add the site name in the CMS.',
@@ -284,6 +291,7 @@ export const CMS_SCHEMA: CmsSchema = {
             text('availability', 'Availability'),
             text('email', 'Email'),
             text('phone', 'Phone'),
+            text('responseTime', 'Response-time promise'),
             { key: 'formEnabled', label: 'Contact form enabled', type: 'boolean' },
           ],
           emptyState: {
@@ -304,9 +312,6 @@ export const CMS_SCHEMA: CmsSchema = {
             text('initials', 'Initials'),
             image('imageUrl', 'Hero image'),
             text('imageAlt', 'Hero image alt text'),
-            array('stats', 'Hero stats'),
-            text('metaLeft', 'Meta left'),
-            text('metaRight', 'Meta right'),
           ],
           emptyState: {
             message: 'Hero text is not published yet.',
@@ -485,10 +490,13 @@ export const CMS_SCHEMA: CmsSchema = {
       name: CMS_COLLECTIONS.projects,
       label: 'Projects',
       keyed: false,
-      requiredFields: [text('summary', 'Summary', true), text('description', 'Description', true)],
+      requiredFields: [
+        text('summary', 'Summary', true),
+        text('description', 'Description', true),
+        image('imageUrl', 'Image', true),
+      ],
       optionalFields: [
         text('category', 'Category'),
-        text('imageUrl', 'Image'),
         text('altText', 'Image alt text'),
         text('completionDate', 'Completion date'),
         text('period', 'Period'),
@@ -909,6 +917,171 @@ export const CMS_MEDIA_RECORDS = CMS_SCHEMA.collections.mediaCollections.records
 
 /** Site Settings records, typed without the optional `records` guard. */
 export const CMS_SETTINGS_RECORDS = CMS_SCHEMA.collections.siteSettings.records ?? {}
+
+/**
+ * One structural section: its identity, route, renderer, the collection that
+ * fills it, and the empty state it shows when that collection has no published
+ * records. Section numbers are positional, so they can never gap.
+ */
+export interface SiteSectionDefinition extends CmsSectionDefinition {
+  id: string
+  route: string
+  component: string
+}
+
+/**
+ * The homepage, in the order it always renders. Structure is owned here; the CMS
+ * only supplies each section's copy and records. Adding or removing a section is
+ * a code change, never a CMS edit.
+ */
+export const SECTIONS: readonly SiteSectionDefinition[] = [
+  {
+    id: 'about',
+    route: '/about',
+    component: 'HomeIntroduction',
+    ...CMS_SCHEMA.sections.home.about,
+  },
+  {
+    id: 'gallery',
+    route: '/about/gallery',
+    component: 'HomeGallery',
+    ...CMS_SCHEMA.sections.home.gallery,
+  },
+  {
+    id: 'experience',
+    route: '/experience',
+    component: 'HomeExperience',
+    ...CMS_SCHEMA.sections.home.experience,
+  },
+  {
+    id: 'education',
+    route: '/education',
+    component: 'HomeEducation',
+    ...CMS_SCHEMA.sections.home.education,
+  },
+  {
+    id: 'projects',
+    route: '/projects',
+    component: 'HomeProjects',
+    ...CMS_SCHEMA.sections.home.projects,
+  },
+  {
+    id: 'media',
+    route: '/media',
+    component: 'HomeMedia',
+    ...CMS_SCHEMA.sections.home.media,
+  },
+  {
+    id: 'github',
+    route: '/about/github',
+    component: 'HomeGitHub',
+    ...CMS_SCHEMA.sections.home.github,
+  },
+]
+
+/** The about page's numbered blocks, in render order. */
+export const ABOUT_SECTIONS: readonly SiteSectionDefinition[] = [
+  {
+    id: 'education',
+    route: '/about#education',
+    component: 'AboutEducation',
+    ...CMS_SCHEMA.sections.pages.education,
+  },
+  {
+    id: 'experience',
+    route: '/about#experience',
+    component: 'AboutExperience',
+    ...CMS_SCHEMA.sections.pages.experience,
+  },
+  {
+    id: 'skills',
+    route: '/about#skills',
+    component: 'AboutSkills',
+    ...CMS_SCHEMA.sections.pages.skills,
+  },
+  {
+    id: 'interests',
+    route: '/about#interests',
+    component: 'AboutInterests',
+    label: 'Interests',
+    collection: CMS_COLLECTIONS.interests,
+    emptyState: CMS_SCHEMA.collections.interests.emptyState,
+  },
+  {
+    id: 'socials',
+    route: '/about#socials',
+    component: 'AboutSocials',
+    label: 'Social Links',
+    collection: CMS_COLLECTIONS.socialLinks,
+    emptyState: CMS_SCHEMA.collections.socialLinks.emptyState,
+  },
+  {
+    id: 'github',
+    route: '/about#github',
+    component: 'AboutGitHub',
+    ...CMS_SCHEMA.sections.home.github,
+  },
+]
+
+/** Zero-based position in a section registry, rendered as `01`, `02`, ... */
+export function sectionNumber(index: number): string {
+  return String(Math.max(0, index) + 1).padStart(2, '0')
+}
+
+/** Removes a hand-typed numeric prefix from CMS eyebrow copy. */
+export function stripSectionNumber(eyebrow?: string): string | undefined {
+  if (!eyebrow) return undefined
+  const label = eyebrow.replace(/^\s*\d{1,2}\s*[\/\u00b7|\u2014\u2013-]\s*/, '').trim()
+  return label || undefined
+}
+
+/**
+ * The eyebrow a section actually shows: its registry position plus the CMS label
+ * with any hand-typed prefix removed.
+ */
+export function withSectionNumber(index: number, eyebrow?: string): string {
+  const label = stripSectionNumber(eyebrow)
+  return label ? `${sectionNumber(index)} / ${label}` : sectionNumber(index)
+}
+
+export type NavGroup = 'primary' | 'footer' | 'collections'
+
+export interface NavPageDefinition {
+  id: string
+  route: string
+  label: string
+  kr: string
+  groups: readonly NavGroup[]
+  /** Shown when the CMS has no navigation record yet. */
+  defaultVisible: boolean
+}
+
+/**
+ * Every route the site owns. The CMS controls which of these appear in the nav;
+ * it can never invent a route or replace a label.
+ */
+export const NAV_PAGES: readonly NavPageDefinition[] = [
+  { id: 'home', route: '/', label: 'Home', kr: '\ud648', groups: ['primary', 'footer'], defaultVisible: true },
+  { id: 'about', route: '/about', label: 'About', kr: '\uc18c\uac1c', groups: ['primary', 'footer'], defaultVisible: true },
+  { id: 'media', route: '/media', label: 'Media', kr: '\ubbf8\ub514\uc5b4', groups: ['primary', 'footer'], defaultVisible: true },
+  { id: 'projects', route: '/projects', label: 'Projects', kr: '\uc791\uc5c5', groups: ['primary', 'footer'], defaultVisible: true },
+  { id: 'contact', route: '/contact', label: 'Contact', kr: '\uc5f0\ub77d\ucc98', groups: ['primary', 'footer'], defaultVisible: true },
+  { id: 'journal', route: '/blogs', label: 'Journal', kr: '\uae00', groups: ['collections'], defaultVisible: true },
+  { id: 'gallery', route: '/about/gallery', label: 'Gallery', kr: '\uc0ac\uc9c4', groups: ['collections'], defaultVisible: true },
+  { id: 'music', route: '/media/music', label: 'Music archive', kr: '\uc74c\uc545', groups: ['collections'], defaultVisible: true },
+  { id: 'anime', route: '/media/anime', label: 'Anime library', kr: '\uc560\ub2c8', groups: ['collections'], defaultVisible: true },
+  { id: 'resume', route: '/resume', label: 'R\u00e9sum\u00e9', kr: '\uc774\ub825\uc11c', groups: ['collections'], defaultVisible: true },
+  { id: 'github', route: '/about/github', label: 'GitHub activity', kr: '\uae43\ud5c8\ube0c', groups: ['collections'], defaultVisible: false },
+  { id: 'movies', route: '/media/movies', label: 'Movies', kr: '\uc601\ud654', groups: ['collections'], defaultVisible: false },
+  { id: 'manga', route: '/media/manga', label: 'Manga', kr: '\ub9cc\ud654', groups: ['collections'], defaultVisible: false },
+  { id: 'experience', route: '/experience', label: 'Experience', kr: '\uacbd\ub825', groups: ['footer'], defaultVisible: false },
+  { id: 'education', route: '/education', label: 'Education', kr: '\ud559\ub825', groups: ['footer'], defaultVisible: false },
+  { id: 'skills', route: '/skills', label: 'Skills', kr: '\uae30\uc220', groups: ['footer'], defaultVisible: false },
+  { id: 'certificates', route: '/certificates', label: 'Certificates', kr: '\uc790\uaca9\uc99d', groups: ['footer'], defaultVisible: false },
+]
+
+/** All routes the CMS may toggle into the navigation. */
+export const NAV_ROUTES: ReadonlySet<string> = new Set(NAV_PAGES.map((page) => page.route))
 
 /**
  * Builds a key-only lookup. Records without a locked key are ignored (and

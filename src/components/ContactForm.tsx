@@ -3,13 +3,17 @@
 import { useCallback, useState } from 'react';
 import { sensoryAudio } from '@/lib/sensory-audio';
 import { Send, CheckCircle2 } from 'lucide-react';
+import { uiStrings } from '@/lib/ui-strings';
 
 type ContactFormProps = {
+  /** Reply-time promise from Site Settings; hidden when not configured. */
+  responseTime?: string;
   onSuccessMessage?: string;
 };
 
 export default function ContactForm({
-  onSuccessMessage = "Thank you for reaching out. Your note has been received and I'll respond as soon as possible.",
+  responseTime,
+  onSuccessMessage = uiStrings.contact.success.en,
 }: ContactFormProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,7 +47,7 @@ export default function ContactForm({
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data.error ?? 'Something went wrong.');
+          throw new Error(data.error ?? uiStrings.contact.genericError.en);
         }
 
         form.reset();
@@ -52,7 +56,8 @@ export default function ContactForm({
         const timeout = window.setTimeout(() => setShowSuccess(false), 5000);
         return () => window.clearTimeout(timeout);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to send message.';
+        const message =
+          err instanceof Error ? err.message : uiStrings.contact.sendFailed.en;
         setError(message);
       } finally {
         setIsSubmitting(false);
@@ -66,70 +71,70 @@ export default function ContactForm({
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span className="font-semibold text-xl md:text-2xl text-ink tracking-tight">
-            Send a direct message
+            {uiStrings.contact.formTitle.en}
           </span>
-          <span className="font-korean text-xs text-muted font-normal">
-            · 문의하기
-          </span>
+          {uiStrings.contact.formTitle.kr && (
+            <span lang="ko" className="font-korean text-xs text-muted font-normal">
+              · {uiStrings.contact.formTitle.kr}
+            </span>
+          )}
         </div>
-        <p className="text-xs text-muted">
-          Typically responding within 24 hours.
-        </p>
+        {responseTime && <p className="text-xs text-muted">{responseTime}</p>}
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
           <label htmlFor="name" className="block text-xs font-medium text-ink-secondary mb-1.5">
-            Full Name
+            {uiStrings.contact.name.en}
           </label>
           <input
             type="text"
             id="name"
             name="name"
             className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60"
-            placeholder="e.g. Maya Sharma"
+            placeholder={uiStrings.contact.namePlaceholder}
             required
           />
         </div>
 
         <div>
           <label htmlFor="email" className="block text-xs font-medium text-ink-secondary mb-1.5">
-            Email Address
+            {uiStrings.contact.email.en}
           </label>
           <input
             type="email"
             id="email"
             name="email"
             className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60"
-            placeholder="e.g. maya@example.com"
+            placeholder={uiStrings.contact.emailPlaceholder}
             required
           />
         </div>
 
         <div>
           <label htmlFor="subject" className="block text-xs font-medium text-ink-secondary mb-1.5">
-            Topic or Project
+            {uiStrings.contact.subject.en}
           </label>
           <input
             type="text"
             id="subject"
             name="subject"
             className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60"
-            placeholder="e.g. Full-stack engineering / Project collaboration"
+            placeholder={uiStrings.contact.subjectPlaceholder}
             required
           />
         </div>
 
         <div>
           <label htmlFor="message" className="block text-xs font-medium text-ink-secondary mb-1.5">
-            Message Details
+            {uiStrings.contact.message.en}
           </label>
           <textarea
             id="message"
             name="message"
             rows={4}
             className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all leading-relaxed placeholder:text-muted/60"
-            placeholder="Tell me about what you're building, timelines, or thoughts..."
+            placeholder={uiStrings.contact.messagePlaceholder}
             required
           />
         </div>
@@ -142,8 +147,12 @@ export default function ContactForm({
           }`}
         >
           <Send className="w-4 h-4" />
-          <span>{isSubmitting ? 'Sending Message…' : 'Transmit Message'}</span>
-          <span lang="ko" className="font-korean text-xs opacity-75">전송</span>
+          <span>{isSubmitting ? uiStrings.contact.sending.en : uiStrings.contact.submit.en}</span>
+          {uiStrings.contact.submit.kr && (
+            <span lang="ko" className="font-korean text-xs opacity-75">
+              {uiStrings.contact.submit.kr}
+            </span>
+          )}
         </button>
       </form>
 

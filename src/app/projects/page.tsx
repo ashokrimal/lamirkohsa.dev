@@ -2,13 +2,13 @@ import type { Metadata } from 'next'
 import ProjectsContent from '@/components/pages/ProjectsContent'
 import { getProjectsResult } from '@/lib/projects'
 import { getPageCopy } from '@/lib/site-content'
+import { pageMetadata } from '@/lib/seo'
 
 export const revalidate = 300
 
-export const metadata: Metadata = {
-  title: 'Projects & Systems - Ashok Rimal',
-  description:
-    'Technical case studies demonstrating Ashok Rimal’s approach to web, mobile, and full-stack software development.',
+export async function generateMetadata(): Promise<Metadata> {
+  const copyResult = await getPageCopy()
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.projects : undefined)
 }
 
 export default async function ProjectsPage() {

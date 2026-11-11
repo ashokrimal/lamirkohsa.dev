@@ -3,12 +3,13 @@ import ContactContent from '@/components/pages/ContactContent'
 import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
 import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 import { getPageCopy, getSiteConfig } from '@/lib/site-content'
+import { pageMetadata } from '@/lib/seo'
 
 export const revalidate = 300
 
-export const metadata: Metadata = {
-  title: 'Contact - Ashok Rimal',
-  description: 'Reach out to Ashok Rimal for software engineering roles, technical contracting, or open-source collaborations.',
+export async function generateMetadata(): Promise<Metadata> {
+  const copyResult = await getPageCopy()
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.contact : undefined)
 }
 
 export default async function ContactPage() {

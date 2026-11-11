@@ -7,7 +7,8 @@ import { SkillDisplay } from '@/components/ui/SkillDisplay'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
-import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
+import { ABOUT_SECTIONS, CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
+import { uiStrings } from '@/lib/ui-strings'
 import { Compass, Globe, Heart, Sparkles } from 'lucide-react'
 import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy } from '@/lib/site-content'
@@ -117,13 +118,16 @@ export default async function AboutContent() {
     : []
 
   const infoRows = [
-    { label: 'Full name', value: value(profileData, 'fullName') },
-    { label: 'Professional title', value: value(profileData, 'headline') },
-    { label: 'Location', value: value(profileData, 'location') },
-    { label: 'Availability', value: value(profileData, 'availability') },
-    { label: 'Focus', value: value(profileData, 'focus') },
-    { label: 'Email', value: value(profileData, 'email') },
+    { label: uiStrings.about.fullName.en, value: value(profileData, 'fullName') },
+    { label: uiStrings.about.professionalTitle.en, value: value(profileData, 'headline') },
+    { label: uiStrings.about.location.en, value: value(profileData, 'location') },
+    { label: uiStrings.about.availability.en, value: value(profileData, 'availability') },
+    { label: uiStrings.about.focus.en, value: value(profileData, 'focus') },
+    { label: uiStrings.about.email.en, value: value(profileData, 'email') },
   ].filter((row) => row.value)
+
+  // Section numbers come from the about registry, so they stay consecutive.
+  const sectionIndex = (id: string) => ABOUT_SECTIONS.findIndex((section) => section.id === id)
 
   return (
     <PageShell>
@@ -196,6 +200,7 @@ export default async function AboutContent() {
       {/* 2. EDUCATION */}
       <PageSection
         id="education"
+        number={sectionIndex('education')}
         eyebrow={sections?.education?.eyebrow}
         krEyebrow={sections?.education?.krEyebrow}
         title={sections?.education?.title ?? CMS_SCHEMA.collections.education.label}
@@ -219,6 +224,7 @@ export default async function AboutContent() {
       {/* 3. PROFESSIONAL EXPERIENCE */}
       <PageSection
         id="experience"
+        number={sectionIndex('experience')}
         eyebrow={sections?.experience?.eyebrow}
         krEyebrow={sections?.experience?.krEyebrow}
         title={sections?.experience?.title ?? CMS_SCHEMA.collections.experience.label}
@@ -242,6 +248,7 @@ export default async function AboutContent() {
       {/* 4. TECHNICAL SKILLS */}
       <PageSection
         id="skills"
+        number={sectionIndex('skills')}
         eyebrow={sections?.skills?.eyebrow}
         krEyebrow={sections?.skills?.krEyebrow}
         title={sections?.skills?.title ?? CMS_SCHEMA.collections.skills.label}
@@ -266,6 +273,7 @@ export default async function AboutContent() {
       {/* 5. PERSONAL INTERESTS */}
       <PageSection
         id="interests"
+        number={sectionIndex('interests')}
         eyebrow={sections?.interests?.eyebrow}
         krEyebrow={sections?.interests?.krEyebrow}
         title={sections?.interests?.title ?? CMS_SCHEMA.collections.interests.label}
@@ -299,6 +307,7 @@ export default async function AboutContent() {
       {/* 6. SOCIAL LINKS */}
       <PageSection
         id="socials"
+        number={sectionIndex('socials')}
         eyebrow={sections?.socials?.eyebrow}
         krEyebrow={sections?.socials?.krEyebrow}
         title={sections?.socials?.title ?? CMS_SCHEMA.collections.socialLinks.label}
@@ -337,6 +346,7 @@ export default async function AboutContent() {
       {/* 7. GITHUB ACTIVITY — always the final section */}
       <PageSection
         id="github"
+        number={sectionIndex('github')}
         eyebrow={sections?.github?.eyebrow}
         krEyebrow={sections?.github?.krEyebrow}
         title={sections?.github?.title ?? CMS_SCHEMA.sections.home.github.label}

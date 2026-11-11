@@ -7,6 +7,7 @@ import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChro
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_COLLECTIONS, CMS_SCHEMA, type CmsResult } from '@/lib/cms-schema'
+import { uiStrings } from '@/lib/ui-strings'
 import { NotebookPen } from 'lucide-react'
 
 export const revalidate = 300
@@ -55,11 +56,23 @@ export async function generateMetadata({
   params: { slug: string }
 }): Promise<Metadata> {
   const result = await findBlog(params.slug)
-  if (result.status !== 'ok' || !result.data) return { title: 'Journal - Ashok Rimal' }
+  if (result.status !== 'ok' || !result.data) return { title: uiStrings.journal.label.en }
   const blog = result.data
+  const payload = readPayload(blog)
+  const description = getBody(blog).slice(0, 160)
+  const image = typeof payload.imageUrl === 'string' ? payload.imageUrl : undefined
   return {
-    title: `${blog.title} — Journal | Ashok Rimal`,
-    description: getBody(blog).slice(0, 160),
+    title: `${blog.title} — ${uiStrings.journal.label.en}`,
+    ...(description ? { description } : {}),
+    ...(image
+      ? {
+          openGraph: {
+            title: blog.title,
+            ...(description ? { description } : {}),
+            images: [{ url: image }],
+          },
+        }
+      : {}),
   }
 }
 
@@ -90,32 +103,46 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
   return (
     <PageShell>
       <PageHero
-        eyebrow={category ? `Journal / ${category}` : 'Journal'}
-        krEyebrow="글"
+        eyebrow={
+          category ? uiStrings.journal.eyebrow(category) : uiStrings.journal.label.en
+        }
+        krEyebrow={uiStrings.journal.krEyebrow.en}
         title={blog.title}
-        description={`${date ? `${date} · ` : ''}${minutes} min read`}
+        description={`${date ? `${date} · ` : ''}${uiStrings.journal.minRead(minutes)}`}
         meta={
           <>
-            <MetaChip icon={Clock}>{minutes} min read</MetaChip>
-            <MetaChip>{words} words</MetaChip>
+            <MetaChip icon={Clock}>{uiStrings.journal.minRead(minutes)}</MetaChip>
+            <MetaChip>{uiStrings.journal.words(words)}</MetaChip>
             {date && <MetaChip>{date}</MetaChip>}
           </>
         }
       />
 
-      <article className="mt-10 md:mt-14 max-w-3xl space-y-5">
-        {paragraphs.map((paragraph, index) => (
-          <p key={index} className="text-sm md:text-base text-ink-secondary leading-7">
-            {paragraph}
-          </p>
-        ))}
-      </article>
+      {paragraphs.length ? (
+        <article className="mt-10 md:mt-14 max-w-3xl space-y-5">
+          {paragraphs.map((paragraph, index) => (
+            <p key={index} className="text-sm md:text-base text-ink-secondary leading-7">
+              {paragraph}
+            </p>
+          ))}
+        </article>
+      ) : (
+        <div className="mt-10 md:mt-14">
+          <EmptyState
+            icon={NotebookPen}
+            message={CMS_SCHEMA.sections.home.blogArticle.emptyState.message}
+            hint={CMS_SCHEMA.sections.home.blogArticle.emptyState.hint}
+            actionLabel={CMS_SCHEMA.sections.home.blogArticle.emptyState.actionLabel}
+            actionHref={CMS_SCHEMA.sections.home.blogArticle.emptyState.actionHref}
+          />
+        </div>
+      )}
 
       <PageNav
         backHref="/blogs"
-        backLabel="All notes"
+        backLabel={uiStrings.journal.allNotes.en}
         nextHref="/contact"
-        nextLabel="Start a conversation"
+        nextLabel={uiStrings.journal.startConversation.en}
       />
     </PageShell>
   )

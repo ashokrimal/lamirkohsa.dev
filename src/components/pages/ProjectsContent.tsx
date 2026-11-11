@@ -14,6 +14,7 @@ import { ProjectRow } from '@/components/ui/ProjectRow'
 import { MetaChip, PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
 import type { ProjectEntry } from '@/lib/projects'
 import type { PageCopy } from '@/lib/site-content'
+import { uiStrings } from '@/lib/ui-strings'
 
 interface ProjectsContentProps {
   projects: ProjectEntry[]
@@ -67,11 +68,12 @@ export default function ProjectsContent({ projects, copy, error }: ProjectsConte
     <DevSection
       pageKey={PAGE_KEY}
       sectionId="work"
-      label="Projects"
+      label={uiStrings.projects.worksHeading.en}
       fallbackAccent="var(--accent-secondary)"
       className="pt-0"
     >
       <PageSection
+        number={0}
         eyebrow={sections?.work?.eyebrow}
         krEyebrow={sections?.work?.krEyebrow}
         title={sections?.work?.title ?? CMS_SCHEMA.sections.pages.projects.label}

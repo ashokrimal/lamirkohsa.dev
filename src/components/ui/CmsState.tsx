@@ -1,4 +1,5 @@
 import { AlertTriangle } from 'lucide-react'
+import { uiStrings } from '@/lib/ui-strings'
 
 /**
  * The failure state for a CMS-backed section. It is deliberately different from
@@ -6,7 +7,7 @@ import { AlertTriangle } from 'lucide-react'
  * owner to "add content".
  */
 export function CmsErrorState({
-  message = 'This content is temporarily unavailable.',
+  message = uiStrings.cmsState.defaultMessage.en,
   className = '',
 }: {
   message?: string
@@ -19,9 +20,7 @@ export function CmsErrorState({
     >
       <AlertTriangle className="h-5 w-5 text-muted" aria-hidden="true" />
       <p className="text-sm font-medium text-ink-secondary">{message}</p>
-      <p className="max-w-md text-xs text-muted">
-        The content service did not respond. Nothing has been removed; try again shortly.
-      </p>
+      <p className="max-w-md text-xs text-muted">{uiStrings.cmsState.hint.en}</p>
     </div>
   )
 }

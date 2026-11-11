@@ -8,6 +8,7 @@ import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_MEDIA_RECORDS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSections } from '@/lib/media-content'
+import { uiStrings } from '@/lib/ui-strings'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,7 +43,7 @@ export default async function MediaHomeContent() {
         <CmsErrorState message={copyResult.message} className="mt-10" />
       )}
 
-      {sections.map((section) => {
+      {sections.map((section, index) => {
         const config = collections.find(
           (collection) =>
             collection.key ===
@@ -57,6 +58,7 @@ export default async function MediaHomeContent() {
             aria-labelledby={`media-${section.kind}-heading`}
           >
             <SectionHeader
+              number={index}
               eyebrow={section.label}
               title={section.label}
               description={section.description}
@@ -79,8 +81,8 @@ export default async function MediaHomeContent() {
                   ))}
                   previewCount={config?.previewCount || PREVIEW_COUNT}
                   viewAllHref={section.href}
-                  viewAllLabel={`View all ${section.label.toLowerCase()}`}
-                  ariaLabel={`${section.label} collection`}
+                  viewAllLabel={uiStrings.media.viewAllCategory(section.label)}
+                  ariaLabel={uiStrings.media.collectionAria(section.label)}
                 />
               )}
             </div>
