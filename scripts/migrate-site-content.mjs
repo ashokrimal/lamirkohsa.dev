@@ -544,6 +544,20 @@ async function main() {
       inserted += 1
     }
 
+    // Project, gallery and media-item records can also carry the legacy field
+    // names, so normalize every remaining row, not only the seeded ones above.
+    const allRows = await client.query(`select "id", "collection", "title", "slug", "payload" from "cmsContent"`)
+    for (const row of allRows.rows) {
+      const current = row.payload && typeof row.payload === 'object' ? row.payload : {}
+      const next = normalizePayload(row, current)
+      if (JSON.stringify(current) === JSON.stringify(next)) continue
+      await client.query(`update "cmsContent" set "payload" = $1::jsonb where "id" = $2`, [
+        JSON.stringify(next),
+        row.id,
+      ])
+      migrated += 1
+    }
+
     console.log(
       `Inserted ${inserted} records, migrated ${migrated}, skipped ${skipped} existing records.`,
     )
