@@ -10,7 +10,7 @@ import { setupOwnerAccount } from '@/app/actions/admin-auth'
  * server; nothing is compared in the browser. The setup form only appears while
  * no owner exists, and disappears for good once the account is created.
  */
-export default function AdminSignIn({ configured }: { configured: boolean }) {
+export default function AdminSignIn({ configured, returnTo = '/admin' }: { configured: boolean; returnTo?: string }) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -37,7 +37,7 @@ export default function AdminSignIn({ configured }: { configured: boolean }) {
       }
 
       setPassword('')
-      router.replace('/admin')
+      router.replace(returnTo)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid credentials.')
@@ -56,7 +56,7 @@ export default function AdminSignIn({ configured }: { configured: boolean }) {
       if (!result.ok) throw new Error(result.error)
       setPassword('')
       setConfirmPassword('')
-      router.replace('/admin')
+      router.replace(returnTo)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The owner account could not be created.')

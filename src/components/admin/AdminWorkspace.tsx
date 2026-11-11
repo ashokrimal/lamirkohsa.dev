@@ -38,6 +38,7 @@ import {
 import { CmsToastProvider, useCmsToast } from '@/components/admin/ui/CmsToast'
 import ImageUploadField from '@/components/admin/ImageUploadField'
 import ContentSetupGuide from '@/components/admin/ContentSetupGuide'
+import SiteAppearanceEditor from '@/components/admin/SiteAppearanceEditor'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
 import { CmsStatCard, CmsSectionCard } from '@/components/admin/ui/CmsCard'
 import { CmsTable, type Column } from '@/components/admin/ui/CmsTable'
@@ -55,9 +56,7 @@ import {
 } from '@/components/admin/ui/CmsFormPrimitives'
 
 import {
-  createGalleryItem,
   createMusicTrack,
-  deleteGalleryItem,
   deleteMusicTrack,
 } from '@/app/actions/content'
 import {
@@ -123,6 +122,52 @@ function isKeyedCollection(collection: string) {
   return KEYED_COLLECTIONS.includes(collection)
 }
 
+// Collections the add form can write to. Deep links from public empty states use
+// /admin?section=content&collection=<name> so the right collection is selected.
+const CREATABLE_COLLECTIONS = [
+  'Projects',
+  'Profile',
+  'Gallery',
+  'Experience',
+  'Education',
+  'Skills',
+  'Certificates',
+  'Music',
+  'Movies',
+  'Anime',
+  'Manga',
+  'Social Links',
+  'Blogs',
+  'Site Settings',
+  'Page Copy',
+  'Media Collections',
+]
+
+/** Maps a specific collection to the group tab that contains it. */
+const TAB_FOR_COLLECTION: Record<string, string> = {
+  Profile: 'Profile',
+  'Social Links': 'Profile',
+  Experience: 'Career',
+  Education: 'Career',
+  Skills: 'Career',
+  Music: 'Media',
+  Movies: 'Media',
+  Anime: 'Media',
+  Manga: 'Media',
+  Certificates: 'Certificates',
+  Awards: 'Certificates',
+  Blogs: 'Blogs',
+}
+
+function collectionForTab(tab: string) {
+  if (CREATABLE_COLLECTIONS.includes(tab)) return tab
+  if (tab === 'Career') return 'Experience'
+  if (tab === 'Media') return 'Music'
+  if (tab === 'Certificates') return 'Certificates'
+  if (tab === 'Publishing') return 'Blogs'
+  return 'Projects'
+}
+
 /** Returns the parsed object, or null when the text is not a JSON object. */
 function parseStructuredPayload(text: string): Record<string, unknown> | null {
   if (!text.trim()) return {}
@@ -163,14 +208,32 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
 
   // Local state initialized with server data for optimistic updates
   const [cmsRecords, setCmsRecords] = useState<CmsRecordItem[]>((content.cms || []) as CmsRecordItem[])
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>((content.gallery || []) as GalleryItem[])
+  const galleryItems = useMemo<GalleryItem[]>(
+    () =>
+      cmsRecords
+        .filter((record) => record.collection === 'Gallery')
+        .map((record) => {
+          const payload = (record.payload || {}) as Record<string, unknown>
+          return {
+            id: record.id,
+            title: record.title,
+            category: typeof payload.category === 'string' ? payload.category : 'Selected work',
+            imageUrl: typeof payload.imageUrl === 'string' ? payload.imageUrl : '',
+            description: typeof payload.description === 'string' ? payload.description : null,
+            published: record.status === 'published',
+            featured: payload.featured === true,
+          }
+        })
+        .filter((item) => Boolean(item.imageUrl)),
+    [cmsRecords],
+  )
   const [musicTracks, setMusicTracks] = useState<MusicTrackItem[]>((content.music || []) as MusicTrackItem[])
-  const [projectsList, setProjectsList] = useState<ProjectItem[]>((content.projects || []) as ProjectItem[])
   const [profileSettingsState, setProfileSettingsState] = useState(settings)
 
   // View state
   const [galleryViewMode, setGalleryViewMode] = useState<'grid' | 'table'>('grid')
   const [activeContentCategory, setActiveContentCategory] = useState(initialCategory || 'ALL')
+  const activeTab = TAB_FOR_COLLECTION[activeContentCategory] ?? activeContentCategory
   const [nowPlayingTrackId, setNowPlayingTrackId] = useState<number | null>(null)
 
   // Modals state
@@ -186,7 +249,9 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
   // Form states for Create Record Modal
   const [newTitle, setNewTitle] = useState('')
   const [newKey, setNewKey] = useState('')
-  const [newCollection, setNewCollection] = useState('Projects')
+  const [newCollection, setNewCollection] = useState(
+    initialCategory && CREATABLE_COLLECTIONS.includes(initialCategory) ? initialCategory : 'Projects',
+  )
   const [newDescription, setNewDescription] = useState('')
   const [newImageUrl, setNewImageUrl] = useState('')
   const [newGalleryImage, setNewGalleryImage] = useState('')
@@ -206,7 +271,30 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       { label: 'Career & Profile', count: cmsRecords.filter((r) => r.collection === 'Experience' || r.collection === 'Education').length, color: '#f59e0b' },
       { label: 'Skills & Journal', count: cmsRecords.filter((r) => r.collection === 'Skills' || r.collection === 'Blogs').length, color: '#ec4899' },
     ],
-    [cmsRecords, galleryItems, musicTracks, projectsList]
+    [cmsRecords, galleryItems, musicTracks]
+  )
+
+  // The public projects page reads CMS records, so the admin showcase list does too.
+  const cmsProjects = useMemo<ProjectItem[]>(
+    () =>
+      cmsRecords
+        .filter((record) => record.collection === 'Projects')
+        .map((record) => {
+          const payload = (record.payload || {}) as Record<string, unknown>
+          return {
+            id: record.id,
+            title: record.title,
+            category: typeof payload.category === 'string' ? payload.category : null,
+            summary: typeof payload.summary === 'string' ? payload.summary : null,
+            description: typeof payload.description === 'string' ? payload.description : null,
+            tech: Array.isArray(payload.techStack) ? (payload.techStack as string[]) : null,
+            imageUrl: typeof payload.imageUrl === 'string' ? payload.imageUrl : null,
+            liveUrl: typeof payload.live === 'string' ? payload.live : null,
+            featured: payload.featured === true,
+            published: record.status === 'published',
+          }
+        }),
+    [cmsRecords],
   )
 
   // Keep the structured JSON editor in sync with the record being edited.
@@ -226,7 +314,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
     e.preventDefault()
     if (!newTitle.trim()) return
     const form = new FormData(e.currentTarget as HTMLFormElement)
-    const projectFields = {
+    const fields = {
       category: String(form.get('category') || '').trim(),
       techStack: String(form.get('techStack') || '')
         .split(',')
@@ -235,25 +323,44 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       live: String(form.get('live') || '').trim(),
       github: String(form.get('github') || '').trim(),
       altText: String(form.get('altText') || '').trim(),
+      organization: String(form.get('organization') || '').trim(),
+      period: String(form.get('period') || '').trim(),
+      location: String(form.get('location') || '').trim(),
+      creator: String(form.get('creator') || '').trim(),
+      rating: String(form.get('rating') || '').trim(),
+      externalUrl: String(form.get('externalUrl') || '').trim(),
     }
     setIsSubmitting(true)
+
+    const careerCollection = newCollection === 'Experience' || newCollection === 'Education'
+    const mediaCollection = ['Music', 'Movies', 'Anime', 'Manga'].includes(newCollection)
+    const structuredPayload = isStructuredCollection(newCollection)
+      ? parseStructuredPayload(newDescription) ?? { description: newDescription.trim() }
+      : null
+
+    const payload = structuredPayload ?? {
+      description: newDescription.trim(),
+      imageUrl: newImageUrl.trim(),
+      ...(fields.altText ? { altText: fields.altText } : {}),
+      ...(newCollection === 'Gallery' && fields.category ? { category: fields.category } : {}),
+      ...(newCollection === 'Projects' && fields.category ? { category: fields.category } : {}),
+      ...(newCollection === 'Projects' && fields.techStack.length ? { techStack: fields.techStack } : {}),
+      ...(newCollection === 'Projects' && fields.live ? { live: fields.live } : {}),
+      ...(newCollection === 'Projects' && fields.github ? { github: fields.github } : {}),
+      ...(careerCollection && fields.organization ? { organization: fields.organization } : {}),
+      ...(careerCollection && fields.period ? { period: fields.period } : {}),
+      ...(careerCollection && fields.location ? { location: fields.location } : {}),
+      ...(mediaCollection && fields.creator ? { subtitle: fields.creator, artist: fields.creator } : {}),
+      ...(mediaCollection && fields.rating ? { rating: fields.rating } : {}),
+      ...(mediaCollection && fields.externalUrl ? { externalUrl: fields.externalUrl } : {}),
+    }
 
     const optimisticId = Date.now()
     const newRecord = {
       id: optimisticId,
       collection: newCollection,
       title: newTitle.trim(),
-      payload: isStructuredCollection(newCollection)
-        ? parseStructuredPayload(newDescription) ?? { description: newDescription.trim() }
-        : {
-            description: newDescription.trim(),
-            imageUrl: newImageUrl.trim(),
-            ...(newCollection === 'Projects' && projectFields.category ? { category: projectFields.category } : {}),
-            ...(newCollection === 'Projects' && projectFields.techStack.length ? { techStack: projectFields.techStack } : {}),
-            ...(newCollection === 'Projects' && projectFields.live ? { live: projectFields.live } : {}),
-            ...(newCollection === 'Projects' && projectFields.github ? { github: projectFields.github } : {}),
-            ...(projectFields.altText ? { altText: projectFields.altText } : {}),
-          },
+      payload,
       status: newStatus,
     }
 
@@ -278,13 +385,13 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       const formData = new FormData()
       formData.set('collection', newCollection)
       formData.set('title', newTitle)
-      formData.set('payload', newDescription)
+      formData.set('payload', JSON.stringify(payload))
       formData.set('imageUrl', newImageUrl)
-      formData.set('category', projectFields.category)
-      formData.set('techStack', projectFields.techStack.join(', '))
-      formData.set('live', projectFields.live)
-      formData.set('github', projectFields.github)
-      formData.set('altText', projectFields.altText)
+      formData.set('category', fields.category)
+      formData.set('techStack', fields.techStack.join(', '))
+      formData.set('live', fields.live)
+      formData.set('github', fields.github)
+      formData.set('altText', fields.altText)
       formData.set('status', newStatus)
       if (newKey.trim()) formData.set('key', newKey.trim())
       await createCmsContent(formData)
@@ -352,18 +459,11 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       try {
         await deleteCmsContent(id)
       } catch {}
-    } else if (type === 'gallery') {
-      setGalleryItems((prev) => prev.filter((g) => g.id !== id))
-      try {
-        await deleteGalleryItem(id)
-      } catch {}
     } else if (type === 'music') {
       setMusicTracks((prev) => prev.filter((m) => m.id !== id))
       try {
         await deleteMusicTrack(id)
       } catch {}
-    } else if (type === 'project') {
-      setProjectsList((prev) => prev.filter((p) => p.id !== id))
     }
 
     setDeleteConfirmItem(null)
@@ -382,26 +482,34 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
     const imageUrl = String(form.get('imageUrl') || '').trim()
     if (!title || !imageUrl) return
 
-    const newItem = {
+    const description = String(form.get('description') || '').trim()
+    const payload = { imageUrl, category, description }
+    const newRecord = {
       id: Date.now(),
+      collection: 'Gallery',
       title,
-      category,
-      imageUrl,
-      description: String(form.get('description') || ''),
-      published: true,
+      payload,
+      status: 'published',
     }
 
-    setGalleryItems((prev) => [newItem as any, ...prev])
+    setCmsRecords((prev) => [newRecord, ...prev])
     setCreateGalleryModalOpen(false)
     setNewGalleryImage('')
     toast({
       title: 'Artwork Published',
-      description: `"${title}" added to gallery successfully.`,
+      description: `"${title}" added to the gallery successfully.`,
       variant: 'success',
     })
 
     try {
-      await createGalleryItem(form)
+      const formData = new FormData()
+      formData.set('collection', 'Gallery')
+      formData.set('title', title)
+      formData.set('payload', JSON.stringify(payload))
+      formData.set('imageUrl', imageUrl)
+      formData.set('category', category)
+      formData.set('status', 'published')
+      await createCmsContent(formData)
     } catch {}
   }
 
@@ -466,7 +574,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
     { id: 'Projects', label: 'Projects', count: cmsRecords.filter((r) => r.collection === 'Projects').length },
     { id: 'Gallery', label: 'Gallery', count: cmsRecords.filter((r) => r.collection === 'Gallery').length },
     { id: 'Career', label: 'Career', count: cmsRecords.filter((r) => r.collection === 'Experience' || r.collection === 'Education' || r.collection === 'Skills').length },
-    { id: 'Media', label: 'Media', count: cmsRecords.filter((r) => r.collection === 'Music' || r.collection === 'Anime' || r.collection === 'Manga').length },
+    { id: 'Media', label: 'Media', count: cmsRecords.filter((r) => ['Music', 'Movies', 'Anime', 'Manga'].includes(r.collection)).length },
     { id: 'Certificates', label: 'Certificates', count: cmsRecords.filter((r) => r.collection === 'Certificates' || r.collection === 'Awards').length },
     { id: 'Blogs', label: 'Publishing', count: cmsRecords.filter((r) => r.collection === 'Blogs').length },
     { id: 'Site Settings', label: 'Site Settings', count: cmsRecords.filter((r) => r.collection === 'Site Settings').length },
@@ -563,13 +671,19 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       return cmsRecords.filter((r) => r.collection === 'Profile' || r.collection === 'Social Links')
     }
     if (activeContentCategory === 'Media') {
-      return cmsRecords.filter((r) => r.collection === 'Music' || r.collection === 'Anime' || r.collection === 'Manga')
+      return cmsRecords.filter((r) => ['Music', 'Movies', 'Anime', 'Manga'].includes(r.collection))
     }
     if (activeContentCategory === 'Certificates') {
       return cmsRecords.filter((r) => r.collection === 'Certificates' || r.collection === 'Awards')
     }
     return cmsRecords.filter((r) => r.collection === activeContentCategory)
   }, [cmsRecords, activeContentCategory])
+
+  const settingRecord = (title: string) =>
+    cmsRecords.find(
+      (record) =>
+        record.collection === 'Site Settings' && record.title.trim().toLowerCase() === title.toLowerCase(),
+    )
 
   const openCreateRecord = (collection = 'Projects') => {
     setNewCollection(collection)
@@ -588,14 +702,39 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
 
   return (
     <div className="space-y-6">
+      {/* SECTION: HERO & FOOTER */}
+      {section === 'appearance' && (
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">Hero & footer</h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Change the homepage image and copy, and point footer links anywhere without touching code.
+            </p>
+          </div>
+          <SiteAppearanceEditor
+            hero={settingRecord('Hero Section')?.payload}
+            navigation={settingRecord('Navigation')?.payload}
+            footer={settingRecord('Footer')?.payload}
+          />
+        </div>
+      )}
+
       {/* SECTION: CONTENT SETUP */}
       {section === 'setup' && (
         <div className="space-y-6">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">Content setup</h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Every area the public site reads, grouped and linked to its editor.
-            </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900">Content setup</h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Every area the public site reads, grouped and linked to its editor.
+              </p>
+            </div>
+            <Link
+              href="/admin?section=appearance"
+              className="inline-flex items-center gap-1.5 self-start rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Edit hero & footer
+            </Link>
           </div>
           <ContentSetupGuide
             records={cmsRecords}
@@ -815,7 +954,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             </div>
             <button
               type="button"
-              onClick={() => openCreateRecord('Projects')}
+              onClick={() => openCreateRecord(collectionForTab(activeContentCategory))}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse text-xs font-semibold hover:bg-teal-700 shadow-xs transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -826,7 +965,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
           {/* Category Tabs */}
           <CmsTabs
             tabs={contentTabs}
-            activeTab={activeContentCategory}
+            activeTab={activeTab}
             onChange={setActiveContentCategory}
             variant="pill"
           />
@@ -868,7 +1007,9 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
               }}
               onRowClick={(row) => setEditingRecord(row)}
               emptyMessage="No records in this collection"
-              emptySubtext="Click 'Add Record' above to create a new item."
+              emptySubtext="Published records appear on the public site automatically."
+              emptyActionLabel={`Add ${activeContentCategory === 'ALL' ? 'a record' : activeContentCategory}`}
+              onEmptyAction={() => openCreateRecord(collectionForTab(activeContentCategory))}
             />
           </CmsSectionCard>
         </div>
@@ -896,8 +1037,25 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             </button>
           </div>
 
+          {cmsProjects.length === 0 && (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 px-6 py-12 text-center">
+              <FolderKanban className="w-5 h-5 text-slate-400" />
+              <p className="text-sm font-semibold text-slate-800">No projects yet</p>
+              <p className="max-w-sm text-xs text-slate-500">
+                Add a project to build the /projects index. Each project gets its own case study page.
+              </p>
+              <button
+                type="button"
+                onClick={() => openCreateRecord('Projects')}
+                className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-inverse hover:bg-teal-700"
+              >
+                <Plus className="w-3.5 h-3.5" /> New Project
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {projectsList.map((project) => (
+            {cmsProjects.map((project) => (
               <div
                 key={project.id}
                 className="p-5 rounded-xl border border-slate-200/90 bg-surface hover:border-slate-300 shadow-xs transition-all flex flex-col justify-between"
@@ -913,7 +1071,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
                         setDeleteConfirmItem({
                           id: project.id,
                           title: project.title,
-                          type: 'project',
+                          type: 'cms',
                         })
                       }
                       className="text-slate-400 hover:text-rose-600 transition-colors p-1"
@@ -1010,7 +1168,25 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             </div>
           </div>
 
-          {galleryViewMode === 'grid' ? (
+          {galleryItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 px-6 py-12 text-center">
+              <ImageIcon className="w-5 h-5 text-slate-400" />
+              <p className="text-sm font-semibold text-slate-800">No gallery images yet</p>
+              <p className="max-w-sm text-xs text-slate-500">
+                Upload a photo to fill the homepage gallery and the visual archive.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setNewGalleryImage('')
+                  setCreateGalleryModalOpen(true)
+                }}
+                className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-inverse hover:bg-teal-700"
+              >
+                <Plus className="w-3.5 h-3.5" /> Upload Artwork
+              </button>
+            </div>
+          ) : galleryViewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {galleryItems.map((item) => (
                 <div
@@ -1044,7 +1220,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
                         setDeleteConfirmItem({
                           id: item.id,
                           title: item.title || 'Artwork',
-                          type: 'gallery',
+                          type: 'cms',
                         })
                       }
                       className="p-1.5 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors"
@@ -1096,7 +1272,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
                           setDeleteConfirmItem({
                             id: row.id,
                             title: row.title || 'Artwork',
-                            type: 'gallery',
+                            type: 'cms',
                           })
                         }
                         className="p-1 text-slate-400 hover:text-rose-600"
@@ -1134,6 +1310,22 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             </button>
           </div>
 
+          {musicTracks.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 px-6 py-12 text-center">
+              <Music className="w-5 h-5 text-slate-400" />
+              <p className="text-sm font-semibold text-slate-800">No music tracks yet</p>
+              <p className="max-w-sm text-xs text-slate-500">
+                Add a track to the music shelf. It appears on /media and /media/music.
+              </p>
+              <button
+                type="button"
+                onClick={() => setCreateMusicModalOpen(true)}
+                className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-inverse hover:bg-teal-700"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Track
+              </button>
+            </div>
+          ) : (
           <CmsSectionCard title="Saved Tracks" noPadding>
             <div className="divide-y divide-slate-100">
               {musicTracks.map((track) => {
@@ -1201,6 +1393,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
               })}
             </div>
           </CmsSectionCard>
+          )}
         </div>
       )}
 
@@ -1364,6 +1557,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
                 { label: 'Skills', value: 'Skills' },
                 { label: 'Certificates & Awards', value: 'Certificates' },
                 { label: 'Music (Media)', value: 'Music' },
+                { label: 'Movies (Media)', value: 'Movies' },
                 { label: 'Anime (Media)', value: 'Anime' },
                 { label: 'Manga / Manhwa (Media)', value: 'Manga' },
                 { label: 'Social Links', value: 'Social Links' },
@@ -1439,6 +1633,40 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
               </CmsFormField>
               <CmsFormField label="Source URL">
                 <CmsInput name="github" type="url" placeholder="https://github.com/…" />
+              </CmsFormField>
+            </div>
+          )}
+
+          {(newCollection === 'Experience' || newCollection === 'Education') && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CmsFormField label="Organization" hint="Company or school">
+                <CmsInput name="organization" placeholder="e.g. Acme Studio" />
+              </CmsFormField>
+              <CmsFormField label="Period" hint="Shown on the timeline">
+                <CmsInput name="period" placeholder="e.g. 2024 — Now" />
+              </CmsFormField>
+              <CmsFormField label="Location">
+                <CmsInput name="location" placeholder="e.g. Kathmandu, Nepal" />
+              </CmsFormField>
+            </div>
+          )}
+
+          {newCollection === 'Gallery' && (
+            <CmsFormField label="Category" hint="e.g. Photography">
+              <CmsInput name="category" placeholder="e.g. Photography" />
+            </CmsFormField>
+          )}
+
+          {['Music', 'Movies', 'Anime', 'Manga'].includes(newCollection) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CmsFormField label="Creator / Artist" hint="Shown under the title">
+                <CmsInput name="creator" placeholder="e.g. Director or artist" />
+              </CmsFormField>
+              <CmsFormField label="Rating / Score" hint="Optional">
+                <CmsInput name="rating" placeholder="e.g. 9.2" />
+              </CmsFormField>
+              <CmsFormField label="External link" hint="Optional detail page">
+                <CmsInput name="externalUrl" type="url" placeholder="https://…" />
               </CmsFormField>
             </div>
           )}

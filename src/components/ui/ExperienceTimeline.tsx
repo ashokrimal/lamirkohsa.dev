@@ -4,6 +4,8 @@ import React from 'react'
 import { Briefcase, Calendar, CheckCircle2, GraduationCap, MapPin, Building2, Sparkles } from 'lucide-react'
 import { Card3D } from '@/components/ui/Card3D'
 
+import { EmptyState } from '@/components/ui/EmptyState'
+
 export interface ExperienceItemData {
   id?: number | string
   title: string
@@ -18,18 +20,28 @@ interface ExperienceTimelineProps {
   items: ExperienceItemData[]
   type?: 'experience' | 'education'
   className?: string
+  /** Shown when there are no records, linking to the admin section. */
+  emptyActionLabel?: string
+  emptyActionHref?: string
 }
 
 export function ExperienceTimeline({
   items,
   type = 'experience',
   className = '',
+  emptyActionLabel,
+  emptyActionHref,
 }: ExperienceTimelineProps) {
   if (!items || items.length === 0) {
     return (
-      <div className="p-8 rounded-[24px] border border-line-subtle bg-surface/70 backdrop-blur-md text-center text-sm text-muted">
-        No records published in this section yet.
-      </div>
+      <EmptyState
+        icon={type === 'experience' ? Briefcase : GraduationCap}
+        message={`No ${type} published yet.`}
+        hint="Add a record in the CMS to show it on the timeline."
+        actionLabel={emptyActionLabel}
+        actionHref={emptyActionHref}
+        className="rounded-[24px]"
+      />
     )
   }
 

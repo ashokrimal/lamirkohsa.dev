@@ -2,7 +2,14 @@ import { db } from '@/lib/db'
 import { cmsContent, musicTrack, profileSettings } from '@/lib/db/schema'
 import { asc, eq, and } from 'drizzle-orm'
 
-export async function getPublicProfileSettings() { const rows = await db.select().from(profileSettings).limit(1); return rows[0] ?? null }
+export async function getPublicProfileSettings() {
+  try {
+    const rows = await db.select().from(profileSettings).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
+}
 
 export async function getListenBrainz(username?: string) {
   if (!username) return null

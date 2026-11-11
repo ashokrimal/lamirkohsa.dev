@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight, Calendar, Github, Layers, Sparkles } from 'lucide-react'
 import { Card3D } from '@/components/ui/Card3D'
+import { TechStack } from '@/components/ui/TechStack'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
 
@@ -116,24 +117,10 @@ export function ProjectCard({ project, variant = 'standard', index }: ProjectCar
             )}
           </div>
 
-          {/* Tech Stack Apple Pills */}
+          {/* Tech Stack */}
           {project.techStack && project.techStack.length > 0 && (
             <div className="pt-1">
-              <div className="flex flex-wrap gap-1.5">
-                {project.techStack.slice(0, 5).map((tech) => (
-                  <span
-                    key={tech}
-                    className="inline-flex items-center rounded-full bg-overlay px-3 py-1 text-[11px] font-medium text-ink-secondary border border-line-hairline"
-                  >
-                    {tech}
-                  </span>
-                ))}
-                {project.techStack.length > 5 && (
-                  <span className="text-[11px] text-muted self-center px-1">
-                    +{project.techStack.length - 5}
-                  </span>
-                )}
-              </div>
+              <TechStack items={project.techStack} limit={5} />
             </div>
           )}
 

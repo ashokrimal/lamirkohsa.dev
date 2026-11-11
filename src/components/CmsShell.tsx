@@ -8,9 +8,7 @@ import {
   FileText,
   FolderKanban,
   Image,
-  UploadCloud,
   Music,
-  Film,
   Inbox,
   Settings,
   HelpCircle,
@@ -35,6 +33,8 @@ interface NavItem {
   label: string
   icon: React.ComponentType<{ className?: string }>
   badge?: string | number
+  /** Optional deep link; falls back to /admin?section=<id>. */
+  href?: string
 }
 
 interface NavGroup {
@@ -49,16 +49,20 @@ const navGroups: NavGroup[] = [
       { id: 'overview', label: 'Overview', icon: LayoutDashboard },
       { id: 'content', label: 'Content Records', icon: FileText },
       { id: 'projects', label: 'Projects', icon: FolderKanban },
-      { id: 'analytics', label: 'Traffic & Activity', icon: Sparkles },
+      { id: 'setup', label: 'Content Setup', icon: CheckCircle2 },
+      { id: 'appearance', label: 'Hero & Footer', icon: Sparkles },
     ],
   },
   {
     label: 'Portfolio & Media',
     items: [
       { id: 'gallery', label: 'Visual Gallery', icon: Image },
-      { id: 'uploads', label: 'Upload Center', icon: UploadCloud },
-      { id: 'music', label: 'Music Library', icon: Music },
-      { id: 'catalog', label: 'Media Catalog', icon: Film },
+      {
+        id: 'content',
+        label: 'Media Library',
+        icon: Music,
+        href: '/admin?section=content&collection=Music',
+      },
     ],
   },
   {
@@ -101,11 +105,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
     router.push(`/admin?section=${section}`)
   }
 
-  const notifications = [
-    { id: 1, title: 'Inquiry received', desc: 'From Shishir Pandey: "Project Collaboration"', time: '10m ago', unread: true },
-    { id: 2, title: 'Gallery synchronized', desc: '4 photographic frames indexed into production', time: '1h ago', unread: false },
-    { id: 3, title: 'Catalog verified', desc: 'MyAnimeList and AniList sync checked', time: 'Yesterday', unread: false },
-  ]
+  const notifications: Array<{ id: number; title: string; desc: string; time: string; unread: boolean }> = []
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col antialiased">
@@ -204,11 +204,14 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
                 <div className="space-y-0.5 mt-1">
                   {group.items.map((item) => {
                     const Icon = item.icon
-                    const isActive = currentSection === item.id
+                    const href = item.href ?? `/admin?section=${item.id}`
+                    const isActive = item.href
+                      ? `${pathname}?${searchParams.toString()}` === item.href
+                      : currentSection === item.id
                     return (
                       <Link
-                        key={item.id}
-                        href={`/admin?section=${item.id}`}
+                        key={item.label}
+                        href={href}
                         className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                           isActive
                             ? 'bg-teal-50/80 text-teal-900 font-semibold shadow-2xs'
@@ -278,7 +281,9 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-slate-800 truncate">Ashok Rimal</p>
-                  <p className="text-[10px] text-slate-400 truncate">info.ashokrimal@gmail.com</p>
+                  <Link href="/admin/account" className="text-[10px] text-slate-400 truncate hover:text-teal-700">
+                    Owner account
+                  </Link>
                 </div>
               </div>
 
@@ -346,6 +351,11 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
                       </button>
                     </div>
                     <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
+                      {notifications.length === 0 && (
+                        <p className="px-4 py-6 text-center text-[11px] text-slate-500">
+                          No new activity.
+                        </p>
+                      )}
                       {notifications.map((n) => (
                         <div key={n.id} className="py-2.5 flex items-start gap-2.5 text-xs">
                           <div className="w-2 h-2 rounded-full bg-teal-500 mt-1 shrink-0" />

@@ -5,6 +5,7 @@ import { getMediaSection } from '@/lib/media-content'
 import { ImageOff } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 
+const CMS_COLLECTION: Record<MediaKind, string> = { music: 'Music', movies: 'Movies', anime: 'Anime', manga: 'Manga' }
 const COPY_KEY: Record<MediaKind, string> = {
   music: 'media-music',
   movies: 'media-films',
@@ -48,7 +49,13 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
         </div>
       ) : (
         <div className="mt-12">
-          <EmptyState icon={ImageOff} message={`${section.label} updating...`} />
+          <EmptyState
+            icon={ImageOff}
+            message={`No ${section.label.toLowerCase()} published yet.`}
+            hint={`Add ${section.label.toLowerCase()} items from the CMS.`}
+            actionLabel={`Add ${section.label.toLowerCase()} in admin`}
+            actionHref={`/admin?section=content&collection=${CMS_COLLECTION[kind]}`}
+          />
         </div>
       )}
 

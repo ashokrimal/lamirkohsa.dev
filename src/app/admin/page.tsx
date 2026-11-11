@@ -32,7 +32,11 @@ export default async function AdminPage({
   const adminSession = await hasAdminSession()
 
   if (!betterAuthOwner && !adminSession) {
-    redirect('/admin/sign-in')
+    const params = new URLSearchParams()
+    if (searchParams?.section) params.set('section', searchParams.section)
+    if (searchParams?.collection) params.set('collection', searchParams.collection)
+    const returnTo = params.toString() ? `/admin?${params.toString()}` : '/admin'
+    redirect(`/admin/sign-in?returnTo=${encodeURIComponent(returnTo)}`)
   }
 
   const content = await getAdminContent()

@@ -79,7 +79,7 @@ export interface SpotifyTrackPayload {
 /**
  * Fetch currently playing song or fallback to curated rotation
  */
-export async function getSpotifyCurrentTrack(): Promise<SpotifyTrackPayload> {
+export async function getSpotifyCurrentTrack(): Promise<SpotifyTrackPayload | null> {
   // 1. Try real-time currently-playing if user token is active
   const userToken = await getSpotifyUserAccessToken()
   if (userToken) {
@@ -97,7 +97,7 @@ export async function getSpotifyCurrentTrack(): Promise<SpotifyTrackPayload> {
             title: song.item.name,
             artist: song.item.artists?.map((a: { name: string }) => a.name).join(', ') ?? 'Unknown Artist',
             album: song.item.album?.name ?? '',
-            albumArt: song.item.album?.images?.[0]?.url ?? '/images/hero-ashok.png',
+            albumArt: song.item.album?.images?.[0]?.url ?? '',
             songUrl: song.item.external_urls?.spotify ?? 'https://open.spotify.com',
             previewUrl: song.item.preview_url ?? null,
             progressMs: song.progress_ms,
@@ -142,14 +142,6 @@ export async function getSpotifyCurrentTrack(): Promise<SpotifyTrackPayload> {
     }
   }
 
-  // 3. Resilient Default
-  return {
-    isPlaying: false,
-    title: 'Chamber of Reflection',
-    artist: 'Mac DeMarco',
-    album: 'Salad Days',
-    albumArt: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80',
-    songUrl: 'https://open.spotify.com/track/1daDRI9ahMMg6FamV0Ysoo',
-    previewUrl: 'https://cdn.freesound.org/previews/320/320655_5260872-lq.mp3',
-  }
+  // No track is invented when every provider is unavailable.
+  return null
 }

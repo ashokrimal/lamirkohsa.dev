@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { Compass, Code2 } from 'lucide-react'
+import { Camera, Code2, Compass, FolderGit2, Github, ImageOff } from 'lucide-react'
 import {
   getHeroSectionConfig,
   getHomepageSectionsConfig,
@@ -7,19 +7,42 @@ import {
   getFeaturedProjects,
   getGalleryItems,
   getSocialLinks,
+  getExperienceItems,
+  getEducationItems,
 } from '@/app/actions/content-cms'
-import { getMediaCollections, getPageCopy, getSiteConfig } from '@/lib/site-content'
+import { getPublicProfileSettings } from '@/app/actions/media'
+import { getMediaCollections, getSiteConfig } from '@/lib/site-content'
 import { getMediaSections } from '@/lib/media-content'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { ProjectCard, type ProjectData } from '@/components/ui/ProjectCard'
 import { PhotoCard } from '@/components/ui/PhotoCard'
 import { MediaPoster } from '@/components/ui/MediaPoster'
 import { HorizontalCollection } from '@/components/ui/HorizontalCollection'
-import { ContactSection } from '@/components/ui/ContactSection'
 import { HeroFacts } from '@/components/ui/HeroFacts'
 import { Reveal } from '@/components/ui/Reveal'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
+import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
 
 const PREVIEW_COUNT = 5
+
+/** Structural sections the homepage owns; CMS order wins, missing ones append. */
+const DEFAULT_SECTION_ORDER = ['about', 'gallery', 'experience', 'education', 'projects', 'media', 'github']
+
+function mapTimeline(records: Awaited<ReturnType<typeof getExperienceItems>>) {
+  return records.map((record) => {
+    const payload = record.payload || {}
+    return {
+      id: record.id,
+      title: record.title,
+      organization: typeof payload.organization === 'string' ? payload.organization : '',
+      period: typeof payload.period === 'string' ? payload.period : '',
+      location: typeof payload.location === 'string' ? payload.location : undefined,
+      description: typeof payload.description === 'string' ? payload.description : '',
+      highlights: Array.isArray(payload.highlights) ? (payload.highlights as string[]) : undefined,
+    }
+  })
+}
 
 function dedupe<T>(items: T[], keyFn: (item: T) => string | number | undefined): T[] {
   const seen = new Set<string | number>()
@@ -32,13 +55,25 @@ function dedupe<T>(items: T[], keyFn: (item: T) => string | number | undefined):
 }
 
 /**
- * The homepage: the existing hero, then Photos, About, Featured Projects, Media
- * and Contact. Order, visibility, copy and the number of preview cards all come
- * from the CMS; sections with no published records render nothing.
+ * The homepage: hero, introduction, gallery images, experience, education,
+ * projects, media and GitHub status. Structure is always present; sections with
+ * no published CMS records show an empty state with an admin action instead of
+ * fabricated content.
  */
 export default async function HomeContent() {
-  const [heroData, sectionsConfig, profile, featuredProjectsRaw, galleryItemsRaw, socialLinksRaw, site, copy, mediaCollections] =
-    await Promise.all([
+  const [
+    heroData,
+    sectionsConfig,
+    profile,
+    featuredProjectsRaw,
+    galleryItemsRaw,
+    socialLinksRaw,
+    site,
+    mediaCollections,
+    experienceRaw,
+    educationRaw,
+    publicSettings,
+  ] = await Promise.all([
       getHeroSectionConfig(),
       getHomepageSectionsConfig(),
       getProfileContent(),
@@ -46,8 +81,10 @@ export default async function HomeContent() {
       getGalleryItems(PREVIEW_COUNT),
       getSocialLinks(),
       getSiteConfig(),
-      getPageCopy(),
       getMediaCollections(),
+      getExperienceItems(),
+      getEducationItems(),
+      getPublicProfileSettings(),
     ])
 
   const mediaSections = await getMediaSections(mediaCollections)
@@ -108,8 +145,16 @@ export default async function HomeContent() {
     section.items.map((item) => ({ kind: section.kind, item, href: section.href })),
   )
 
-  const { order = [], enabled = {} } = sectionsConfig
+  const { enabled = {} } = sectionsConfig
+  const configuredOrder = sectionsConfig.order || []
+  const order = [
+    ...configuredOrder,
+    ...DEFAULT_SECTION_ORDER.filter((key) => !configuredOrder.includes(key)),
+  ].filter((sectionKey) => sectionKey !== 'contact')
   const meta = sectionsConfig.sectionMeta || {}
+  const experience = mapTimeline(experienceRaw)
+  const education = mapTimeline(educationRaw)
+  const githubUsername = publicSettings?.githubUsername || ''
 
   const profileData = profile as Record<string, unknown>
   const profileText = (key: string) => {
@@ -122,183 +167,273 @@ export default async function HomeContent() {
     if (enabled[key] === false) return null
 
     switch (key) {
-      // 1. PHOTOS / GALLERY
+      // 1. ABOUT / INTRODUCTION
+      case 'about': {
+        const hasAbout = Boolean(
+          profileText('summary') || profileText('bio') || profileImage || profileText('headline') || socialLinks.length,
+        )
+        return (
+          <section key="about" className="py-16 md:py-24 border-t border-line">
+            <SectionHeader
+              eyebrow={meta.about?.eyebrow || 'Introduction'}
+              krEyebrow={meta.about?.kr}
+              title={meta.about?.title ?? profileText('fullName') ?? 'About'}
+              accent={meta.about?.accent}
+              description={meta.about?.description}
+            />
+
+            {hasAbout ? (
+              <div className="mt-10 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 md:gap-10 items-start">
+                {profileImage && (
+                  <div className="relative aspect-[4/5] w-full rounded-[24px] overflow-hidden border border-line-subtle bg-overlay-faint">
+                    <img
+                      src={profileImage}
+                      alt={profileText('fullName') || ''}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-5 text-sm md:text-base text-muted leading-relaxed">
+                  {profileText('summary') && (
+                    <p className="text-lg md:text-2xl text-ink leading-relaxed tracking-tight">
+                      {profileText('summary')}
+                    </p>
+                  )}
+                  {profileText('bio') && <p>{profileText('bio')}</p>}
+
+                  <div className="flex flex-wrap gap-3 pt-1 text-xs">
+                    {profileText('headline') && (
+                      <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
+                        <Code2 className="w-3.5 h-3.5 text-accent" />
+                        <span>{profileText('headline')}</span>
+                      </span>
+                    )}
+                    {site.contact.location && (
+                      <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
+                        <Compass className="w-3.5 h-3.5 text-accent" />
+                        <span>{site.contact.location}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {socialLinks.length > 0 && (
+                    <ul className="flex flex-wrap gap-3 pt-2 text-xs">
+                      {socialLinks.map((link) => (
+                        <li key={link.id}>
+                          <a
+                            href={link.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line-subtle text-ink-secondary hover:text-accent hover:border-line-medium transition-colors"
+                          >
+                            {link.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-8">
+                <EmptyState
+                  icon={Compass}
+                  message="No introduction published yet."
+                  hint="Add your profile, summary and bio in the CMS."
+                  actionLabel="Add introduction in admin"
+                  actionHref="/admin?section=content&collection=Profile"
+                />
+              </div>
+            )}
+          </section>
+        )
+      }
+
+      // 2. PHOTOS / GALLERY
       case 'gallery': {
-        if (galleryItems.length === 0) return null
         return (
           <section key="gallery" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.gallery?.eyebrow}
+              eyebrow={meta.gallery?.eyebrow || 'Images'}
               krEyebrow={meta.gallery?.kr}
-              title={meta.gallery?.title ?? ''}
+              title={meta.gallery?.title ?? 'Gallery'}
               accent={meta.gallery?.accent}
               description={meta.gallery?.description}
             />
             <div className="mt-8">
-              <HorizontalCollection
-                items={galleryItems.map((item) => (
-                  <PhotoCard key={item.id} item={item} />
-                ))}
-                previewCount={meta.gallery?.previewCount ?? PREVIEW_COUNT}
-                viewAllHref={meta.gallery?.href || '/about/gallery'}
-                viewAllLabel={meta.gallery?.primaryLabel || 'View all photographs'}
-                ariaLabel="Photography collection"
+              {galleryItems.length === 0 ? (
+                <EmptyState
+                  icon={Camera}
+                  message="No gallery images published yet."
+                  hint="Upload photos to show them here."
+                  actionLabel="Add images in admin"
+                  actionHref="/admin?section=content&collection=Gallery"
+                />
+              ) : (
+                <HorizontalCollection
+                  items={galleryItems.map((item) => (
+                    <PhotoCard key={item.id} item={item} />
+                  ))}
+                  previewCount={meta.gallery?.previewCount ?? PREVIEW_COUNT}
+                  viewAllHref={meta.gallery?.href || '/about/gallery'}
+                  viewAllLabel={meta.gallery?.primaryLabel || 'View all photographs'}
+                  ariaLabel="Photography collection"
+                />
+              )}
+            </div>
+          </section>
+        )
+      }
+
+      // 3. EXPERIENCE
+      case 'experience': {
+        return (
+          <section key="experience" className="py-16 md:py-24 border-t border-line">
+            <SectionHeader
+              eyebrow={meta.experience?.eyebrow || 'Career'}
+              krEyebrow={meta.experience?.kr}
+              title={meta.experience?.title ?? 'Experience'}
+              accent={meta.experience?.accent}
+              description={meta.experience?.description}
+            />
+            <div className="mt-8">
+              <ExperienceTimeline
+                items={experience}
+                type="experience"
+                emptyActionLabel="Add experience in admin"
+                emptyActionHref="/admin?section=content&collection=Experience"
               />
             </div>
           </section>
         )
       }
 
-      // 2. ABOUT ME
-      case 'about': {
-        const hasAbout = Boolean(
-          profileText('summary') || profileText('bio') || profileImage || profileText('headline'),
-        )
-        if (!hasAbout) return null
+      // 4. EDUCATION
+      case 'education': {
         return (
-          <section key="about" className="py-16 md:py-24 border-t border-line">
+          <section key="education" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.about?.eyebrow}
-              krEyebrow={meta.about?.kr}
-              title={meta.about?.title ?? profileText('fullName') ?? ''}
-              accent={meta.about?.accent}
-              description={meta.about?.description}
+              eyebrow={meta.education?.eyebrow || 'Learning'}
+              krEyebrow={meta.education?.kr}
+              title={meta.education?.title ?? 'Education'}
+              accent={meta.education?.accent}
+              description={meta.education?.description}
             />
-
-            <div className="mt-10 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 md:gap-10 items-start">
-              {profileImage && (
-                <div className="relative aspect-[4/5] w-full rounded-[24px] overflow-hidden border border-line-subtle bg-overlay-faint">
-                  {/* Plain img keeps CMS-provided hosts working without config changes. */}
-                  <img
-                    src={profileImage}
-                    alt={profileText('fullName') || ''}
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              )}
-
-              <div className="space-y-5 text-sm md:text-base text-muted leading-relaxed">
-                {profileText('summary') && (
-                  <p className="text-lg md:text-2xl text-ink leading-relaxed tracking-tight">
-                    {profileText('summary')}
-                  </p>
-                )}
-                {profileText('bio') && <p>{profileText('bio')}</p>}
-
-                <div className="flex flex-wrap gap-3 pt-1 text-xs">
-                  {profileText('headline') && (
-                    <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
-                      <Code2 className="w-3.5 h-3.5 text-accent" />
-                      <span>{profileText('headline')}</span>
-                    </span>
-                  )}
-                  {site.contact.location && (
-                    <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
-                      <Compass className="w-3.5 h-3.5 text-accent" />
-                      <span>{site.contact.location}</span>
-                    </span>
-                  )}
-                </div>
-
-                {socialLinks.length > 0 && (
-                  <ul className="flex flex-wrap gap-3 pt-2 text-xs">
-                    {socialLinks.map((link) => (
-                      <li key={link.id}>
-                        <a
-                          href={link.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line-subtle text-ink-secondary hover:text-accent hover:border-line-medium transition-colors"
-                        >
-                          {link.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+            <div className="mt-8">
+              <ExperienceTimeline
+                items={education}
+                type="education"
+                emptyActionLabel="Add education in admin"
+                emptyActionHref="/admin?section=content&collection=Education"
+              />
             </div>
           </section>
         )
       }
 
-      // 3. FEATURED PROJECTS
+      // 5. FEATURED PROJECTS
       case 'projects': {
-        if (featuredProjects.length === 0) return null
         return (
           <section key="projects" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.projects?.eyebrow}
+              eyebrow={meta.projects?.eyebrow || 'Work'}
               krEyebrow={meta.projects?.kr}
-              title={meta.projects?.title ?? ''}
+              title={meta.projects?.title ?? 'Projects'}
               accent={meta.projects?.accent}
               description={meta.projects?.description}
             />
 
             <div className="mt-8">
-              <HorizontalCollection
-                items={featuredProjects.map((project) => (
-                  <ProjectCard key={project.id ?? project.title} project={project} />
-                ))}
-                previewCount={meta.projects?.previewCount ?? PREVIEW_COUNT}
-                viewAllHref={meta.projects?.href || '/projects'}
-                viewAllLabel={meta.projects?.primaryLabel || 'View all projects'}
-                ariaLabel="Featured projects"
-              />
+              {featuredProjects.length === 0 ? (
+                <EmptyState
+                  icon={FolderGit2}
+                  message="No projects published yet."
+                  hint="Published projects appear here and on the projects page."
+                  actionLabel="Add a project in admin"
+                  actionHref="/admin?section=projects"
+                />
+              ) : (
+                <HorizontalCollection
+                  items={featuredProjects.map((project) => (
+                    <ProjectCard key={project.id ?? project.title} project={project} />
+                  ))}
+                  previewCount={meta.projects?.previewCount ?? PREVIEW_COUNT}
+                  viewAllHref={meta.projects?.href || '/projects'}
+                  viewAllLabel={meta.projects?.primaryLabel || 'View all projects'}
+                  ariaLabel="Featured projects"
+                />
+              )}
             </div>
           </section>
         )
       }
 
-      // 4. MEDIA PREVIEW
+      // 6. MEDIA PREVIEW
       case 'media': {
-        if (mediaPreview.length === 0) return null
         return (
           <section key="media" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.media?.eyebrow}
+              eyebrow={meta.media?.eyebrow || 'Collection'}
               krEyebrow={meta.media?.kr}
-              title={meta.media?.title ?? ''}
+              title={meta.media?.title ?? 'Media'}
               accent={meta.media?.accent}
               description={meta.media?.description}
             />
 
             <div className="mt-8">
-              <HorizontalCollection
-                items={mediaPreview.map(({ kind, item }) => (
-                  <MediaPoster key={`${kind}-${item.id}`} kind={kind} item={item} />
-                ))}
-                previewCount={meta.media?.previewCount ?? PREVIEW_COUNT}
-                viewAllHref={meta.media?.href || '/media'}
-                viewAllLabel={meta.media?.primaryLabel || 'View all media'}
-                ariaLabel="Media preview"
-              />
+              {mediaPreview.length === 0 ? (
+                <EmptyState
+                  icon={ImageOff}
+                  message="No media items published yet."
+                  hint="Add music, movies, anime or manga from the admin."
+                  actionLabel="Add media in admin"
+                  actionHref="/admin?section=content&collection=Music"
+                />
+              ) : (
+                <HorizontalCollection
+                  items={mediaPreview.map(({ kind, item }) => (
+                    <MediaPoster key={`${kind}-${item.id}`} kind={kind} item={item} />
+                  ))}
+                  previewCount={meta.media?.previewCount ?? PREVIEW_COUNT}
+                  viewAllHref={meta.media?.href || '/media'}
+                  viewAllLabel={meta.media?.primaryLabel || 'View all media'}
+                  ariaLabel="Media preview"
+                />
+              )}
             </div>
           </section>
         )
       }
 
-      // 5. CONTACT PREVIEW
-      case 'contact':
+      // 7. GITHUB STATUS
+      case 'github': {
         return (
-          <section key="contact" className="py-16 md:py-24 border-t border-line">
-            <ContactSection
-              eyebrow={meta.contact?.eyebrow}
-              title={meta.contact?.title ?? copy.contact?.title ?? ''}
-              accent={meta.contact?.accent}
-              description={meta.contact?.description || copy.contact?.description}
-              socialLinks={socialLinks}
-              email={site.contact.email}
-              phone={site.contact.phone}
-              location={site.contact.location}
-              timeZone={site.contact.timeZone || site.contact.timezone}
-              timezoneLabel={site.contact.timezoneLabel}
-              availability={site.contact.availability}
-              showForm={site.contact.formEnabled !== false}
+          <section key="github" className="py-16 md:py-24 border-t border-line">
+            <SectionHeader
+              eyebrow={meta.github?.eyebrow || 'Activity'}
+              krEyebrow={meta.github?.kr}
+              title={meta.github?.title ?? 'GitHub'}
+              accent={meta.github?.accent}
+              description={meta.github?.description}
             />
+            <div className="mt-8">
+              {githubUsername ? (
+                <GitHubActivitySparkline username={githubUsername} showRecentCommits={false} />
+              ) : (
+                <EmptyState
+                  icon={Github}
+                  message="GitHub status is not connected yet."
+                  hint="Set your GitHub username in admin settings to show activity here."
+                  actionLabel="Connect GitHub in admin"
+                  actionHref="/admin?section=settings"
+                />
+              )}
+            </div>
           </section>
         )
+      }
 
       default:
         return null
@@ -310,11 +445,21 @@ export default async function HomeContent() {
       <section className="hero-section shell-width" style={heroStyle} aria-labelledby="hero-heading">
         <div className="hero-editorial">
           <div className="hero-copy-block">
-            {heroData.heading && (
+            {heroData.heading ? (
               <h1 id="hero-heading" className="hero-heading">
                 {heroData.heading.replace(/\.$/, '')}
                 <span>.</span>
               </h1>
+            ) : (
+              <div className="max-w-xl">
+                <EmptyState
+                  icon={Compass}
+                  message="Hero text is empty."
+                  hint="Set your headline and intro in Hero & Footer."
+                  actionLabel="Edit hero in admin"
+                  actionHref="/admin?section=appearance"
+                />
+              </div>
             )}
 
             {heroData.subtitle && <p className="hero-subtitle">{heroData.subtitle}</p>}

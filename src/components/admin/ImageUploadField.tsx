@@ -116,7 +116,8 @@ export default function ImageUploadField({
       />
 
       <input
-        type="url"
+        type="text"
+        inputMode="url"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="https://…"

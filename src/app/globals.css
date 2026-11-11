@@ -235,7 +235,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .portfolio-home, .collection-page, .resume-page { background: var(--paper) !important; color: var(--ink) !important; }
 .portfolio-home { overflow: hidden; }
 .hero-section { min-height: 760px; padding: 38px 44px 30px; margin-top: 24px; border: 1px solid var(--line); border-radius: 0; display: flex; flex-direction: column; justify-content: space-between; position: relative; isolation: isolate; overflow: hidden; box-shadow: 0 24px 70px rgba(16,42,45,.1); }
-.hero-section::before { content: ''; position: absolute; inset: -12%; z-index: -2; background: linear-gradient(90deg, rgb(var(--surface-rgb) / .99) 0%, rgb(var(--surface-rgb) / .96) 38%, rgb(var(--surface-rgb) / .18) 100%), var(--hero-image, url('/images/hero-ashok.png')) 68% center / cover; filter: grayscale(1) contrast(.92); animation: hero-drift 16s ease-in-out infinite alternate; }
+.hero-section::before { content: ''; position: absolute; inset: -12%; z-index: -2; background-color: var(--paper); background-image: linear-gradient(90deg, rgb(var(--surface-rgb) / .99) 0%, rgb(var(--surface-rgb) / .96) 38%, rgb(var(--surface-rgb) / .18) 100%), var(--hero-image, none); background-position: 0 0, 68% center; background-size: auto, cover; filter: grayscale(1) contrast(.92); animation: hero-drift 16s ease-in-out infinite alternate; }
 .hero-section::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(var(--surface-rgb) / .72), transparent 35%, rgb(var(--surface-rgb) / .15)); pointer-events: none; }
 @keyframes hero-drift { from { transform: scale(1); } to { transform: scale(1.04); } }
 .hero-meta, .hero-stats, .hero-editorial { position: relative; z-index: 1; }
@@ -740,7 +740,7 @@ em, .accent-text { font-style: normal; }
 @media (max-width: 700px) {
   .shell-width { width: min(100% - 34px, 1200px); }
   .hero-section { min-height: 700px; margin-top: 14px; padding: 22px 20px 20px; }
-  .hero-section::before { background: linear-gradient(180deg, rgba(248,251,250,.98) 0%, rgba(248,251,250,.86) 48%, rgba(248,251,250,.18) 100%), var(--hero-image, url('/images/hero-ashok.png')) 68% center / cover; }
+  .hero-section::before { background-color: #f8fbfa; background-image: linear-gradient(180deg, rgba(248,251,250,.98) 0%, rgba(248,251,250,.86) 48%, rgba(248,251,250,.18) 100%), var(--hero-image, none); background-position: 0 0, 68% center; background-size: auto, cover; }
 
     .hero-editorial { grid-template-columns: 1fr; gap: 18px; padding-block: 62px 32px; }
   .hero-vertical { font-size: 8px; }

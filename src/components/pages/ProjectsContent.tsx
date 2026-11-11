@@ -6,7 +6,6 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import ScrollObserver from '@/components/ScrollObserver'
 import ErrorBoundary from '@/components/ErrorBoundaryWrapper'
 import { Loading } from '@/components/Loading'
-import { ProjectsTimeline } from '@/components/ProjectsTimeline'
 import DevSection from '@/components/devmode/DevSection'
 import { useDevMode } from '@/contexts/DevModeContext'
 import { ProjectRow } from '@/components/ui/ProjectRow'
@@ -20,7 +19,7 @@ interface ProjectsContentProps {
 }
 
 const PAGE_KEY = 'projects'
-const DEFAULT_SECTIONS = ['intro', 'work', 'timeline'] as const
+const DEFAULT_SECTIONS = ['intro', 'work'] as const
 
 type SectionId = (typeof DEFAULT_SECTIONS)[number]
 
@@ -65,7 +64,7 @@ export default function ProjectsContent({ projects, copy }: ProjectsContentProps
     <DevSection
       pageKey={PAGE_KEY}
       sectionId="work"
-      label="Case Studies"
+      label="Projects"
       fallbackAccent="var(--accent-secondary)"
       className="pt-0"
     >
@@ -83,33 +82,19 @@ export default function ProjectsContent({ projects, copy }: ProjectsContentProps
             ))}
           </div>
         ) : (
-          <EmptyState icon={FolderGit2} message="Projects syncing..." hint="Published case studies appear here automatically." />
+          <EmptyState
+            icon={FolderGit2}
+            message="No projects published yet."
+            hint="Add a project in the CMS to show it here. Each project gets its own case study at /projects/slug."
+            actionLabel="Add a project in admin"
+            actionHref="/admin?section=projects"
+          />
         )}
       </PageSection>
     </DevSection>
   )
 
-  const timeline = (
-    <DevSection
-      pageKey={PAGE_KEY}
-      sectionId="timeline"
-      label="Timeline & Milestones"
-      fallbackAccent="var(--accent-secondary)"
-      className="pt-0"
-    >
-      <PageSection
-        eyebrow={sections?.timeline?.eyebrow}
-        krEyebrow={sections?.timeline?.krEyebrow}
-        title={sections?.timeline?.title ?? ''}
-        accent={sections?.timeline?.accent}
-        description={sections?.timeline?.description}
-      >
-        <ProjectsTimeline projects={projects} />
-      </PageSection>
-    </DevSection>
-  )
-
-  const sectionMap: Record<SectionId, JSX.Element> = { intro, work, timeline }
+  const sectionMap: Record<SectionId, JSX.Element> = { intro, work }
 
   return (
     <ErrorBoundary>
@@ -121,7 +106,6 @@ export default function ProjectsContent({ projects, copy }: ProjectsContentProps
               <>
                 {intro}
                 {work}
-                {timeline}
               </>
             ) : (
               orderedSections.map((sectionId) => <div key={sectionId}>{sectionMap[sectionId]}</div>)

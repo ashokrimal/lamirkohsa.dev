@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight, Calendar, Github, Layers } from 'lucide-react'
+import { TechStack } from '@/components/ui/TechStack'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
 import type { ProjectData } from '@/components/ui/ProjectCard'
@@ -72,25 +73,16 @@ export function ProjectRow({ project, index }: ProjectRowProps) {
           </h3>
 
           {summary && (
-            <p className="mt-3 text-sm leading-relaxed text-muted line-clamp-3">{summary}</p>
+            <p className="mt-3 text-sm leading-relaxed text-muted line-clamp-2">{summary}</p>
           )}
 
           {project.techStack && project.techStack.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {project.techStack.slice(0, 5).map((tech) => (
-                <span
-                  key={tech}
-                  className="inline-flex items-center rounded-full border border-line-hairline bg-overlay px-3 py-1 text-[11px] font-medium text-ink-secondary"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
+            <TechStack items={project.techStack} limit={5} className="mt-4" />
           )}
 
           <div className="relative z-20 mt-5 flex flex-wrap items-center gap-4 text-xs">
             <span className="inline-flex items-center gap-1.5 font-medium text-accent">
-              View case study
+              Open project
               <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
             </span>
             {project.live && project.live !== '#' && (

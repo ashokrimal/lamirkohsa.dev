@@ -13,13 +13,14 @@ const PREVIEW_COUNT = 5
 
 /**
  * The media page: Music, Movies, Anime and Manga in that order. Each section is
- * one horizontal collection of CMS records followed by a View all card. A
- * category with no published records is hidden rather than filled with samples.
+ * one horizontal collection of CMS records followed by a View all card. Every
+ * category keeps its place; one with no published records shows an empty state
+ * instead of samples.
  */
 export default async function MediaHomeContent() {
   const [copy, collections] = await Promise.all([getPageCopy(), getMediaCollections()])
   const pageCopy = copy.media
-  const sections = (await getMediaSections(collections)).filter((section) => section.items.length > 0)
+  const sections = await getMediaSections(collections)
 
   return (
     <PageShell>
@@ -30,12 +31,6 @@ export default async function MediaHomeContent() {
         accent={pageCopy?.accent}
         description={pageCopy?.description}
       />
-
-      {sections.length === 0 && (
-        <div className="mt-12">
-          <EmptyState icon={ImageOff} message="Media collections updating..." />
-        </div>
-      )}
 
       {sections.map((section) => {
         const config = collections.find((collection) =>
@@ -54,15 +49,25 @@ export default async function MediaHomeContent() {
               description={section.description}
             />
             <div className="mt-8">
-              <HorizontalCollection
-                items={section.items.map((item) => (
-                  <MediaPoster key={item.id} kind={section.kind} item={item} />
-                ))}
-                previewCount={config?.previewCount || PREVIEW_COUNT}
-                viewAllHref={section.href}
-                viewAllLabel={`View all ${section.label.toLowerCase()}`}
-                ariaLabel={`${section.label} collection`}
-              />
+              {section.items.length === 0 ? (
+                <EmptyState
+                  icon={ImageOff}
+                  message={`No ${section.label.toLowerCase()} published yet.`}
+                  hint={`Add ${section.label.toLowerCase()} items from the CMS.`}
+                  actionLabel={`Add ${section.label.toLowerCase()} in admin`}
+                  actionHref={`/admin?section=content&collection=${section.kind === 'movies' ? 'Movies' : section.kind.charAt(0).toUpperCase() + section.kind.slice(1)}`}
+                />
+              ) : (
+                <HorizontalCollection
+                  items={section.items.map((item) => (
+                    <MediaPoster key={item.id} kind={section.kind} item={item} />
+                  ))}
+                  previewCount={config?.previewCount || PREVIEW_COUNT}
+                  viewAllHref={section.href}
+                  viewAllLabel={`View all ${section.label.toLowerCase()}`}
+                  ariaLabel={`${section.label} collection`}
+                />
+              )}
             </div>
           </section>
         )

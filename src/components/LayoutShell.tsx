@@ -20,20 +20,24 @@ interface LayoutShellProps {
 }
 
 export default function LayoutShell({ children, site, isCmsHost = false }: LayoutShellProps) {
-  const isCmsRoute = usePathname().startsWith('/admin')
+  const pathname = usePathname()
+  const isCmsRoute = pathname.startsWith('/admin')
+  const isAdminSignIn = pathname.startsWith('/admin/sign-in')
   // The CMS host is read after mount so the shared layout stays free of request
   // headers and the public pages can be cached and revalidated.
   const [isCmsHostname, setIsCmsHostname] = useState(false)
   useEffect(() => {
     setIsCmsHostname(window.location.hostname === 'cms.ashokrimal.com.np')
   }, [])
-  const showCmsShell = isCmsHost || isCmsHostname || isCmsRoute
+  const showCmsShell = (isCmsHost || isCmsHostname || isCmsRoute) && !isAdminSignIn
   return (
     <DevModeProvider>
       <ErrorBoundary>
         <Suspense fallback={<Loading />}>
           {showCmsShell ? (
             <CmsShell>{children}</CmsShell>
+          ) : isAdminSignIn ? (
+            <div className="min-h-screen">{children}</div>
           ) : (
             <>
               <SiteHeader brand={site.brand} navigation={site.navigation} contact={site.contact} />

@@ -21,15 +21,21 @@ export async function middleware(request: NextRequest) {
     .some((cookie) => cookie.name.includes('better-auth.session_token'))
 
   if (pathname === '/admin/sign-in' && (hasAdminCookie || hasBetterAuthCookie)) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/admin'
-    return NextResponse.redirect(url, 307)
+    const requested = request.nextUrl.searchParams.get('returnTo')
+    const target =
+      requested && requested.startsWith('/admin') && !requested.startsWith('//')
+        ? requested
+        : '/admin'
+    return NextResponse.redirect(new URL(target, request.url), 307)
   }
 
   if (pathname.startsWith('/admin') && pathname !== '/admin/sign-in' && pathname !== '/admin/sign-out') {
     if (!hasAdminCookie && !hasBetterAuthCookie) {
       const url = request.nextUrl.clone()
+      const returnTo = `${pathname}${request.nextUrl.search}`
       url.pathname = '/admin/sign-in'
+      url.search = ''
+      url.searchParams.set('returnTo', returnTo)
       return NextResponse.redirect(url, 307)
     }
   }

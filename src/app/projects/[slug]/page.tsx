@@ -12,6 +12,7 @@ import {
   PageSection,
   PageShell,
 } from '@/components/ui/PageChrome'
+import { TechStack } from '@/components/ui/TechStack'
 
 export const revalidate = 300
 
@@ -200,16 +201,7 @@ export default async function ProjectCaseStudyPage({ params }: { params: { slug:
                 <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
                   {sections.details.secondaryLabel}
                 </h3>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {project.techStack.map((tech) => (
-                    <span
-                      key={tech}
-                      className="inline-flex items-center rounded-full border border-line-subtle bg-overlay px-3 py-1 text-[11px] font-medium text-ink-secondary"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
+                <TechStack items={project.techStack} className="mt-4" />
               </article>
             )}
           </div>
