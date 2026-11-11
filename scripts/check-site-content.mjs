@@ -57,8 +57,75 @@ function fieldProblem(field, value) {
   }
 }
 
+const STOCK_IMAGE_HOSTS = [
+  'images.unsplash.com',
+  'unsplash.com',
+  'source.unsplash.com',
+  'images.pexels.com',
+  'pexels.com',
+  'cdn.pixabay.com',
+  'pixabay.com',
+  'picsum.photos',
+  'placehold.co',
+  'via.placeholder.com',
+  'placeholder.com',
+  'loremflickr.com',
+]
+
+const IMAGE_FIELDS = new Set(['imageUrl', 'coverUrl', 'posterUrl', 'avatarUrl', 'ogImage', 'image'])
+
+const REPOSITORY_HOSTS = new Set([
+  'github.com',
+  'www.github.com',
+  'gitlab.com',
+  'www.gitlab.com',
+  'bitbucket.org',
+  'www.bitbucket.org',
+  'codeberg.org',
+  'www.codeberg.org',
+])
+
+function hostOf(value) {
+  if (!hasText(value)) return undefined
+  try {
+    return new URL(value.trim()).hostname.toLowerCase()
+  } catch {
+    return undefined
+  }
+}
+
+function isStockImage(value) {
+  const host = hostOf(value)
+  if (!host) return false
+  return STOCK_IMAGE_HOSTS.some((stockHost) => host === stockHost || host.endsWith(`.${stockHost}`))
+}
+
+function isRepositoryUrl(value) {
+  if (!hasText(value)) return false
+  try {
+    const url = new URL(value.trim())
+    if (!REPOSITORY_HOSTS.has(url.hostname.toLowerCase())) return false
+    return url.pathname.split('/').filter(Boolean).length >= 2
+  } catch {
+    return false
+  }
+}
+
+function collectImageFields(value, path, found) {
+  if (!value || typeof value !== 'object') return
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => collectImageFields(entry, `${path}[${index}]`, found))
+    return
+  }
+  for (const [key, entry] of Object.entries(value)) {
+    const nextPath = path ? `${path}.${key}` : key
+    if (IMAGE_FIELDS.has(key) && typeof entry === 'string') found.push({ path: nextPath, url: entry })
+    else collectImageFields(entry, nextPath, found)
+  }
+}
+
 async function main() {
-  const { CMS_SCHEMA } = await loadCmsSchema()
+  const { CMS_SCHEMA, SECTIONS, NAV_ROUTES } = await loadCmsSchema()
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) {
     console.error('DATABASE_URL is required.')
@@ -188,10 +255,16 @@ async function main() {
       const links = Array.isArray(navigation.payload?.[group]) ? navigation.payload[group] : []
       links.forEach((link, index) => {
         if (!hasText(link?.label)) {
-          addProblem(`Navigation ${group}[${index}] has no label and is dropped from the site.`)
+          addWarning(
+            `Navigation ${group}[${index}] has no label; its route label still comes from code.`,
+          )
         }
         if (!hasText(link?.href)) {
           addProblem(`Navigation ${group}[${index}] has no href and is dropped from the site.`)
+        } else if (!NAV_ROUTES.has(link.href.trim())) {
+          addProblem(
+            `Navigation ${group}[${index}] points at "${link.href}", which is not a route the site owns.`,
+          )
         }
       })
     }
@@ -228,6 +301,36 @@ async function main() {
         )
       }
     })
+
+    if (hasText(record.payload?.github) && !isRepositoryUrl(record.payload.github)) {
+      addWarning(
+        `Projects "${record.title}" links to "${record.payload.github}", which is a profile or invalid URL rather than a repository; the Code button is hidden.`,
+      )
+    }
+
+    if (hasText(record.payload?.imageUrl) && !hasText(record.payload?.altText)) {
+      addWarning(`Projects "${record.title}" has an image but no altText.`)
+    }
+  }
+
+  const gallery = byCollection(CMS_SCHEMA.collections.gallery.name)
+  for (const record of gallery) {
+    if (hasText(record.payload?.imageUrl) && !hasText(record.payload?.altText)) {
+      addWarning(`Gallery "${record.title}" has an image but no altText.`)
+    }
+  }
+
+  // --- Images that are stock photography, not the owner's work --------------
+  for (const record of published) {
+    const found = []
+    collectImageFields(record.payload, '', found)
+    for (const image of found) {
+      if (isStockImage(image.url)) {
+        addWarning(
+          `${record.collection} "${record.title}" ${image.path ? `(${image.path}) ` : ''}uses a stock image host (${hostOf(image.url)}) and is presented as personal work.`,
+        )
+      }
+    }
   }
 
   const homepage = settingsByKey.get(
@@ -235,14 +338,32 @@ async function main() {
   )
   if (homepage) {
     const order = Array.isArray(homepage.payload?.order) ? homepage.payload.order : []
-    const knownSections = new Set([
-      ...Object.keys(CMS_SCHEMA.sections.home),
-      ...Object.keys(CMS_SCHEMA.sections.pages),
-    ])
+    const sectionIds = SECTIONS.map((section) => section.id)
+    const knownSections = new Set(sectionIds)
     for (const section of order) {
       if (!knownSections.has(section)) {
         addWarning(`Homepage order contains "${section}", which no longer renders.`)
       }
+    }
+    if (order.length && order.join(',') !== sectionIds.join(',')) {
+      addWarning(
+        'Homepage section order is owned by the code SECTIONS registry; the CMS order is ignored.',
+      )
+    }
+    const hidden = Object.entries(homepage.payload?.enabled ?? {})
+      .filter(([, enabled]) => enabled === false)
+      .map(([id]) => id)
+    if (hidden.length) {
+      addWarning(
+        `Homepage visibility flags are ignored (${hidden.join(', ')}); every section in the code registry renders.`,
+      )
+    }
+  }
+
+  // --- Required sections have a renderer ------------------------------------
+  for (const section of SECTIONS) {
+    if (!section.component || !section.collection) {
+      addProblem(`Homepage section "${section.id}" is missing its renderer or collection.`)
     }
   }
 

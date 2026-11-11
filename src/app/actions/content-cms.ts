@@ -58,9 +58,11 @@ class MemoryCmsRepository {
     return filtered
       .filter((r) => {
         const payloadKey = typeof r.payload?.key === 'string' ? r.payload.key.trim().toLowerCase() : ''
+        // Keyed records are unique by their locked key. Everything else is unique
+        // by slug, so renaming a record's title never changes its identity.
         const key = payloadKey
           ? `${r.collection.toLowerCase()}::key:${payloadKey}`
-          : `${r.collection}::${r.title}`.toLowerCase().trim()
+          : `${r.collection}::slug:${r.slug || r.id}`.toLowerCase().trim()
         if (seen.has(key)) return false
         seen.add(key)
         return true
@@ -163,10 +165,14 @@ async function fetchPublishedCollection(collection: string): Promise<CmsRecord[]
     )
     .orderBy(asc(cmsContent.sortOrder), desc(cmsContent.createdAt))
 
-  // Deduplicate rows by collection and title to guarantee uniqueness
+  // Deduplicate by locked key or slug. Titles are editable in the CMS and are
+  // never used as identity.
   const seen = new Set<string>()
   return (rows as CmsRecord[]).filter((r) => {
-    const key = `${r.collection}::${r.title}`.toLowerCase().trim()
+    const payloadKey = typeof r.payload?.key === 'string' ? r.payload.key.trim().toLowerCase() : ''
+    const key = payloadKey
+      ? `${r.collection}::key:${payloadKey}`
+      : `${r.collection}::slug:${r.slug || r.id}`.toLowerCase().trim()
     if (seen.has(key)) return false
     seen.add(key)
     return true

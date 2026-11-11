@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { getMediaData } from '@/app/actions/media'
 import { getMediaPreviews } from '@/app/actions/content-cms'
 import EmptyCollectionState from '@/components/EmptyCollectionState'
+import { CmsErrorState } from '@/components/ui/CmsState'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy, type PageCopy } from '@/lib/site-content'
 
@@ -271,9 +272,11 @@ function LibraryPage({
                 <h2 className="text-xs font-semibold text-ink leading-snug line-clamp-2">
                   {card.title}
                 </h2>
-                <p className="text-[11px] text-muted leading-relaxed line-clamp-3">
-                  {card.description?.slice(0, 180) || 'A title in the personal library.'}
-                </p>
+                {card.description && (
+                  <p className="text-[11px] text-muted leading-relaxed line-clamp-3">
+                    {card.description.slice(0, 180)}
+                  </p>
+                )}
               </div>
             </article>
           ))}
@@ -342,11 +345,20 @@ function GitHubPage({
 }
 
 export default async function MediaDetailPage({ category }: { category: Category }) {
-  const [data, cms, pagesResult] = await Promise.all([
-    getMediaData(),
-    getMediaPreviews(),
-    getPageCopy(),
-  ])
+  let data: Awaited<ReturnType<typeof getMediaData>>
+  try {
+    data = await getMediaData()
+  } catch (error) {
+    console.error('[Media] Could not read library data', error)
+    return (
+      <PageShell>
+        <CmsErrorState message="This media library is temporarily unavailable." className="mt-12" />
+        <PageNav backHref="/media" />
+      </PageShell>
+    )
+  }
+
+  const [cms, pagesResult] = await Promise.all([getMediaPreviews(), getPageCopy()])
   const pages = pagesResult.status === 'ok' ? pagesResult.data : {}
   const copyKey =
     category === 'music'

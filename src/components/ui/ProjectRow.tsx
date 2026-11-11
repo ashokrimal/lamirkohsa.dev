@@ -6,6 +6,8 @@ import { ArrowUpRight, Calendar, Github, Layers } from 'lucide-react'
 import { TechStack } from '@/components/ui/TechStack'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
+import { uiStrings } from '@/lib/ui-strings'
+import { isRepositoryUrl } from '@/lib/urls'
 import type { ProjectData } from '@/components/ui/ProjectCard'
 
 interface ProjectRowProps {
@@ -21,13 +23,14 @@ export function ProjectRow({ project, index }: ProjectRowProps) {
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
   const reversed = index % 2 === 1
   const summary = project.summary || project.description
+  const sourceUrl = isRepositoryUrl(project.github) ? project.github : undefined
 
   return (
     <article className="project-row relative border-t border-line-hairline pt-8 md:pt-10">
       <Link
         href={detailHref}
         className="absolute inset-0 z-10"
-        aria-label={`Open the ${project.title} case study`}
+        aria-label={uiStrings.project.openCaseStudy(project.title)}
       />
 
       <div className="grid items-center gap-6 md:grid-cols-12 md:gap-10">
@@ -36,7 +39,7 @@ export function ProjectRow({ project, index }: ProjectRowProps) {
             {project.image ? (
               <Image
                 src={project.image}
-                alt={project.altText || `${project.title} preview`}
+                alt={project.altText || uiStrings.project.previewAlt(project.title)}
                 fill
                 sizes="(max-width: 768px) 100vw, 58vw"
                 referrerPolicy="no-referrer"
@@ -82,7 +85,7 @@ export function ProjectRow({ project, index }: ProjectRowProps) {
 
           <div className="relative z-20 mt-5 flex flex-wrap items-center gap-4 text-xs">
             <span className="inline-flex items-center gap-1.5 font-medium text-accent">
-              Open project
+              {uiStrings.project.openProject.en}
               <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
             </span>
             {project.live && project.live !== '#' && (
@@ -93,20 +96,20 @@ export function ProjectRow({ project, index }: ProjectRowProps) {
                 onClick={() => sensoryAudio.playClick()}
                 className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line-subtle px-3.5 py-1.5 text-xs font-medium text-ink transition-colors hover:border-line-medium hover:bg-overlay-medium"
               >
-                Live Demo
+                {uiStrings.project.liveDemo.en}
                 <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
               </a>
             )}
-            {project.github && (
+            {sourceUrl && (
               <a
-                href={project.github}
+                href={sourceUrl}
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => sensoryAudio.playClick()}
                 className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line-subtle px-3.5 py-1.5 text-xs font-medium text-ink transition-colors hover:border-line-medium hover:bg-overlay-medium"
               >
                 <Github className="h-3.5 w-3.5 text-muted" aria-hidden="true" />
-                Code
+                {uiStrings.project.code.en}
               </a>
             )}
           </div>

@@ -7,6 +7,8 @@ import { Card3D } from '@/components/ui/Card3D'
 import { TechStack } from '@/components/ui/TechStack'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
+import { uiStrings } from '@/lib/ui-strings'
+import { isRepositoryUrl } from '@/lib/urls'
 
 export interface ProjectData {
   id?: number | string
@@ -38,6 +40,7 @@ export function ProjectCard({ project, variant = 'standard', index }: ProjectCar
   const isFeatured = variant === 'featured' || project.featured
   // Every card opens the case study route, never an inline expansion.
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
+  const sourceUrl = isRepositoryUrl(project.github) ? project.github : undefined
 
   return (
     <Card3D maxTilt={6} className={isFeatured ? 'md:col-span-2' : ''}>
@@ -47,14 +50,14 @@ export function ProjectCard({ project, variant = 'standard', index }: ProjectCar
         <Link
           href={detailHref}
           className="absolute inset-0 z-10"
-          aria-label={`Open the ${project.title} case study`}
+          aria-label={uiStrings.project.openCaseStudy(project.title)}
         />
         {/* Top Image Preview if available */}
         {project.image && (
           <div className="relative overflow-hidden aspect-[16/10] max-h-[300px] bg-overlay-faint">
             <Image
               src={project.image}
-              alt={project.altText || `${project.title} preview`}
+              alt={project.altText || uiStrings.project.previewAlt(project.title)}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               referrerPolicy="no-referrer"
@@ -112,7 +115,7 @@ export function ProjectCard({ project, variant = 'standard', index }: ProjectCar
             {project.phases && project.phases.length > 0 && (
               <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-overlay-hairline text-[11px] text-ink-secondary">
                 <Layers className="w-3 h-3 text-accent" />
-                <span>{project.phases.length} Execution Phases</span>
+                <span>{uiStrings.project.executionPhases(project.phases.length)}</span>
               </div>
             )}
           </div>
@@ -135,27 +138,27 @@ export function ProjectCard({ project, variant = 'standard', index }: ProjectCar
                   onClick={() => sensoryAudio.playClick()}
                   className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-overlay px-3.5 py-1.5 text-xs font-medium text-ink transition-colors hover:border-line-strong hover:bg-overlay-medium"
                 >
-                  <span>Live Demo</span>
+                  <span>{uiStrings.project.liveDemo.en}</span>
                   <ArrowUpRight className="w-3 h-3" />
                 </a>
               )}
-              {project.github && (
+              {sourceUrl && (
                 <a
-                  href={project.github}
+                  href={sourceUrl}
                   target="_blank"
                   rel="noreferrer"
                   onClick={() => sensoryAudio.playClick()}
                   className="apple-btn-secondary !py-1.5 !px-3 !text-xs"
-                  title="View Source Code"
+                  title={uiStrings.project.sourceTitle.en}
                 >
                   <Github className="w-3.5 h-3.5 text-muted" />
-                  <span>Code</span>
+                  <span>{uiStrings.project.code.en}</span>
                 </a>
               )}
             </div>
 
             <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
-              <span>View case study</span>
+              <span>{uiStrings.project.viewCaseStudy.en}</span>
               <ArrowUpRight className="w-3 h-3" />
             </span>
           </div>

@@ -14,6 +14,8 @@ import {
 import { TechStack } from '@/components/ui/TechStack'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import type { CmsResult } from '@/lib/cms-schema'
+import { uiStrings } from '@/lib/ui-strings'
+import { isRepositoryUrl } from '@/lib/urls'
 
 export const revalidate = 300
 
@@ -31,9 +33,13 @@ export async function generateMetadata({
   const result = await findProject(params.slug)
   if (result.status !== 'ok' || !result.data) return {}
   const project = result.data
+  const description = project.summary || project.description
   return {
     title: project.title,
-    description: project.challenge,
+    ...(description ? { description } : {}),
+    ...(project.image
+      ? { openGraph: { title: project.title, ...(description ? { description } : {}), images: [{ url: project.image }] } }
+      : {}),
   }
 }
 
@@ -52,6 +58,7 @@ export default async function ProjectCaseStudyPage({ params }: { params: { slug:
   const copy = copyResult.status === 'ok' ? copyResult.data : {}
   const pageCopy = copy['project-case-study']
   const sections = pageCopy?.sections
+  const sourceUrl = isRepositoryUrl(project.github) ? project.github : undefined
 
   return (
     <PageShell>
@@ -73,7 +80,7 @@ export default async function ProjectCaseStudyPage({ params }: { params: { slug:
           ) : undefined
         }
         actions={
-          project.live || project.github ? (
+          project.live || sourceUrl ? (
             <>
               {project.live && (
                 <a
@@ -82,19 +89,19 @@ export default async function ProjectCaseStudyPage({ params }: { params: { slug:
                   rel="noreferrer"
                   className="apple-btn-primary"
                 >
-                  <span>Live</span>
+                  <span>{uiStrings.project.live.en}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </a>
               )}
-              {project.github && (
+              {sourceUrl && (
                 <a
-                  href={project.github}
+                  href={sourceUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="apple-btn-secondary"
                 >
                   <Github className="w-3.5 h-3.5 text-muted" />
-                  <span>GitHub</span>
+                  <span>{uiStrings.project.github.en}</span>
                 </a>
               )}
             </>
@@ -120,6 +127,7 @@ export default async function ProjectCaseStudyPage({ params }: { params: { slug:
 
       {(project.challenge || project.solution) && sections?.problem?.title && (
         <PageSection
+          number={0}
           eyebrow={sections.problem.eyebrow}
           krEyebrow={sections.problem.krEyebrow}
           title={sections.problem.title}
@@ -151,6 +159,7 @@ export default async function ProjectCaseStudyPage({ params }: { params: { slug:
 
       {project.phases.length > 0 && sections?.phases?.title && (
         <PageSection
+          number={1}
           eyebrow={sections.phases.eyebrow}
           krEyebrow={sections.phases.krEyebrow}
           title={sections.phases.title}
@@ -185,6 +194,7 @@ export default async function ProjectCaseStudyPage({ params }: { params: { slug:
 
       {(project.features.length > 0 || project.techStack.length > 0) && sections?.details?.title && (
         <PageSection
+          number={2}
           eyebrow={sections.details.eyebrow}
           krEyebrow={sections.details.krEyebrow}
           title={sections.details.title}
