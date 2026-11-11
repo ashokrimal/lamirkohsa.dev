@@ -1,4 +1,11 @@
-import { getPublishedCmsContent, type CmsRecord } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
+import {
+  CMS_COLLECTIONS,
+  CMS_KEYS,
+  CMS_SCHEMA,
+  indexCmsRecordsByKey,
+  type CmsResult,
+} from '@/lib/cms-schema'
 
 /**
  * Site-wide configuration and page copy, read from the CMS.
@@ -46,7 +53,6 @@ export interface SiteFooterConfig {
 
 export interface ContactDetails {
   location?: string
-  timezone?: string
   timeZone?: string
   timezoneLabel?: string
   availability?: string
@@ -144,9 +150,6 @@ function socials(payload: Record<string, unknown> | undefined): SiteSocial[] {
   return result
 }
 
-function byTitle(records: CmsRecord[], title: string) {
-  return records.find((record) => record.title.trim().toLowerCase() === title)
-}
 
 function parseCopy(payload: Record<string, unknown> | undefined): PageCopy {
   return {
@@ -176,81 +179,104 @@ function parseSections(payload: Record<string, unknown> | undefined) {
   return Object.keys(sections).length ? sections : undefined
 }
 
-/** Every setting the chrome needs, in one CMS round trip. */
-export async function getSiteConfig(): Promise<SiteConfig> {
-  const settings = await getPublishedCmsContent('Site Settings')
+/** Empty chrome shape used when the CMS is unavailable, so layout can render. */
+export const EMPTY_SITE_CONFIG: SiteConfig = {
+  brand: {},
+  navigation: { primary: [], footer: [], collections: [], socials: [] },
+  footer: {},
+  contact: {},
+}
 
-  const navigation = byTitle(settings, 'navigation')
-  const footer = byTitle(settings, 'footer')
-  const brand = byTitle(settings, 'brand')
-  const contact = byTitle(settings, 'contact details')
+/** Every setting the chrome needs, in one CMS round trip. */
+export async function getSiteConfig(): Promise<CmsResult<SiteConfig>> {
+  const result = await getPublishedCmsContentResult(CMS_COLLECTIONS.siteSettings)
+  if (result.status !== 'ok') return result
+
+  const byKey = indexCmsRecordsByKey(result.data)
+  if (Object.keys(byKey).length === 0) return { status: 'empty' }
+
+  const navigation = byKey[CMS_KEYS.navigation]
+  const footer = byKey[CMS_KEYS.footer]
+  const brand = byKey[CMS_KEYS.brand]
+  const contact = byKey[CMS_KEYS.contactDetails]
 
   return {
-    brand: {
-      name: text(brand?.payload, 'name'),
-      korean: text(brand?.payload, 'korean'),
-      domain: text(brand?.payload, 'domain'),
-    },
-    navigation: {
-      primary: links(navigation?.payload, 'primary'),
-      footer: links(navigation?.payload, 'footer'),
-      collections: links(navigation?.payload, 'collections'),
-      socials: socials(navigation?.payload),
-    },
-    footer: {
-      tagline: text(footer?.payload, 'tagline'),
-      availabilityLabel: text(footer?.payload, 'availabilityLabel'),
-      availabilityText: text(footer?.payload, 'availabilityText'),
-      ctaLabel: text(footer?.payload, 'ctaLabel'),
-      ctaHref: text(footer?.payload, 'ctaHref'),
-      copyrightName: text(footer?.payload, 'copyrightName'),
-      canonical: text(footer?.payload, 'canonical'),
-    },
-    contact: {
-      location: text(contact?.payload, 'location'),
-      timezone: text(contact?.payload, 'timezone'),
-      timeZone: text(contact?.payload, 'timeZone'),
-      timezoneLabel: text(contact?.payload, 'timezoneLabel'),
-      availability: text(contact?.payload, 'availability'),
-      email: text(contact?.payload, 'email'),
-      phone: text(contact?.payload, 'phone'),
-      formEnabled: booleanValue(contact?.payload, 'formEnabled'),
+    status: 'ok',
+    data: {
+      brand: {
+        name: text(brand?.payload, 'name'),
+        korean: text(brand?.payload, 'korean'),
+        domain: text(brand?.payload, 'domain'),
+      },
+      navigation: {
+        primary: links(navigation?.payload, 'primary'),
+        footer: links(navigation?.payload, 'footer'),
+        collections: links(navigation?.payload, 'collections'),
+        socials: socials(navigation?.payload),
+      },
+      footer: {
+        tagline: text(footer?.payload, 'tagline'),
+        availabilityLabel: text(footer?.payload, 'availabilityLabel'),
+        availabilityText: text(footer?.payload, 'availabilityText'),
+        ctaLabel: text(footer?.payload, 'ctaLabel'),
+        ctaHref: text(footer?.payload, 'ctaHref'),
+        copyrightName: text(footer?.payload, 'copyrightName'),
+        canonical: text(footer?.payload, 'canonical'),
+      },
+      contact: {
+        location: text(contact?.payload, 'location'),
+        timeZone: text(contact?.payload, 'timeZone'),
+        timezoneLabel: text(contact?.payload, 'timezoneLabel'),
+        availability: text(contact?.payload, 'availability'),
+        email: text(contact?.payload, 'email'),
+        phone: text(contact?.payload, 'phone'),
+        formEnabled: booleanValue(contact?.payload, 'formEnabled'),
+      },
     },
   }
 }
 
-/** Per-page hero copy, keyed by the page slug (e.g. `about`, `media`). */
-export async function getPageCopy(): Promise<Record<string, PageCopy>> {
-  const records = await getPublishedCmsContent('Page Copy')
-  const copy: Record<string, PageCopy> = {}
+/** Per-page hero copy, keyed only by the locked `payload.key` field. */
+export async function getPageCopy(): Promise<CmsResult<Record<string, PageCopy>>> {
+  const result = await getPublishedCmsContentResult(CMS_COLLECTIONS.pageCopy)
+  if (result.status !== 'ok') return result
 
-  for (const record of records) {
-    const key = (text(record.payload, 'key') || record.slug || record.title).trim().toLowerCase()
+  const copy: Record<string, PageCopy> = {}
+  for (const record of result.data) {
+    const key =
+      typeof record.payload?.key === 'string' ? record.payload.key.trim().toLowerCase() : ''
     if (!key) continue
     copy[key] = { ...parseCopy(record.payload), sections: parseSections(record.payload) }
   }
 
-  return copy
+  if (Object.keys(copy).length === 0) return { status: 'empty' }
+  return { status: 'ok', data: copy }
 }
 
-/** The media library sections, in CMS sort order. */
-export async function getMediaCollections(): Promise<MediaCollection[]> {
-  const records = await getPublishedCmsContent('Media Collections')
+/** The media library sections recorded in the CMS, in the locked key order. */
+export async function getMediaCollections(): Promise<CmsResult<MediaCollection[]>> {
+  const result = await getPublishedCmsContentResult(CMS_COLLECTIONS.mediaCollections)
+  if (result.status !== 'ok') return result
+
+  const byKey = indexCmsRecordsByKey(result.data)
+  const collectionSchema = CMS_SCHEMA.collections.mediaCollections.records ?? {}
   const collections: MediaCollection[] = []
 
-  for (const record of records) {
-    const href = text(record.payload, 'href')
-    if (!href) continue
+  for (const [kind, definition] of Object.entries(collectionSchema)) {
+    const record = byKey[definition.key]
+    if (!record) continue
+    const payload = record.payload
     collections.push({
-      key: (text(record.payload, 'key') || record.slug || record.title).trim().toLowerCase(),
-      number: text(record.payload, 'number'),
-      label: text(record.payload, 'label') || record.title,
-      kr: text(record.payload, 'kr'),
-      description: text(record.payload, 'description'),
-      href,
-      previewCount: numberValue(record.payload, 'previewCount'),
+      key: definition.key,
+      number: text(payload, 'number'),
+      label: text(payload, 'label') || definition.label,
+      kr: text(payload, 'kr'),
+      description: text(payload, 'description'),
+      href: text(payload, 'href') || definition.route || `/media/${kind}`,
+      previewCount: numberValue(payload, 'previewCount'),
     })
   }
 
-  return collections
+  if (collections.length === 0) return { status: 'empty' }
+  return { status: 'ok', data: collections }
 }

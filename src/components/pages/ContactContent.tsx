@@ -9,6 +9,7 @@ import { Loading } from '@/components/Loading'
 import { useDevMode } from '@/contexts/DevModeContext'
 import DevSection from '@/components/devmode/DevSection'
 import { MetaChip, PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
+import { CmsErrorState } from '@/components/ui/CmsState'
 import type { ContactDetails, PageCopy, SiteSocial } from '@/lib/site-content'
 
 const PAGE_KEY = 'contact'
@@ -20,6 +21,7 @@ interface ContactContentProps {
   copy?: PageCopy
   contact: ContactDetails
   socials: SiteSocial[]
+  error?: string
 }
 
 function iconFor(label: string) {
@@ -111,14 +113,14 @@ function ChannelSection({
                   <dd className="font-semibold text-ink text-right">{contact.location}</dd>
                 </div>
               )}
-              {(contact.timezone || contact.timeZone) && (
+              {(contact.timeZone || contact.timeZone) && (
                 <div className="flex items-start justify-between gap-4">
                   <dt className="inline-flex items-center gap-1.5 text-muted">
                     <Clock className="w-3.5 h-3.5 text-accent" />
                     Timezone
                   </dt>
                   <dd className="font-semibold text-ink text-right">
-                    {contact.timezone} {contact.timeZone && <span className="text-muted">({contact.timeZone})</span>}
+                    {contact.timeZone}
                   </dd>
                 </div>
               )}
@@ -136,7 +138,7 @@ function ChannelSection({
   )
 }
 
-export default function ContactContent({ copy, contact, socials }: ContactContentProps) {
+export default function ContactContent({ copy, contact, socials, error }: ContactContentProps) {
   const { mode, registerPageSections, getSectionOrder } = useDevMode()
   const sections = copy?.sections
 
@@ -170,7 +172,7 @@ export default function ContactContent({ copy, contact, socials }: ContactConten
           contact.location || contact.availability ? (
             <>
               {contact.location && <MetaChip icon={MapPin}>{contact.location}</MetaChip>}
-              {contact.timezone && <MetaChip icon={Clock}>{contact.timezone}</MetaChip>}
+              {contact.timeZone && <MetaChip icon={Clock}>{contact.timeZone}</MetaChip>}
               {contact.availability && <MetaChip>{contact.availability}</MetaChip>}
             </>
           ) : undefined

@@ -1,13 +1,14 @@
 import {
-  getProfileContent,
-  getExperienceItems,
-  getEducationItems,
-  getSkillsContent,
-  getSocialLinks,
-} from '@/app/actions/content-cms'
+  getProfileContentResult,
+  getPublishedCmsContentResult,
+ } from '@/app/actions/content-cms'
 import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { SkillDisplay } from '@/components/ui/SkillDisplay'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { CmsErrorState } from '@/components/ui/CmsState'
+import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
+import { Compass, Globe, Heart, Sparkles } from 'lucide-react'
 import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy } from '@/lib/site-content'
 
@@ -27,16 +28,23 @@ function stringValue(payload: Record<string, unknown> | undefined, key: string) 
  * Each block is shown only when the CMS has content for it.
  */
 export default async function AboutContent() {
-  const copy = (await getPageCopy()).about
+  const copyResult = await getPageCopy()
+  const copy = copyResult.status === 'ok' ? copyResult.data.about : undefined
   const sections = copy?.sections
 
-  const [profile, experienceRaw, educationRaw, skillsRaw, socialRaw] = await Promise.all([
-    getProfileContent(),
-    getExperienceItems(),
-    getEducationItems(),
-    getSkillsContent(),
-    getSocialLinks(),
-  ])
+  const [profileResult, experienceResult, educationResult, skillsResult, socialResult] =
+    await Promise.all([
+      getProfileContentResult(),
+      getPublishedCmsContentResult(CMS_COLLECTIONS.experience),
+      getPublishedCmsContentResult(CMS_COLLECTIONS.education),
+      getPublishedCmsContentResult(CMS_COLLECTIONS.skills),
+      getPublishedCmsContentResult(CMS_COLLECTIONS.socialLinks),
+    ])
+
+  const experienceRaw = experienceResult.status === 'ok' ? experienceResult.data : []
+  const educationRaw = educationResult.status === 'ok' ? educationResult.data : []
+  const skillsRaw = skillsResult.status === 'ok' ? skillsResult.data : []
+  const socialRaw = socialResult.status === 'ok' ? socialResult.data : []
 
   function dedupeItems<T>(items: T[], keyFn: (item: T) => string | number | undefined): T[] {
     const seen = new Set<string | number>()
@@ -97,6 +105,7 @@ export default async function AboutContent() {
     (s) => s.href || s.label,
   ).filter((s) => s.href)
 
+  const profile = profileResult.status === 'ok' ? profileResult.data : {}
   const profileData = profile as Record<string, unknown>
   const summary = value(profileData, 'summary')
   const bio = value(profileData, 'bio')
@@ -121,13 +130,17 @@ export default async function AboutContent() {
       <PageHero
         eyebrow={copy?.eyebrow ?? ''}
         krEyebrow={copy?.krEyebrow}
-        title={copy?.title ?? ''}
+        title={copy?.title ?? CMS_SCHEMA.sections.pages.about.label}
         accent={copy?.accent}
         description={copy?.description ?? summary}
       />
 
+      {copyResult.status === 'error' && (
+        <CmsErrorState message={copyResult.message} className="mt-10" />
+      )}
+
       {/* 1. BIOGRAPHY + PROFILE */}
-      {(bio || summary || profileImage) && (
+      {bio || summary || profileImage ? (
         <section className="pt-10 md:pt-14 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 md:gap-8 items-start">
           <div className="space-y-4 text-sm md:text-base text-muted leading-relaxed">
             {summary && <p className="text-lg md:text-2xl text-ink leading-relaxed">{summary}</p>}
@@ -164,60 +177,104 @@ export default async function AboutContent() {
             )}
           </div>
         </section>
+      ) : profileResult.status === 'error' ? (
+        <section className="pt-10 md:pt-14">
+          <CmsErrorState message={profileResult.message} />
+        </section>
+      ) : (
+        <section className="pt-10 md:pt-14">
+          <EmptyState
+            icon={Compass}
+            message={CMS_SCHEMA.sections.pages.about.emptyState.message}
+            hint={CMS_SCHEMA.sections.pages.about.emptyState.hint}
+            actionLabel={CMS_SCHEMA.sections.pages.about.emptyState.actionLabel}
+            actionHref={CMS_SCHEMA.sections.pages.about.emptyState.actionHref}
+          />
+        </section>
       )}
 
       {/* 2. EDUCATION */}
-      {sections?.education?.title && education.length > 0 && (
-        <PageSection
-          id="education"
-          eyebrow={sections.education.eyebrow}
-          krEyebrow={sections.education.krEyebrow}
-          title={sections.education.title}
-          accent={sections.education.accent}
-          description={sections.education.description}
-        >
-          <ExperienceTimeline items={education} type="education" />
-        </PageSection>
-      )}
+      <PageSection
+        id="education"
+        eyebrow={sections?.education?.eyebrow}
+        krEyebrow={sections?.education?.krEyebrow}
+        title={sections?.education?.title ?? CMS_SCHEMA.collections.education.label}
+        accent={sections?.education?.accent}
+        description={sections?.education?.description}
+      >
+        {educationResult.status === 'error' ? (
+          <CmsErrorState message={educationResult.message} />
+        ) : (
+          <ExperienceTimeline
+            items={education}
+            type="education"
+            emptyMessage={CMS_SCHEMA.collections.education.emptyState.message}
+            emptyHint={CMS_SCHEMA.collections.education.emptyState.hint}
+            emptyActionLabel={CMS_SCHEMA.collections.education.emptyState.actionLabel}
+            emptyActionHref={CMS_SCHEMA.collections.education.emptyState.actionHref}
+          />
+        )}
+      </PageSection>
 
       {/* 3. PROFESSIONAL EXPERIENCE */}
-      {sections?.experience?.title && experience.length > 0 && (
-        <PageSection
-          id="experience"
-          eyebrow={sections.experience.eyebrow}
-          krEyebrow={sections.experience.krEyebrow}
-          title={sections.experience.title}
-          accent={sections.experience.accent}
-          description={sections.experience.description}
-        >
-          <ExperienceTimeline items={experience} type="experience" />
-        </PageSection>
-      )}
+      <PageSection
+        id="experience"
+        eyebrow={sections?.experience?.eyebrow}
+        krEyebrow={sections?.experience?.krEyebrow}
+        title={sections?.experience?.title ?? CMS_SCHEMA.collections.experience.label}
+        accent={sections?.experience?.accent}
+        description={sections?.experience?.description}
+      >
+        {experienceResult.status === 'error' ? (
+          <CmsErrorState message={experienceResult.message} />
+        ) : (
+          <ExperienceTimeline
+            items={experience}
+            type="experience"
+            emptyMessage={CMS_SCHEMA.collections.experience.emptyState.message}
+            emptyHint={CMS_SCHEMA.collections.experience.emptyState.hint}
+            emptyActionLabel={CMS_SCHEMA.collections.experience.emptyState.actionLabel}
+            emptyActionHref={CMS_SCHEMA.collections.experience.emptyState.actionHref}
+          />
+        )}
+      </PageSection>
 
       {/* 4. TECHNICAL SKILLS */}
-      {sections?.skills?.title && skills.length > 0 && (
-        <PageSection
-          id="skills"
-          eyebrow={sections.skills.eyebrow}
-          krEyebrow={sections.skills.krEyebrow}
-          title={sections.skills.title}
-          accent={sections.skills.accent}
-          description={sections.skills.description}
-        >
+      <PageSection
+        id="skills"
+        eyebrow={sections?.skills?.eyebrow}
+        krEyebrow={sections?.skills?.krEyebrow}
+        title={sections?.skills?.title ?? CMS_SCHEMA.collections.skills.label}
+        accent={sections?.skills?.accent}
+        description={sections?.skills?.description}
+      >
+        {skillsResult.status === 'error' ? (
+          <CmsErrorState message={skillsResult.message} />
+        ) : skills.length > 0 ? (
           <SkillDisplay skills={skills} />
-        </PageSection>
-      )}
+        ) : (
+          <EmptyState
+            icon={Sparkles}
+            message={CMS_SCHEMA.collections.skills.emptyState.message}
+            hint={CMS_SCHEMA.collections.skills.emptyState.hint}
+            actionLabel={CMS_SCHEMA.collections.skills.emptyState.actionLabel}
+            actionHref={CMS_SCHEMA.collections.skills.emptyState.actionHref}
+          />
+        )}
+      </PageSection>
 
       {/* 5. PERSONAL INTERESTS */}
-      {sections?.interests?.title && interests.length > 0 && (
-        <PageSection
-          id="interests"
-          eyebrow={sections.interests.eyebrow}
-          krEyebrow={sections.interests.krEyebrow}
-          title={sections.interests.title}
-          accent={sections.interests.accent}
-          description={sections.interests.description}
-        >
+      <PageSection
+        id="interests"
+        eyebrow={sections?.interests?.eyebrow}
+        krEyebrow={sections?.interests?.krEyebrow}
+        title={sections?.interests?.title ?? CMS_SCHEMA.collections.interests.label}
+        accent={sections?.interests?.accent}
+        description={sections?.interests?.description}
+      >
+        {profileResult.status === 'error' ? (
+          <CmsErrorState message={profileResult.message} />
+        ) : interests.length > 0 ? (
           <ul className="flex flex-wrap gap-2.5">
             {interests.map((interest) => (
               <li
@@ -228,19 +285,29 @@ export default async function AboutContent() {
               </li>
             ))}
           </ul>
-        </PageSection>
-      )}
+        ) : (
+          <EmptyState
+            icon={Heart}
+            message={CMS_SCHEMA.collections.interests.emptyState.message}
+            hint={CMS_SCHEMA.collections.interests.emptyState.hint}
+            actionLabel={CMS_SCHEMA.collections.interests.emptyState.actionLabel}
+            actionHref={CMS_SCHEMA.collections.interests.emptyState.actionHref}
+          />
+        )}
+      </PageSection>
 
       {/* 6. SOCIAL LINKS */}
-      {sections?.socials?.title && socialLinks.length > 0 && (
-        <PageSection
-          id="socials"
-          eyebrow={sections.socials.eyebrow}
-          krEyebrow={sections.socials.krEyebrow}
-          title={sections.socials.title}
-          accent={sections.socials.accent}
-          description={sections.socials.description}
-        >
+      <PageSection
+        id="socials"
+        eyebrow={sections?.socials?.eyebrow}
+        krEyebrow={sections?.socials?.krEyebrow}
+        title={sections?.socials?.title ?? CMS_SCHEMA.collections.socialLinks.label}
+        accent={sections?.socials?.accent}
+        description={sections?.socials?.description}
+      >
+        {socialResult.status === 'error' ? (
+          <CmsErrorState message={socialResult.message} />
+        ) : socialLinks.length > 0 ? (
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {socialLinks.map((link) => (
               <li key={link.id}>
@@ -256,22 +323,40 @@ export default async function AboutContent() {
               </li>
             ))}
           </ul>
-        </PageSection>
-      )}
+        ) : (
+          <EmptyState
+            icon={Globe}
+            message={CMS_SCHEMA.collections.socialLinks.emptyState.message}
+            hint={CMS_SCHEMA.collections.socialLinks.emptyState.hint}
+            actionLabel={CMS_SCHEMA.collections.socialLinks.emptyState.actionLabel}
+            actionHref={CMS_SCHEMA.collections.socialLinks.emptyState.actionHref}
+          />
+        )}
+      </PageSection>
 
       {/* 7. GITHUB ACTIVITY — always the final section */}
-      {sections?.github?.title && profile.github && (
-        <PageSection
-          id="github"
-          eyebrow={sections.github.eyebrow}
-          krEyebrow={sections.github.krEyebrow}
-          title={sections.github.title}
-          accent={sections.github.accent}
-          description={sections.github.description}
-        >
+      <PageSection
+        id="github"
+        eyebrow={sections?.github?.eyebrow}
+        krEyebrow={sections?.github?.krEyebrow}
+        title={sections?.github?.title ?? CMS_SCHEMA.sections.home.github.label}
+        accent={sections?.github?.accent}
+        description={sections?.github?.description}
+      >
+        {profileResult.status === 'error' ? (
+          <CmsErrorState message={profileResult.message} />
+        ) : profile.github ? (
           <GitHubActivitySparkline username={profile.github} showRecentCommits={true} />
-        </PageSection>
-      )}
+        ) : (
+          <EmptyState
+            icon={Globe}
+            message={CMS_SCHEMA.sections.home.github.emptyState.message}
+            hint={CMS_SCHEMA.sections.home.github.emptyState.hint}
+            actionLabel={CMS_SCHEMA.sections.home.github.emptyState.actionLabel}
+            actionHref={CMS_SCHEMA.sections.home.github.emptyState.actionHref}
+          />
+        )}
+      </PageSection>
 
       <PageNav />
     </PageShell>

@@ -8,6 +8,14 @@ import { headers } from 'next/headers'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { getAdminActorId } from '@/lib/admin-auth'
 import { CMS_CACHE_TAG, CMS_REVALIDATE_SECONDS, cmsCollectionTag } from '@/lib/cms-cache'
+import {
+  CMS_COLLECTIONS,
+  CMS_KEYS,
+  CMS_SCHEMA,
+  indexCmsRecordsByKey,
+  type CmsResult,
+} from '@/lib/cms-schema'
+import { toSlug } from '@/lib/slug'
 
 export interface CmsRecord {
   id: number
@@ -49,7 +57,10 @@ class MemoryCmsRepository {
     const seen = new Set<string>()
     return filtered
       .filter((r) => {
-        const key = `${r.collection}::${r.title}`.toLowerCase().trim()
+        const payloadKey = typeof r.payload?.key === 'string' ? r.payload.key.trim().toLowerCase() : ''
+        const key = payloadKey
+          ? `${r.collection.toLowerCase()}::key:${payloadKey}`
+          : `${r.collection}::${r.title}`.toLowerCase().trim()
         if (seen.has(key)) return false
         seen.add(key)
         return true
@@ -65,9 +76,9 @@ class MemoryCmsRepository {
     return this.records.get(id)
   }
 
-  public getByTitle(collection: string, title: string): CmsRecord | undefined {
+  public getByKey(collection: string, key: string): CmsRecord | undefined {
     return this.getAll(collection).find(
-      (r) => r.title.toLowerCase() === title.toLowerCase()
+      (r) => String(r.payload?.key ?? '').trim().toLowerCase() === key.trim().toLowerCase()
     )
   }
 
@@ -170,8 +181,9 @@ async function fetchPublishedCollection(collection: string): Promise<CmsRecord[]
  * Admin mutations call `revalidateTag(CMS_CACHE_TAG)`, and the cache also
  * refreshes on its own after `CMS_REVALIDATE_SECONDS`.
  */
-export async function getPublishedCmsContent(collection: string): Promise<CmsRecord[]> {
-  const repo = getMemoryRepo()
+export async function getPublishedCmsContentResult(
+  collection: string,
+): Promise<CmsResult<CmsRecord[]>> {
   try {
     const rows = await unstable_cache(
       () => fetchPublishedCollection(collection),
@@ -183,61 +195,31 @@ export async function getPublishedCmsContent(collection: string): Promise<CmsRec
     )()
 
     if (rows.length > 0) {
-      // Synchronize back to the in-memory fallback used when the DB is offline.
-      rows.forEach((r) => repo.update(r.id, r))
-      return rows
+      // Keep the in-memory copy available to admin previews during this process.
+      rows.forEach((r) => getMemoryRepo().update(r.id, r))
+      return { status: 'ok', data: rows }
     }
-  } catch {
-    // Database offline fallback to memory
-  }
 
-  return repo.getPublished(collection)
+    return { status: 'empty' }
+  } catch (error) {
+    console.error(`[CMS] Could not read published "${collection}"`, error)
+    return {
+      status: 'error',
+      message: `${collection} content is temporarily unavailable.`,
+    }
+  }
 }
 
 /**
- * Retrieve all records (draft + published) for admin management
+ * Compatibility getter for callers that do not yet need the explicit result.
+ * Public pages use getPublishedCmsContentResult so an outage is not mistaken for
+ * an empty collection.
  */
-export async function getAllCmsContent(collection?: string): Promise<CmsRecord[]> {
-  const repo = getMemoryRepo()
-  try {
-    const userId = await requireUser()
-    let query = db
-      .select({
-        id: cmsContent.id,
-        collection: cmsContent.collection,
-        title: cmsContent.title,
-        slug: cmsContent.slug,
-        payload: cmsContent.payload,
-        status: cmsContent.status,
-        sortOrder: cmsContent.sortOrder,
-        createdAt: cmsContent.createdAt,
-        updatedAt: cmsContent.updatedAt,
-      })
-      .from(cmsContent)
-      .where(eq(cmsContent.userId, userId))
-      .orderBy(asc(cmsContent.sortOrder), desc(cmsContent.createdAt))
-
-    const rows = await query
-    if (rows && rows.length > 0) {
-      const seen = new Set<string>()
-      const uniqueRows = (rows as CmsRecord[]).filter((r) => {
-        const key = `${r.collection}::${r.title}`.toLowerCase().trim()
-        if (seen.has(key)) return false
-        seen.add(key)
-        return true
-      })
-      if (collection) {
-        return uniqueRows.filter(
-          (r) => r.collection.toLowerCase() === collection.toLowerCase()
-        )
-      }
-      return uniqueRows
-    }
-  } catch {
-    // Database offline fallback
-  }
-
-  return repo.getAll(collection)
+export async function getPublishedCmsContent(collection: string): Promise<CmsRecord[]> {
+  const result = await getPublishedCmsContentResult(collection)
+  if (result.status === 'ok') return result.data
+  if (result.status === 'error') return getMemoryRepo().getPublished(collection)
+  return []
 }
 
 export interface HeroSectionConfig {
@@ -250,6 +232,26 @@ export interface HeroSectionConfig {
   metaLeft?: string
   metaRight?: string
   [key: string]: any
+}
+
+export interface HomepageSectionMeta {
+  eyebrow?: string
+  kr?: string
+  title?: string
+  accent?: string
+  description?: string
+  href?: string
+  primaryLabel?: string
+  secondaryLabel?: string
+  meta?: string
+  /** How many cards the preview collection shows before the View all card. */
+  previewCount?: number
+}
+
+export interface HomepageSectionsConfig {
+  order: string[]
+  enabled: Record<string, boolean>
+  sectionMeta: Record<string, HomepageSectionMeta>
 }
 
 export interface ProfileContent {
@@ -269,49 +271,40 @@ export interface ProfileContent {
   [key: string]: any
 }
 
-/**
- * Retrieve Hero Section configuration from CMS
- */
-export async function getHeroSectionConfig(): Promise<HeroSectionConfig> {
-  const records = await getPublishedCmsContent('Site Settings')
-  const heroRecord = records.find(
-    (r) => r.title.toLowerCase() === 'hero section'
-  )
-  if (heroRecord && heroRecord.payload) {
-    return heroRecord.payload as HeroSectionConfig
+export async function getHeroSectionConfigResult(): Promise<CmsResult<HeroSectionConfig>> {
+  const result = await getPublishedCmsContentResult(CMS_COLLECTIONS.siteSettings)
+  if (result.status !== 'ok') return result
+  const heroRecord = indexCmsRecordsByKey(result.data)[CMS_KEYS.hero]
+  return {
+    status: 'ok',
+    data: heroRecord?.payload ? (heroRecord.payload as HeroSectionConfig) : {},
   }
-  const repo = getMemoryRepo()
-  const fallback = repo.getByTitle('Site Settings', 'Hero Section')
-  return (fallback?.payload as HeroSectionConfig) ?? {}
 }
 
-/**
- * Retrieve Homepage Sections Ordering & Visibility from CMS
- */
-export interface HomepageSectionMeta {
-  eyebrow?: string
-  kr?: string
-  title?: string
-  accent?: string
-  description?: string
-  href?: string
-  primaryLabel?: string
-  secondaryLabel?: string
-  meta?: string
-  /** How many cards the preview collection shows before the View all card. */
-  previewCount?: number
+export async function getHomepageSectionsConfigResult(): Promise<
+  CmsResult<HomepageSectionsConfig>
+> {
+  const result = await getPublishedCmsContentResult(CMS_COLLECTIONS.siteSettings)
+  if (result.status !== 'ok') return result
+  const sectionsRecord = indexCmsRecordsByKey(result.data)[CMS_KEYS.homepageSections]
+  return {
+    status: 'ok',
+    data: sectionsRecord?.payload
+      ? (sectionsRecord.payload as unknown as HomepageSectionsConfig)
+      : { order: [], enabled: {}, sectionMeta: {} },
+  }
 }
 
-export async function getHomepageSectionsConfig(): Promise<{
-  order: string[]
-  enabled: Record<string, boolean>
-  sectionMeta: Record<string, HomepageSectionMeta>
-}> {
-  const records = await getPublishedCmsContent('Site Settings')
-  const sectionsRecord = records.find(
-    (r) => r.title.toLowerCase() === 'homepage sections'
-  )
-  if (sectionsRecord && sectionsRecord.payload) {
+export async function getHeroSectionConfig(): Promise<HeroSectionConfig> {
+  const records = await getPublishedCmsContent(CMS_COLLECTIONS.siteSettings)
+  const heroRecord = indexCmsRecordsByKey(records)[CMS_KEYS.hero]
+  return heroRecord?.payload ? (heroRecord.payload as HeroSectionConfig) : {}
+}
+
+export async function getHomepageSectionsConfig(): Promise<HomepageSectionsConfig> {
+  const records = await getPublishedCmsContent(CMS_COLLECTIONS.siteSettings)
+  const sectionsRecord = indexCmsRecordsByKey(records)[CMS_KEYS.homepageSections]
+  if (sectionsRecord?.payload) {
     return sectionsRecord.payload as any
   }
 
@@ -322,24 +315,35 @@ export async function getHomepageSectionsConfig(): Promise<{
 /**
  * Retrieve Profile biography from CMS
  */
+export async function getProfileContentResult(): Promise<CmsResult<ProfileContent>> {
+  const result = await getPublishedCmsContentResult(CMS_COLLECTIONS.profile)
+  if (result.status !== 'ok') return result
+  if (!result.data[0]) return { status: 'empty' }
+  return {
+    status: 'ok',
+    data: {
+      title: result.data[0].title,
+      ...result.data[0].payload,
+    } as ProfileContent,
+  }
+}
+
 export async function getProfileContent(): Promise<ProfileContent> {
-  const records = await getPublishedCmsContent('Profile')
+  const records = await getPublishedCmsContent(CMS_COLLECTIONS.profile)
   if (records[0]) {
     return {
       title: records[0].title,
       ...records[0].payload,
     } as ProfileContent
   }
-  const repo = getMemoryRepo()
-  const fallback = repo.getAll('Profile')[0]
-  return fallback ? ({ title: fallback.title, ...fallback.payload } as ProfileContent) : {}
+  return {}
 }
 
 /**
  * Retrieve featured projects from CMS
  */
 export async function getFeaturedProjects(limit = 3): Promise<CmsRecord[]> {
-  const projects = await getPublishedCmsContent('Projects')
+  const projects = await getPublishedCmsContent(CMS_COLLECTIONS.projects)
   const featured = projects.filter((p) => p.payload?.featured === true)
   return (featured.length ? featured : projects).slice(0, limit)
 }
@@ -348,7 +352,7 @@ export async function getFeaturedProjects(limit = 3): Promise<CmsRecord[]> {
  * Retrieve gallery items from CMS
  */
 export async function getGalleryItems(limit = 4): Promise<CmsRecord[]> {
-  const gallery = await getPublishedCmsContent('Gallery')
+  const gallery = await getPublishedCmsContent(CMS_COLLECTIONS.gallery)
   return gallery.slice(0, limit)
 }
 
@@ -356,21 +360,21 @@ export async function getGalleryItems(limit = 4): Promise<CmsRecord[]> {
  * Retrieve experience milestones from CMS
  */
 export async function getExperienceItems(): Promise<CmsRecord[]> {
-  return getPublishedCmsContent('Experience')
+  return getPublishedCmsContent(CMS_COLLECTIONS.experience)
 }
 
 /**
  * Retrieve education history from CMS
  */
 export async function getEducationItems(): Promise<CmsRecord[]> {
-  return getPublishedCmsContent('Education')
+  return getPublishedCmsContent(CMS_COLLECTIONS.education)
 }
 
 /**
  * Retrieve categorized skills from CMS
  */
 export async function getSkillsContent(): Promise<CmsRecord[]> {
-  return getPublishedCmsContent('Skills')
+  return getPublishedCmsContent(CMS_COLLECTIONS.skills)
 }
 
 /**
@@ -378,30 +382,37 @@ export async function getSkillsContent(): Promise<CmsRecord[]> {
  */
 export async function getMediaPreviews(): Promise<{
   music: CmsRecord[]
+  movies: CmsRecord[]
   anime: CmsRecord[]
   manga: CmsRecord[]
 }> {
-  const [music, anime, manga] = await Promise.all([
-    getPublishedCmsContent('Music'),
-    getPublishedCmsContent('Anime'),
-    getPublishedCmsContent('Manga'),
+  const [music, movies, anime, manga] = await Promise.all([
+    getPublishedCmsContent(CMS_COLLECTIONS.music),
+    getPublishedCmsContent(CMS_COLLECTIONS.movies),
+    getPublishedCmsContent(CMS_COLLECTIONS.anime),
+    getPublishedCmsContent(CMS_COLLECTIONS.manga),
   ])
-  return { music, anime, manga }
+  return { music, movies, anime, manga }
 }
 
 /**
  * Retrieve social links from CMS
  */
 export async function getSocialLinks(): Promise<CmsRecord[]> {
-  return getPublishedCmsContent('Social Links')
+  return getPublishedCmsContent(CMS_COLLECTIONS.socialLinks)
 }
 
 // --- CMS MUTATION FUNCTIONS ---
 
 export async function createCmsContent(formData: FormData) {
-  const collection = String(formData.get('collection') || 'Profile').trim()
+  const collection = String(formData.get('collection') || CMS_COLLECTIONS.profile).trim()
   const title = String(formData.get('title') || '').trim()
   if (!title) throw new Error('A title is required')
+
+  const collectionSchema = Object.values(CMS_SCHEMA.collections).find(
+    (entry) => entry.name === collection,
+  )
+  if (!collectionSchema) throw new Error(`Unknown CMS collection: ${collection}`)
 
   let payload: Record<string, unknown> = {}
   const rawPayload = formData.get('payload')
@@ -417,10 +428,18 @@ export async function createCmsContent(formData: FormData) {
     }
   }
 
-  // Page Copy and Media Collections are looked up by key, not by title, so the
-  // key is taken from the form when present.
+  // Keyed collections are found by their locked key, never by title or slug.
+  // Site Settings can derive a key from the title because the admin form does
+  // not ask for one; Page Copy and Media Collections must supply it explicitly.
   const key = String(formData.get('key') || '').trim().toLowerCase()
-  if (key) payload.key = key
+  if (collectionSchema.keyed) {
+    const resolvedKey =
+      key || (collection === CMS_COLLECTIONS.siteSettings ? toSlug(title) : '')
+    if (!resolvedKey) throw new Error(`A key is required for ${collection}`)
+    payload.key = resolvedKey
+  } else if (key) {
+    payload.key = key
+  }
 
   // Also extract explicit common fields from form if present
   const imageUrl = formData.get('imageUrl')
@@ -458,7 +477,7 @@ export async function createCmsContent(formData: FormData) {
     console.warn('[CMS] Database insert fallback to memory repo:', err)
   }
 
-  revalidateAllRoutes()
+  revalidateCms(collection)
 }
 
 export async function updateCmsContent(id: number, formData: FormData) {
@@ -487,8 +506,12 @@ export async function updateCmsContent(id: number, formData: FormData) {
 
   const imageUrl = String(formData.get('imageUrl') || '').trim()
 
+  const previous = getMemoryRepo().getById(id)
   let payloadUpdates: Record<string, unknown> =
-    replacement ?? ((getMemoryRepo().getById(id)?.payload as Record<string, unknown>) ?? {})
+    replacement ?? ((previous?.payload as Record<string, unknown>) ?? {})
+  const previousKey =
+    typeof previous?.payload?.key === 'string' ? previous.payload.key : undefined
+  if (previousKey && !payloadUpdates.key) payloadUpdates = { ...payloadUpdates, key: previousKey }
   if (description !== undefined) payloadUpdates = { ...payloadUpdates, description }
   if (imageUrl) payloadUpdates = { ...payloadUpdates, imageUrl }
 
@@ -506,13 +529,16 @@ export async function updateCmsContent(id: number, formData: FormData) {
     // The memory repo is never seeded, so the stored payload has to come from the
     // database when the form only supplied a description.
     const [current] = await db
-      .select({ payload: cmsContent.payload })
+      .select({ payload: cmsContent.payload, collection: cmsContent.collection })
       .from(cmsContent)
       .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
       .limit(1)
 
     let storedPayload: Record<string, unknown> =
       replacement ?? ((current?.payload as Record<string, unknown>) ?? {})
+    const storedKey =
+      typeof current?.payload?.key === 'string' ? current.payload.key : undefined
+    if (storedKey && !storedPayload.key) storedPayload = { ...storedPayload, key: storedKey }
     if (description !== undefined) storedPayload = { ...storedPayload, description }
     if (imageUrl) storedPayload = { ...storedPayload, imageUrl }
 
@@ -526,19 +552,28 @@ export async function updateCmsContent(id: number, formData: FormData) {
         updatedAt: new Date(),
       })
       .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
+
+    revalidateCms(collection || current?.collection || previous?.collection)
   } catch (err) {
     console.warn('[CMS] Database update fallback to memory repo:', err)
+    revalidateCms(collection || previous?.collection)
   }
-
-  revalidateAllRoutes()
 }
 
 export async function deleteCmsContent(id: number) {
   const repo = getMemoryRepo()
+  const previous = repo.getById(id)
   repo.delete(id)
 
+  let collection = previous?.collection
   try {
     const userId = await requireUser()
+    const [current] = await db
+      .select({ collection: cmsContent.collection })
+      .from(cmsContent)
+      .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
+      .limit(1)
+    collection = collection || current?.collection
     await db
       .delete(cmsContent)
       .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
@@ -546,19 +581,21 @@ export async function deleteCmsContent(id: number) {
     console.warn('[CMS] Database delete fallback to memory repo:', err)
   }
 
-  revalidateAllRoutes()
+  revalidateCms(collection)
 }
 
 export async function toggleCmsStatus(id: number) {
+  let collection: string | undefined
   try {
     const userId = await requireUser()
     const rows = await db
-      .select({ status: cmsContent.status })
+      .select({ status: cmsContent.status, collection: cmsContent.collection })
       .from(cmsContent)
       .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
       .limit(1)
     const current = rows[0]
     if (!current) return
+    collection = current.collection
     const nextStatus = current.status === 'published' ? 'draft' : 'published'
     await db
       .update(cmsContent)
@@ -569,19 +606,21 @@ export async function toggleCmsStatus(id: number) {
     return
   }
 
-  revalidateAllRoutes()
+  revalidateCms(collection)
 }
 
 export async function toggleCmsFeatured(id: number) {
+  let collection: string | undefined
   try {
     const userId = await requireUser()
     const rows = await db
-      .select({ payload: cmsContent.payload })
+      .select({ payload: cmsContent.payload, collection: cmsContent.collection })
       .from(cmsContent)
       .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
       .limit(1)
     const current = rows[0]
     if (!current) return
+    collection = current.collection
     const nextPayload = { ...(current.payload ?? {}), featured: current.payload?.featured !== true }
     await db
       .update(cmsContent)
@@ -592,77 +631,46 @@ export async function toggleCmsFeatured(id: number) {
     return
   }
 
-  revalidateAllRoutes()
+  revalidateCms(collection)
+}
+
+async function updateKeyedSetting(key: string, merge: Record<string, unknown>) {
+  try {
+    const userId = await requireUser()
+    const rows = await db
+      .select({ id: cmsContent.id, payload: cmsContent.payload })
+      .from(cmsContent)
+      .where(
+        and(
+          eq(cmsContent.collection, CMS_COLLECTIONS.siteSettings),
+          eq(cmsContent.userId, userId),
+        ),
+      )
+    const current = rows.find(
+      (row) => String(row.payload?.key ?? '').trim().toLowerCase() === key,
+    )
+    if (!current) return
+    await db
+      .update(cmsContent)
+      .set({ payload: { ...(current.payload ?? {}), ...merge }, updatedAt: new Date() })
+      .where(and(eq(cmsContent.id, current.id), eq(cmsContent.userId, userId)))
+  } catch (error) {
+    console.warn(`[CMS] ${key} update failed:`, error)
+    return
+  }
+
+  revalidateCms(CMS_COLLECTIONS.siteSettings)
 }
 
 export async function updateHomepageSectionsOrder(
   order: string[],
   enabled: Record<string, boolean>
 ) {
-  try {
-    const userId = await requireUser()
-    const rows = await db
-      .select({ payload: cmsContent.payload })
-      .from(cmsContent)
-      .where(
-        and(
-          eq(cmsContent.collection, 'Site Settings'),
-          eq(cmsContent.title, 'Homepage Sections'),
-          eq(cmsContent.userId, userId)
-        )
-      )
-      .limit(1)
-    if (!rows[0]) return
-    const payload = { ...(rows[0].payload ?? {}), order, enabled }
-    await db
-      .update(cmsContent)
-      .set({ payload, updatedAt: new Date() })
-      .where(
-        and(
-          eq(cmsContent.collection, 'Site Settings'),
-          eq(cmsContent.title, 'Homepage Sections'),
-          eq(cmsContent.userId, userId)
-        )
-      )
-  } catch (error) {
-    console.warn('[CMS] Homepage sections update failed:', error)
-    return
-  }
-
-  revalidateAllRoutes()
+  await updateKeyedSetting(CMS_KEYS.homepageSections, { order, enabled })
 }
 
 export async function updateHeroSettings(payload: Record<string, unknown>) {
-  try {
-    const userId = await requireUser()
-    const rows = await db
-      .select({ payload: cmsContent.payload })
-      .from(cmsContent)
-      .where(
-        and(
-          eq(cmsContent.collection, 'Site Settings'),
-          eq(cmsContent.title, 'Hero Section'),
-          eq(cmsContent.userId, userId)
-        )
-      )
-      .limit(1)
-    if (!rows[0]) return
-    await db
-      .update(cmsContent)
-      .set({ payload: { ...(rows[0].payload ?? {}), ...payload }, updatedAt: new Date() })
-      .where(
-        and(
-          eq(cmsContent.collection, 'Site Settings'),
-          eq(cmsContent.title, 'Hero Section'),
-          eq(cmsContent.userId, userId)
-        )
-      )
-  } catch (error) {
-    console.warn('[CMS] Hero settings update failed:', error)
-    return
-  }
-
-  revalidateAllRoutes()
+  await updateKeyedSetting(CMS_KEYS.hero, payload)
 }
 
 export async function getHeroImage() {
@@ -674,8 +682,9 @@ export async function saveCmsImage(url: string) {
   await updateHeroSettings({ imageUrl: url })
 }
 
-function revalidateAllRoutes() {
+function revalidateCms(collection?: string) {
   revalidateTag(CMS_CACHE_TAG)
+  if (collection) revalidateTag(cmsCollectionTag(collection))
   revalidatePath('/')
   revalidatePath('/about')
   revalidatePath('/projects')

@@ -3,6 +3,8 @@
 import { Suspense, useEffect, useMemo } from 'react'
 import { FolderGit2, Layers } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CmsErrorState } from '@/components/ui/CmsState'
+import { CMS_SCHEMA } from '@/lib/cms-schema'
 import ScrollObserver from '@/components/ScrollObserver'
 import ErrorBoundary from '@/components/ErrorBoundaryWrapper'
 import { Loading } from '@/components/Loading'
@@ -16,6 +18,7 @@ import type { PageCopy } from '@/lib/site-content'
 interface ProjectsContentProps {
   projects: ProjectEntry[]
   copy?: PageCopy
+  error?: string
 }
 
 const PAGE_KEY = 'projects'
@@ -23,7 +26,7 @@ const DEFAULT_SECTIONS = ['intro', 'work'] as const
 
 type SectionId = (typeof DEFAULT_SECTIONS)[number]
 
-export default function ProjectsContent({ projects, copy }: ProjectsContentProps) {
+export default function ProjectsContent({ projects, copy, error }: ProjectsContentProps) {
   const sections = copy?.sections
   const { mode, registerPageSections, getSectionOrder } = useDevMode()
 
@@ -50,7 +53,7 @@ export default function ProjectsContent({ projects, copy }: ProjectsContentProps
       <PageHero
         eyebrow={copy?.eyebrow ?? ''}
         krEyebrow={copy?.krEyebrow}
-        title={copy?.title ?? ''}
+        title={copy?.title ?? CMS_SCHEMA.sections.pages.projects.label}
         accent={copy?.accent}
         description={copy?.description}
         meta={
@@ -71,11 +74,13 @@ export default function ProjectsContent({ projects, copy }: ProjectsContentProps
       <PageSection
         eyebrow={sections?.work?.eyebrow}
         krEyebrow={sections?.work?.krEyebrow}
-        title={sections?.work?.title ?? ''}
+        title={sections?.work?.title ?? CMS_SCHEMA.sections.pages.projects.label}
         accent={sections?.work?.accent}
         description={sections?.work?.description}
       >
-        {projects.length ? (
+        {error ? (
+          <CmsErrorState message={error} />
+        ) : projects.length ? (
           <div>
             {projects.map((project, index) => (
               <ProjectRow key={project.slug || project.title} project={project} index={index} />
@@ -84,10 +89,10 @@ export default function ProjectsContent({ projects, copy }: ProjectsContentProps
         ) : (
           <EmptyState
             icon={FolderGit2}
-            message="No projects published yet."
-            hint="Add a project in the CMS to show it here. Each project gets its own case study at /projects/slug."
-            actionLabel="Add a project in admin"
-            actionHref="/admin?section=projects"
+            message={CMS_SCHEMA.sections.pages.projects.emptyState.message}
+            hint={CMS_SCHEMA.sections.pages.projects.emptyState.hint}
+            actionLabel={CMS_SCHEMA.sections.pages.projects.emptyState.actionLabel}
+            actionHref={CMS_SCHEMA.sections.pages.projects.emptyState.actionHref}
           />
         )}
       </PageSection>

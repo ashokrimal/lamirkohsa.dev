@@ -4,6 +4,8 @@ import { HorizontalCollection } from '@/components/ui/HorizontalCollection'
 import { MediaPoster } from '@/components/ui/MediaPoster'
 import { ImageOff } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CmsErrorState } from '@/components/ui/CmsState'
+import { CMS_MEDIA_RECORDS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSections } from '@/lib/media-content'
 
@@ -18,8 +20,12 @@ const PREVIEW_COUNT = 5
  * instead of samples.
  */
 export default async function MediaHomeContent() {
-  const [copy, collections] = await Promise.all([getPageCopy(), getMediaCollections()])
-  const pageCopy = copy.media
+  const [copyResult, collectionsResult] = await Promise.all([
+    getPageCopy(),
+    getMediaCollections(),
+  ])
+  const pageCopy = copyResult.status === 'ok' ? copyResult.data.media : undefined
+  const collections = collectionsResult.status === 'ok' ? collectionsResult.data : []
   const sections = await getMediaSections(collections)
 
   return (
@@ -32,10 +38,17 @@ export default async function MediaHomeContent() {
         description={pageCopy?.description}
       />
 
+      {copyResult.status === 'error' && (
+        <CmsErrorState message={copyResult.message} className="mt-10" />
+      )}
+
       {sections.map((section) => {
-        const config = collections.find((collection) =>
-          [section.kind, 'films'].includes(collection.key.toLowerCase()),
+        const config = collections.find(
+          (collection) =>
+            collection.key ===
+            CMS_MEDIA_RECORDS[section.kind].key,
         )
+        const emptyState = CMS_MEDIA_RECORDS[section.kind].emptyState
 
         return (
           <section
@@ -49,13 +62,15 @@ export default async function MediaHomeContent() {
               description={section.description}
             />
             <div className="mt-8">
-              {section.items.length === 0 ? (
+              {section.error ? (
+                <CmsErrorState message={section.error} />
+              ) : section.items.length === 0 ? (
                 <EmptyState
                   icon={ImageOff}
-                  message={`No ${section.label.toLowerCase()} published yet.`}
-                  hint={`Add ${section.label.toLowerCase()} items from the CMS.`}
-                  actionLabel={`Add ${section.label.toLowerCase()} in admin`}
-                  actionHref={`/admin?section=content&collection=${section.kind === 'movies' ? 'Movies' : section.kind.charAt(0).toUpperCase() + section.kind.slice(1)}`}
+                  message={emptyState.message}
+                  hint={emptyState.hint}
+                  actionLabel={emptyState.actionLabel}
+                  actionHref={emptyState.actionHref}
                 />
               ) : (
                 <HorizontalCollection

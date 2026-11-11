@@ -2,8 +2,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { ArrowUpRight, Calendar, CheckCircle2, Circle, Github, Layers, Target } from 'lucide-react'
-import { getPublishedCmsContent } from '@/app/actions/content-cms'
-import { mapProjectRecords } from '@/lib/projects'
+import { getProjectsResult, type ProjectEntry } from '@/lib/projects'
 import { getPageCopy } from '@/lib/site-content'
 import {
   MetaChip,
@@ -13,12 +12,15 @@ import {
   PageShell,
 } from '@/components/ui/PageChrome'
 import { TechStack } from '@/components/ui/TechStack'
+import { CmsErrorState } from '@/components/ui/CmsState'
+import type { CmsResult } from '@/lib/cms-schema'
 
 export const revalidate = 300
 
-async function findProject(slug: string) {
-  const records = await getPublishedCmsContent('Projects')
-  return mapProjectRecords(records).find((project) => project.slug === slug)
+async function findProject(slug: string): Promise<CmsResult<ProjectEntry | undefined>> {
+  const result = await getProjectsResult()
+  if (result.status !== 'ok') return result
+  return { status: 'ok', data: result.data.find((project) => project.slug === slug) }
 }
 
 export async function generateMetadata({
@@ -26,8 +28,9 @@ export async function generateMetadata({
 }: {
   params: { slug: string }
 }): Promise<Metadata> {
-  const project = await findProject(params.slug)
-  if (!project) return {}
+  const result = await findProject(params.slug)
+  if (result.status !== 'ok' || !result.data) return {}
+  const project = result.data
   return {
     title: project.title,
     description: project.challenge,
@@ -35,9 +38,18 @@ export async function generateMetadata({
 }
 
 export default async function ProjectCaseStudyPage({ params }: { params: { slug: string } }) {
-  const [project, copy] = await Promise.all([findProject(params.slug), getPageCopy()])
-  if (!project) notFound()
-
+  const [projectResult, copyResult] = await Promise.all([findProject(params.slug), getPageCopy()])
+  if (projectResult.status === 'error') {
+    return (
+      <PageShell>
+        <CmsErrorState message={projectResult.message} className="mt-12" />
+        <PageNav backHref="/projects" />
+      </PageShell>
+    )
+  }
+  if (projectResult.status !== 'ok' || !projectResult.data) notFound()
+  const project = projectResult.data
+  const copy = copyResult.status === 'ok' ? copyResult.data : {}
   const pageCopy = copy['project-case-study']
   const sections = pageCopy?.sections
 

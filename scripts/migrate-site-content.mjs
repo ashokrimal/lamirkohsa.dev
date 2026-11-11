@@ -11,10 +11,13 @@
  * Nothing in the running app reads this file; it only seeds the CMS once.
  */
 import { Client } from 'pg'
+import { loadCmsSchema } from './load-cms-schema.mjs'
+
+const { CMS_COLLECTIONS, CMS_SCHEMA } = await loadCmsSchema()
 
 const siteSettings = [
   {
-    collection: 'Site Settings',
+    collection: CMS_COLLECTIONS.siteSettings,
     title: 'Navigation',
     slug: 'navigation',
     sortOrder: 10,
@@ -49,7 +52,7 @@ const siteSettings = [
     },
   },
   {
-    collection: 'Site Settings',
+    collection: CMS_COLLECTIONS.siteSettings,
     title: 'Footer',
     slug: 'footer',
     sortOrder: 11,
@@ -65,7 +68,7 @@ const siteSettings = [
     },
   },
   {
-    collection: 'Site Settings',
+    collection: CMS_COLLECTIONS.siteSettings,
     title: 'Brand',
     slug: 'brand',
     sortOrder: 12,
@@ -76,7 +79,7 @@ const siteSettings = [
     },
   },
   {
-    collection: 'Site Settings',
+    collection: CMS_COLLECTIONS.siteSettings,
     title: 'Contact Details',
     slug: 'contact-details',
     sortOrder: 13,
@@ -89,7 +92,7 @@ const siteSettings = [
     },
   },
   {
-    collection: 'Site Settings',
+    collection: CMS_COLLECTIONS.siteSettings,
     title: 'Hero Section',
     slug: 'hero-section',
     sortOrder: 0,
@@ -108,7 +111,7 @@ const siteSettings = [
     },
   },
   {
-    collection: 'Site Settings',
+    collection: CMS_COLLECTIONS.siteSettings,
     title: 'Homepage Sections',
     slug: 'homepage-sections',
     sortOrder: 1,
@@ -419,6 +422,46 @@ const mediaCollections = [
   },
 ]
 
+const KEYED_COLLECTIONS = new Set(
+  Object.values(CMS_SCHEMA.collections)
+    .filter((definition) => definition.keyed)
+    .map((definition) => definition.name),
+)
+
+function keyFromRecord(record) {
+  const payload = record.payload && typeof record.payload === 'object' ? record.payload : {}
+  if (typeof payload.key === 'string' && payload.key.trim()) {
+    return payload.key.trim().toLowerCase()
+  }
+  if (record.collection === CMS_COLLECTIONS.pageCopy && record.slug?.startsWith('page-')) {
+    return record.slug.slice('page-'.length).toLowerCase()
+  }
+  if (
+    record.collection === CMS_COLLECTIONS.mediaCollections &&
+    record.slug?.startsWith('media-collection-')
+  ) {
+    return record.slug.slice('media-collection-'.length).toLowerCase()
+  }
+  return String(record.slug || record.title || '').trim().toLowerCase()
+}
+
+/** Merges the one legacy field name into its canonical name. */
+function normalizePayload(record, payload) {
+  const next = { ...payload }
+  if (KEYED_COLLECTIONS.has(record.collection)) {
+    const key = keyFromRecord({ ...record, payload: next })
+    // "films" was the old media key; the collection now uses the movies key.
+    next.key = key === 'films' ? 'movies' : key
+  }
+  if (next.timezone && !next.timeZone) next.timeZone = next.timezone
+  if ('timezone' in next) delete next.timezone
+  if (next.image && !next.imageUrl) next.imageUrl = next.image
+  if ('image' in next) delete next.image
+  if (next.challenge && !next.description) next.description = next.challenge
+  if ('challenge' in next) delete next.challenge
+  return next
+}
+
 async function main() {
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) {
@@ -441,7 +484,7 @@ async function main() {
     const records = [
       ...siteSettings.map((record) => ({ ...record, status: 'published' })),
       ...pageCopy.map((payload, index) => ({
-        collection: 'Page Copy',
+        collection: CMS_COLLECTIONS.pageCopy,
         title: payload.key,
         slug: `page-${payload.key}`,
         sortOrder: index,
@@ -449,7 +492,7 @@ async function main() {
         payload,
       })),
       ...mediaCollections.map((payload, index) => ({
-        collection: 'Media Collections',
+        collection: CMS_COLLECTIONS.mediaCollections,
         title: payload.label,
         slug: `media-collection-${payload.key}`,
         sortOrder: index,
@@ -461,12 +504,26 @@ async function main() {
     let inserted = 0
     let skipped = 0
 
+    let migrated = 0
+
     for (const record of records) {
+      record.payload = normalizePayload(record, record.payload ?? {})
+
       const existing = await client.query(
-        `select 1 from "cmsContent" where "collection" = $1 and "slug" = $2 limit 1`,
+        `select "id", "payload" from "cmsContent" where "collection" = $1 and "slug" = $2 limit 1`,
         [record.collection, record.slug],
       )
       if (existing.rowCount) {
+        const row = existing.rows[0]
+        const current = row.payload && typeof row.payload === 'object' ? row.payload : {}
+        const next = normalizePayload(record, current)
+        if (JSON.stringify(current) !== JSON.stringify(next)) {
+          await client.query(`update "cmsContent" set "payload" = $1::jsonb where "id" = $2`, [
+            JSON.stringify(next),
+            row.id,
+          ])
+          migrated += 1
+        }
         skipped += 1
         continue
       }
@@ -487,7 +544,9 @@ async function main() {
       inserted += 1
     }
 
-    console.log(`Inserted ${inserted} records, skipped ${skipped} existing records.`)
+    console.log(
+      `Inserted ${inserted} records, migrated ${migrated}, skipped ${skipped} existing records.`,
+    )
   } finally {
     await client.end()
   }

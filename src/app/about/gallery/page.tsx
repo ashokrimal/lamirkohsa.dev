@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { Camera, ImageOff } from 'lucide-react'
-import { getPublishedCmsContent } from '@/app/actions/content-cms'
+import { getGalleryResult } from '@/lib/gallery'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CmsErrorState } from '@/components/ui/CmsState'
+import { CMS_SCHEMA } from '@/lib/cms-schema'
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy } from '@/lib/site-content'
@@ -15,26 +17,9 @@ export const metadata: Metadata = {
 }
 
 export default async function GalleryPage() {
-  const [rows, copy] = await Promise.all([
-    getPublishedCmsContent('Gallery'),
-    getPageCopy(),
-  ])
-  const pageCopy = copy.gallery
-
-  const photos = rows
-    .map((item) => {
-      const payload = item.payload || {}
-      return {
-        id: item.id,
-        title: item.title,
-        imageUrl: typeof payload.imageUrl === 'string' ? payload.imageUrl : '',
-        category: typeof payload.category === 'string' ? payload.category : undefined,
-        description: typeof payload.description === 'string' ? payload.description : undefined,
-        location: typeof payload.location === 'string' ? payload.location : undefined,
-        altText: typeof payload.altText === 'string' ? payload.altText : undefined,
-      }
-    })
-    .filter((item) => Boolean(item.imageUrl))
+  const [galleryResult, copyResult] = await Promise.all([getGalleryResult(), getPageCopy()])
+  const pageCopy = copyResult.status === 'ok' ? copyResult.data.gallery : undefined
+  const photos = galleryResult.status === 'ok' ? galleryResult.data : []
 
   return (
     <PageShell>
@@ -50,15 +35,17 @@ export default async function GalleryPage() {
       />
 
       <div className="mt-10 md:mt-14">
-        {photos.length ? (
+        {galleryResult.status === 'error' ? (
+          <CmsErrorState message={galleryResult.message} />
+        ) : photos.length ? (
           <GalleryGrid items={photos} columns={3} />
         ) : (
           <EmptyState
             icon={ImageOff}
-            message="No gallery images published yet."
-            hint="Upload images to the Visual Gallery collection."
-            actionLabel="Add images in admin"
-            actionHref="/admin?section=content&collection=Gallery"
+            message={CMS_SCHEMA.sections.pages.gallery.emptyState.message}
+            hint={CMS_SCHEMA.sections.pages.gallery.emptyState.hint}
+            actionLabel={CMS_SCHEMA.sections.pages.gallery.emptyState.actionLabel}
+            actionHref={CMS_SCHEMA.sections.pages.gallery.emptyState.actionHref}
           />
         )}
       </div>

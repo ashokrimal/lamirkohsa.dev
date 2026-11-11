@@ -95,7 +95,7 @@ export async function getSpotifyCurrentTrack(): Promise<SpotifyTrackPayload | nu
           return {
             isPlaying: song.is_playing ?? true,
             title: song.item.name,
-            artist: song.item.artists?.map((a: { name: string }) => a.name).join(', ') ?? 'Unknown Artist',
+            artist: song.item.artists?.map((a: { name: string }) => a.name).join(', ') ?? '',
             album: song.item.album?.name ?? '',
             albumArt: song.item.album?.images?.[0]?.url ?? '',
             songUrl: song.item.external_urls?.spotify ?? 'https://open.spotify.com',

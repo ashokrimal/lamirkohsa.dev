@@ -4,8 +4,10 @@ import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSection } from '@/lib/media-content'
 import { ImageOff } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CmsErrorState } from '@/components/ui/CmsState'
+import { CMS_MEDIA_RECORDS, CMS_SCHEMA } from '@/lib/cms-schema'
 
-const CMS_COLLECTION: Record<MediaKind, string> = { music: 'Music', movies: 'Movies', anime: 'Anime', manga: 'Manga' }
+
 const COPY_KEY: Record<MediaKind, string> = {
   music: 'media-music',
   movies: 'media-films',
@@ -15,9 +17,14 @@ const COPY_KEY: Record<MediaKind, string> = {
 
 /** The complete listing for one media category. All records come from the CMS. */
 export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
-  const [copy, collections] = await Promise.all([getPageCopy(), getMediaCollections()])
+  const [copyResult, collectionsResult] = await Promise.all([
+    getPageCopy(),
+    getMediaCollections(),
+  ])
+  const collections = collectionsResult.status === 'ok' ? collectionsResult.data : []
   const section = await getMediaSection(kind, collections)
-  const pageCopy = copy[COPY_KEY[kind]]
+  const pageCopy = copyResult.status === 'ok' ? copyResult.data[COPY_KEY[kind]] : undefined
+  const emptyState = CMS_MEDIA_RECORDS[kind].emptyState
 
   return (
     <PageShell>
@@ -36,7 +43,11 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
         }
       />
 
-      {section.items.length > 0 ? (
+      {section.error ? (
+        <div className="mt-12">
+          <CmsErrorState message={section.error} />
+        </div>
+      ) : section.items.length > 0 ? (
         <div className="mt-10 md:mt-14 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
           {section.items.map((item) => (
             <MediaPoster
@@ -51,10 +62,10 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
         <div className="mt-12">
           <EmptyState
             icon={ImageOff}
-            message={`No ${section.label.toLowerCase()} published yet.`}
-            hint={`Add ${section.label.toLowerCase()} items from the CMS.`}
-            actionLabel={`Add ${section.label.toLowerCase()} in admin`}
-            actionHref={`/admin?section=content&collection=${CMS_COLLECTION[kind]}`}
+            message={emptyState.message}
+            hint={emptyState.hint}
+            actionLabel={emptyState.actionLabel}
+            actionHref={emptyState.actionHref}
           />
         </div>
       )}

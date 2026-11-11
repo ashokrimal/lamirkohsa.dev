@@ -21,6 +21,8 @@ interface ExperienceTimelineProps {
   type?: 'experience' | 'education'
   className?: string
   /** Shown when there are no records, linking to the admin section. */
+  emptyMessage?: string
+  emptyHint?: string
   emptyActionLabel?: string
   emptyActionHref?: string
 }
@@ -29,6 +31,8 @@ export function ExperienceTimeline({
   items,
   type = 'experience',
   className = '',
+  emptyMessage,
+  emptyHint,
   emptyActionLabel,
   emptyActionHref,
 }: ExperienceTimelineProps) {
@@ -36,8 +40,8 @@ export function ExperienceTimeline({
     return (
       <EmptyState
         icon={type === 'experience' ? Briefcase : GraduationCap}
-        message={`No ${type} published yet.`}
-        hint="Add a record in the CMS to show it on the timeline."
+        message={emptyMessage ?? `No ${type} published yet.`}
+        hint={emptyHint ?? 'Add a record in the CMS to show it on the timeline.'}
         actionLabel={emptyActionLabel}
         actionHref={emptyActionHref}
         className="rounded-[24px]"

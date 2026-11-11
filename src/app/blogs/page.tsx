@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ArrowUpRight, Clock } from 'lucide-react'
-import EmptyCollectionState from '@/components/EmptyCollectionState'
+import { ArrowUpRight, Clock, NotebookPen } from 'lucide-react'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { CmsErrorState } from '@/components/ui/CmsState'
+import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
-import { getPublishedCmsContent } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
 import { toSlug } from '@/lib/slug'
 import { getPageCopy } from '@/lib/site-content'
 
@@ -91,9 +93,12 @@ function getBlogDate(blog: Blog): string | undefined {
 }
 
 export default async function BlogsPage() {
-  const [blogsRaw, copy] = await Promise.all([getPublishedCmsContent('Blogs'), getPageCopy()])
-  const blogs = blogsRaw as Blog[]
-  const pageCopy = copy.journal
+  const [blogsResult, copyResult] = await Promise.all([
+    getPublishedCmsContentResult(CMS_COLLECTIONS.blogs),
+    getPageCopy(),
+  ])
+  const blogs = (blogsResult.status === 'ok' ? blogsResult.data : []) as Blog[]
+  const pageCopy = copyResult.status === 'ok' ? copyResult.data.journal : undefined
 
   return (
     <PageShell>
@@ -110,7 +115,11 @@ export default async function BlogsPage() {
         }
       />
 
-      {blogs && blogs.length > 0 ? (
+      {blogsResult.status === 'error' ? (
+        <div className="mt-10 md:mt-14">
+          <CmsErrorState message={blogsResult.message} />
+        </div>
+      ) : blogs.length > 0 ? (
         <div className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-2 gap-6">
           {blogs.map((blog, index) => {
             const body = getBlogText(blog)
@@ -171,12 +180,15 @@ export default async function BlogsPage() {
           })}
         </div>
       ) : (
-        <EmptyCollectionState
-          eyebrow="Journal / Empty"
-          title="The first note is still forming."
-          description="Essays, experiments, and observations will appear here when they are ready to share."
-          action={{ label: 'Return home', href: '/' }}
-        />
+        <div className="mt-10 md:mt-14">
+          <EmptyState
+            icon={NotebookPen}
+            message={CMS_SCHEMA.sections.pages.blogs.emptyState.message}
+            hint={CMS_SCHEMA.sections.pages.blogs.emptyState.hint}
+            actionLabel={CMS_SCHEMA.sections.pages.blogs.emptyState.actionLabel}
+            actionHref={CMS_SCHEMA.sections.pages.blogs.emptyState.actionHref}
+          />
+        </div>
       )}
 
       <PageNav />

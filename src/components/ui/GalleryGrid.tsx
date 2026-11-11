@@ -65,9 +65,11 @@ export function GalleryGrid({ items, columns = 4 }: GalleryGridProps) {
               {/* Caption & Location metadata */}
               <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
                 <div>
-                  <h4 className="text-sm font-semibold text-ink tracking-tight leading-snug group-hover:text-accent transition-colors">
-                    {item.title || 'Untitled Photograph'}
-                  </h4>
+                  {item.title && (
+                    <h4 className="text-sm font-semibold text-ink tracking-tight leading-snug group-hover:text-accent transition-colors">
+                      {item.title}
+                    </h4>
+                  )}
                   {item.description && (
                     <p className="mt-1 text-xs text-muted leading-relaxed line-clamp-2">
                       {item.description}

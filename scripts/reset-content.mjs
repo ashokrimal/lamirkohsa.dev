@@ -21,23 +21,16 @@
  *   - Page Copy, Media Collections, the users/auth tables and the schema.
  */
 import { Client } from 'pg'
+import { loadCmsSchema } from './load-cms-schema.mjs'
+
+const { CMS_COLLECTIONS, CMS_KEYS, CMS_SCHEMA } = await loadCmsSchema()
 
 const CONTENT_COLLECTIONS = [
-  'Projects',
-  'Gallery',
-  'Education',
-  'Experience',
-  'Skills',
-  'Certificates',
-  'Achievements',
-  'Social Links',
-  'Interests',
-  'Music',
-  'Movies',
-  'Anime',
-  'Manga',
-  'Blogs',
-  'Media',
+  ...new Set(
+    Object.values(CMS_SCHEMA.collections)
+      .filter((definition) => !definition.keyed && definition.name !== CMS_COLLECTIONS.profile)
+      .map((definition) => definition.name),
+  ),
 ]
 
 const PRIMARY_NAV = [
@@ -81,9 +74,12 @@ async function main() {
 
   try {
     const settings = await client.query(
-      `select "id", "title", "slug", "payload" from "cmsContent" where "collection" = 'Site Settings'`,
+      `select "id", "title", "slug", "payload" from "cmsContent" where "collection" = $1`,
+      [CMS_COLLECTIONS.siteSettings],
     )
-    const bySlug = new Map(settings.rows.map((row) => [String(row.slug || row.title).toLowerCase(), row]))
+    const bySlug = new Map(
+      settings.rows.map((row) => [String(row.payload?.key ?? row.slug ?? '').toLowerCase(), row]),
+    )
 
     const counts = await client.query(
       `select "collection", count(*)::int as count from "cmsContent"
@@ -101,19 +97,19 @@ async function main() {
     }
 
     console.log('\nPlanned Site Settings changes')
-    const navigation = bySlug.get('navigation')
+    const navigation = bySlug.get(CMS_KEYS.navigation)
     if (navigation) {
       console.log('  Navigation: primary order Home, About, Media, Projects, Contact; socials cleared')
     } else {
       console.log('  Navigation: record missing, skipped')
     }
-    const contact = bySlug.get('contact-details')
+    const contact = bySlug.get(CMS_KEYS.contactDetails)
     if (contact) {
       console.log('  Contact Details: location Butwal, Nepal; email, phone and availability cleared')
     } else {
       console.log('  Contact Details: record missing, skipped')
     }
-    const homepage = bySlug.get('homepage-sections')
+    const homepage = bySlug.get(CMS_KEYS.homepageSections)
     if (homepage) {
       console.log(`  Homepage Sections: order ${HOMEPAGE_ORDER.join(' → ')}; five preview cards each`)
     } else {
@@ -192,10 +188,9 @@ async function main() {
     for (const [index, collection] of MEDIA_COLLECTIONS.entries()) {
       const existing = await client.query(
         `select "id", "payload" from "cmsContent"
-         where "collection" = 'Media Collections'
-           and (lower("slug") = $1 or lower(coalesce("payload"->>'key','')) = $1 or lower("title") = $1)
+         where "collection" = $1 and lower(coalesce("payload"->>'key','')) = $2
          limit 1`,
-        [collection.key],
+        [CMS_COLLECTIONS.mediaCollections, collection.key],
       )
 
       const payload = {
@@ -216,8 +211,8 @@ async function main() {
       } else {
         await client.query(
           `insert into "cmsContent" ("userId", "collection", "title", "slug", "payload", "status", "sortOrder")
-           values ($1, 'Media Collections', $2, $3, $4, 'published', $5)`,
-          [userId, collection.label, collection.key, payload, 40 + index],
+           values ($1, $2, $3, $4, $5, 'published', $6)`,
+          [userId, CMS_COLLECTIONS.mediaCollections, collection.label, collection.key, payload, 40 + index],
         )
         insertedCollections += 1
       }

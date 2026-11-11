@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start -p 3000 -H 0.0.0.0",
     "lint": "eslint .",
+    "prebuild": "node scripts/prebuild-cms-check.mjs",
     "cms:check": "node scripts/check-site-content.mjs"
   },
   "dependencies": {

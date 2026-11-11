@@ -1,17 +1,18 @@
 import type { CSSProperties } from 'react'
 import { Camera, Code2, Compass, FolderGit2, Github, ImageOff } from 'lucide-react'
 import {
-  getHeroSectionConfig,
-  getHomepageSectionsConfig,
-  getProfileContent,
-  getFeaturedProjects,
-  getGalleryItems,
-  getSocialLinks,
-  getExperienceItems,
-  getEducationItems,
+  getHeroSectionConfigResult,
+  getHomepageSectionsConfigResult,
+  getProfileContentResult,
+  getPublishedCmsContentResult,
+  type CmsRecord,
+  type HomepageSectionsConfig,
 } from '@/app/actions/content-cms'
 import { getPublicProfileSettings } from '@/app/actions/media'
-import { getMediaCollections, getSiteConfig } from '@/lib/site-content'
+import { EMPTY_SITE_CONFIG, getMediaCollections, getSiteConfig } from '@/lib/site-content'
+import { getProjectsResult } from '@/lib/projects'
+import { getGalleryResult } from '@/lib/gallery'
+import { CMS_COLLECTIONS, CMS_SCHEMA, CMS_SETTINGS_RECORDS } from '@/lib/cms-schema'
 import { getMediaSections } from '@/lib/media-content'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { ProjectCard, type ProjectData } from '@/components/ui/ProjectCard'
@@ -21,6 +22,7 @@ import { HorizontalCollection } from '@/components/ui/HorizontalCollection'
 import { HeroFacts } from '@/components/ui/HeroFacts'
 import { Reveal } from '@/components/ui/Reveal'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CmsErrorState } from '@/components/ui/CmsState'
 import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
 
@@ -29,7 +31,7 @@ const PREVIEW_COUNT = 5
 /** Structural sections the homepage owns; CMS order wins, missing ones append. */
 const DEFAULT_SECTION_ORDER = ['about', 'gallery', 'experience', 'education', 'projects', 'media', 'github']
 
-function mapTimeline(records: Awaited<ReturnType<typeof getExperienceItems>>) {
+function mapTimeline(records: CmsRecord[]) {
   return records.map((record) => {
     const payload = record.payload || {}
     return {
@@ -62,74 +64,86 @@ function dedupe<T>(items: T[], keyFn: (item: T) => string | number | undefined):
  */
 export default async function HomeContent() {
   const [
-    heroData,
-    sectionsConfig,
-    profile,
-    featuredProjectsRaw,
-    galleryItemsRaw,
-    socialLinksRaw,
-    site,
-    mediaCollections,
-    experienceRaw,
-    educationRaw,
+    heroResult,
+    sectionsResult,
+    profileResult,
+    projectsResult,
+    galleryResult,
+    socialLinksResult,
+    siteResult,
+    mediaCollectionsResult,
+    experienceResult,
+    educationResult,
     publicSettings,
   ] = await Promise.all([
-      getHeroSectionConfig(),
-      getHomepageSectionsConfig(),
-      getProfileContent(),
-      getFeaturedProjects(PREVIEW_COUNT),
-      getGalleryItems(PREVIEW_COUNT),
-      getSocialLinks(),
-      getSiteConfig(),
-      getMediaCollections(),
-      getExperienceItems(),
-      getEducationItems(),
-      getPublicProfileSettings(),
-    ])
+    getHeroSectionConfigResult(),
+    getHomepageSectionsConfigResult(),
+    getProfileContentResult(),
+    getProjectsResult(),
+    getGalleryResult(PREVIEW_COUNT),
+    getPublishedCmsContentResult(CMS_COLLECTIONS.socialLinks),
+    getSiteConfig(),
+    getMediaCollections(),
+    getPublishedCmsContentResult(CMS_COLLECTIONS.experience),
+    getPublishedCmsContentResult(CMS_COLLECTIONS.education),
+    getPublicProfileSettings(),
+  ])
+
+  const heroData = heroResult.status === 'ok' ? heroResult.data : {}
+  const sectionsConfig: HomepageSectionsConfig =
+    sectionsResult.status === 'ok'
+      ? sectionsResult.data
+      : { order: [], enabled: {}, sectionMeta: {} }
+  const site = siteResult.status === 'ok' ? siteResult.data : EMPTY_SITE_CONFIG
+  const mediaCollections = mediaCollectionsResult.status === 'ok' ? mediaCollectionsResult.data : []
+  const projects = projectsResult.status === 'ok' ? projectsResult.data : []
+  const galleryData = galleryResult.status === 'ok' ? galleryResult.data : []
+  const profile = profileResult.status === 'ok' ? profileResult.data : {}
+  const socialLinksRaw = socialLinksResult.status === 'ok' ? socialLinksResult.data : []
+  const experienceRaw = experienceResult.status === 'ok' ? experienceResult.data : []
+  const educationRaw = educationResult.status === 'ok' ? educationResult.data : []
+  const dataError = [socialLinksResult, siteResult].find(
+    (result) => result.status === 'error',
+  ) as { status: 'error'; message: string } | undefined
 
   const mediaSections = await getMediaSections(mediaCollections)
 
   const heroImageUrl = typeof heroData.imageUrl === 'string' ? heroData.imageUrl : undefined
   const heroStyle = (heroImageUrl ? { '--hero-image': `url("${heroImageUrl}")` } : {}) as CSSProperties
 
-  const featuredProjects: ProjectData[] = featuredProjectsRaw.map((p) => {
-    const payload = p.payload || {}
-    return {
-      id: p.id,
-      title: p.title,
-      slug: p.slug,
-      category: typeof payload.category === 'string' ? payload.category : undefined,
-      summary: typeof payload.summary === 'string' ? payload.summary : undefined,
-      description: typeof payload.description === 'string' ? payload.description : '',
-      techStack: Array.isArray(payload.techStack) ? (payload.techStack as string[]) : [],
-      image:
-        typeof payload.image === 'string'
-          ? payload.image
-          : typeof payload.imageUrl === 'string'
-            ? payload.imageUrl
-            : undefined,
-      altText: typeof payload.altText === 'string' ? payload.altText : undefined,
-      live: typeof payload.live === 'string' ? payload.live : undefined,
-      github: typeof payload.github === 'string' ? payload.github : undefined,
-      status: typeof payload.status === 'string' ? payload.status : undefined,
-      featured: payload.featured === true,
-      completionDate: typeof payload.completionDate === 'string' ? payload.completionDate : undefined,
-      phases: Array.isArray(payload.phases) ? (payload.phases as ProjectData['phases']) : undefined,
-    }
-  })
+  const featuredProjects: ProjectData[] = projects
+    .filter((project) => project.featured === true)
+    .slice(0, PREVIEW_COUNT)
+    .map((project) => ({
+      id: project.id,
+      title: project.title,
+      slug: project.slug,
+      category: project.category,
+      summary: project.summary,
+      description: project.description,
+      techStack: project.techStack,
+      image: project.image,
+      altText: project.altText,
+      live: project.live,
+      github: project.github,
+      status: project.status,
+      featured: project.featured,
+      completionDate: project.completionDate,
+      phases: project.phases,
+    }))
 
   const galleryItems = dedupe(
-    galleryItemsRaw.map((g) => ({
-      id: g.id,
-      title: g.title,
-      imageUrl: typeof g.payload?.imageUrl === 'string' ? g.payload.imageUrl : '',
-      altText: typeof g.payload?.altText === 'string' ? g.payload.altText : undefined,
-      category: typeof g.payload?.category === 'string' ? g.payload.category : undefined,
-      description: typeof g.payload?.description === 'string' ? g.payload.description : '',
-      location: typeof g.payload?.location === 'string' ? g.payload.location : undefined,
+    galleryData.map((photo) => ({
+      id: photo.id,
+      title: photo.title,
+      imageUrl: photo.imageUrl,
+      altText: photo.altText,
+      category: photo.category,
+      description: photo.description ?? '',
+      location: photo.location,
     })),
-    (g) => g.title || g.imageUrl || g.id,
-  ).filter((g) => g.imageUrl)
+    (photo) => photo.title || photo.imageUrl || photo.id,
+  )
 
   const socialLinks = dedupe(
     socialLinksRaw.map((s) => ({
@@ -175,9 +189,9 @@ export default async function HomeContent() {
         return (
           <section key="about" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.about?.eyebrow || 'Introduction'}
+              eyebrow={meta.about?.eyebrow}
               krEyebrow={meta.about?.kr}
-              title={meta.about?.title ?? profileText('fullName') ?? 'About'}
+              title={meta.about?.title ?? profileText('fullName') ?? CMS_SCHEMA.sections.home.about.label}
               accent={meta.about?.accent}
               description={meta.about?.description}
             />
@@ -236,14 +250,18 @@ export default async function HomeContent() {
                   )}
                 </div>
               </div>
+            ) : profileResult.status === 'error' ? (
+              <div className="mt-8">
+                <CmsErrorState message={profileResult.message} />
+              </div>
             ) : (
               <div className="mt-8">
                 <EmptyState
                   icon={Compass}
-                  message="No introduction published yet."
-                  hint="Add your profile, summary and bio in the CMS."
-                  actionLabel="Add introduction in admin"
-                  actionHref="/admin?section=content&collection=Profile"
+                  message={CMS_SCHEMA.sections.home.about.emptyState.message}
+                  hint={CMS_SCHEMA.sections.home.about.emptyState.hint}
+                  actionLabel={CMS_SCHEMA.sections.home.about.emptyState.actionLabel}
+                  actionHref={CMS_SCHEMA.sections.home.about.emptyState.actionHref}
                 />
               </div>
             )}
@@ -256,20 +274,22 @@ export default async function HomeContent() {
         return (
           <section key="gallery" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.gallery?.eyebrow || 'Images'}
+              eyebrow={meta.gallery?.eyebrow}
               krEyebrow={meta.gallery?.kr}
-              title={meta.gallery?.title ?? 'Gallery'}
+              title={meta.gallery?.title ?? CMS_SCHEMA.sections.home.gallery.label}
               accent={meta.gallery?.accent}
               description={meta.gallery?.description}
             />
             <div className="mt-8">
-              {galleryItems.length === 0 ? (
+              {galleryResult.status === 'error' ? (
+                <CmsErrorState message={galleryResult.message} />
+              ) : galleryItems.length === 0 ? (
                 <EmptyState
                   icon={Camera}
-                  message="No gallery images published yet."
-                  hint="Upload photos to show them here."
-                  actionLabel="Add images in admin"
-                  actionHref="/admin?section=content&collection=Gallery"
+                  message={CMS_SCHEMA.sections.home.gallery.emptyState.message}
+                  hint={CMS_SCHEMA.sections.home.gallery.emptyState.hint}
+                  actionLabel={CMS_SCHEMA.sections.home.gallery.emptyState.actionLabel}
+                  actionHref={CMS_SCHEMA.sections.home.gallery.emptyState.actionHref}
                 />
               ) : (
                 <HorizontalCollection
@@ -292,19 +312,25 @@ export default async function HomeContent() {
         return (
           <section key="experience" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.experience?.eyebrow || 'Career'}
+              eyebrow={meta.experience?.eyebrow}
               krEyebrow={meta.experience?.kr}
-              title={meta.experience?.title ?? 'Experience'}
+              title={meta.experience?.title ?? CMS_SCHEMA.sections.home.experience.label}
               accent={meta.experience?.accent}
               description={meta.experience?.description}
             />
             <div className="mt-8">
-              <ExperienceTimeline
-                items={experience}
-                type="experience"
-                emptyActionLabel="Add experience in admin"
-                emptyActionHref="/admin?section=content&collection=Experience"
-              />
+              {experienceResult.status === 'error' ? (
+                <CmsErrorState message={experienceResult.message} />
+              ) : (
+                <ExperienceTimeline
+                  items={experience}
+                  type="experience"
+                  emptyMessage={CMS_SCHEMA.sections.home.experience.emptyState.message}
+                  emptyHint={CMS_SCHEMA.sections.home.experience.emptyState.hint}
+                  emptyActionLabel={CMS_SCHEMA.sections.home.experience.emptyState.actionLabel}
+                  emptyActionHref={CMS_SCHEMA.sections.home.experience.emptyState.actionHref}
+                />
+              )}
             </div>
           </section>
         )
@@ -315,19 +341,25 @@ export default async function HomeContent() {
         return (
           <section key="education" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.education?.eyebrow || 'Learning'}
+              eyebrow={meta.education?.eyebrow}
               krEyebrow={meta.education?.kr}
-              title={meta.education?.title ?? 'Education'}
+              title={meta.education?.title ?? CMS_SCHEMA.sections.home.education.label}
               accent={meta.education?.accent}
               description={meta.education?.description}
             />
             <div className="mt-8">
-              <ExperienceTimeline
-                items={education}
-                type="education"
-                emptyActionLabel="Add education in admin"
-                emptyActionHref="/admin?section=content&collection=Education"
-              />
+              {educationResult.status === 'error' ? (
+                <CmsErrorState message={educationResult.message} />
+              ) : (
+                <ExperienceTimeline
+                  items={education}
+                  type="education"
+                  emptyMessage={CMS_SCHEMA.sections.home.education.emptyState.message}
+                  emptyHint={CMS_SCHEMA.sections.home.education.emptyState.hint}
+                  emptyActionLabel={CMS_SCHEMA.sections.home.education.emptyState.actionLabel}
+                  emptyActionHref={CMS_SCHEMA.sections.home.education.emptyState.actionHref}
+                />
+              )}
             </div>
           </section>
         )
@@ -338,21 +370,23 @@ export default async function HomeContent() {
         return (
           <section key="projects" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.projects?.eyebrow || 'Work'}
+              eyebrow={meta.projects?.eyebrow}
               krEyebrow={meta.projects?.kr}
-              title={meta.projects?.title ?? 'Projects'}
+              title={meta.projects?.title ?? CMS_SCHEMA.sections.home.projects.label}
               accent={meta.projects?.accent}
               description={meta.projects?.description}
             />
 
             <div className="mt-8">
-              {featuredProjects.length === 0 ? (
+              {projectsResult.status === 'error' ? (
+                <CmsErrorState message={projectsResult.message} />
+              ) : featuredProjects.length === 0 ? (
                 <EmptyState
                   icon={FolderGit2}
-                  message="No projects published yet."
-                  hint="Published projects appear here and on the projects page."
-                  actionLabel="Add a project in admin"
-                  actionHref="/admin?section=projects"
+                  message={CMS_SCHEMA.sections.home.projects.emptyState.message}
+                  hint={CMS_SCHEMA.sections.home.projects.emptyState.hint}
+                  actionLabel={CMS_SCHEMA.sections.home.projects.emptyState.actionLabel}
+                  actionHref={CMS_SCHEMA.sections.home.projects.emptyState.actionHref}
                 />
               ) : (
                 <HorizontalCollection
@@ -375,21 +409,25 @@ export default async function HomeContent() {
         return (
           <section key="media" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.media?.eyebrow || 'Collection'}
+              eyebrow={meta.media?.eyebrow}
               krEyebrow={meta.media?.kr}
-              title={meta.media?.title ?? 'Media'}
+              title={meta.media?.title ?? CMS_SCHEMA.sections.home.media.label}
               accent={meta.media?.accent}
               description={meta.media?.description}
             />
 
             <div className="mt-8">
-              {mediaPreview.length === 0 ? (
+              {mediaSections.some((section) => section.error) ? (
+                <CmsErrorState
+                  message={mediaSections.find((section) => section.error)?.error}
+                />
+              ) : mediaPreview.length === 0 ? (
                 <EmptyState
                   icon={ImageOff}
-                  message="No media items published yet."
-                  hint="Add music, movies, anime or manga from the admin."
-                  actionLabel="Add media in admin"
-                  actionHref="/admin?section=content&collection=Music"
+                  message={CMS_SCHEMA.sections.home.media.emptyState.message}
+                  hint={CMS_SCHEMA.sections.home.media.emptyState.hint}
+                  actionLabel={CMS_SCHEMA.sections.home.media.emptyState.actionLabel}
+                  actionHref={CMS_SCHEMA.sections.home.media.emptyState.actionHref}
                 />
               ) : (
                 <HorizontalCollection
@@ -412,9 +450,9 @@ export default async function HomeContent() {
         return (
           <section key="github" className="py-16 md:py-24 border-t border-line">
             <SectionHeader
-              eyebrow={meta.github?.eyebrow || 'Activity'}
+              eyebrow={meta.github?.eyebrow}
               krEyebrow={meta.github?.kr}
-              title={meta.github?.title ?? 'GitHub'}
+              title={meta.github?.title ?? CMS_SCHEMA.sections.home.github.label}
               accent={meta.github?.accent}
               description={meta.github?.description}
             />
@@ -424,10 +462,10 @@ export default async function HomeContent() {
               ) : (
                 <EmptyState
                   icon={Github}
-                  message="GitHub status is not connected yet."
-                  hint="Set your GitHub username in admin settings to show activity here."
-                  actionLabel="Connect GitHub in admin"
-                  actionHref="/admin?section=settings"
+                  message={CMS_SCHEMA.sections.home.github.emptyState.message}
+                  hint={CMS_SCHEMA.sections.home.github.emptyState.hint}
+                  actionLabel={CMS_SCHEMA.sections.home.github.emptyState.actionLabel}
+                  actionHref={CMS_SCHEMA.sections.home.github.emptyState.actionHref}
                 />
               )}
             </div>
@@ -445,7 +483,11 @@ export default async function HomeContent() {
       <section className="hero-section shell-width" style={heroStyle} aria-labelledby="hero-heading">
         <div className="hero-editorial">
           <div className="hero-copy-block">
-            {heroData.heading ? (
+            {heroResult.status === 'error' ? (
+              <div className="max-w-xl">
+                <CmsErrorState message={heroResult.message} />
+              </div>
+            ) : heroData.heading ? (
               <h1 id="hero-heading" className="hero-heading">
                 {heroData.heading.replace(/\.$/, '')}
                 <span>.</span>
@@ -454,10 +496,10 @@ export default async function HomeContent() {
               <div className="max-w-xl">
                 <EmptyState
                   icon={Compass}
-                  message="Hero text is empty."
-                  hint="Set your headline and intro in Hero & Footer."
-                  actionLabel="Edit hero in admin"
-                  actionHref="/admin?section=appearance"
+                  message={CMS_SETTINGS_RECORDS.hero.emptyState.message}
+                  hint={CMS_SETTINGS_RECORDS.hero.emptyState.hint}
+                  actionLabel={CMS_SETTINGS_RECORDS.hero.emptyState.actionLabel}
+                  actionHref={CMS_SETTINGS_RECORDS.hero.emptyState.actionHref}
                 />
               </div>
             )}
@@ -487,6 +529,14 @@ export default async function HomeContent() {
       <HeroFacts stats={heroData.stats} location={heroData.location} />
 
       <div className="shell-width">
+        {(sectionsResult.status === 'error' || dataError) && (
+          <CmsErrorState
+            message={
+              sectionsResult.status === 'error' ? sectionsResult.message : dataError?.message
+            }
+            className="mt-10"
+          />
+        )}
         {order.map((sectionKey) => (
           <Reveal key={sectionKey}>{renderSection(sectionKey)}</Reveal>
         ))}

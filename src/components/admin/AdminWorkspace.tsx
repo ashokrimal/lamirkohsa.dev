@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect } from 'react'
+import { CMS_KEYS } from '@/lib/cms-schema'
 import Link from 'next/link'
 import NextImage from 'next/image'
 import {
@@ -682,7 +683,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
   const settingRecord = (title: string) =>
     cmsRecords.find(
       (record) =>
-        record.collection === 'Site Settings' && record.title.trim().toLowerCase() === title.toLowerCase(),
+        record.collection === 'Site Settings' && record.payload?.key === CMS_KEYS.hero,
     )
 
   const openCreateRecord = (collection = 'Projects') => {
@@ -1361,9 +1362,13 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
                         <p className="text-xs font-bold text-slate-900 truncate">
                           {track.title}
                         </p>
-                        <p className="text-[11px] text-slate-500 truncate">
-                          {track.artist || 'Unknown Artist'} · {track.album || 'Single'}
-                        </p>
+                        {(track.artist || track.album) && (
+                          <p className="text-[11px] text-slate-500 truncate">
+                            {track.artist}
+                            {track.artist && track.album ? ' · ' : ''}
+                            {track.album}
+                          </p>
+                        )}
                       </div>
                     </div>
 

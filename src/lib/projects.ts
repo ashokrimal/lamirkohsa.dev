@@ -1,4 +1,5 @@
-import type { CmsRecord } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult, type CmsRecord } from '@/app/actions/content-cms'
+import { CMS_COLLECTIONS, type CmsResult } from '@/lib/cms-schema'
 import { toSlug } from '@/lib/slug'
 
 export interface ProjectPhase {
@@ -26,6 +27,7 @@ export interface ProjectEntry {
   phases: ProjectPhase[]
   features: string[]
   techStack: string[]
+  featured: boolean
   github?: string
   live?: string
 }
@@ -50,20 +52,21 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
     slug: record.slug || toSlug(record.title),
     title: record.title,
     category: optionalString(payload.category),
-    image: optionalString(payload.image) ?? optionalString(payload.imageUrl),
+    image: optionalString(payload.imageUrl),
     altText: optionalString(payload.altText),
     completionDate: optionalString(payload.completionDate),
     period: optionalString(payload.period),
     status: optionalString(payload.status),
     summary: optionalString(payload.summary),
     description: optionalString(payload.description),
-    challenge: optionalString(payload.challenge) ?? optionalString(payload.description),
-    solution: optionalString(payload.solution) ?? optionalString(payload.summary),
+    challenge: optionalString(payload.description),
+    solution: optionalString(payload.solution),
     phases: Array.isArray(payload.phases)
       ? (payload.phases as ProjectPhase[]).filter((phase) => Boolean(phase?.name))
       : [],
     features: stringArray(payload.features),
     techStack: stringArray(payload.techStack),
+    featured: payload.featured === true,
     github: optionalString(payload.github),
     live: optionalString(payload.live),
   }
@@ -71,4 +74,12 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
 
 export function mapProjectRecords(records: CmsRecord[]): ProjectEntry[] {
   return records.map(mapProjectRecord)
+}
+
+
+/** Public project list with an explicit empty/error state. */
+export async function getProjectsResult(): Promise<CmsResult<ProjectEntry[]>> {
+  const result = await getPublishedCmsContentResult(CMS_COLLECTIONS.projects)
+  if (result.status !== 'ok') return result
+  return { status: 'ok', data: mapProjectRecords(result.data) }
 }

@@ -88,7 +88,7 @@ export default function SiteHeader({
             <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-overlay text-[11px] text-ink-secondary border border-line-faint">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-medium">
-                {contact.timezone ? `${contact.timezone} ` : ''}
+                {contact.timeZone ? `${contact.timeZone} ` : ''}
                 {localTime}
               </span>
               {contact.availability && (
@@ -220,7 +220,7 @@ export default function SiteHeader({
             {contact.timeZone && (
               <div className="flex items-center justify-between">
                 <span>Local time</span>
-                <span className="font-semibold text-ink">{localTime || contact.timezone}</span>
+                <span className="font-semibold text-ink">{localTime || contact.timeZone}</span>
               </div>
             )}
             {contact.location && (

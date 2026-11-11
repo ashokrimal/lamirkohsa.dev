@@ -1,9 +1,13 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { Clock } from 'lucide-react'
-import { getPublishedCmsContent } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
 import { toSlug } from '@/lib/slug'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { CmsErrorState } from '@/components/ui/CmsState'
+import { CMS_COLLECTIONS, CMS_SCHEMA, type CmsResult } from '@/lib/cms-schema'
+import { NotebookPen } from 'lucide-react'
 
 export const revalidate = 300
 
@@ -25,7 +29,7 @@ function getBody(blog: Blog): string {
   for (const key of ['content', 'body', 'description']) {
     if (typeof p[key] === 'string' && p[key]) return p[key] as string
   }
-  return typeof blog.payload === 'string' ? blog.payload : 'This note has no body yet.'
+  return typeof blog.payload === 'string' ? blog.payload : ''
 }
 
 function readingTime(text: string) {
@@ -36,9 +40,13 @@ function readingTime(text: string) {
   return { words, minutes: Math.max(1, Math.ceil(words / 200)) }
 }
 
-async function findBlog(slug: string): Promise<Blog | undefined> {
-  const blogs = (await getPublishedCmsContent('Blogs')) as Blog[]
-  return blogs.find((blog) => (blog.slug || toSlug(blog.title)) === slug)
+async function findBlog(slug: string): Promise<CmsResult<Blog | undefined>> {
+  const result = await getPublishedCmsContentResult(CMS_COLLECTIONS.blogs)
+  if (result.status !== 'ok') return result
+  return {
+    status: 'ok',
+    data: (result.data as Blog[]).find((blog) => (blog.slug || toSlug(blog.title)) === slug),
+  }
 }
 
 export async function generateMetadata({
@@ -46,8 +54,9 @@ export async function generateMetadata({
 }: {
   params: { slug: string }
 }): Promise<Metadata> {
-  const blog = await findBlog(params.slug)
-  if (!blog) return { title: 'Journal - Ashok Rimal' }
+  const result = await findBlog(params.slug)
+  if (result.status !== 'ok' || !result.data) return { title: 'Journal - Ashok Rimal' }
+  const blog = result.data
   return {
     title: `${blog.title} — Journal | Ashok Rimal`,
     description: getBody(blog).slice(0, 160),
@@ -55,13 +64,22 @@ export async function generateMetadata({
 }
 
 export default async function BlogArticlePage({ params }: { params: { slug: string } }) {
-  const blog = await findBlog(params.slug)
-  if (!blog) notFound()
+  const result = await findBlog(params.slug)
+  if (result.status === 'error') {
+    return (
+      <PageShell>
+        <CmsErrorState message={result.message} className="mt-12" />
+        <PageNav backHref="/blogs" />
+      </PageShell>
+    )
+  }
+  if (result.status !== 'ok' || !result.data) notFound()
+  const blog = result.data
 
   const payload = readPayload(blog)
   const body = getBody(blog)
   const { words, minutes } = readingTime(body)
-  const category = typeof payload.category === 'string' ? payload.category : 'Note'
+  const category = typeof payload.category === 'string' ? payload.category : undefined
   const date = typeof payload.date === 'string' ? payload.date : undefined
   const paragraphs = body
     .replace(/<[^>]*>/g, '')
@@ -72,7 +90,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
   return (
     <PageShell>
       <PageHero
-        eyebrow={`Journal / ${category}`}
+        eyebrow={category ? `Journal / ${category}` : 'Journal'}
         krEyebrow="글"
         title={blog.title}
         description={`${date ? `${date} · ` : ''}${minutes} min read`}

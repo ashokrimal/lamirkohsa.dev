@@ -1,70 +1,20 @@
 /**
  * CMS content health check.
  *
- * Reports which CMS records the site needs but cannot currently render, so a
- * blank header, footer, hero or page section is obvious before anyone visits
- * the site.
+ * Validates the published CMS against src/lib/cms-schema.ts, so the check and
+ * the public getters can never disagree about collection names, locked keys or
+ * required fields. It also reports records that would otherwise be dropped
+ * silently by a renderer.
  *
  * Usage:
- *   DATABASE_URL=postgres://... node scripts/check-site-content.mjs
+ *   DATABASE_URL=postgres://... npm run cms:check
  *   DATABASE_URL=... npm run cms:check -- --strict   (warnings also fail)
  *
- * Exit codes: 0 healthy (or warnings only), 1 missing content,
+ * Exit codes: 0 healthy (or warnings only), 1 invalid/missing required content,
  * 2 could not read the database.
  */
 import { Client } from 'pg'
-
-// Site Settings records looked up by title (see src/lib/site-content.ts).
-const requiredSettings = [
-  'Navigation',
-  'Footer',
-  'Brand',
-  'Contact Details',
-  'Hero Section',
-  'Homepage Sections',
-]
-
-// Page copy keys read by the public pages.
-const requiredPageCopy = [
-  'about',
-  'projects',
-  'project-case-study',
-  'media',
-  'media-music',
-  'media-anime',
-  'media-manga',
-  'media-github',
-  'media-films',
-  'journal',
-  'gallery',
-  'contact',
-  'experience',
-  'education',
-  'skills',
-  'certificates',
-  'resume',
-]
-
-// Media library sections rendered from Media Collections records.
-const requiredMediaCollections = ['music', 'movies', 'anime', 'manga']
-
-// Collections shown somewhere on the site. Reported when empty, not fatal.
-const contentCollections = [
-  'Profile',
-  'Projects',
-  'Experience',
-  'Education',
-  'Skills',
-  'Certificates',
-  'Social Links',
-  'Interests',
-  'Gallery',
-  'Blogs',
-  'Music',
-  'Movies',
-  'Anime',
-  'Manga',
-]
+import { loadCmsSchema } from './load-cms-schema.mjs'
 
 const strict = process.argv.includes('--strict')
 
@@ -77,17 +27,38 @@ function displayTarget(connectionString) {
   }
 }
 
-function keyOf(record) {
-  const payloadKey = record.payload && typeof record.payload === 'object' ? record.payload.key : undefined
-  const raw = typeof payloadKey === 'string' && payloadKey.trim() ? payloadKey : record.slug || record.title
-  return String(raw).trim().toLowerCase()
-}
-
 function hasText(value) {
   return typeof value === 'string' && value.trim().length > 0
 }
 
+function hasValue(value) {
+  if (Array.isArray(value)) return value.length > 0
+  if (typeof value === 'string') return value.trim().length > 0
+  return value !== undefined && value !== null
+}
+
+function fieldProblem(field, value) {
+  if (!hasValue(value)) return `${field.label} is empty`
+  switch (field.type) {
+    case 'array':
+      return Array.isArray(value) ? null : `${field.label} must be a list`
+    case 'object':
+      return value && typeof value === 'object' && !Array.isArray(value)
+        ? null
+        : `${field.label} must be an object`
+    case 'number':
+      return typeof value === 'number' && Number.isFinite(value)
+        ? null
+        : `${field.label} must be a number`
+    case 'boolean':
+      return typeof value === 'boolean' ? null : `${field.label} must be true or false`
+    default:
+      return typeof value === 'string' ? null : `${field.label} must be text`
+  }
+}
+
 async function main() {
+  const { CMS_SCHEMA } = await loadCmsSchema()
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) {
     console.error('DATABASE_URL is required.')
@@ -117,153 +88,171 @@ async function main() {
 
   const published = rows.filter((row) => row.status === 'published')
   const byCollection = (collection) => published.filter((row) => row.collection === collection)
-
   const problems = []
   const warnings = []
   const lines = []
+  const addProblem = (message) => problems.push(message)
+  const addWarning = (message) => warnings.push(message)
 
-  // --- Site Settings -------------------------------------------------------
-  const settings = byCollection('Site Settings')
-  const settingsByTitle = new Map(settings.map((row) => [row.title.trim().toLowerCase(), row]))
-  const missingSettings = requiredSettings.filter((title) => !settingsByTitle.has(title.toLowerCase()))
-  if (missingSettings.length) {
-    problems.push(`Site Settings records missing: ${missingSettings.join(', ')}`)
-    lines.push(`✗ Site Settings     missing ${missingSettings.length}/${requiredSettings.length}: ${missingSettings.join(', ')}`)
-  } else {
-    lines.push(`✓ Site Settings     ${requiredSettings.length}/${requiredSettings.length} published`)
-  }
+  // --- Keyed collections ----------------------------------------------------
+  for (const [schemaKey, definition] of Object.entries(CMS_SCHEMA.collections)) {
+    if (!definition.keyed) continue
+    const records = byCollection(definition.name)
+    const expected = Object.entries(definition.records ?? {})
+    const byKey = new Map()
 
-  const navigation = settingsByTitle.get('navigation')
-  if (navigation) {
-    const payload = navigation.payload || {}
-    if (!Array.isArray(payload.primary) || payload.primary.length === 0) {
-      warnings.push('Navigation has no primary links, so the header menu is empty.')
-    }
-    if (!Array.isArray(payload.collections) || payload.collections.length === 0) {
-      warnings.push('Navigation has no collection links, so the footer collections column is empty.')
-    }
-    if (!Array.isArray(payload.socials) || payload.socials.length === 0) {
-      warnings.push('Navigation has no socials, so the footer shows no social icons.')
-    }
-  }
+    for (const record of records) {
+      const payload = record.payload && typeof record.payload === 'object' ? record.payload : {}
+      const key = typeof payload.key === 'string' ? payload.key.trim().toLowerCase() : ''
+      if (!key) {
+        addProblem(
+          `${definition.name}: "${record.title}" has no payload.key, so the site cannot find it.`,
+        )
+        continue
+      }
+      if (byKey.has(key)) {
+        addProblem(
+          `${definition.name}: duplicate key "${key}" ("${byKey.get(key).title}" and "${record.title}").`,
+        )
+        continue
+      }
+      byKey.set(key, record)
 
-  const contact = settingsByTitle.get('contact details')
-  if (contact) {
-    const payload = contact.payload || {}
-    if (!hasText(payload.email)) warnings.push('Contact Details has no email, so the copy-email pill is hidden.')
-    if (!hasText(payload.location)) warnings.push('Contact Details has no location, so the coordinates card is hidden.')
-    if (!hasText(payload.phone)) warnings.push('Contact Details has no phone, so the phone channel is hidden.')
-    if (!hasText(payload.timeZone)) warnings.push('Contact Details has no timeZone, so the local clock is hidden.')
-  }
+      const known = expected.some(([, recordDefinition]) => recordDefinition.key === key)
+      if (!known) {
+        addWarning(`${definition.name}: unknown key "${key}" on "${record.title}" is not used.`)
+      }
 
-  const hero = settingsByTitle.get('hero section')
-  if (hero) {
-    const payload = hero.payload || {}
-    if (!hasText(payload.heading)) warnings.push('Hero Section has no heading, so the homepage headline is blank.')
-  }
+      const recordDefinition = expected.find(([, entry]) => entry.key === key)?.[1]
+      if (!recordDefinition) continue
+      for (const field of recordDefinition.requiredFields) {
+        const problem = fieldProblem(field, payload[field.key])
+        if (problem) addProblem(`${definition.name} "${record.title}": ${problem}.`)
+      }
+      for (const field of recordDefinition.optionalFields) {
+        if (!hasValue(payload[field.key])) continue
+        const problem = fieldProblem(field, payload[field.key])
+        if (problem) addProblem(`${definition.name} "${record.title}": ${problem}.`)
+      }
+    }
 
-  const homepage = settingsByTitle.get('homepage sections')
-  if (homepage) {
-    const payload = homepage.payload || {}
-    const order = Array.isArray(payload.order) ? payload.order : []
-    if (order.length === 0) {
-      problems.push('Homepage Sections has an empty order, so the homepage shows only the hero.')
-      lines.push('✗ Homepage Sections empty order — no sections render below the hero')
+    for (const [, recordDefinition] of expected) {
+      if (recordDefinition.required === false) continue
+      if (!byKey.has(recordDefinition.key)) {
+        addProblem(
+          `${definition.name}: required record "${recordDefinition.label}" (key "${recordDefinition.key}") is missing or unpublished.`,
+        )
+      }
     }
-    const sectionMeta = payload.sectionMeta && typeof payload.sectionMeta === 'object' ? payload.sectionMeta : {}
-    const missingMeta = order.filter((key) => !sectionMeta[key] || !hasText(sectionMeta[key].title))
-    if (missingMeta.length) {
-      warnings.push(`Homepage sections without a title: ${missingMeta.join(', ')}.`)
-    }
-    const unknownSections = order.filter(
-      (key) => !['gallery', 'about', 'projects', 'media', 'contact'].includes(key),
+
+    const total = expected.length
+    const found = expected.filter(([, entry]) => byKey.has(entry.key)).length
+    lines.push(
+      found === total
+        ? `✓ ${definition.label.padEnd(17)} ${found}/${total} keyed records published`
+        : `✗ ${definition.label.padEnd(17)} ${found}/${total} keyed records published`,
     )
-    if (unknownSections.length) {
-      warnings.push(`Homepage sections that no longer render: ${unknownSections.join(', ')}.`)
-    }
-    const noPreviewCount = order.filter(
-      (key) => ['gallery', 'projects', 'media'].includes(key) && !sectionMeta[key]?.previewCount,
-    )
-    if (noPreviewCount.length) {
-      warnings.push(`Homepage sections without previewCount (default 5): ${noPreviewCount.join(', ')}.`)
-    }
   }
 
-  // --- Page Copy -----------------------------------------------------------
-  // The case study page takes its heading from the project itself, not from this copy.
-  const titleOptional = new Set(['project-case-study'])
-
-  const pageCopy = byCollection('Page Copy')
-  const copyByKey = new Map()
-  for (const record of pageCopy) {
-    const key = keyOf(record)
-    copyByKey.set(key, [...(copyByKey.get(key) || []), record])
-  }
-
-  const missingCopy = requiredPageCopy.filter((key) => !copyByKey.has(key))
-  if (missingCopy.length) {
-    problems.push(`Page Copy keys missing: ${missingCopy.join(', ')}`)
-    lines.push(`✗ Page Copy        missing ${missingCopy.length}/${requiredPageCopy.length}: ${missingCopy.join(', ')}`)
-  } else {
-    lines.push(`✓ Page Copy        ${requiredPageCopy.length}/${requiredPageCopy.length} published`)
-  }
-
-  for (const key of requiredPageCopy) {
-    const records = copyByKey.get(key)
-    if (!records) continue
-    if (records.length > 1) {
-      warnings.push(`Page Copy has ${records.length} published records for "${key}"; the last one wins.`)
+  // --- Records in content collections --------------------------------------
+  for (const [, definition] of Object.entries(CMS_SCHEMA.collections)) {
+    if (definition.keyed) continue
+    const records = byCollection(definition.name)
+    for (const record of records) {
+      const payload = record.payload && typeof record.payload === 'object' ? record.payload : {}
+      for (const field of definition.requiredFields ?? []) {
+        const problem = fieldProblem(field, payload[field.key])
+        if (problem) addProblem(`${definition.name} "${record.title}": ${problem}.`)
+      }
+      for (const field of definition.optionalFields ?? []) {
+        if (!hasValue(payload[field.key])) continue
+        const problem = fieldProblem(field, payload[field.key])
+        if (problem) addProblem(`${definition.name} "${record.title}": ${problem}.`)
+      }
     }
-    const payload = records[records.length - 1].payload || {}
-    if (!titleOptional.has(key) && !hasText(payload.title)) {
-      warnings.push(`Page Copy "${key}" has no title, so its page heading is blank.`)
+    if (records.length === 0) {
+      addWarning(`${definition.name} has no published records; its sections show an empty state.`)
     }
   }
 
-  // --- Media Collections ---------------------------------------------------
-  const mediaCollections = byCollection('Media Collections')
-  const mediaByKey = new Map()
-  for (const record of mediaCollections) {
-    const key = keyOf(record)
-    mediaByKey.set(key, [...(mediaByKey.get(key) || []), record])
-  }
-
-  const missingMedia = requiredMediaCollections.filter((key) => !mediaByKey.has(key))
-  if (missingMedia.length) {
-    problems.push(`Media Collections missing: ${missingMedia.join(', ')}`)
-    lines.push(`✗ Media Collections missing ${missingMedia.length}/${requiredMediaCollections.length}: ${missingMedia.join(', ')}`)
-  } else {
-    lines.push(`✓ Media Collections ${requiredMediaCollections.length}/${requiredMediaCollections.length} published`)
-  }
-
-  for (const key of requiredMediaCollections) {
-    const records = mediaByKey.get(key)
-    if (!records) continue
-    const payload = records[records.length - 1].payload || {}
-    if (!hasText(payload.previewCount ? String(payload.previewCount) : '')) {
-      warnings.push(`Media Collections "${key}" has no previewCount, so it falls back to 5.`)
-    }
-    if (!hasText(payload.href)) {
-      warnings.push(`Media Collections "${key}" has no href, so its card has no destination.`)
-    }
-    if (!hasText(payload.label)) {
-      warnings.push(`Media Collections "${key}" has no label.`)
-    }
-  }
-
-  // --- Content collections -------------------------------------------------
-  const emptyCollections = contentCollections.filter((collection) => byCollection(collection).length === 0)
-  if (emptyCollections.length) {
-    warnings.push(`No published records in: ${emptyCollections.join(', ')} (those sections render empty).`)
-  }
-
-  const draftOnly = contentCollections.filter(
-    (collection) =>
-      byCollection(collection).length === 0 &&
-      rows.some((row) => row.collection === collection && row.status !== 'published'),
+  // --- Silent drops reported explicitly ------------------------------------
+  const settings = byCollection(CMS_SCHEMA.collections.siteSettings.name)
+  const settingsByKey = new Map(
+    settings.map((record) => [String(record.payload?.key ?? '').toLowerCase(), record]),
   )
-  for (const collection of draftOnly) {
-    warnings.push(`${collection} has records but none are published, so nothing shows on the site.`)
+  const navigation = settingsByKey.get(
+    CMS_SCHEMA.collections.siteSettings.records.navigation.key,
+  )
+  if (navigation) {
+    for (const group of ['primary', 'footer', 'collections']) {
+      const links = Array.isArray(navigation.payload?.[group]) ? navigation.payload[group] : []
+      links.forEach((link, index) => {
+        if (!hasText(link?.label)) {
+          addProblem(`Navigation ${group}[${index}] has no label and is dropped from the site.`)
+        }
+        if (!hasText(link?.href)) {
+          addProblem(`Navigation ${group}[${index}] has no href and is dropped from the site.`)
+        }
+      })
+    }
+    const socials = Array.isArray(navigation.payload?.socials) ? navigation.payload.socials : []
+    socials.forEach((social, index) => {
+      if (!hasText(social?.label)) {
+        addProblem(`Navigation socials[${index}] has no label and is dropped from the footer.`)
+      }
+      if (!hasText(social?.href)) {
+        addProblem(`Navigation socials[${index}] has no href and is dropped from the footer.`)
+      }
+    })
+  }
+
+  const mediaCollections = byCollection(CMS_SCHEMA.collections.mediaCollections.name)
+  for (const record of mediaCollections) {
+    if (!hasText(record.payload?.href)) {
+      addProblem(
+        `Media Collections "${record.title}" has no href, so its View all card has no destination.`,
+      )
+    }
+    if (!hasText(record.payload?.label)) {
+      addProblem(`Media Collections "${record.title}" has no label, so its section title is blank.`)
+    }
+  }
+
+  const projects = byCollection(CMS_SCHEMA.collections.projects.name)
+  for (const record of projects) {
+    const phases = Array.isArray(record.payload?.phases) ? record.payload.phases : []
+    phases.forEach((phase, index) => {
+      if (!hasText(phase?.name)) {
+        addProblem(
+          `Projects "${record.title}" phase ${index + 1} has no name and is dropped from the case study.`,
+        )
+      }
+    })
+  }
+
+  const homepage = settingsByKey.get(
+    CMS_SCHEMA.collections.siteSettings.records.homepageSections.key,
+  )
+  if (homepage) {
+    const order = Array.isArray(homepage.payload?.order) ? homepage.payload.order : []
+    const knownSections = new Set([
+      ...Object.keys(CMS_SCHEMA.sections.home),
+      ...Object.keys(CMS_SCHEMA.sections.pages),
+    ])
+    for (const section of order) {
+      if (!knownSections.has(section)) {
+        addWarning(`Homepage order contains "${section}", which no longer renders.`)
+      }
+    }
+  }
+
+  const draftOnly = Object.values(CMS_SCHEMA.collections).filter(
+    (definition) =>
+      byCollection(definition.name).length === 0 &&
+      rows.some((row) => row.collection === definition.name && row.status !== 'published'),
+  )
+  for (const definition of draftOnly) {
+    addWarning(`${definition.name} has records but none are published.`)
   }
 
   // --- Report --------------------------------------------------------------
@@ -281,7 +270,7 @@ async function main() {
   }
 
   if (!problems.length && !warnings.length) {
-    console.log('\nAll required CMS content is present and published.')
+    console.log('\nAll required CMS content is present and valid.')
   }
 
   const failed = problems.length > 0 || (strict && warnings.length > 0)

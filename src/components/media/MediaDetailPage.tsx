@@ -153,12 +153,15 @@ function MusicPage({
                   {String(index + 1).padStart(2, '0')}
                 </p>
                 <h2 className="mt-1 text-sm font-semibold text-ink truncate">
-                  {track.title || 'Unknown track'}
+                  {track.title}
                 </h2>
-                <p className="text-xs text-muted truncate">
-                  {track.artist || 'Unknown artist'}
-                  {track.album ? ` · ${track.album}` : ''}
-                </p>
+                {(track.artist || track.album) && (
+                  <p className="text-xs text-muted truncate">
+                    {track.artist}
+                    {track.artist && track.album ? ' · ' : ''}
+                    {track.album}
+                  </p>
+                )}
               </div>
             </article>
           ))}
@@ -222,18 +225,20 @@ function LibraryPage({
     [
       ...cmsCards,
       ...malItems.map((item) => ({
-        title: item.title || 'Untitled',
+        title: item.title,
         description: item.synopsis,
         image: item.images?.jpg?.image_url,
       })),
       ...aniItems.map((item) => ({
-        title: item.title || 'Untitled',
+        title: item.title,
         description: item.synopsis,
         image: item.image,
       })),
     ],
     (item) => item.title,
-  ).slice(0, 80)
+  )
+    .filter((item) => item.title)
+    .slice(0, 80)
 
   return (
     <DetailShell
@@ -337,7 +342,12 @@ function GitHubPage({
 }
 
 export default async function MediaDetailPage({ category }: { category: Category }) {
-  const [data, cms, pages] = await Promise.all([getMediaData(), getMediaPreviews(), getPageCopy()])
+  const [data, cms, pagesResult] = await Promise.all([
+    getMediaData(),
+    getMediaPreviews(),
+    getPageCopy(),
+  ])
+  const pages = pagesResult.status === 'ok' ? pagesResult.data : {}
   const copyKey =
     category === 'music'
       ? 'media-music'
