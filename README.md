@@ -126,6 +126,25 @@ keyed records, migrates the legacy `timezone → timeZone`, `image → imageUrl`
 `challenge → description` field names, and renames the old `films` media key to
 `movies`. Existing content is never overwritten or deleted.
 
+### Backfilling the legacy media tables
+
+The old `galleryItem`, `portfolioProject`, `musicTrack` and `animeMangaItem`
+tables are not read by the public pages. Copy their rows into the CMS before
+retiring them:
+
+```bash
+DATABASE_URL=postgres://... pnpm cms:backfill                 # dry run
+DATABASE_URL=postgres://... pnpm cms:backfill -- --apply      # write
+```
+
+The backfill is idempotent: it matches rows by a hidden legacy id, fills only
+blank CMS fields, and preserves existing titles, slugs, statuses and values.
+Anime/manga rows are migrated as drafts because the legacy table had no
+`published` flag; add `--publish-catalogs` to publish them. Use `--owner <id>`
+when the database has more than one CMS owner. The report lists every mapped
+field, every skipped field and why, and every row that was inserted, updated,
+unchanged or skipped. A missing legacy table is reported and skipped.
+
 To reset all editorial content while keeping the CMS and auth tables intact:
 
 ```bash

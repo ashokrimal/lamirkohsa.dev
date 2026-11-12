@@ -11,7 +11,8 @@
     "start": "next start -p 3000 -H 0.0.0.0",
     "lint": "eslint .",
     "prebuild": "node scripts/prebuild-cms-check.mjs",
-    "cms:check": "node scripts/check-site-content.mjs"
+    "cms:check": "node scripts/check-site-content.mjs",
+    "cms:backfill": "node scripts/backfill-legacy-media.mjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.2",
