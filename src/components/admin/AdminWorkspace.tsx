@@ -57,10 +57,6 @@ import {
 } from '@/components/admin/ui/CmsFormPrimitives'
 
 import {
-  createMusicTrack,
-  deleteMusicTrack,
-} from '@/app/actions/content'
-import {
   createCmsContent,
   updateCmsContent,
   deleteCmsContent,
@@ -184,9 +180,6 @@ interface AdminWorkspaceProps {
   section: string
   initialCategory?: string
   content: {
-    gallery: any[]
-    projects: any[]
-    music: any[]
     cms: any[]
     messages?: InboxItem[]
   }
@@ -218,7 +211,29 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
         .filter((item) => Boolean(item.imageUrl)),
     [cmsRecords],
   )
-  const [musicTracks, setMusicTracks] = useState<MusicTrackItem[]>((content.music || []) as MusicTrackItem[])
+  const musicTracks = useMemo<MusicTrackItem[]>(
+    () =>
+      cmsRecords
+        .filter((record) => record.collection === CMS_COLLECTIONS.music)
+        .map((record) => {
+          const payload = (record.payload || {}) as Record<string, unknown>
+          return {
+            id: record.id,
+            title: record.title,
+            artist: typeof payload.artist === 'string' ? payload.artist : null,
+            album:
+              typeof payload.subtitle === 'string'
+                ? payload.subtitle
+                : typeof payload.album === 'string'
+                  ? payload.album
+                  : null,
+            coverUrl: typeof payload.coverUrl === 'string' ? payload.coverUrl : null,
+            audioUrl: typeof payload.externalUrl === 'string' ? payload.externalUrl : null,
+            published: record.status === 'published',
+          }
+        }),
+    [cmsRecords],
+  )
   const [profileSettingsState, setProfileSettingsState] = useState(settings)
 
   // View state
@@ -453,9 +468,9 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
         await deleteCmsContent(id)
       } catch {}
     } else if (type === 'music') {
-      setMusicTracks((prev) => prev.filter((m) => m.id !== id))
+      setCmsRecords((prev) => prev.filter((record) => record.id !== id))
       try {
-        await deleteMusicTrack(id)
+        await deleteCmsContent(id)
       } catch {}
     }
 
@@ -513,28 +528,36 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
     const artist = String(form.get('artist') || '').trim()
     if (!title) return
 
-    const newTrack = {
-      id: Date.now(),
-      title,
+    const payload = {
       artist,
-      album: String(form.get('album') || '').trim() || null,
-      coverUrl: String(form.get('coverUrl') || '').trim() || null,
-      audioUrl: String(form.get('audioUrl') || '').trim(),
-      published: true,
-      sortOrder: musicTracks.length,
+      subtitle: String(form.get('album') || '').trim() || undefined,
+      coverUrl: String(form.get('coverUrl') || '').trim() || undefined,
+      externalUrl: String(form.get('audioUrl') || '').trim() || undefined,
+    }
+    const newRecord = {
+      id: Date.now(),
+      collection: CMS_COLLECTIONS.music,
+      title,
+      payload,
+      status: 'published',
     }
 
-    setMusicTracks((prev) => [newTrack as any, ...prev])
+    setCmsRecords((prev) => [newRecord, ...prev])
     setCreateMusicModalOpen(false)
     setNewCoverUrl('')
     toast({
       title: 'Track Added',
-      description: `"${title}" by ${artist || 'Unknown'} added to playlist.`,
+      description: `"${title}" by ${artist || 'Unknown'} added to the music shelf.`,
       variant: 'success',
     })
 
     try {
-      await createMusicTrack(form)
+      const formData = new FormData()
+      formData.set('collection', CMS_COLLECTIONS.music)
+      formData.set('title', title)
+      formData.set('payload', JSON.stringify(payload))
+      formData.set('status', 'published')
+      await createCmsContent(formData)
     } catch {}
   }
 

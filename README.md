@@ -129,21 +129,32 @@ keyed records, migrates the legacy `timezone → timeZone`, `image → imageUrl`
 ### Backfilling the legacy media tables
 
 The old `galleryItem`, `portfolioProject`, `musicTrack` and `animeMangaItem`
-tables are not read by the public pages. Copy their rows into the CMS before
-retiring them:
+tables are no longer read or written by the application. Copy their rows into
+the CMS before retiring them:
 
 ```bash
 DATABASE_URL=postgres://... pnpm cms:backfill                 # dry run
 DATABASE_URL=postgres://... pnpm cms:backfill -- --apply      # write
 ```
 
+Run the backfill before deploying a build that removes the legacy fallbacks.
 The backfill is idempotent: it matches rows by a hidden legacy id, fills only
 blank CMS fields, and preserves existing titles, slugs, statuses and values.
 Anime/manga rows are migrated as drafts because the legacy table had no
 `published` flag; add `--publish-catalogs` to publish them. Use `--owner <id>`
 when the database has more than one CMS owner. The report lists every mapped
 field, every skipped field and why, and every row that was inserted, updated,
-unchanged or skipped. A missing legacy table is reported and skipped.
+unchanged or skipped.
+
+`--apply` writes a JSON backup to `backups/legacy-media-backfill-<timestamp>.json`
+before touching the database, locks the CMS table for the transaction, and
+aborts if a record changed after planning or fails post-write verification. It
+also refuses to write when a legacy table is missing, a row would be skipped, or
+a required CMS field would be empty. Review the dry run and use
+`--allow-partial` only when that partial result is intended. Untagged CMS records
+that share a slug are skipped; add `--adopt-existing` to merge one after
+checking that it is the same item. Use `--backup <path>` to choose a different
+backup file or `--no-backup` to skip it.
 
 To reset all editorial content while keeping the CMS and auth tables intact:
 

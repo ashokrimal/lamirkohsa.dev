@@ -1,24 +1,12 @@
 import { db } from '@/lib/db'
-import { cmsContent, musicTrack, profileSettings } from '@/lib/db/schema'
-import { asc, eq, and } from 'drizzle-orm'
-import { CMS_COLLECTIONS, type CmsResult } from '@/lib/cms-schema'
+import { profileSettings } from '@/lib/db/schema'
+import type { CmsResult } from '@/lib/cms-schema'
 
-export async function getPublicProfileSettings() {
-  try {
-    const rows = await db.select().from(profileSettings).limit(1)
-    return rows[0] ?? null
-  } catch {
-    return null
-  }
-}
-
-export type PublicProfileSettings = Awaited<ReturnType<typeof getPublicProfileSettings>>
+export type PublicProfileSettings = typeof profileSettings.$inferSelect
 
 /**
- * Result-aware profile settings read. The compatibility getter above returns
- * null both when nothing is configured and when the database fails, which is
- * enough for optional media lookups but not for a section that must tell the two
- * apart.
+ * Result-aware profile settings read. The public media pages need to tell an
+ * unconfigured profile apart from a database failure.
  */
 export async function getPublicProfileSettingsResult(): Promise<
   CmsResult<PublicProfileSettings>
@@ -35,55 +23,60 @@ export async function getPublicProfileSettingsResult(): Promise<
   }
 }
 
-export async function getListenBrainz(username?: string) {
+export async function getGitHubStatus(username?: string) {
   if (!username) return null
-  try { const response = await fetch(`https://api.listenbrainz.org/1/user/${encodeURIComponent(username)}/playing-now`, { next: { revalidate: 1800 } }); if (!response.ok) return null; const data = await response.json(); return data.payload?.listens?.[0]?.track_metadata ?? null } catch { return null }
-}
-
-export async function getSpotifyNowPlaying() { const token = process.env.SPOTIFY_ACCESS_TOKEN; if (!token) return null; try { const response = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }); if (response.status === 204 || !response.ok) return null; const data = await response.json(); return data.item ?? null } catch { return null } }
-export async function getLastFmRecent(username?: string) { const key = process.env.LASTFM_API_KEY; if (!username || !key) return []; try { const response = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(username)}&api_key=${key}&format=json&limit=8`, { next: { revalidate: 1800 } }); if (!response.ok) return []; const data = await response.json(); return data.recenttracks?.track ?? [] } catch { return [] } }
-
-export async function getRecentListenBrainz(username?: string) {
-  if (!username) return []
-  try { const response = await fetch(`https://api.listenbrainz.org/1/user/${encodeURIComponent(username)}/listens?count=8`, { next: { revalidate: 1800 } }); if (!response.ok) return []; const data = await response.json(); return data.payload?.listens ?? [] } catch { return [] }
-}
-
-export async function getGitHubStatus(username?: string) { if (!username) return null; try { const [profileResponse, reposResponse, eventsResponse] = await Promise.all([fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, { next: { revalidate: 1800 } }), fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=100`, { next: { revalidate: 1800 } }), fetch(`https://api.github.com/users/${encodeURIComponent(username)}/events/public?per_page=5`, { next: { revalidate: 1800 } })]); if (!profileResponse.ok) return null; const profile = await profileResponse.json(); const repos = reposResponse.ok ? await reposResponse.json() : []; const events = eventsResponse.ok ? await eventsResponse.json() : []; const eventDays = new Set(events.map((event: { created_at?: string }) => event.created_at?.slice(0, 10)).filter(Boolean)); let activeStreak = 0; for (let offset = 0; offset < 30; offset++) { const day = new Date(); day.setDate(day.getDate() - offset); if (!eventDays.has(day.toISOString().slice(0, 10))) break; activeStreak += 1 } return { profile, repos, totalStars: repos.reduce((sum: number, repo: { stargazers_count?: number }) => sum + (repo.stargazers_count ?? 0), 0), activeStreak, events } } catch { return null } }
-
-const malStatuses = ['watching', 'completed', 'onhold', 'dropped', 'plantowatch'] as const
-const mangaStatuses = ['reading', 'completed', 'onhold', 'dropped', 'plantoread'] as const
-async function getMalList(username: string, kind: 'anime' | 'manga', status: string) { const response = await fetch(`https://api.jikan.moe/v4/users/${encodeURIComponent(username)}/${kind}list?status=${status}&limit=5`, { next: { revalidate: 1800 } }); if (!response.ok) return []; const data = await response.json(); return data.data ?? [] }
-export async function getMalStatus(usernames: string[] = []) { const names = usernames.filter(Boolean); if (!names.length) return null; try { const results = await Promise.all(names.map(async (username) => { const response = await fetch(`https://api.jikan.moe/v4/users/${encodeURIComponent(username)}/full`, { next: { revalidate: 1800 } }); if (!response.ok) return null; const data = await response.json(); const [animeLists, mangaLists] = await Promise.all([Promise.all(malStatuses.map(async (status) => [status, await getMalList(username, 'anime', status)] as const)), Promise.all(mangaStatuses.map(async (status) => [status, await getMalList(username, 'manga', status)] as const))]); return { profile: data.data, animeLists: Object.fromEntries(animeLists), mangaLists: Object.fromEntries(mangaLists) } })); const valid = results.filter(Boolean); if (!valid.length) return null; const merge = (key: 'animeLists' | 'mangaLists') => Object.fromEntries([...new Set((key === 'animeLists' ? malStatuses : mangaStatuses))].map((status) => [status, valid.flatMap((item) => item?.[key][status] ?? [])])); return { ...valid[0]?.profile, anime: { watching: valid.reduce((sum, item) => sum + (item?.profile.anime?.watching ?? 0), 0), completed: valid.reduce((sum, item) => sum + (item?.profile.anime?.completed ?? 0), 0) }, manga: { reading: valid.reduce((sum, item) => sum + (item?.profile.manga?.reading ?? 0), 0), completed: valid.reduce((sum, item) => sum + (item?.profile.manga?.completed ?? 0), 0) }, animeLists: merge('animeLists'), mangaLists: merge('mangaLists') } } catch { return null } }
-
-const imdbProfileUrl = 'https://www.imdb.com/user/p.4eushzkk3twvloa63ogbudkd6q/'
-
-export async function getImdbWatchlist() {
   try {
-    const response = await fetch(`${imdbProfileUrl}watchlist/`, { headers: { Accept: 'text/html', 'User-Agent': 'lamirkohsa.dev/1.0' }, next: { revalidate: 1800 } })
-    if (!response.ok) return []
-    const html = await response.text()
-    const movies = [...html.matchAll(/href="(\/title\/tt\d+)[^"]*"[^>]*>([^<]+)</g)].map((match) => ({ externalId: match[1].split('/').pop() ?? '', title: match[2].replace(/\s+/g, ' ').trim(), description: 'IMDb watchlist', source: 'IMDb' }))
-    const syncedMovies = Array.from(new Map(movies.map((movie) => [movie.externalId, movie])).values())
-    if (syncedMovies.length) return syncedMovies
-    return [{ externalId: 'imdb-drishyam-the-conclusion', title: 'Drishyam: The Conclusion', description: 'IMDb watchlist', source: 'IMDb' }]
-  } catch { return [] }
+    const [profileResponse, reposResponse, eventsResponse] = await Promise.all([
+      fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, {
+        next: { revalidate: 1800 },
+      }),
+      fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=100`, {
+        next: { revalidate: 1800 },
+      }),
+      fetch(`https://api.github.com/users/${encodeURIComponent(username)}/events/public?per_page=5`, {
+        next: { revalidate: 1800 },
+      }),
+    ])
+    if (!profileResponse.ok) return null
+    const profile = await profileResponse.json()
+    const repos = reposResponse.ok ? await reposResponse.json() : []
+    const events = eventsResponse.ok ? await eventsResponse.json() : []
+    const eventDays = new Set(
+      events
+        .map((event: { created_at?: string }) => event.created_at?.slice(0, 10))
+        .filter(Boolean),
+    )
+    let activeStreak = 0
+    for (let offset = 0; offset < 30; offset++) {
+      const day = new Date()
+      day.setDate(day.getDate() - offset)
+      if (!eventDays.has(day.toISOString().slice(0, 10))) break
+      activeStreak += 1
+    }
+    return {
+      profile,
+      repos,
+      totalStars: repos.reduce(
+        (sum: number, repo: { stargazers_count?: number }) =>
+          sum + (repo.stargazers_count ?? 0),
+        0,
+      ),
+      activeStreak,
+      events,
+    }
+  } catch {
+    return null
+  }
 }
 
-async function getCoverArtArchiveUrl(artist: string, title: string, existingCover?: string | null) {
-  if (existingCover) return existingCover
-  try {
-    const query = new URLSearchParams({ query: `artist:"${artist}" AND release:"${title}"`, limit: '1', fmt: 'json' })
-    const musicBrainzResponse = await fetch(`https://musicbrainz.org/ws/2/release-group?${query}`, { headers: { Accept: 'application/json', 'User-Agent': 'lamirkohsa.dev/1.0 (portfolio media)' }, next: { revalidate: 1800 } })
-    if (!musicBrainzResponse.ok) return null
-    const result = await musicBrainzResponse.json()
-    const releaseGroupId = result['release-groups']?.[0]?.id
-    if (!releaseGroupId) return null
-    const coverResponse = await fetch(`https://coverartarchive.org/release-group/${releaseGroupId}/front-500`, { next: { revalidate: 1800 } })
-    return coverResponse.ok ? coverResponse.url : null
-  } catch { return null }
+/** Profile settings and public GitHub data for the GitHub archive page. */
+export async function getGitHubData() {
+  const settingsResult = await getPublicProfileSettingsResult()
+  if (settingsResult.status === 'error') {
+    throw new Error(settingsResult.message)
+  }
+
+  const settings = settingsResult.status === 'ok' ? settingsResult.data : null
+  const github = await getGitHubStatus(settings?.githubUsername ?? undefined)
+  return { settings, github }
 }
-
-const anilistQuery = `query ($userName: String) { anime: MediaListCollection(userName: $userName, type: ANIME) { lists { name entries { media { title { userPreferred } coverImage { large } description } } } } manga: MediaListCollection(userName: $userName, type: MANGA) { lists { name entries { media { title { userPreferred } coverImage { large } description } } } } }`;
-export async function getAniListStatus(usernames: string[] = []) { const names = usernames.filter(Boolean); if (!names.length) return null; try { const results = await Promise.all(names.map(async (userName) => { const response = await fetch('https://graphql.anilist.co', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ query: anilistQuery, variables: { userName } }), next: { revalidate: 1800 } }); if (!response.ok) return null; return (await response.json()).data; })); const valid = results.filter(Boolean); return valid.length ? { anime: valid.flatMap((item) => item.anime?.lists ?? []), manga: valid.flatMap((item) => item.manga?.lists ?? []) } : null } catch { return null } }
-
-export async function getMediaData() { const settings = await getPublicProfileSettings(); const rawTracks = await db.select().from(musicTrack).where(eq(musicTrack.published, true)).orderBy(asc(musicTrack.sortOrder)); const tracks = await Promise.all(rawTracks.map(async (track) => ({ ...track, coverUrl: await getCoverArtArchiveUrl(track.artist, track.title, track.coverUrl) }))); const movies = await db.select({ id: cmsContent.id, title: cmsContent.title, payload: cmsContent.payload, sortOrder: cmsContent.sortOrder }).from(cmsContent).where(and(eq(cmsContent.collection, CMS_COLLECTIONS.movies), eq(cmsContent.status, 'published'))).orderBy(asc(cmsContent.sortOrder), asc(cmsContent.createdAt)); const malUsernames = Array.from(new Set(settings?.malUsernames?.length ? settings.malUsernames : settings?.malUsername ? [settings.malUsername] : [])); const anilistUsernames = Array.from(new Set(settings?.anilistUsernames ?? [])); const [nowPlaying, recent, github, mal, anilist, spotifyNowPlaying, lastfmRecent, imdbMovies] = await Promise.all([getListenBrainz(settings?.listenbrainzUsername ?? undefined), getRecentListenBrainz(settings?.listenbrainzUsername ?? undefined), getGitHubStatus(settings?.githubUsername ?? undefined), getMalStatus(malUsernames), getAniListStatus(anilistUsernames), getSpotifyNowPlaying(), getLastFmRecent(settings?.lastfmUsername ?? undefined), getImdbWatchlist()]); return { settings, tracks, movies, imdbMovies, nowPlaying, recent, github, mal, anilist, spotifyNowPlaying, lastfmRecent } }

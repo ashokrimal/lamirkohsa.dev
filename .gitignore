@@ -32,3 +32,4 @@ public/locales
 !.yarn/plugins
 !.yarn/sdks     
 .next-dev
+/backups/

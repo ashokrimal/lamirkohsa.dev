@@ -8,12 +8,19 @@
  *
  * Options:
  *   --apply              Write changes. Without it the script is a dry run.
+ *   --backup <path>      Where to write the pre-apply JSON backup. Defaults to
+ *                        backups/legacy-media-backfill-<timestamp>.json.
+ *   --no-backup          Skip the backup. Not recommended for --apply.
+ *   --allow-partial      Allow --apply when a legacy table is missing, a row
+ *                        is skipped, or a required target field is empty.
+ *   --adopt-existing     Allow matching an untagged CMS record by slug + title.
+ *                        Without this, only records tagged with legacySource /
+ *                        legacyId are updated.
  *   --owner <userId>     Only backfill rows for this owner. By default the
  *                        script uses the owner with the most CMS records, or
  *                        the only owner found in the legacy tables.
  *   --publish-catalogs   Publish anime/manga rows. They are migrated as drafts
- *                        by default because await the old table had no
- *                        published flag.
+ *                        by default because the old table had no published flag.
  *   --json               Print the full report as JSON.
  *   --verbose            Include per-record warnings and preserved fields.
  *
@@ -23,19 +30,26 @@
  *   musicTrack        -> Music
  *   animeMangaItem    -> Anime / Manga
  *
- * Idempotency:
+ * Idempotency and safety:
  *   - Legacy rows are matched to CMS records by payload.legacySource +
- *     payload.legacyId. Older CMS records without those tags are adopted only
- *     when their slug and title match the legacy row.
+ *     payload.legacyId. Untagged CMS records are skipped unless
+ *     --adopt-existing is passed.
  *   - Existing CMS values are never overwritten. The script only fills blank
  *     payload fields, preserves the CMS title, slug, status and sort order, and
  *     adds the legacy identity tags.
  *   - Re-running --apply after a successful run reports every record as
  *     unchanged.
+ *   - --apply writes a backup before touching the database, locks the CMS table
+ *     for the transaction, aborts if a record changed after planning, and
+ *     verifies every written payload before committing.
+ *   - --apply refuses to write when a legacy table is missing, a record would be
+ *     skipped, or a required target field is empty. Use --allow-partial after
+ *     reviewing the dry-run report to override that.
  *
- * Missing legacy tables are reported and skipped, so the script is safe to run
- * before and after the tables are retired.
+ * Missing legacy tables are reported and skipped during a dry run.
  */
+import { access, mkdir, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 import { Client } from 'pg'
 import { loadCmsSchema } from './load-cms-schema.mjs'
 
@@ -63,6 +77,7 @@ const SOURCES = [
       'createdAt',
     ],
     targetFields: ['imageUrl', 'altText', 'category', 'description', 'location'],
+    required: ['imageUrl'],
     unavailable: {
       altText: 'not present in galleryItem',
       location: 'not present in galleryItem',
@@ -111,6 +126,7 @@ const SOURCES = [
       'altText',
       'status',
     ],
+    required: ['summary', 'description', 'imageUrl'],
     unavailable: {
       github: 'not present in portfolioProject',
       phases: 'not present in portfolioProject',
@@ -147,6 +163,7 @@ const SOURCES = [
       'createdAt',
     ],
     targetFields: ['artist', 'subtitle', 'coverUrl', 'externalUrl'],
+    required: [],
     unavailable: {
       creator: 'not present in musicTrack',
       description: 'not present in musicTrack',
@@ -184,6 +201,7 @@ const SOURCES = [
       'createdAt',
     ],
     targetFields: ['status', 'rating', 'imageUrl', 'description'],
+    required: [],
     unavailable: {
       progress: 'CMS media schema has no progress field',
       creator: 'no reliable legacy source',
@@ -215,6 +233,7 @@ const report = {
   generatedAt: new Date().toISOString(),
   owner: null,
   ownerSource: null,
+  backupPath: null,
   sources: [],
   records: [],
   totals: {
@@ -224,6 +243,7 @@ const report = {
     updated: 0,
     unchanged: 0,
     skipped: 0,
+    incomplete: 0,
     otherOwner: 0,
     missingTables: 0,
   },
@@ -338,6 +358,7 @@ async function main() {
         updated: 0,
         unchanged: 0,
         skipped: 0,
+        incomplete: 0,
         mapped: {},
         skippedFields: {},
       }
@@ -365,6 +386,19 @@ async function main() {
           usedSlugs,
         })
         finalizePlan(plan)
+
+        if (!plan.skipRecord) {
+          const missingRequired = (definition.required ?? []).filter((field) =>
+            isBlank(plan.payload[field]),
+          )
+          if (missingRequired.length > 0) {
+            plan.incomplete = true
+            plan.missingRequired = missingRequired
+            plan.warnings.push(`missing required CMS field(s): ${missingRequired.join(', ')}`)
+            sourceReport.incomplete += 1
+            report.totals.incomplete += 1
+          }
+        }
 
         sourceReport.mapped = mergeCounts(sourceReport.mapped, plan.mappedCounts)
         sourceReport.skippedFields = mergeCounts(sourceReport.skippedFields, plan.skippedCounts)
@@ -404,11 +438,32 @@ async function main() {
       })
     }
 
-    if (options.apply && plans.some((plan) => plan.action === 'inserted' || plan.action === 'updated')) {
+    const writablePlans = plans.filter(
+      (plan) => plan.action === 'inserted' || plan.action === 'updated',
+    )
+
+    if (options.apply && writablePlans.length > 0) {
+      assertApplySafe(report)
+      await writeBackup(report, writablePlans)
+
       await client.query('begin')
       transaction = true
-      for (const plan of plans) {
+      await client.query("set local lock_timeout = '15s'")
+      // Block CMS edits while the migration runs. Reads remain available.
+      await client.query('lock table "cmsContent" in share row exclusive mode')
+
+      for (const plan of writablePlans) {
         if (plan.action === 'inserted') {
+          const clash = await client.query(
+            `select "id" from "cmsContent" where "collection" = $1 and "slug" = $2 limit 1`,
+            [plan.collection, plan.slug],
+          )
+          if (clash.rowCount > 0) {
+            throw new Error(
+              `CMS slug "${plan.collection}/${plan.slug}" appeared after planning. Aborting without changes.`,
+            )
+          }
+
           const result = await client.query(
             `insert into "cmsContent"
                ("userId", "collection", "title", "slug", "payload", "status", "sortOrder")
@@ -426,6 +481,20 @@ async function main() {
           )
           plan.cmsId = result.rows[0].id
         } else if (plan.action === 'updated') {
+          const locked = await client.query(
+            `select "payload" from "cmsContent" where "id" = $1 for update`,
+            [plan.existing.id],
+          )
+          if (!locked.rowCount) {
+            throw new Error(`CMS record #${plan.existing.id} disappeared after planning. Aborting.`)
+          }
+          const currentPayload = objectPayload(locked.rows[0].payload)
+          if (JSON.stringify(currentPayload) !== plan.existing.payloadHash) {
+            throw new Error(
+              `CMS record #${plan.existing.id} changed after planning. Aborting without changes.`,
+            )
+          }
+
           await client.query(
             `update "cmsContent"
                 set "payload" = $1::jsonb, "updatedAt" = now()
@@ -435,6 +504,8 @@ async function main() {
           plan.cmsId = plan.existing.id
         }
       }
+
+      await verifyApplied(client, writablePlans)
       await client.query('commit')
       transaction = false
     }
@@ -455,6 +526,10 @@ function parseArgs(argv) {
     verbose: false,
     publishCatalogs: false,
     owner: null,
+    backup: null,
+    noBackup: false,
+    allowPartial: false,
+    adoptExisting: false,
     help: false,
   }
 
@@ -465,7 +540,15 @@ function parseArgs(argv) {
     else if (argument === '--json') parsed.json = true
     else if (argument === '--verbose') parsed.verbose = true
     else if (argument === '--publish-catalogs') parsed.publishCatalogs = true
-    else if (argument === '--owner') {
+    else if (argument === '--allow-partial') parsed.allowPartial = true
+    else if (argument === '--adopt-existing') parsed.adoptExisting = true
+    else if (argument === '--no-backup') parsed.noBackup = true
+    else if (argument === '--backup') {
+      const value = argv[index + 1]
+      if (!value || value.startsWith('--')) throw new Error('--backup requires a file path')
+      parsed.backup = value
+      index += 1
+    } else if (argument === '--owner') {
       const value = argv[index + 1]
       if (!value || value.startsWith('--')) throw new Error('--owner requires a user id')
       parsed.owner = value
@@ -485,6 +568,10 @@ Usage:
 
 Options:
   --apply              Write changes (default: dry run)
+  --backup <path>      Pre-apply backup path (default: backups/legacy-media-backfill-<time>.json)
+  --no-backup          Skip the pre-apply backup (not recommended)
+  --allow-partial      Allow apply with missing tables, skipped rows or empty required fields
+  --adopt-existing     Merge an untagged CMS record when slug and title match
   --owner <userId>     Restrict the backfill to one owner
   --publish-catalogs   Publish anime/manga rows (default: draft)
   --json               Print the full report as JSON
@@ -588,6 +675,8 @@ function buildPlan(context) {
     ownerId,
     existing: null,
     changed: false,
+    incomplete: false,
+    missingRequired: [],
     skipRecord: null,
     warnings: [],
     mapped: [],
@@ -627,6 +716,13 @@ function buildPlan(context) {
           })
           return plan
         }
+      } else if (!options.adoptExisting) {
+        plan.skipRecord = 'slug already belongs to an untagged CMS record'
+        plan.skippedFields.push({
+          field: 'slug',
+          reason: `CMS slug "${slugCandidate}" already exists without legacy tags; pass --adopt-existing to merge it`,
+        })
+        return plan
       } else if (normalizeTitle(slugMatch.title) !== normalizeTitle(plan.title)) {
         plan.skipRecord = 'slug already belongs to an unrelated CMS record'
         plan.skippedFields.push({
@@ -644,7 +740,15 @@ function buildPlan(context) {
   }
 
   if (existing) {
-    plan.existing = { id: existing.id, title: existing.title, slug: existing.slug, status: existing.status }
+    const existingPayload = objectPayload(existing.payload)
+    plan.existing = {
+      id: existing.id,
+      title: existing.title,
+      slug: existing.slug,
+      status: existing.status,
+      payload: existingPayload,
+      payloadHash: JSON.stringify(existingPayload),
+    }
     plan.collection = existing.collection
     plan.title = existing.title
     plan.slug = existing.slug
@@ -974,6 +1078,101 @@ function slugKey(collection, slug) {
   return `${collection}::${clean(slug).toLowerCase()}`
 }
 
+function assertApplySafe(data) {
+  if (options.allowPartial) return
+
+  const problems = []
+  if (data.totals.missingTables > 0) {
+    problems.push(`${data.totals.missingTables} legacy table(s) are missing`)
+  }
+  if (data.totals.skipped > 0) {
+    problems.push(`${data.totals.skipped} record(s) would be skipped`)
+  }
+  if (data.totals.incomplete > 0) {
+    problems.push(`${data.totals.incomplete} record(s) are missing required CMS fields`)
+  }
+  if (problems.length === 0) return
+
+  throw new Error(
+    `Refusing --apply: ${problems.join('; ')}. Review the dry-run report and fix the source data, or pass --allow-partial to migrate what is safe. No rows were written.`,
+  )
+}
+
+async function writeBackup(data, plans) {
+  if (options.noBackup) {
+    data.warnings.push('Pre-apply backup skipped because --no-backup was passed.')
+    return
+  }
+
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const file = path.resolve(
+    options.backup ?? path.join('backups', `legacy-media-backfill-${stamp}.json`),
+  )
+
+  try {
+    await access(file)
+    throw new Error(`Backup file already exists: ${file}. Choose a new --backup path.`)
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error
+  }
+
+  await mkdir(path.dirname(file), { recursive: true, mode: 0o700 })
+  const backup = {
+    generatedAt: data.generatedAt,
+    owner: data.owner,
+    ownerSource: data.ownerSource,
+    mode: data.mode,
+    totals: data.totals,
+    sources: data.sources,
+    records: plans.map((plan) => ({
+      source: plan.source,
+      sourceId: plan.sourceId,
+      collection: plan.collection,
+      title: plan.title,
+      slug: plan.slug,
+      action: plan.action,
+      before: plan.existing
+        ? {
+            id: plan.existing.id,
+            title: plan.existing.title,
+            slug: plan.existing.slug,
+            status: plan.existing.status,
+            payload: plan.existing.payload,
+          }
+        : null,
+      after: {
+        status: plan.status,
+        sortOrder: plan.sortOrder,
+        payload: plan.payload,
+      },
+    })),
+  }
+
+  await writeFile(file, `${JSON.stringify(backup, null, 2)}\n`, { mode: 0o600 })
+  data.backupPath = file
+}
+
+async function verifyApplied(client, plans) {
+  for (const plan of plans) {
+    const result = await client.query(
+      `select "payload" from "cmsContent" where "id" = $1`,
+      [plan.cmsId],
+    )
+    if (!result.rowCount) {
+      throw new Error(`Verification failed: CMS record #${plan.cmsId} is missing.`)
+    }
+
+    const payload = objectPayload(result.rows[0].payload)
+    for (const [field, value] of Object.entries(plan.payload)) {
+      if (JSON.stringify(payload[field]) !== JSON.stringify(value)) {
+        throw new Error(
+          `Verification failed for ${plan.source}#${plan.sourceId}: field "${field}" did not persist. Rolling back.`,
+        )
+      }
+    }
+  }
+}
+
 function printReport(data) {
   if (options.json) {
     console.log(JSON.stringify(data, null, 2))
@@ -981,7 +1180,9 @@ function printReport(data) {
   }
 
   console.log(`Legacy media backfill — ${data.mode.toUpperCase()}`)
-  console.log(`Owner: ${data.owner ?? '(none)'}${data.ownerSource ? ` (${data.ownerSource})` : ''}\n`)
+  console.log(`Owner: ${data.owner ?? '(none)'}${data.ownerSource ? ` (${data.ownerSource})` : ''}`)
+  if (data.backupPath) console.log(`Backup: ${data.backupPath}`)
+  console.log('')
 
   for (const source of data.sources) {
     if (source.missingTable) {
@@ -991,7 +1192,7 @@ function printReport(data) {
     console.log(
       `${source.source} → ${source.target}: ${source.sourceRows} source row(s), ${source.eligible} eligible, ` +
         `${source.inserted} insert, ${source.updated} update, ${source.unchanged} unchanged, ` +
-        `${source.skipped} skipped, ${source.otherOwner} other owner`,
+        `${source.skipped} skipped, ${source.incomplete} incomplete, ${source.otherOwner} other owner`,
     )
     if (source.missingColumns?.length) {
       console.log(`  missing expected column(s): ${source.missingColumns.join(', ')}`)
@@ -1012,6 +1213,9 @@ function printReport(data) {
           : summarizeSkipped(record.skippedFields)
         console.log(`    skipped fields: ${shown.join('; ')}`)
       }
+      if (record.missingRequired?.length > 0) {
+        console.log(`    missing required: ${record.missingRequired.join(', ')}`)
+      }
       if (options.verbose && record.preserved?.length > 0) {
         console.log(`    preserved: ${record.preserved.join('; ')}`)
       }
@@ -1026,7 +1230,8 @@ function printReport(data) {
     `  ${data.totals.sourceRows} source row(s), ${data.totals.eligible} eligible, ` +
       `${data.totals.inserted} insert, ${data.totals.updated} update, ` +
       `${data.totals.unchanged} unchanged, ${data.totals.skipped} skipped, ` +
-      `${data.totals.otherOwner} other owner, ${data.totals.missingTables} missing table(s)`,
+      `${data.totals.incomplete} incomplete, ${data.totals.otherOwner} other owner, ` +
+      `${data.totals.missingTables} missing table(s)`,
   )
 
   const warnings = data.warnings ?? []
@@ -1059,7 +1264,7 @@ function printReport(data) {
   if (!options.apply) {
     console.log('\nDry run: no rows were written. Re-run with --apply to write these changes.')
   } else {
-    console.log('\nApply complete.')
+    console.log(`\nApply complete.${data.backupPath ? ` Backup: ${data.backupPath}` : ''}`)
   }
 }
 

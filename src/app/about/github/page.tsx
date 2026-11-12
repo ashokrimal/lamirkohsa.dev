@@ -12,5 +12,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function GitHubPage() {
-  return <MediaDetailPage category="github" />
+  return <MediaDetailPage />
 }
