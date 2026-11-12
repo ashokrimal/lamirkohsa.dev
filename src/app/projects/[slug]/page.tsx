@@ -31,7 +31,8 @@ export async function generateMetadata({
   params: { slug: string }
 }): Promise<Metadata> {
   const result = await findProject(params.slug)
-  if (result.status !== 'ok' || !result.data) return {}
+  if (result.status === 'error') return {}
+  if (result.status !== 'ok' || !result.data) notFound()
   const project = result.data
   const description = project.summary || project.description
   return {

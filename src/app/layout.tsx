@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import './globals.css';
 import LayoutShell from '@/components/LayoutShell';
 import { EMPTY_SITE_CONFIG, getSiteConfig } from '@/lib/site-content';
-import { SITE_URL, SEO_TITLE_TEMPLATE } from '@/lib/seo';
+import { SITE_NAME, SITE_URL, SEO_TITLE_TEMPLATE } from '@/lib/seo';
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#f6f7f8' };
 
@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteResult = await getSiteConfig();
   const site = siteResult.status === 'ok' ? siteResult.data : EMPTY_SITE_CONFIG;
 
-  const name = site.brand.name || 'Ashok Rimal';
+  const name = site.brand.name || SITE_NAME;
   const defaultTitle = site.brand.role ? `${name} — ${site.brand.role}` : name;
   const description = site.footer.tagline;
 

@@ -10,7 +10,7 @@ import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
-import { Award, Sparkles } from 'lucide-react'
+import { Award, FileText, Sparkles } from 'lucide-react'
 import { getPageCopy } from '@/lib/site-content'
 import type { ReactNode } from 'react'
 
@@ -79,6 +79,11 @@ export default async function CollectionPage({
   }))
 
   const profileSummary = stringValue(profile as Record<string, unknown>, 'summary')
+  const profileBio = stringValue(profile as Record<string, unknown>, 'bio')
+  const resumeSummary = profileSummary || profileBio
+  const resumeHasContent = Boolean(
+    resumeSummary || experienceRaw.length > 0 || educationRaw.length > 0,
+  )
 
   return (
     <PageShell className={kind === 'resume' ? 'resume-page' : undefined}>
@@ -166,21 +171,33 @@ export default async function CollectionPage({
             <CmsErrorState message={experienceResult.message} />
           ) : educationResult.status === 'error' ? (
             <CmsErrorState message={educationResult.message} />
+          ) : !resumeHasContent ? (
+            <EmptyState
+              icon={FileText}
+              message={CMS_SCHEMA.sections.pages.resume.emptyState.message}
+              hint={CMS_SCHEMA.sections.pages.resume.emptyState.hint}
+              actionLabel={CMS_SCHEMA.sections.pages.resume.emptyState.actionLabel}
+              actionHref={CMS_SCHEMA.sections.pages.resume.emptyState.actionHref}
+            />
           ) : (
             <div className="space-y-6">
-              {(profileSummary || stringValue(profile as Record<string, unknown>, 'bio')) && (
+              {resumeSummary && (
                 <article className="apple-card p-6 md:p-7 space-y-3">
                   <h2 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
                     {stringValue(profile as Record<string, unknown>, 'summaryLabel')}
                   </h2>
                   <p className="text-sm text-ink-secondary leading-relaxed">
-                    {profileSummary || stringValue(profile as Record<string, unknown>, 'bio')}
+                    {resumeSummary}
                   </p>
                 </article>
               )}
 
-              <ExperienceTimeline items={mapTimeline(experienceRaw)} type="experience" />
-              <ExperienceTimeline items={mapTimeline(educationRaw)} type="education" />
+              {experienceRaw.length > 0 && (
+                <ExperienceTimeline items={mapTimeline(experienceRaw)} type="experience" />
+              )}
+              {educationRaw.length > 0 && (
+                <ExperienceTimeline items={mapTimeline(educationRaw)} type="education" />
+              )}
             </div>
           ))}
       </div>

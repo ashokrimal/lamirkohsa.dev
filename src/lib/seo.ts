@@ -5,7 +5,9 @@ import type { PageCopy } from '@/lib/site-content'
  * The SEO title pattern is part of the site structure, not CMS content.
  * Next.js applies it through `title.template` in the root layout.
  */
-export const SEO_TITLE_TEMPLATE = '%s · Ashok Rimal'
+export const SITE_NAME = 'Ashok Rimal'
+
+export const SEO_TITLE_TEMPLATE = `%s · ${SITE_NAME}`
 
 export const SITE_URL = 'https://ashokrimal.com.np'
 

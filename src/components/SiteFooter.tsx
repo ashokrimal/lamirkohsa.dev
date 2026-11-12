@@ -6,6 +6,7 @@ import type {
   SiteFooterConfig,
   SiteNavigation,
 } from '@/lib/site-content'
+import { SITE_NAME } from '@/lib/seo'
 import { uiStrings } from '@/lib/ui-strings'
 
 const icons = {
@@ -46,7 +47,7 @@ export default function SiteFooter({
               href="/"
               className="inline-flex items-baseline gap-2 text-base font-semibold tracking-[-0.04em] text-ink hover:text-accent transition-colors"
             >
-              {brand.name}
+              {brand.name || SITE_NAME}
               <span className="text-accent">.</span>
               {brand.korean && (
                 <span lang="ko" className="font-korean text-[11px] font-normal text-muted">
@@ -162,7 +163,7 @@ export default function SiteFooter({
       <div className="border-t border-line">
         <div className="shell-width py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono uppercase tracking-[0.12em] text-muted">
           <p>
-            &copy; {year} {footer.copyrightName || brand.name}
+            &copy; {year} {footer.copyrightName || brand.name || SITE_NAME}
           </p>
           {footer.canonical && <p className="text-center">{footer.canonical}</p>}
           {contact.email && (

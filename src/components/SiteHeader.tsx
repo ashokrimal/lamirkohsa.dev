@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { Menu, X, Volume2, VolumeX } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import type { ContactDetails, SiteBrand, SiteNavigation } from '@/lib/site-content'
+import { SITE_NAME } from '@/lib/seo'
 import { uiStrings } from '@/lib/ui-strings'
 
 export default function SiteHeader({
@@ -76,7 +77,7 @@ export default function SiteHeader({
             className="flex items-center gap-2 group transition-transform active:scale-95"
           >
             <span className="font-semibold text-[15px] tracking-tight text-ink group-hover:text-accent transition-colors">
-              {brand.name}
+              {brand.name || SITE_NAME}
             </span>
             {brand.korean && (
               <span lang="ko" className="text-[11px] font-korean text-muted tracking-normal font-normal">
@@ -171,7 +172,7 @@ export default function SiteHeader({
         <div>
           <div className="flex items-center justify-between pb-4 border-b border-line-subtle">
             <div>
-              <span className="text-sm font-semibold tracking-tight text-ink">{brand.name}</span>
+              <span className="text-sm font-semibold tracking-tight text-ink">{brand.name || SITE_NAME}</span>
               {brand.korean && (
                 <p lang="ko" className="text-[11px] font-korean text-muted">
                   {brand.korean}

@@ -212,10 +212,20 @@ function parseSections(payload: Record<string, unknown> | undefined) {
   return Object.keys(sections).length ? sections : undefined
 }
 
+/** Structural navigation used before the CMS navigation record exists. */
+function defaultNavigation(): SiteNavigation {
+  return {
+    primary: navigationForGroup(undefined, 'primary'),
+    footer: navigationForGroup(undefined, 'footer'),
+    collections: navigationForGroup(undefined, 'collections'),
+    socials: [],
+  }
+}
+
 /** Empty chrome shape used when the CMS is unavailable, so layout can render. */
 export const EMPTY_SITE_CONFIG: SiteConfig = {
   brand: {},
-  navigation: { primary: [], footer: [], collections: [], socials: [] },
+  navigation: defaultNavigation(),
   footer: {},
   contact: {},
 }

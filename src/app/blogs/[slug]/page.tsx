@@ -56,7 +56,8 @@ export async function generateMetadata({
   params: { slug: string }
 }): Promise<Metadata> {
   const result = await findBlog(params.slug)
-  if (result.status !== 'ok' || !result.data) return { title: uiStrings.journal.label.en }
+  if (result.status === 'error') return { title: uiStrings.journal.label.en }
+  if (result.status !== 'ok' || !result.data) notFound()
   const blog = result.data
   const payload = readPayload(blog)
   const description = getBody(blog).slice(0, 160)

@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import type { ReactNode } from 'react'
+import { Github } from 'lucide-react'
 import { getMediaData } from '@/app/actions/media'
 import { getMediaPreviews } from '@/app/actions/content-cms'
 import EmptyCollectionState from '@/components/EmptyCollectionState'
 import { CmsErrorState } from '@/components/ui/CmsState'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { CMS_SCHEMA } from '@/lib/cms-schema'
 import { getPageCopy, type PageCopy } from '@/lib/site-content'
 
 type Category = 'music' | 'anime' | 'manga' | 'github'
@@ -306,6 +309,21 @@ function GitHubPage({
       (total: number, repo: { stargazers_count?: number }) => total + (repo.stargazers_count ?? 0),
       0,
     ) ?? 0
+
+  if (!profile) {
+    const empty = CMS_SCHEMA.sections.home.github.emptyState
+    return (
+      <DetailShell copy={copy}>
+        <EmptyState
+          icon={Github}
+          message={empty.message}
+          hint={empty.hint}
+          actionLabel={empty.actionLabel}
+          actionHref={empty.actionHref}
+        />
+      </DetailShell>
+    )
+  }
 
   return (
     <DetailShell
