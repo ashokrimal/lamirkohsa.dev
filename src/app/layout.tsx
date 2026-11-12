@@ -42,6 +42,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+import { ThemeProvider } from '@/contexts/ThemeContext';
+
 export default async function RootLayout({ children }: { children: ReactNode }) {
   // Navigation, brand, footer and contact details all come from the CMS. Reading
   // no request headers here keeps the public routes cacheable; the CMS subdomain
@@ -49,9 +51,18 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const siteResult = await getSiteConfig()
   const site = siteResult.status === 'ok' ? siteResult.data : EMPTY_SITE_CONFIG
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('portfolio_theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var dark=(t==='dark'||(!t&&d)||(t==='system'&&d));var root=document.documentElement;if(dark){root.classList.add('dark');root.classList.remove('light');root.setAttribute('data-theme','dark');root.style.colorScheme='dark';}else{root.classList.remove('dark');root.classList.add('light');root.setAttribute('data-theme','light');root.style.colorScheme='light';}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="leading-relaxed tracking-wide">
-        <LayoutShell site={site}>{children}</LayoutShell>
+        <ThemeProvider>
+          <LayoutShell site={site}>{children}</LayoutShell>
+        </ThemeProvider>
       </body>
     </html>
   )

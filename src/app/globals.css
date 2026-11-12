@@ -101,7 +101,167 @@
 
   --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Helvetica Neue", sans-serif;
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
-  --korean-font: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+}
+
+/* ============================================================================
+   DARK THEME TOKENS
+   Triggered by .dark class or [data-theme="dark"] on <html>, or system preference
+   ============================================================================ */
+.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* ---- Layer 1: primitives ---- */
+  --paper-rgb: 22 22 24;               /* #161618 — Apple dark space gray */
+  --surface-rgb: 30 30 32;             /* #1e1e20 — Apple dark squircle card */
+  --ink-rgb: 245 245 247;              /* #f5f5f7 — bright crisp white/ivory */
+  --ink-secondary-rgb: 161 161 166;    /* #a1a1a6 — secondary muted */
+  --muted-rgb: 142 142 147;           /* #8e8e93 — tertiary neutral */
+  --accent-rgb: 110 178 135;          /* #6eb287 — luminous sage green for dark mode */
+  --accent-secondary-rgb: 110 178 135;
+  --inverse-rgb: 22 22 24;             /* #161618 */
+  --scrim-rgb: 255 255 255;            /* #ffffff (used for translucent white borders/overlays on dark) */
+
+  --paper: rgb(var(--paper-rgb));
+  --surface: rgb(var(--surface-rgb));
+  --ink: rgb(var(--ink-rgb));
+  --ink-secondary: rgb(var(--ink-secondary-rgb));
+  --muted: rgb(var(--muted-rgb));
+  --accent: rgb(var(--accent-rgb));
+  --accent-blue: var(--accent);
+  --accent-secondary: rgb(var(--accent-secondary-rgb));
+  --accent-soft: rgba(110, 178, 135, 0.18);
+  --surface-glass: rgba(30, 30, 32, 0.85);
+  --line: rgba(255, 255, 255, 0.08);
+
+  /* ---- Layer 2: semantic roles ---- */
+  --color-background: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-glass: var(--surface-glass);
+  --color-surface-dark: #121817;
+  --color-surface-dark-deep: #090c0e;
+  --color-surface-sunken: #141416;
+  --color-surface-tinted: #1a221e;
+
+  /* Text */
+  --color-foreground: var(--ink);
+  --color-foreground-secondary: var(--ink-secondary);
+  --color-foreground-muted: var(--muted);
+  --color-foreground-inverse: rgb(var(--paper-rgb));
+  --color-foreground-on-dark: #f8fbfa;
+  --color-foreground-on-dark-muted: #b8c9c0;
+
+  /* Primary (dark action) */
+  --color-primary: #f5f5f7;
+  --color-primary-hover: #ffffff;
+  --color-primary-foreground: #121214;
+
+  /* Secondary */
+  --color-secondary: #2c2c2e;
+  --color-secondary-foreground: #f5f5f7;
+
+  /* Accents */
+  --color-accent: var(--accent);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: #121214;
+
+  /* Borders — lightened scrim on dark surfaces */
+  --color-border-hairline: rgba(255, 255, 255, 0.04);
+  --color-border-faint: rgba(255, 255, 255, 0.06);
+  --color-border-soft: rgba(255, 255, 255, 0.07);
+  --color-border-subtle: rgba(255, 255, 255, 0.09);
+  --color-border: rgba(255, 255, 255, 0.10);
+  --color-border-medium: rgba(255, 255, 255, 0.14);
+  --color-border-strong: rgba(255, 255, 255, 0.22);
+
+  /* States & overlays */
+  --color-overlay-faint: rgba(255, 255, 255, 0.03);
+  --color-overlay-hairline: rgba(255, 255, 255, 0.04);
+  --color-overlay: rgba(255, 255, 255, 0.06);
+  --color-overlay-soft: rgba(255, 255, 255, 0.08);
+  --color-overlay-subtle: rgba(255, 255, 255, 0.10);
+  --color-overlay-medium: rgba(255, 255, 255, 0.14);
+  --color-overlay-strong: rgba(255, 255, 255, 0.18);
+  --color-overlay-heavy: rgba(255, 255, 255, 0.24);
+  --color-hover: var(--color-overlay);
+  --color-active: var(--color-overlay-subtle);
+  --color-scrim: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --paper-rgb: 22 22 24;
+    --surface-rgb: 30 30 32;
+    --ink-rgb: 245 245 247;
+    --ink-secondary-rgb: 161 161 166;
+    --muted-rgb: 142 142 147;
+    --accent-rgb: 110 178 135;
+    --accent-secondary-rgb: 110 178 135;
+    --inverse-rgb: 22 22 24;
+    --scrim-rgb: 255 255 255;
+
+    --paper: rgb(var(--paper-rgb));
+    --surface: rgb(var(--surface-rgb));
+    --ink: rgb(var(--ink-rgb));
+    --ink-secondary: rgb(var(--ink-secondary-rgb));
+    --muted: rgb(var(--muted-rgb));
+    --accent: rgb(var(--accent-rgb));
+    --accent-blue: var(--accent);
+    --accent-secondary: rgb(var(--accent-secondary-rgb));
+    --accent-soft: rgba(110, 178, 135, 0.18);
+    --surface-glass: rgba(30, 30, 32, 0.85);
+    --line: rgba(255, 255, 255, 0.08);
+
+    --color-background: var(--paper);
+    --color-surface: var(--surface);
+    --color-surface-glass: var(--surface-glass);
+    --color-surface-dark: #121817;
+    --color-surface-dark-deep: #090c0e;
+    --color-surface-sunken: #141416;
+    --color-surface-tinted: #1a221e;
+
+    --color-foreground: var(--ink);
+    --color-foreground-secondary: var(--ink-secondary);
+    --color-foreground-muted: var(--muted);
+    --color-foreground-inverse: rgb(var(--paper-rgb));
+    --color-foreground-on-dark: #f8fbfa;
+    --color-foreground-on-dark-muted: #b8c9c0;
+
+    --color-primary: #f5f5f7;
+    --color-primary-hover: #ffffff;
+    --color-primary-foreground: #121214;
+
+    --color-secondary: #2c2c2e;
+    --color-secondary-foreground: #f5f5f7;
+
+    --color-accent: var(--accent);
+    --color-accent-secondary: var(--accent-secondary);
+    --color-accent-soft: var(--accent-soft);
+    --color-accent-foreground: #121214;
+
+    --color-border-hairline: rgba(255, 255, 255, 0.04);
+    --color-border-faint: rgba(255, 255, 255, 0.06);
+    --color-border-soft: rgba(255, 255, 255, 0.07);
+    --color-border-subtle: rgba(255, 255, 255, 0.09);
+    --color-border: rgba(255, 255, 255, 0.10);
+    --color-border-medium: rgba(255, 255, 255, 0.14);
+    --color-border-strong: rgba(255, 255, 255, 0.22);
+
+    --color-overlay-faint: rgba(255, 255, 255, 0.03);
+    --color-overlay-hairline: rgba(255, 255, 255, 0.04);
+    --color-overlay: rgba(255, 255, 255, 0.06);
+    --color-overlay-soft: rgba(255, 255, 255, 0.08);
+    --color-overlay-subtle: rgba(255, 255, 255, 0.10);
+    --color-overlay-medium: rgba(255, 255, 255, 0.14);
+    --color-overlay-strong: rgba(255, 255, 255, 0.18);
+    --color-overlay-heavy: rgba(255, 255, 255, 0.24);
+    --color-hover: var(--color-overlay);
+    --color-active: var(--color-overlay-subtle);
+    --color-scrim: #000000;
+  }
 }
 
 * { box-sizing: border-box; }
@@ -144,21 +304,21 @@ a, button { -webkit-tap-highlight-color: transparent; }
   background: var(--surface-glass);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-border);
   box-shadow: none;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .apple-card:hover {
   box-shadow: none;
   transform: translateY(-3px);
-  border-color: rgba(0, 0, 0, 0.1);
+  border-color: var(--color-border-medium);
 }
 
 .apple-pill {
   border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--color-overlay-soft);
   color: var(--color-foreground);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border-soft);
   transition: all 0.2s ease;
 }
 

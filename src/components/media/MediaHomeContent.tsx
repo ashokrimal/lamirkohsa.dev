@@ -10,8 +10,6 @@ import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSections } from '@/lib/media-content'
 import { uiStrings } from '@/lib/ui-strings'
 
-export const dynamic = 'force-dynamic'
-
 const PREVIEW_COUNT = 5
 
 /**

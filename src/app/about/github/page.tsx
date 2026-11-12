@@ -3,8 +3,8 @@ import MediaDetailPage from '@/components/media/MediaDetailPage'
 import { getPageCopy } from '@/lib/site-content'
 import { pageMetadata } from '@/lib/seo'
 
-// This archive pulls live library data on each request, so it is not cached.
-export const dynamic = 'force-dynamic'
+// Cached and revalidated on a 5-minute ISR window to ensure efficient production builds.
+export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()

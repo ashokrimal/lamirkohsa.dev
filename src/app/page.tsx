@@ -1,6 +1,8 @@
 import { PageLayout } from '@/components/layouts/PageLayout';
 import HomeContent from '@/components/pages/HomeContent';
 
+export const revalidate = 300;
+
 export default function HomePage() {
   return (
     <PageLayout

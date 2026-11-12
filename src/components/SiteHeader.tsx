@@ -8,6 +8,7 @@ import { sensoryAudio } from '@/lib/sensory-audio'
 import type { ContactDetails, SiteBrand, SiteNavigation } from '@/lib/site-content'
 import { SITE_NAME } from '@/lib/seo'
 import { uiStrings } from '@/lib/ui-strings'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 export default function SiteHeader({
   brand,
@@ -128,6 +129,7 @@ export default function SiteHeader({
             )
           })}
 
+          <ThemeToggle />
           <button
             type="button"
             onClick={toggleSound}
@@ -140,6 +142,7 @@ export default function SiteHeader({
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
           <button
             type="button"
             onClick={toggleSound}
@@ -215,6 +218,11 @@ export default function SiteHeader({
               )
             })}
           </ul>
+        </div>
+
+        <div className="pt-4 pb-2 border-t border-line-subtle flex items-center justify-between">
+          <span className="text-xs text-muted font-medium">Appearance</span>
+          <ThemeToggle variant="segmented" />
         </div>
 
         {(contact.location || contact.availability) && (
