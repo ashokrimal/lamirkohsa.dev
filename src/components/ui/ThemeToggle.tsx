@@ -2,12 +2,20 @@
 
 import React, { useEffect, useState } from 'react'
 import { Sun, Moon, Laptop } from 'lucide-react'
-import { useTheme, type Theme } from '@/contexts/ThemeContext'
+import { useTheme, type Theme, type ThemeOrigin } from '@/contexts/ThemeContext'
 import { sensoryAudio } from '@/lib/sensory-audio'
 
 interface ThemeToggleProps {
   className?: string
   variant?: 'button' | 'segmented'
+}
+
+function originFromEvent(event: React.MouseEvent<HTMLButtonElement>): ThemeOrigin {
+  const rect = event.currentTarget.getBoundingClientRect()
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  }
 }
 
 export function ThemeToggle({ className = '', variant = 'button' }: ThemeToggleProps) {
@@ -48,9 +56,9 @@ export function ThemeToggle({ className = '', variant = 'button' }: ThemeToggleP
             <button
               key={option.value}
               type="button"
-              onClick={() => {
+              onClick={(event) => {
                 sensoryAudio.playToggle()
-                setTheme(option.value)
+                setTheme(option.value, originFromEvent(event))
               }}
               className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-full transition-all duration-200 cursor-pointer ${
                 isActive
@@ -74,9 +82,9 @@ export function ThemeToggle({ className = '', variant = 'button' }: ThemeToggleP
   return (
     <button
       type="button"
-      onClick={() => {
+      onClick={(event) => {
         sensoryAudio.playToggle()
-        toggleTheme()
+        toggleTheme(originFromEvent(event))
       }}
       className={`p-1.5 rounded-full bg-overlay hover:bg-overlay-medium text-muted hover:text-ink transition-all duration-200 cursor-pointer active:scale-95 ${className}`}
       title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}

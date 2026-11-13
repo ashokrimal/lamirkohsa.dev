@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
+import 'lenis/dist/lenis.css';
 import LayoutShell from '@/components/LayoutShell';
+import { ScrollProgress } from '@/components/ui/ScrollProgress';
+import { SmoothScroll } from '@/components/SmoothScroll';
 import { EMPTY_SITE_CONFIG, getSiteConfig } from '@/lib/site-content';
 import { SITE_NAME, SITE_URL, SEO_TITLE_TEMPLATE } from '@/lib/seo';
 
@@ -61,6 +64,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body className="leading-relaxed tracking-wide">
         <ThemeProvider>
+          <ScrollProgress />
+          <SmoothScroll />
           <LayoutShell site={site}>{children}</LayoutShell>
         </ThemeProvider>
       </body>
