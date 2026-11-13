@@ -11,7 +11,8 @@
  * - produces a read-only dedupe plan for duplicate published records with
  *   --dedupe-plan (also available as `pnpm cms:dedupe`),
  * - unpublishes only the safe dedupe actions with --apply-dedupe, optionally
- *   restricted to a saved plan with --plan <path>.
+ *   restricted to a saved plan with --plan <path>,
+ * - republishes the records recorded by an apply with --restore-dedupe.
  *
  * Existing non-blank values are never overwritten, and no rows are deleted.
  *
@@ -19,6 +20,7 @@
  *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs
  *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --dedupe-plan
  *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --apply-dedupe --plan plan.json
+ *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --restore-dedupe backup.json
  *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --apply
  *
  * Apply safety:
@@ -46,6 +48,8 @@ const options = {
   allowPartial: false,
   dedupePlan: false,
   applyDedupe: false,
+  restoreDedupe: false,
+  restoreFile: null,
   planFile: null,
   output: null,
 }
@@ -59,7 +63,18 @@ for (let index = 2; index < process.argv.length; index += 1) {
   else if (argument === '--allow-partial') options.allowPartial = true
   else if (argument === '--dedupe-plan') options.dedupePlan = true
   else if (argument === '--apply-dedupe') options.applyDedupe = true
-  else if (argument === '--plan') {
+  else if (argument === '--restore-dedupe') {
+    options.restoreDedupe = true
+    const next = process.argv[index + 1]
+    if (next && !next.startsWith('--')) {
+      options.restoreFile = next
+      index += 1
+    }
+  } else if (argument.startsWith('--restore-dedupe=')) {
+    options.restoreDedupe = true
+    options.restoreFile = argument.slice('--restore-dedupe='.length)
+    if (!options.restoreFile) throw new Error('--restore-dedupe needs a backup file')
+  } else if (argument === '--plan') {
     options.planFile = process.argv[index + 1]
     if (!options.planFile) throw new Error('--plan needs a file path')
     index += 1
@@ -91,6 +106,7 @@ if (options.help) {
   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs           # dry run
   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --dedupe-plan
   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --apply-dedupe --plan plan.json
+  DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --restore-dedupe backup.json
   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --apply
 
 Options:
@@ -104,6 +120,8 @@ Options:
   --output <path>      Save the dedupe plan as JSON. Implies --dedupe-plan.
   --apply-dedupe       Unpublish only the safe duplicates from a fresh plan.
   --plan <path>        Apply only the safe actions in a previously saved plan.
+  --restore-dedupe [backup]
+                       Republish the records listed in a cms-dedupe backup.
   --json               Print a machine-readable report.
   --help               Show this help.
 
@@ -113,6 +131,9 @@ Existing non-blank fields are never overwritten. No records are deleted.
 }
 
 if (options.output) options.dedupePlan = true
+if (options.restoreDedupe && (options.apply || options.applyDedupe || options.dedupePlan || options.planFile)) {
+  throw new Error('--restore-dedupe cannot be combined with repair or dedupe apply modes.')
+}
 if (options.applyDedupe && (options.apply || options.dedupePlan)) {
   throw new Error('--apply-dedupe cannot be combined with --apply, --dedupe-plan or --output.')
 }
@@ -121,6 +142,10 @@ if (options.dedupePlan && options.apply) {
 }
 if (options.planFile && !options.applyDedupe) {
   throw new Error('--plan requires --apply-dedupe.')
+}
+if (options.restoreDedupe && !options.restoreFile) options.restoreFile = options.backup
+if (options.restoreDedupe && !options.restoreFile) {
+  throw new Error('--restore-dedupe needs a cms-dedupe backup file.')
 }
 
 const { CMS_COLLECTIONS, CMS_SCHEMA } = await loadCmsSchema()
@@ -526,6 +551,162 @@ async function readReviewedPlan(file) {
   return { absolute, database: plan.database ?? null, actions }
 }
 
+async function readDedupeBackup(file) {
+  const absolute = path.resolve(file)
+  let backup
+  try {
+    backup = JSON.parse(await fs.readFile(absolute, 'utf8'))
+  } catch (error) {
+    throw new Error(`Could not read cms-dedupe backup ${absolute}: ${error.message}`)
+  }
+  if (!backup || !Array.isArray(backup.rows)) {
+    throw new Error(`Backup ${absolute} has no CMS rows.`)
+  }
+  if (!backup.plans || backup.plans.type !== 'dedupe') {
+    throw new Error(`Backup ${absolute} was not written by cms:dedupe:apply.`)
+  }
+  if (!Array.isArray(backup.plans.actions) || backup.plans.actions.length === 0) {
+    throw new Error(`Backup ${absolute} has no applied dedupe actions.`)
+  }
+
+  const seen = new Set()
+  for (const action of backup.plans.actions) {
+    if (
+      action.id === undefined ||
+      action.id === null ||
+      typeof action.title !== 'string' ||
+      typeof action.slug !== 'string'
+    ) {
+      throw new Error(`Backup ${absolute} has an invalid dedupe action.`)
+    }
+    const key = actionIdKey(action.id)
+    if (seen.has(key)) {
+      throw new Error(`Backup ${absolute} contains duplicate actions for record ${action.id}.`)
+    }
+    seen.add(key)
+  }
+
+  return { absolute, backup }
+}
+
+async function restoreDedupeBackup(client, connectionString, rows, source) {
+  if (
+    source.backup.database &&
+    source.backup.database !== displayTarget(connectionString)
+  ) {
+    throw new Error(
+      `Backup was created for ${source.backup.database}, not ${displayTarget(connectionString)}. No changes were made.`,
+    )
+  }
+
+  const currentById = new Map(rows.map((row) => [actionIdKey(row.id), row]))
+  const backupById = new Map(
+    source.backup.rows.map((row) => [actionIdKey(row.id), row]),
+  )
+  const targets = []
+  const alreadyRestored = []
+
+  for (const action of source.backup.plans.actions) {
+    const key = actionIdKey(action.id)
+    const saved = backupById.get(key)
+    if (!saved) {
+      throw new Error(`Backup has no saved row for record ${action.id}. No changes were made.`)
+    }
+    if (saved.status !== 'published') {
+      throw new Error(
+        `Backup record ${action.id} was not published when the backup was written. No changes were made.`,
+      )
+    }
+    if (
+      saved.title !== action.title ||
+      saved.slug !== action.slug ||
+      (action.collection && saved.collection !== action.collection)
+    ) {
+      throw new Error(`Backup record ${action.id} does not match its action. No changes were made.`)
+    }
+
+    const current = currentById.get(key)
+    if (!current) {
+      throw new Error(`Record ${action.id} no longer exists. No changes were made.`)
+    }
+    if (
+      current.collection !== saved.collection ||
+      current.title !== saved.title ||
+      current.slug !== saved.slug
+    ) {
+      throw new Error(
+        `Record ${action.id} changed since the backup was written. No changes were made.`,
+      )
+    }
+    if (current.status === 'published') {
+      alreadyRestored.push(action)
+      continue
+    }
+    if (current.status !== 'draft') {
+      throw new Error(
+        `Record ${action.id} is ${current.status}, not draft. No changes were made.`,
+      )
+    }
+    targets.push({ action, expected: current })
+  }
+
+  if (targets.length === 0) return { republished: [], alreadyRestored }
+
+  const targetIds = targets.map((target) => actionIdKey(target.action.id))
+  await client.query('begin')
+  try {
+    await client.query("set local lock_timeout = '15s'")
+    await client.query('lock table "cmsContent" in share row exclusive mode')
+
+    const locked = await client.query(
+      `select "id", "collection", "title", "slug", "payload", "status", "sortOrder"
+         from "cmsContent"
+        where "id" = any($1::int[])
+        for update`,
+      [targetIds.map(Number)],
+    )
+    const lockedById = new Map(locked.rows.map((row) => [actionIdKey(row.id), row]))
+    for (const target of targets) {
+      const current = lockedById.get(actionIdKey(target.action.id))
+      if (!current || !sameStoredRow(current, target.expected)) {
+        throw new Error(
+          `Record ${target.action.id} changed before restore. No rows were written.`,
+        )
+      }
+    }
+
+    for (const target of targets) {
+      const updated = await client.query(
+        `update "cmsContent" set "status" = 'published'
+          where "id" = $1 and "status" = 'draft'
+          returning "status"`,
+        [target.action.id],
+      )
+      if (updated.rowCount !== 1 || updated.rows[0].status !== 'published') {
+        throw new Error(`Verification failed while restoring record ${target.action.id}. No rows were written.`)
+      }
+    }
+
+    const verified = await client.query(
+      `select "id", "status" from "cmsContent" where "id" = any($1::int[])`,
+      [targetIds.map(Number)],
+    )
+    const verifiedById = new Map(verified.rows.map((row) => [actionIdKey(row.id), row]))
+    for (const target of targets) {
+      if (verifiedById.get(actionIdKey(target.action.id))?.status !== 'published') {
+        throw new Error(`Verification failed for restored record ${target.action.id}. No rows were written.`)
+      }
+    }
+
+    await client.query('commit')
+  } catch (error) {
+    await client.query('rollback')
+    throw error
+  }
+
+  return { republished: targets.map((target) => target.action), alreadyRestored }
+}
+
 function sameStoredRow(left, right) {
   return (
     actionIdKey(left.id) === actionIdKey(right.id) &&
@@ -746,6 +927,46 @@ async function main() {
     for (const row of rows) {
       if (!rowsByCollection.has(row.collection)) rowsByCollection.set(row.collection, [])
       rowsByCollection.get(row.collection).push(row)
+    }
+
+    if (options.restoreDedupe) {
+      const source = await readDedupeBackup(options.restoreFile)
+      const result = await restoreDedupeBackup(client, connectionString, rows, source)
+
+      if (options.json) {
+        console.log(
+          JSON.stringify(
+            {
+              mode: 'dedupe-restore',
+              database: displayTarget(connectionString),
+              sourceBackup: source.absolute,
+              republished: result.republished,
+              alreadyRestored: result.alreadyRestored,
+            },
+            null,
+            2,
+          ),
+        )
+        return
+      }
+
+      console.log(`CMS dedupe restore — ${displayTarget(connectionString)}`)
+      console.log(`Source backup: ${source.absolute}`)
+      if (result.republished.length > 0) {
+        console.log(`Republished ${result.republished.length} record(s):`)
+        for (const action of result.republished) {
+          console.log(
+            `  #${action.id} "${action.title}" (${action.collection} / ${action.slug})`,
+          )
+        }
+      } else {
+        console.log('No draft records needed republishing.')
+      }
+      if (result.alreadyRestored.length > 0) {
+        console.log(`Already published: ${result.alreadyRestored.length} record(s).`)
+      }
+      console.log('Run pnpm cms:check after restoring.')
+      return
     }
 
     if (options.applyDedupe) {

@@ -170,10 +170,23 @@ DATABASE_URL=postgres://... pnpm cms:dedupe:apply -- --plan backups/dedupe-plan.
 appeared after the plan was saved, or if a record is both a kept record and a
 duplicate. It backs up the CMS rows, locks `cmsContent`, checks every selected
 record before writing, and verifies that duplicate statuses became `draft` and
-kept records stayed `published`. Groups needing a merge
-review are skipped and reported. Use `--backup <path>` to choose the backup
+kept records stayed `published`. Groups needing a merge review are skipped and
+reported. Use `--backup <path>` to choose the backup
 file or `--no-backup` to skip it. Without `--plan`, it applies the safe actions
 from a fresh plan.
+
+To undo an apply, restore the records listed in its backup:
+
+```bash
+DATABASE_URL=postgres://... pnpm cms:dedupe:restore -- backups/cms-dedupe-<timestamp>.json
+```
+
+The backup must have been written by `cms:dedupe:apply`. Restore republishes
+only the records that command unpublished; records already published are
+skipped. It refuses if the backup belongs to another database or a record's
+collection, title or slug changed. It locks `cmsContent`, verifies the draft
+records before changing them, and verifies every record is published before
+committing. It does not overwrite payloads or delete records.
 
 ### Backfilling the legacy media tables
 
@@ -278,3 +291,4 @@ the following in the CMS after deploying:
 | `pnpm cms:repair` | Dry-run repair for missing keys and blank seeded fields. |
 | `pnpm cms:dedupe` | Read-only plan for duplicate published CMS records. |
 | `pnpm cms:dedupe:apply` | Unpublish safe duplicate records with a backup and verification. |
+| `pnpm cms:dedupe:restore` | Republish records recorded in a cms-dedupe backup. |
