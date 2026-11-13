@@ -256,6 +256,24 @@ to `main`, same-repository pull requests, and manual runs. Add `DATABASE_URL` as
 a repository Actions secret for the workflow. Fork pull requests skip the job
 because repository secrets are not available to them.
 
+### Requiring the duplicate check on `main`
+
+1. Add the `DATABASE_URL` Actions secret before enabling the check. Without it,
+the workflow fails with the database-required error instead of passing.
+2. Run **CMS duplicate key check** once from the Actions tab, or push a commit
+that triggers it. GitHub only lists a check for branch protection after it has
+run at least once.
+3. Open **Settings → Branches** and edit the `main` protection rule, or open
+**Settings → Rules → Rulesets** and edit the ruleset that targets `main`.
+4. Enable **Require status checks to pass before merging**.
+5. Select the `duplicate-keys` job from **CMS duplicate key check**. If GitHub
+shows the full context, it may read `CMS duplicate key check / duplicate-keys`.
+6. Save the rule. Leave the bypass list empty if the check must apply to every
+merge to `main`.
+
+Fork pull requests still skip this job because they do not receive repository
+secrets; the prebuild duplicate gate remains active for deployments.
+
 ## Adding a new collection
 
 1. Add the collection name to `CMS_COLLECTIONS` and a definition to
