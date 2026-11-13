@@ -126,6 +126,55 @@ keyed records, migrates the legacy `timezone → timeZone`, `image → imageUrl`
 `challenge → description` field names, and renames the old `films` media key to
 `movies`. Existing content is never overwritten or deleted.
 
+For a database with existing but incomplete keyed records, use the repair
+command first. It is a dry run by default, fills only blank fields from the seed
+defaults, backfills missing keys, and reports duplicates, slug conflicts and
+unkeyable records without deleting anything:
+
+```bash
+DATABASE_URL=postgres://... pnpm cms:repair                 # dry run
+DATABASE_URL=postgres://... pnpm cms:repair -- --apply      # write
+```
+
+`--apply` writes `backups/cms-repair-<timestamp>.json` before the transaction,
+locks `cmsContent`, aborts if a record changed after planning, and verifies every
+write. It refuses to write while duplicate keys, slug conflicts or unkeyable
+records remain; use `--allow-partial` only to write the safe repairs around
+those. Use `--backup <path>` to choose the backup file or `--no-backup` to skip
+it. Run `pnpm cms:check` after applying; the repair does not invent content for
+non-keyed records or resolve editorial duplicates.
+
+Before repairing a database with duplicate published records, generate a
+read-only dedupe plan:
+
+```bash
+DATABASE_URL=postgres://... pnpm cms:dedupe
+DATABASE_URL=postgres://... pnpm cms:dedupe -- --json
+DATABASE_URL=postgres://... pnpm cms:dedupe -- --output backups/dedupe-plan.json
+```
+
+The plan groups published records by key, slug, and matching non-keyed titles.
+It keeps the richest record, shows blank fields and conflicting values on the
+others, and marks each group as safe to unpublish or needing a merge review.
+It never writes to the database. Resolve the listed records in the CMS, then
+rerun `pnpm cms:repair`.
+
+To apply only the safe actions, save and review the plan first, then run:
+
+```bash
+DATABASE_URL=postgres://... pnpm cms:dedupe -- --output backups/dedupe-plan.json
+DATABASE_URL=postgres://... pnpm cms:dedupe:apply -- --plan backups/dedupe-plan.json
+```
+
+`--apply-dedupe` refuses if a reviewed record changed, if a new safe duplicate
+appeared after the plan was saved, or if a record is both a kept record and a
+duplicate. It backs up the CMS rows, locks `cmsContent`, checks every selected
+record before writing, and verifies that duplicate statuses became `draft` and
+kept records stayed `published`. Groups needing a merge
+review are skipped and reported. Use `--backup <path>` to choose the backup
+file or `--no-backup` to skip it. Without `--plan`, it applies the safe actions
+from a fresh plan.
+
 ### Backfilling the legacy media tables
 
 The old `galleryItem`, `portfolioProject`, `musicTrack` and `animeMangaItem`
@@ -226,3 +275,6 @@ the following in the CMS after deploying:
 | `pnpm start` | Start the production server on `0.0.0.0:3000`. |
 | `pnpm lint` | ESLint. |
 | `pnpm cms:check` | Validate published CMS content against the schema. |
+| `pnpm cms:repair` | Dry-run repair for missing keys and blank seeded fields. |
+| `pnpm cms:dedupe` | Read-only plan for duplicate published CMS records. |
+| `pnpm cms:dedupe:apply` | Unpublish safe duplicate records with a backup and verification. |

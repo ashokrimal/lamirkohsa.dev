@@ -10,6 +10,8 @@
  * collection + slug exists. Existing records are never overwritten or deleted.
  * Nothing in the running app reads this file; it only seeds the CMS once.
  */
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { Client } from 'pg'
 import { loadCmsSchema } from './load-cms-schema.mjs'
 
@@ -478,6 +480,30 @@ function normalizePayload(record, payload) {
   return next
 }
 
+export function buildSeedRecords() {
+  return [
+    ...siteSettings.map((record) => ({ ...record, status: 'published' })),
+    ...pageCopy.map((payload, index) => ({
+      collection: CMS_COLLECTIONS.pageCopy,
+      title: payload.key,
+      slug: `page-${payload.key}`,
+      sortOrder: index,
+      status: 'published',
+      payload,
+    })),
+    ...mediaCollections.map((payload, index) => ({
+      collection: CMS_COLLECTIONS.mediaCollections,
+      title: payload.label,
+      slug: `media-collection-${payload.key}`,
+      sortOrder: index,
+      status: 'published',
+      payload,
+    })),
+  ]
+}
+
+export { siteSettings, pageCopy, mediaCollections, KEYED_COLLECTIONS, keyFromRecord, normalizePayload }
+
 async function main() {
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) {
@@ -497,25 +523,7 @@ async function main() {
       throw new Error('No existing CMS records found; sign in and save a record first.')
     }
 
-    const records = [
-      ...siteSettings.map((record) => ({ ...record, status: 'published' })),
-      ...pageCopy.map((payload, index) => ({
-        collection: CMS_COLLECTIONS.pageCopy,
-        title: payload.key,
-        slug: `page-${payload.key}`,
-        sortOrder: index,
-        status: 'published',
-        payload,
-      })),
-      ...mediaCollections.map((payload, index) => ({
-        collection: CMS_COLLECTIONS.mediaCollections,
-        title: payload.label,
-        slug: `media-collection-${payload.key}`,
-        sortOrder: index,
-        status: 'published',
-        payload,
-      })),
-    ]
+    const records = buildSeedRecords()
 
     let inserted = 0
     let skipped = 0
@@ -582,7 +590,12 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+const isDirectRun =
+  process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url
+
+if (isDirectRun) {
+  main().catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })
+}
