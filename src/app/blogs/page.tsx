@@ -15,7 +15,9 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.journal : undefined)
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.journal : undefined, {
+    title: CMS_SCHEMA.sections.pages.blogs.label,
+  })
 }
 
 interface BlogPayload {
@@ -106,7 +108,7 @@ export default async function BlogsPage() {
       <PageHero
         eyebrow={pageCopy?.eyebrow ?? ''}
         krEyebrow={pageCopy?.krEyebrow}
-        title={pageCopy?.title ?? ''}
+        title={pageCopy?.title ?? CMS_SCHEMA.sections.pages.blogs.label}
         accent={pageCopy?.accent}
         description={pageCopy?.description}
         meta={

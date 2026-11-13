@@ -280,12 +280,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 9999px; }
 /* Comfortable touch targets on coarse pointers without changing desktop rhythm. */
 @media (pointer: coarse) {
-  .glass-nav a, .glass-nav button, .mobile-menu a, .mobile-menu button { min-height: 44px; display: inline-flex; align-items: center; }
-  .mobile-menu a { min-height: 48px; }
+  .glass-nav a, .glass-nav button, .mobile-menu button { min-height: 44px; display: inline-flex; align-items: center; }
+  .mobile-menu a { min-height: 48px; display: flex; width: 100%; align-items: center; }
   footer a { min-height: 40px; display: inline-flex; align-items: center; }
 }
 a, button { -webkit-tap-highlight-color: transparent; }
 .shell-width { width: min(1280px, calc(100% - 48px)); margin-inline: auto; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* Korean typography — Pretendard owns Hangul. The Latin-tuned negative tracking
    crushes syllable rhythm and default breaking can split a word mid-syllable,
@@ -379,6 +381,8 @@ a, button { -webkit-tap-highlight-color: transparent; }
 /* Mobile drawer: solid cream from the palette, never translucent, so the
    hamburger menu reads as its own surface over the page. */
 .mobile-menu { 
+  height: 100vh;
+  height: 100dvh;
   transition: transform .35s cubic-bezier(0.16, 1, 0.3, 1), visibility .35s; 
   transform: translateX(100%); 
   visibility: hidden;
@@ -388,7 +392,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
   -webkit-backdrop-filter: none;
 }
 .mobile-menu.open { transform: translateX(0); visibility: visible; }
-/* Keep both inner sections on the same solid cream surface so nothing from
+/* Keep both inner sections on the same solid surface so nothing from
    the page behind the drawer shows through while it scrolls. */
 .mobile-menu > div { background-color: var(--paper, #f4f1eb); }
 

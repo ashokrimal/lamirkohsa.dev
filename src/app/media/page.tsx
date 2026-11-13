@@ -4,12 +4,15 @@ import MediaHomeContent from '@/components/media/MediaHomeContent'
 import MediaHomeSkeleton from '@/components/media/MediaHomeSkeleton'
 import { getPageCopy } from '@/lib/site-content'
 import { pageMetadata } from '@/lib/seo'
+import { CMS_SCHEMA } from '@/lib/cms-schema'
 
 export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.media : undefined)
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.media : undefined, {
+    title: CMS_SCHEMA.sections.pages.media.label,
+  })
 }
 
 export default function MediaPage() {

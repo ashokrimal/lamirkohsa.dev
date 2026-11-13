@@ -452,7 +452,29 @@ export async function createCmsContent(formData: FormData) {
   if (imageUrl) payload.imageUrl = String(imageUrl).trim()
   const category = formData.get('category')
   if (category) payload.category = String(category).trim()
-  for (const field of ['live', 'github', 'summary', 'altText', 'period', 'completionDate']) {
+  for (const field of [
+    'live',
+    'github',
+    'summary',
+    'altText',
+    'period',
+    'completionDate',
+    'duration',
+    'model',
+    'cost',
+    'challenge',
+    'solution',
+    'caseStudyPlan',
+    'documentation',
+    'srsDoc',
+    'architectureDoc',
+    'apiDoc',
+    'readmeDoc',
+    'testPlanDoc',
+    'runbookDoc',
+    'userManualDoc',
+    'status',
+  ]) {
     const value = formData.get(field)
     if (typeof value === 'string' && value.trim()) payload[field] = value.trim()
   }
@@ -694,6 +716,7 @@ function revalidateCms(collection?: string) {
   revalidatePath('/')
   revalidatePath('/about')
   revalidatePath('/projects')
+  revalidatePath('/projects/[slug]', 'page')
   revalidatePath('/media')
   revalidatePath('/contact')
   revalidatePath('/blogs')
