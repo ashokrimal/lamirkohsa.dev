@@ -1,4 +1,4 @@
-import { db } from '@/lib/db'
+import { db, hasDatabaseConfig } from '@/lib/db'
 import { profileSettings } from '@/lib/db/schema'
 import type { CmsResult } from '@/lib/cms-schema'
 
@@ -11,11 +11,20 @@ export type PublicProfileSettings = typeof profileSettings.$inferSelect
 export async function getPublicProfileSettingsResult(): Promise<
   CmsResult<PublicProfileSettings>
 > {
+  if (!hasDatabaseConfig()) {
+    return { status: 'empty' }
+  }
+
   try {
     const rows = await db.select().from(profileSettings).limit(1)
     return { status: 'ok', data: rows[0] ?? null }
   } catch (error) {
-    console.error('[Profile] Could not read public profile settings', error)
+    const code =
+      error && typeof error === 'object' && 'code' in error && typeof (error as { code?: unknown }).code === 'string'
+        ? ` (${(error as { code: string }).code})`
+        : ''
+    console.error(`[Profile] Could not read public profile settings${code}.`)
+    if (process.env.NODE_ENV !== 'production') console.error(error)
     return {
       status: 'error',
       message: 'Profile settings are temporarily unavailable.',

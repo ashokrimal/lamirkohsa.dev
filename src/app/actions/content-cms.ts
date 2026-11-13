@@ -1,7 +1,7 @@
 'use server'
 
 import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
+import { db, hasDatabaseConfig } from '@/lib/db'
 import { cmsContent } from '@/lib/db/schema'
 import { and, asc, desc, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
@@ -132,6 +132,24 @@ class MemoryCmsRepository {
   }
 }
 
+let missingDatabaseNoticeShown = false
+
+function warnMissingDatabase() {
+  if (missingDatabaseNoticeShown) return
+  missingDatabaseNoticeShown = true
+  console.warn(
+    '[CMS] Database is not configured; CMS-backed content will render empty. Set DATABASE_URL in the deployment environment.',
+  )
+}
+
+function errorCode(error: unknown) {
+  if (error && typeof error === 'object' && 'code' in error) {
+    const code = (error as { code?: unknown }).code
+    if (typeof code === 'string') return ` (${code})`
+  }
+  return ''
+}
+
 // Global singleton instance
 declare global {
   var __cmsMemoryRepo: MemoryCmsRepository | undefined
@@ -190,6 +208,11 @@ async function fetchPublishedCollection(collection: string): Promise<CmsRecord[]
 export async function getPublishedCmsContentResult(
   collection: string,
 ): Promise<CmsResult<CmsRecord[]>> {
+  if (!hasDatabaseConfig()) {
+    warnMissingDatabase()
+    return { status: 'empty' }
+  }
+
   try {
     const rows = await unstable_cache(
       () => fetchPublishedCollection(collection),
@@ -208,7 +231,8 @@ export async function getPublishedCmsContentResult(
 
     return { status: 'empty' }
   } catch (error) {
-    console.error(`[CMS] Could not read published "${collection}"`, error)
+    console.error(`[CMS] Could not read published "${collection}"${errorCode(error)}.`)
+    if (process.env.NODE_ENV !== 'production') console.error(error)
     return {
       status: 'error',
       message: `${collection} content is temporarily unavailable.`,

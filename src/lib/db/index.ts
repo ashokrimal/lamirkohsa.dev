@@ -33,6 +33,10 @@ function needsSsl(url: string) {
   }
 }
 
+export function hasDatabaseConfig() {
+  return Boolean(resolveConnectionString())
+}
+
 const globalForDb = globalThis as unknown as { pool?: Pool }
 
 export const pool =

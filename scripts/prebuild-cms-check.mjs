@@ -5,8 +5,16 @@
  */
 import { spawnSync } from 'node:child_process'
 
-if (!process.env.DATABASE_URL) {
-  console.warn('[cms:check] DATABASE_URL is not set; skipping the prebuild content check.')
+const databaseConfigured = [
+  'DATABASE_URL',
+  'POSTGRES_URL',
+  'POSTGRES_PRISMA_URL',
+  'POSTGRES_URL_NON_POOLING',
+  'DATABASE_URL_UNPOOLED',
+].some((key) => Boolean(process.env[key]))
+
+if (!databaseConfigured) {
+  console.warn('[cms:check] No PostgreSQL URL is set; skipping the prebuild content check.')
   process.exit(0)
 }
 
