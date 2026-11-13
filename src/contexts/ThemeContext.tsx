@@ -16,6 +16,8 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 const STORAGE_KEY = 'portfolio_theme'
 const COOKIE_NAME = 'portfolio_theme'
+const THEME_TRANSITION_MS = 650
+let themeTransitionTimer: ReturnType<typeof setTimeout> | undefined
 
 function getSystemTheme(): ResolvedTheme {
   if (typeof window === 'undefined') return 'light'
@@ -35,6 +37,36 @@ function applyThemeToDocument(resolved: ResolvedTheme, storedTheme: Theme) {
   root.setAttribute('data-theme', resolved)
   root.setAttribute('data-theme-setting', storedTheme)
   root.style.colorScheme = resolved
+}
+
+/**
+ * Cross-fade colour changes instead of swapping the page in one frame. The
+ * transition class is applied before the theme flips and removed afterwards so
+ * it never interferes with hover or scroll animations during normal use.
+ */
+function applyThemeWithTransition(apply: () => void) {
+  if (typeof document === 'undefined') {
+    apply()
+    return
+  }
+
+  const root = document.documentElement
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduceMotion) {
+    apply()
+    return
+  }
+
+  root.classList.add('theme-transitioning')
+  // Force a style read so the starting colours are committed before the swap.
+  void root.offsetWidth
+  apply()
+
+  if (themeTransitionTimer) clearTimeout(themeTransitionTimer)
+  themeTransitionTimer = setTimeout(() => {
+    root.classList.remove('theme-transitioning')
+    themeTransitionTimer = undefined
+  }, THEME_TRANSITION_MS + 50)
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -70,7 +102,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const nextResolved: ResolvedTheme = e.matches ? 'dark' : 'light'
         startTransition(() => {
           setResolvedTheme(nextResolved)
-          applyThemeToDocument(nextResolved, 'system')
+          applyThemeWithTransition(() => applyThemeToDocument(nextResolved, 'system'))
         })
       }
     }
@@ -88,7 +120,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const nextResolved = nextTheme === 'system' ? getSystemTheme() : nextTheme
     setResolvedTheme(nextResolved)
-    applyThemeToDocument(nextResolved, nextTheme)
+    applyThemeWithTransition(() => applyThemeToDocument(nextResolved, nextTheme))
   }
 
   const toggleTheme = () => {

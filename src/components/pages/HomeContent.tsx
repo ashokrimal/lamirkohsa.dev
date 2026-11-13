@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
-import { Camera, Code2, Compass, FolderGit2, Github, ImageOff } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowUpRight, Camera, Code2, Compass, FolderGit2, Github, ImageOff } from 'lucide-react'
 import {
   getHeroSectionConfigResult,
   getHomepageSectionsConfigResult,
@@ -20,7 +21,6 @@ import {
 } from '@/lib/cms-schema'
 import { getMediaSections } from '@/lib/media-content'
 import { uiStrings } from '@/lib/ui-strings'
-import { SectionHeader } from '@/components/ui/SectionHeader'
 import { ProjectCard, type ProjectData } from '@/components/ui/ProjectCard'
 import { PhotoCard } from '@/components/ui/PhotoCard'
 import { MediaPoster } from '@/components/ui/MediaPoster'
@@ -31,8 +31,11 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
+import { MouseSnake3D } from '@/components/ui/MouseSnake3D'
 
 const PREVIEW_COUNT = 5
+
+type SectionMeta = HomepageSectionsConfig['sectionMeta'][string]
 
 function mapTimeline(records: CmsRecord[]) {
   return records.map((record) => {
@@ -57,6 +60,45 @@ function dedupe<T>(items: T[], keyFn: (item: T) => string | number | undefined):
     seen.add(key)
     return true
   })
+}
+
+function HomeChapterHeader({
+  section,
+  index,
+  meta,
+}: {
+  section: SiteSectionDefinition
+  index: number
+  meta?: SectionMeta
+}) {
+  return (
+    <header className="home-chapter-header">
+      <div className="home-chapter-rail" aria-hidden="true">
+        <span className="home-chapter-number">{String(index + 1).padStart(2, '0')}</span>
+        <span className="home-chapter-line" />
+      </div>
+
+      <div className="home-chapter-copy">
+        <div className="home-chapter-kicker">
+          <span>{meta?.eyebrow || 'SYSTEM LOG'}</span>
+          {meta?.kr && <span lang="ko">{meta.kr}</span>}
+          <span className="home-chapter-status">UNLOCKED</span>
+        </div>
+
+        <h2 className="home-chapter-title">
+          {meta?.title ?? section.label}
+          {meta?.accent && (
+            <span>
+              {' '}
+              {meta.accent}
+            </span>
+          )}
+        </h2>
+
+        {meta?.description && <p className="home-chapter-description">{meta.description}</p>}
+      </div>
+    </header>
+  )
 }
 
 /**
@@ -220,15 +262,8 @@ export default async function HomeContent() {
             socialLinks.length,
         )
         return (
-          <section key={section.id} className="py-16 md:py-24 border-t border-line">
-            <SectionHeader
-              number={index}
-              eyebrow={sectionMeta?.eyebrow}
-              krEyebrow={sectionMeta?.kr}
-              title={sectionMeta?.title ?? profileText('fullName') ?? section.label}
-              accent={sectionMeta?.accent}
-              description={sectionMeta?.description}
-            />
+          <section key={section.id} className="home-chapter">
+            <HomeChapterHeader section={section} index={index} meta={sectionMeta} />
 
             {hasAbout ? (
               <div className="mt-10 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 md:gap-10 items-start">
@@ -306,15 +341,8 @@ export default async function HomeContent() {
       // 2. PHOTOS / GALLERY
       case 'gallery': {
         return (
-          <section key={section.id} className="py-16 md:py-24 border-t border-line">
-            <SectionHeader
-              number={index}
-              eyebrow={sectionMeta?.eyebrow}
-              krEyebrow={sectionMeta?.kr}
-              title={sectionMeta?.title ?? section.label}
-              accent={sectionMeta?.accent}
-              description={sectionMeta?.description}
-            />
+          <section key={section.id} className="home-chapter">
+            <HomeChapterHeader section={section} index={index} meta={sectionMeta} />
             <div className="mt-8">
               {galleryResult.status === 'error' ? (
                 <CmsErrorState message={galleryResult.message} />
@@ -345,15 +373,8 @@ export default async function HomeContent() {
       // 3. EXPERIENCE
       case 'experience': {
         return (
-          <section key={section.id} className="py-16 md:py-24 border-t border-line">
-            <SectionHeader
-              number={index}
-              eyebrow={sectionMeta?.eyebrow}
-              krEyebrow={sectionMeta?.kr}
-              title={sectionMeta?.title ?? section.label}
-              accent={sectionMeta?.accent}
-              description={sectionMeta?.description}
-            />
+          <section key={section.id} className="home-chapter">
+            <HomeChapterHeader section={section} index={index} meta={sectionMeta} />
             <div className="mt-8">
               {experienceResult.status === 'error' ? (
                 <CmsErrorState message={experienceResult.message} />
@@ -375,15 +396,8 @@ export default async function HomeContent() {
       // 4. EDUCATION
       case 'education': {
         return (
-          <section key={section.id} className="py-16 md:py-24 border-t border-line">
-            <SectionHeader
-              number={index}
-              eyebrow={sectionMeta?.eyebrow}
-              krEyebrow={sectionMeta?.kr}
-              title={sectionMeta?.title ?? section.label}
-              accent={sectionMeta?.accent}
-              description={sectionMeta?.description}
-            />
+          <section key={section.id} className="home-chapter">
+            <HomeChapterHeader section={section} index={index} meta={sectionMeta} />
             <div className="mt-8">
               {educationResult.status === 'error' ? (
                 <CmsErrorState message={educationResult.message} />
@@ -405,15 +419,8 @@ export default async function HomeContent() {
       // 5. FEATURED PROJECTS
       case 'projects': {
         return (
-          <section key={section.id} className="py-16 md:py-24 border-t border-line">
-            <SectionHeader
-              number={index}
-              eyebrow={sectionMeta?.eyebrow}
-              krEyebrow={sectionMeta?.kr}
-              title={sectionMeta?.title ?? section.label}
-              accent={sectionMeta?.accent}
-              description={sectionMeta?.description}
-            />
+          <section key={section.id} className="home-chapter">
+            <HomeChapterHeader section={section} index={index} meta={sectionMeta} />
 
             <div className="mt-8">
               {projectsResult.status === 'error' ? (
@@ -445,15 +452,8 @@ export default async function HomeContent() {
       // 6. MEDIA PREVIEW
       case 'media': {
         return (
-          <section key={section.id} className="py-16 md:py-24 border-t border-line">
-            <SectionHeader
-              number={index}
-              eyebrow={sectionMeta?.eyebrow}
-              krEyebrow={sectionMeta?.kr}
-              title={sectionMeta?.title ?? section.label}
-              accent={sectionMeta?.accent}
-              description={sectionMeta?.description}
-            />
+          <section key={section.id} className="home-chapter">
+            <HomeChapterHeader section={section} index={index} meta={sectionMeta} />
 
             <div className="mt-8">
               {mediaSections.some((entry) => entry.error) ? (
@@ -485,15 +485,8 @@ export default async function HomeContent() {
       // 7. GITHUB STATUS
       case 'github': {
         return (
-          <section key={section.id} className="py-16 md:py-24 border-t border-line">
-            <SectionHeader
-              number={index}
-              eyebrow={sectionMeta?.eyebrow}
-              krEyebrow={sectionMeta?.kr}
-              title={sectionMeta?.title ?? section.label}
-              accent={sectionMeta?.accent}
-              description={sectionMeta?.description}
-            />
+          <section key={section.id} className="home-chapter">
+            <HomeChapterHeader section={section} index={index} meta={sectionMeta} />
             <div className="mt-8">
               {publicSettingsResult.status === 'error' ? (
                 <CmsErrorState message={publicSettingsResult.message} />
@@ -519,54 +512,114 @@ export default async function HomeContent() {
   }
 
   return (
-    <div className="portfolio-home home-redesign">
-      <section className="hero-section shell-width" style={heroStyle} aria-labelledby="hero-heading">
-        <div className="hero-editorial">
-          <div className="hero-copy-block">
-            {heroResult.status === 'error' ? (
-              <div className="max-w-xl">
-                <CmsErrorState message={heroResult.message} />
-              </div>
-            ) : heroData.heading ? (
-              <h1 id="hero-heading" className="hero-heading">
-                {heroData.heading.replace(/\.$/, '')}
-                <span>.</span>
-              </h1>
-            ) : (
-              <div className="max-w-xl">
-                <EmptyState
-                  icon={Compass}
-                  message={CMS_SETTINGS_RECORDS.hero.emptyState.message}
-                  hint={CMS_SETTINGS_RECORDS.hero.emptyState.hint}
-                  actionLabel={CMS_SETTINGS_RECORDS.hero.emptyState.actionLabel}
-                  actionHref={CMS_SETTINGS_RECORDS.hero.emptyState.actionHref}
-                />
-              </div>
-            )}
+    <div className="home-awakening">
+      <MouseSnake3D />
+      <div className="home-ambient" aria-hidden="true" />
+      <div className="home-grid-overlay" aria-hidden="true" />
 
-            {heroData.subtitle && <p className="hero-subtitle">{heroData.subtitle}</p>}
+      <section className="home-hero-system" style={heroStyle} aria-labelledby="hero-heading">
+        <div className="home-hero-frame">
+          <div className="home-hero-topline">
+            <span className="home-status">
+              <span className="home-status-dot" />
+              SYSTEM ONLINE
+            </span>
+            <span className="home-hero-coord">
+              PLAYER_001 // {site.contact.location || 'UNKNOWN SECTOR'}
+            </span>
+            <span className="home-hero-coord home-hero-coord--end">AWAKENED</span>
           </div>
 
-          <div className="hero-portrait">
-            <div className="portrait-frame">
-              {heroData.initials && (
-                <span className="portrait-initials" aria-hidden="true">
-                  {heroData.initials}
-                </span>
+          <div className="home-hero-grid">
+            <Reveal className="home-hero-copy" delay={0.05}>
+              <p className="home-hero-eyebrow">
+                <span>{profileText('headline') || 'CREATIVE DEVELOPER'}</span>
+                <span className="home-hero-eyebrow-code">SYS_001</span>
+              </p>
+
+              {heroResult.status === 'error' ? (
+                <div className="max-w-xl">
+                  <CmsErrorState message={heroResult.message} />
+                </div>
+              ) : heroData.heading ? (
+                <h1 id="hero-heading" className="home-hero-heading">
+                  {heroData.heading.replace(/\.$/, '')}
+                  <span aria-hidden="true">.</span>
+                </h1>
+              ) : (
+                <div className="max-w-xl">
+                  <EmptyState
+                    icon={Compass}
+                    message={CMS_SETTINGS_RECORDS.hero.emptyState.message}
+                    hint={CMS_SETTINGS_RECORDS.hero.emptyState.hint}
+                    actionLabel={CMS_SETTINGS_RECORDS.hero.emptyState.actionLabel}
+                    actionHref={CMS_SETTINGS_RECORDS.hero.emptyState.actionHref}
+                  />
+                </div>
               )}
-            </div>
-          </div>
-        </div>
 
-        <div className="hero-meta">
-          <span>{uiStrings.hero.scrollHint.en}</span>
-          <span>{uiStrings.hero.metaRight(1, SECTIONS.length)}</span>
+              {heroData.subtitle && <p className="home-hero-subtitle">{heroData.subtitle}</p>}
+
+              <div className="home-hero-actions">
+                <Link href="/projects" className="home-button home-button--primary">
+                  <span>Enter the archive</span>
+                  <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+                <Link href="/contact" className="home-button">
+                  <span>Open a channel</span>
+                  <span className="home-button-key" aria-hidden="true">
+                    ↵
+                  </span>
+                </Link>
+              </div>
+            </Reveal>
+
+            <Reveal className="home-portal" delay={0.16}>
+              <div className="home-portal-visual">
+                <div className="home-portal-orbit home-portal-orbit--outer" aria-hidden="true" />
+                <div className="home-portal-orbit home-portal-orbit--inner" aria-hidden="true" />
+                <div className="home-portal-spark" aria-hidden="true">
+                  ✦
+                </div>
+                <div className="home-portal-core">
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt={profileText('fullName') || ''}
+                      className="home-portal-image"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span className="home-portal-initials" aria-hidden="true">
+                      {heroData.initials || 'AW'}
+                    </span>
+                  )}
+                  <span className="home-portal-scan" aria-hidden="true" />
+                </div>
+              </div>
+              <div className="home-portal-caption">
+                <span>PLAYER PROFILE</span>
+                <strong>{profileText('fullName') || heroData.heading || 'UNKNOWN'}</strong>
+                <span>{site.contact.availability || 'SIGNAL ACTIVE'}</span>
+              </div>
+            </Reveal>
+          </div>
+
+          <Reveal className="home-hero-footer" delay={0.24}>
+            <span className="home-scroll-cue">
+              <span className="home-scroll-dot" />
+              {uiStrings.hero.scrollHint.en}
+            </span>
+            <span>{uiStrings.hero.metaRight(1, SECTIONS.length)}</span>
+          </Reveal>
         </div>
       </section>
 
-      <HeroFacts stats={heroStats} location={heroData.location} />
+      <Reveal>
+        <HeroFacts stats={heroStats} location={heroData.location} />
+      </Reveal>
 
-      <div className="shell-width">
+      <div className="home-shell">
         {(sectionsResult.status === 'error' || dataError) && (
           <CmsErrorState
             message={
@@ -575,9 +628,37 @@ export default async function HomeContent() {
             className="mt-10"
           />
         )}
-        {SECTIONS.map((section, index) => (
-          <Reveal key={section.id}>{renderSection(section, index)}</Reveal>
-        ))}
+
+        <div className="home-chapter-stack">
+          {SECTIONS.map((section, index) => (
+            <Reveal key={section.id}>{renderSection(section, index)}</Reveal>
+          ))}
+        </div>
+
+        <Reveal>
+          <section className="home-outro">
+            <div className="home-outro-topline">
+              <span>QUEST COMPLETE</span>
+              <span>END OF RECORD</span>
+            </div>
+            <div className="home-outro-body">
+              <p className="home-outro-kicker">NEW SIGNAL DETECTED</p>
+              <h2>
+                Let&apos;s build
+                <br />
+                <span>the next world.</span>
+              </h2>
+              <Link href="/contact" className="home-button home-button--primary">
+                <span>Open a channel</span>
+                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="home-outro-bottomline">
+              <span>{site.contact.email || 'SIGNAL READY'}</span>
+              <span>{site.contact.location || 'REMOTE'}</span>
+            </div>
+          </section>
+        </Reveal>
       </div>
     </div>
   )

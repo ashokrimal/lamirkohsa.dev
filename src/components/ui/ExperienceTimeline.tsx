@@ -1,8 +1,9 @@
 'use client'
 
 import React from 'react'
-import { Briefcase, Calendar, CheckCircle2, GraduationCap, MapPin, Building2, Sparkles } from 'lucide-react'
+import { Briefcase, Calendar, CheckCircle2, GraduationCap, MapPin } from 'lucide-react'
 import { Card3D } from '@/components/ui/Card3D'
+import { LinkedInTimeline } from '@/components/ui/LinkedInTimeline'
 
 import { EmptyState } from '@/components/ui/EmptyState'
 
@@ -49,8 +50,12 @@ export function ExperienceTimeline({
     )
   }
 
-  const Icon = type === 'experience' ? Briefcase : GraduationCap
-  const typeLabelKr = type === 'experience' ? '경력 사항' : '학력 사항'
+  if (type === 'experience') {
+    return <LinkedInTimeline items={items} className={className} />
+  }
+
+  const Icon = GraduationCap
+  const typeLabelKr = '학력 사항'
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -66,7 +71,6 @@ export function ExperienceTimeline({
 
         <div className="space-y-7">
           {items.map((item, index) => {
-            const isLast = index === items.length - 1
             return (
               <div key={item.id || index} className="relative flex items-start gap-3.5">
                 {/* LinkedIn-style Company Squircle Logo Avatar */}

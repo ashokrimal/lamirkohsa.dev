@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 
 /**
- * Understated scroll reveal: a short fade-up the first time a block enters the
+ * Understated scroll reveal: a gentle fade-up the first time a block enters the
  * viewport. Motion is skipped for visitors who ask for reduced motion.
  */
 export function Reveal({
@@ -26,7 +26,7 @@ export function Reveal({
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>
