@@ -32,7 +32,7 @@ export default async function MediaHomeContent() {
       <PageHero
         eyebrow={pageCopy?.eyebrow ?? ''}
         krEyebrow={pageCopy?.krEyebrow}
-        title={pageCopy?.title ?? ''}
+        title={pageCopy?.title ?? CMS_SCHEMA.sections.pages.media.label}
         accent={pageCopy?.accent}
         description={pageCopy?.description}
       />

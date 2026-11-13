@@ -12,6 +12,7 @@ import { MetaChip, PageHero, PageNav, PageSection, PageShell } from '@/component
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { uiStrings } from '@/lib/ui-strings'
+import { CMS_SCHEMA } from '@/lib/cms-schema'
 import type { ContactDetails, PageCopy, SiteSocial } from '@/lib/site-content'
 
 const PAGE_KEY = 'contact'
@@ -223,7 +224,7 @@ export default function ContactContent({ copy, contact, socials, error }: Contac
       <PageHero
         eyebrow={copy?.eyebrow ?? ''}
         krEyebrow={copy?.krEyebrow}
-        title={copy?.title ?? ''}
+        title={copy?.title ?? CMS_SCHEMA.sections.pages.contact.label}
         accent={copy?.accent}
         description={copy?.description}
         meta={

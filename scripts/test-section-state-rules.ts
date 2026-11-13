@@ -89,17 +89,18 @@ test('navigation pages own all site routes and labels', () => {
   assert.equal(new Set(routes).size, routes.length, 'navigation routes must be unique')
   assert.deepEqual([...NAV_ROUTES].sort(), [...routes].sort())
 
-  for (const route of ['/', '/about', '/projects', '/blogs', '/contact', '/media', '/experience', '/education', '/skills', '/certificates', '/resume', '/about/gallery', '/about/github', '/media/music', '/media/movies', '/media/anime', '/media/manga']) {
+  for (const route of ['/', '/about', '/projects', '/blogs', '/contact', '/media', '/experience', '/education', '/skills', '/certificates', '/about/gallery', '/about/github', '/media/music', '/media/movies', '/media/anime', '/media/manga']) {
     assert.equal(NAV_ROUTES.has(route), true, `expected NAV_ROUTES to include ${route}`)
   }
   assert.equal(NAV_ROUTES.has('/gallery'), false, '/gallery is not a site route; gallery lives at /about/gallery')
+  assert.equal(NAV_ROUTES.has('/resume'), false, '/resume separate page has been removed')
 
   const byId = new Map(NAV_PAGES.map((page) => [page.id, page]))
   assert.equal(byId.get('home')?.defaultVisible, true)
   assert.equal(byId.get('contact')?.defaultVisible, true)
   assert.equal(byId.get('github')?.defaultVisible, false)
-  assert.equal(byId.get('movies')?.defaultVisible, false)
-  assert.deepEqual(byId.get('resume')?.groups, ['collections'])
+  assert.equal(byId.get('movies')?.defaultVisible, true)
+  assert.equal(byId.get('manga')?.defaultVisible, true)
 })
 
 test('each structural section declares a specific empty state', () => {

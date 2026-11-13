@@ -2,12 +2,10 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, Calendar, Github, Layers } from 'lucide-react'
+import { Calendar, Layers } from 'lucide-react'
 import { TechStack } from '@/components/ui/TechStack'
-import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
 import { uiStrings } from '@/lib/ui-strings'
-import { isRepositoryUrl } from '@/lib/urls'
 import type { ProjectData } from '@/components/ui/ProjectCard'
 
 interface ProjectRowProps {
@@ -17,19 +15,18 @@ interface ProjectRowProps {
 
 /**
  * A single editorial project row. Media and copy swap sides on alternate rows,
- * and the entire row opens the case study; outbound links sit above the overlay.
+ * and clicking anywhere on the row opens the full project case study page.
  */
 export function ProjectRow({ project, index }: ProjectRowProps) {
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
-  const reversed = index % 2 === 1
   const summary = project.summary || project.description
-  const sourceUrl = isRepositoryUrl(project.github) ? project.github : undefined
+  const reversed = index % 2 === 1
 
   return (
-    <article className="project-row relative border-t border-line-hairline pt-8 md:pt-10">
+    <article className="project-row group relative cursor-pointer border-t border-line-hairline pt-8 md:pt-10">
       <Link
         href={detailHref}
-        className="absolute inset-0 z-10"
+        className="absolute inset-0 z-10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4"
         aria-label={uiStrings.project.openCaseStudy(project.title)}
       />
 
@@ -55,23 +52,31 @@ export function ProjectRow({ project, index }: ProjectRowProps) {
 
         <div className={`md:col-span-5 ${reversed ? 'md:order-1' : ''}`}>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
-            <span className="font-mono">{String(index + 1).padStart(2, '0')}</span>
+            <span className="font-mono tabular-nums">{String(index + 1).padStart(2, '0')}</span>
             {project.category && (
-              <span className="inline-flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
-                {project.category}
-              </span>
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{project.category}</span>
+              </>
             )}
             {project.completionDate && (
-              <span className="inline-flex items-center gap-1">
-                <Calendar className="h-3 w-3 text-accent" aria-hidden="true" />
-                {project.completionDate}
-              </span>
+              <>
+                <span aria-hidden="true">·</span>
+                <span className="inline-flex items-center gap-1">
+                  <Calendar className="h-3 w-3 text-accent" aria-hidden="true" />
+                  {project.completionDate}
+                </span>
+              </>
             )}
-            {project.status && <span className="text-emerald-600">{project.status}</span>}
+            {project.status && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span className="text-emerald-600 dark:text-emerald-400">{project.status}</span>
+              </>
+            )}
           </div>
 
-          <h3 className="mt-3 text-2xl font-semibold leading-snug tracking-tight text-ink md:text-3xl">
+          <h3 className="mt-3 text-2xl font-semibold leading-snug tracking-tight text-ink transition-colors duration-200 group-hover:text-accent md:text-3xl">
             {project.title}
           </h3>
 
@@ -82,37 +87,6 @@ export function ProjectRow({ project, index }: ProjectRowProps) {
           {project.techStack && project.techStack.length > 0 && (
             <TechStack items={project.techStack} limit={5} className="mt-4" />
           )}
-
-          <div className="relative z-20 mt-5 flex flex-wrap items-center gap-4 text-xs">
-            <span className="inline-flex items-center gap-1.5 font-medium text-accent">
-              {uiStrings.project.openProject.en}
-              <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-            </span>
-            {project.live && project.live !== '#' && (
-              <a
-                href={project.live}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => sensoryAudio.playClick()}
-                className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line-subtle px-3.5 py-1.5 text-xs font-medium text-ink transition-colors hover:border-line-medium hover:bg-overlay-medium"
-              >
-                {uiStrings.project.liveDemo.en}
-                <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-              </a>
-            )}
-            {sourceUrl && (
-              <a
-                href={sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => sensoryAudio.playClick()}
-                className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line-subtle px-3.5 py-1.5 text-xs font-medium text-ink transition-colors hover:border-line-medium hover:bg-overlay-medium"
-              >
-                <Github className="h-3.5 w-3.5 text-muted" aria-hidden="true" />
-                {uiStrings.project.code.en}
-              </a>
-            )}
-          </div>
         </div>
       </div>
     </article>

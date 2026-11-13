@@ -122,6 +122,21 @@ export const uiStrings = {
     featuredAria: text('Featured projects'),
     viewAll: text('View all projects'),
     worksHeading: text('Projects'),
+    searchPlaceholder: text('Search'),
+    clearSearch: text('Clear search'),
+    filtersLabel: text('Filters'),
+    allCategories: text('All', '전체'),
+    categoryLabel: text('Category', '카테고리'),
+    techStackLabel: text('Technology', '기술 스택'),
+    clearFilters: text('Reset', '초기화'),
+    showingCount: (visible: number, total: number) =>
+      visible === total
+        ? `${total} ${total === 1 ? 'project' : 'projects'}`
+        : `${visible} of ${total} ${total === 1 ? 'project' : 'projects'}`,
+    noMatchesTitle: text('No projects match your current filters.'),
+    noMatchesHint: text('Try adjusting your search query, category, or technology filters.'),
+    showMoreTech: (count: number) => `+${count} more`,
+    showLessTech: text('Show less'),
   },
   home: {
     viewAllPhotographs: text('View all photographs'),

@@ -330,6 +330,11 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
         .filter(Boolean),
       live: String(form.get('live') || '').trim(),
       github: String(form.get('github') || '').trim(),
+      model: String(form.get('model') || '').trim(),
+      duration: String(form.get('duration') || '').trim(),
+      cost: String(form.get('cost') || '').trim(),
+      caseStudyPlan: String(form.get('caseStudyPlan') || '').trim(),
+      documentation: String(form.get('documentation') || '').trim(),
       altText: String(form.get('altText') || '').trim(),
       organization: String(form.get('organization') || '').trim(),
       period: String(form.get('period') || '').trim(),
@@ -355,6 +360,11 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       ...(newCollection === CMS_COLLECTIONS.projects && fields.techStack.length ? { techStack: fields.techStack } : {}),
       ...(newCollection === CMS_COLLECTIONS.projects && fields.live ? { live: fields.live } : {}),
       ...(newCollection === CMS_COLLECTIONS.projects && fields.github ? { github: fields.github } : {}),
+      ...(newCollection === CMS_COLLECTIONS.projects && fields.model ? { model: fields.model } : {}),
+      ...(newCollection === CMS_COLLECTIONS.projects && fields.duration ? { duration: fields.duration } : {}),
+      ...(newCollection === CMS_COLLECTIONS.projects && fields.cost ? { cost: fields.cost } : {}),
+      ...(newCollection === CMS_COLLECTIONS.projects && fields.caseStudyPlan ? { caseStudyPlan: fields.caseStudyPlan } : {}),
+      ...(newCollection === CMS_COLLECTIONS.projects && fields.documentation ? { documentation: fields.documentation } : {}),
       ...(careerCollection && fields.organization ? { organization: fields.organization } : {}),
       ...(careerCollection && fields.period ? { period: fields.period } : {}),
       ...(careerCollection && fields.location ? { location: fields.location } : {}),
@@ -399,6 +409,11 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       formData.set('techStack', fields.techStack.join(', '))
       formData.set('live', fields.live)
       formData.set('github', fields.github)
+      if (fields.model) formData.set('model', fields.model)
+      if (fields.duration) formData.set('duration', fields.duration)
+      if (fields.cost) formData.set('cost', fields.cost)
+      if (fields.caseStudyPlan) formData.set('caseStudyPlan', fields.caseStudyPlan)
+      if (fields.documentation) formData.set('documentation', fields.documentation)
       formData.set('altText', fields.altText)
       formData.set('status', newStatus)
       if (newKey.trim()) formData.set('key', newKey.trim())
@@ -1641,18 +1656,35 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
           />
 
           {newCollection === CMS_COLLECTIONS.projects && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <CmsFormField label="Category" hint="e.g. Web app">
-                <CmsInput name="category" placeholder="e.g. Full-stack" />
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <CmsFormField label="Category" hint="e.g. Web app">
+                  <CmsInput name="category" placeholder="e.g. Full-stack" />
+                </CmsFormField>
+                <CmsFormField label="Tech stack" hint="Comma-separated">
+                  <CmsInput name="techStack" placeholder="Next.js, Postgres, Tailwind" />
+                </CmsFormField>
+                <CmsFormField label="Process / SDLC Model" hint="Model followed">
+                  <CmsInput name="model" placeholder="e.g. Iterative Phased Agile" />
+                </CmsFormField>
+                <CmsFormField label="Duration" hint="How long it took">
+                  <CmsInput name="duration" placeholder="e.g. 8 weeks (Aug – Sep 2024)" />
+                </CmsFormField>
+                <CmsFormField label="Project Cost" hint="Build or infra cost">
+                  <CmsInput name="cost" placeholder="e.g. $0 infra (Vercel Free Tier)" />
+                </CmsFormField>
+                <CmsFormField label="Live URL">
+                  <CmsInput name="live" type="url" placeholder="https://…" />
+                </CmsFormField>
+                <CmsFormField label="Source URL">
+                  <CmsInput name="github" type="url" placeholder="https://github.com/…" />
+                </CmsFormField>
+              </div>
+              <CmsFormField label="Case Study Plan" hint="High-level roadmap & milestones">
+                <CmsTextarea name="caseStudyPlan" placeholder="Outline research goals, phases, and delivery strategy..." rows={3} />
               </CmsFormField>
-              <CmsFormField label="Tech stack" hint="Comma-separated">
-                <CmsInput name="techStack" placeholder="Next.js, Postgres, Tailwind" />
-              </CmsFormField>
-              <CmsFormField label="Live URL">
-                <CmsInput name="live" type="url" placeholder="https://…" />
-              </CmsFormField>
-              <CmsFormField label="Source URL">
-                <CmsInput name="github" type="url" placeholder="https://github.com/…" />
+              <CmsFormField label="Project Documentation (Markdown)" hint="Architecture, setup, modules, and operational notes">
+                <CmsTextarea name="documentation" placeholder="## Architecture&#10;Describe modules, APIs, data model, and deployment..." rows={5} />
               </CmsFormField>
             </div>
           )}

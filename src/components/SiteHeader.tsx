@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Menu, X, Volume2, VolumeX } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import type { ContactDetails, SiteBrand, SiteNavigation } from '@/lib/site-content'
 import { SITE_NAME } from '@/lib/seo'
@@ -21,15 +21,9 @@ export default function SiteHeader({
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [localTime, setLocalTime] = useState<string>('')
-  const [isMuted, setIsMuted] = useState(false)
   const pathname = usePathname()
 
   const navLinks = navigation.primary
-
-  // Reflect the stored sound preference, not just the in-session toggle
-  useEffect(() => {
-    setIsMuted(!sensoryAudio.isEnabled())
-  }, [])
 
   const isCurrent = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href)
@@ -55,124 +49,123 @@ export default function SiteHeader({
     return () => clearInterval(interval)
   }, [contact.timeZone])
 
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!isOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen])
+
   const handleNavClick = () => {
     sensoryAudio.playClick()
     setIsOpen(false)
   }
 
-  const toggleSound = () => {
-    // toggle() returns whether audio is now ENABLED; the icon reflects mute state
-    setIsMuted(!sensoryAudio.toggle())
-  }
-
   return (
-    <header className="fixed top-0 inset-x-0 w-full z-50 glass-nav transition-all duration-300">
-      <nav
-        className="w-full max-w-[1400px] mx-auto px-5 sm:px-8 lg:px-12 h-14 flex items-center justify-between"
-        aria-label={uiStrings.nav.primary.en}
-      >
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            onClick={handleNavClick}
-            className="flex items-center gap-2 group transition-transform active:scale-95"
-          >
-            <span className="font-semibold text-[15px] tracking-tight text-ink group-hover:text-accent transition-colors">
-              {brand.name || SITE_NAME}
-            </span>
-            {brand.korean && (
-              <span lang="ko" className="text-[11px] font-korean text-muted tracking-normal font-normal">
-                {brand.korean}
+    <>
+      <header className="fixed top-0 inset-x-0 w-full z-50 glass-nav transition-all duration-300">
+        <nav
+          className="w-full max-w-[1400px] mx-auto px-5 sm:px-8 lg:px-12 h-14 flex items-center justify-between"
+          aria-label={uiStrings.nav.primary.en}
+        >
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              onClick={handleNavClick}
+              className="flex items-center gap-2 group transition-transform active:scale-95"
+            >
+              <span className="font-semibold text-[15px] tracking-tight text-ink group-hover:text-accent transition-colors">
+                {brand.name || SITE_NAME}
               </span>
-            )}
-          </Link>
-
-          {contact.timeZone && (
-            <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-overlay text-[11px] text-ink-secondary border border-line-faint">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-medium">
-                {contact.timeZone ? `${contact.timeZone} ` : ''}
-                {localTime}
-              </span>
-              {contact.availability && (
-                <>
-                  <span className="text-scrim/20">·</span>
-                  <span lang="ko" className="font-korean text-muted">
-                    {contact.availability}
-                  </span>
-                </>
+              {brand.korean && (
+                <span lang="ko" className="text-[11px] font-korean text-muted tracking-normal font-normal">
+                  {brand.korean}
+                </span>
               )}
-            </div>
-          )}
-        </div>
+            </Link>
 
-        <div className="hidden md:flex items-center gap-7 lg:gap-9">
-          {navLinks.map((link) => {
-            const active = isCurrent(link.href)
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => sensoryAudio.playClick()}
-                className={`flex items-baseline gap-1 text-[13px] font-medium tracking-tight transition-all duration-200 ${
-                  active ? 'text-accent font-semibold' : 'text-ink-secondary hover:text-ink'
-                }`}
-              >
-                <span>{link.label}</span>
-                {link.kr && (
-                  <span lang="ko" className="text-[10px] font-korean text-muted opacity-75 font-normal">
-                    {link.kr}
-                  </span>
+            {contact.timeZone && (
+              <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-overlay text-[11px] text-ink-secondary border border-line-faint">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-medium">
+                  {contact.timeZone ? `${contact.timeZone} ` : ''}
+                  {localTime}
+                </span>
+                {contact.availability && (
+                  <>
+                    <span className="text-scrim/20">·</span>
+                    <span lang="ko" className="font-korean text-muted">
+                      {contact.availability}
+                    </span>
+                  </>
                 )}
-                {active && <span className="inline-block w-1 h-1 rounded-full bg-accent ml-0.5" />}
-              </Link>
-            )
-          })}
+              </div>
+            )}
+          </div>
 
-          <ThemeToggle />
-          <button
-            type="button"
-            onClick={toggleSound}
-            className="p-1.5 rounded-full bg-overlay hover:bg-overlay-medium text-muted hover:text-ink transition-all cursor-pointer"
-            title={isMuted ? uiStrings.nav.unmuteSound.en : uiStrings.nav.muteSound.en}
-            aria-label={uiStrings.nav.toggleSound.en}
-          >
-            {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-          </button>
-        </div>
+          <div className="hidden md:flex items-center gap-7 lg:gap-9">
+            {navLinks.map((link) => {
+              const active = isCurrent(link.href)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => sensoryAudio.playClick()}
+                  className={`flex items-baseline gap-1 text-[13px] font-medium tracking-tight transition-all duration-200 ${
+                    active ? 'text-accent font-semibold' : 'text-ink-secondary hover:text-ink'
+                  }`}
+                >
+                  <span>{link.label}</span>
+                  {link.kr && (
+                    <span lang="ko" className="text-[10px] font-korean text-muted opacity-75 font-normal">
+                      {link.kr}
+                    </span>
+                  )}
+                  {active && <span className="inline-block w-1 h-1 rounded-full bg-accent ml-0.5" />}
+                </Link>
+              )
+            })}
 
-        <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle />
-          <button
-            type="button"
-            onClick={toggleSound}
-            className="p-1.5 rounded-full bg-overlay text-muted"
-            aria-label={uiStrings.nav.toggleAudio.en}
-          >
-            {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              sensoryAudio.playToggle()
-              setIsOpen((open) => !open)
-            }}
-            className="p-2 rounded-full bg-overlay-soft text-ink transition-transform active:scale-90"
-            aria-expanded={isOpen}
-            aria-label={isOpen ? uiStrings.nav.closeMenu.en : uiStrings.nav.openMenu.en}
-          >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </nav>
+            <ThemeToggle />
+          </div>
+
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => {
+                sensoryAudio.playToggle()
+                setIsOpen((open) => !open)
+              }}
+              className="p-2 rounded-full bg-overlay-soft text-ink transition-transform active:scale-90"
+              aria-expanded={isOpen}
+              aria-label={isOpen ? uiStrings.nav.closeMenu.en : uiStrings.nav.openMenu.en}
+            >
+              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </nav>
+      </header>
 
       <div
         id="mobile-navigation"
-        className={`mobile-menu fixed inset-0 z-[100] w-full p-6 md:hidden flex flex-col justify-between ${
+        aria-hidden={!isOpen}
+        className={`mobile-menu fixed inset-0 z-[100] h-[100dvh] w-full overflow-y-auto px-5 py-6 md:hidden flex flex-col justify-between ${
           isOpen ? 'open' : ''
         }`}
       >
-        <div>
+        <div className="w-full">
           <div className="flex items-center justify-between pb-4 border-b border-line-subtle">
             <div>
               <span className="text-sm font-semibold tracking-tight text-ink">{brand.name || SITE_NAME}</span>
@@ -192,15 +185,15 @@ export default function SiteHeader({
             </button>
           </div>
 
-          <ul className="mt-8 space-y-4">
+          <ul className="mt-6 w-full space-y-2">
             {navLinks.map((link) => {
               const active = isCurrent(link.href)
               return (
-                <li key={link.href}>
+                <li key={link.href} className="w-full">
                   <Link
                     href={link.href}
                     onClick={handleNavClick}
-                    className={`flex items-center justify-between p-3 rounded-2xl transition-all ${
+                    className={`flex w-full items-center justify-between px-4 py-3.5 rounded-2xl transition-all ${
                       active ? 'bg-accent text-inverse font-medium shadow-sm' : 'text-ink hover:bg-overlay'
                     }`}
                   >
@@ -220,13 +213,8 @@ export default function SiteHeader({
           </ul>
         </div>
 
-        <div className="pt-4 pb-2 border-t border-line-subtle flex items-center justify-between">
-          <span className="text-xs text-muted font-medium">Appearance</span>
-          <ThemeToggle variant="segmented" />
-        </div>
-
-        {(contact.location || contact.availability) && (
-          <div className="pt-6 border-t border-line-subtle text-xs text-muted space-y-2">
+        {(contact.location || contact.availability || contact.timeZone) && (
+          <div className="mt-8 w-full pt-6 border-t border-line-subtle text-xs text-muted space-y-2">
             {contact.timeZone && (
               <div className="flex items-center justify-between">
                 <span>{uiStrings.nav.localTime.en}</span>
@@ -250,6 +238,6 @@ export default function SiteHeader({
           </div>
         )}
       </div>
-    </header>
+    </>
   )
 }

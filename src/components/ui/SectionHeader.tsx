@@ -15,6 +15,7 @@ interface SectionHeaderProps {
   linkLabel?: string
   className?: string
   actions?: ReactNode
+  headingAs?: 'h1' | 'h2'
 }
 
 export function SectionHeader({
@@ -28,6 +29,7 @@ export function SectionHeader({
   linkLabel,
   className = '',
   actions,
+  headingAs = 'h2',
 }: SectionHeaderProps) {
   // The number comes from the section registry, never from CMS copy.
   const renderedEyebrow = number === undefined ? eyebrow : withSectionNumber(number, eyebrow)
@@ -36,6 +38,8 @@ export function SectionHeader({
   if (!renderedEyebrow && !title && !description && !actions && !(linkHref && linkLabel)) {
     return null
   }
+
+  const Heading = headingAs
 
   return (
     <div className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-line ${className}`}>
@@ -52,10 +56,10 @@ export function SectionHeader({
             )}
           </div>
         )}
-        <h2 className="text-3xl md:text-5xl font-semibold text-ink tracking-[-0.04em] leading-[1.05]">
+        <Heading className="text-3xl md:text-5xl font-semibold text-ink tracking-[-0.04em] leading-[1.05]">
           {title}{' '}
           {accent && <span className="font-normal text-accent">{accent}</span>}
-        </h2>
+        </Heading>
         {description && (
           <p className="mt-2 text-sm md:text-base text-muted leading-relaxed font-normal">
             {description}
