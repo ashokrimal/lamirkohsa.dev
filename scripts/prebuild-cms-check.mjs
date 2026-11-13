@@ -10,6 +10,21 @@ if (!process.env.DATABASE_URL) {
   process.exit(0)
 }
 
+const duplicateResult = spawnSync(
+  process.execPath,
+  ['scripts/check-site-content.mjs', '--duplicates-only'],
+  {
+    stdio: 'inherit',
+    env: process.env,
+  },
+)
+if (duplicateResult.status !== 0) {
+  console.error(
+    '[cms:check] Duplicate published CMS keys detected; failing the prebuild before deployment.',
+  )
+  process.exit(duplicateResult.status ?? 1)
+}
+
 const result = spawnSync(process.execPath, ['scripts/check-site-content.mjs'], {
   stdio: 'inherit',
   env: process.env,

@@ -9,6 +9,7 @@
  * Usage:
  *   DATABASE_URL=postgres://... npm run cms:check
  *   DATABASE_URL=... npm run cms:check -- --strict   (warnings also fail)
+ *   DATABASE_URL=... npm run cms:check -- --duplicates-only
  *
  * Exit codes: 0 healthy (or warnings only), 1 invalid/missing required content,
  * 2 could not read the database.
@@ -17,6 +18,7 @@ import { Client } from 'pg'
 import { loadCmsSchema } from './load-cms-schema.mjs'
 
 const strict = process.argv.includes('--strict')
+const duplicatesOnly = process.argv.includes('--duplicates-only')
 
 function displayTarget(connectionString) {
   try {
@@ -155,6 +157,38 @@ async function main() {
 
   const published = rows.filter((row) => row.status === 'published')
   const byCollection = (collection) => published.filter((row) => row.collection === collection)
+
+  if (duplicatesOnly) {
+    const duplicates = []
+    for (const [, definition] of Object.entries(CMS_SCHEMA.collections)) {
+      if (!definition.keyed) continue
+      const byKey = new Map()
+      for (const record of byCollection(definition.name)) {
+        const payload = record.payload && typeof record.payload === 'object' ? record.payload : {}
+        const key = typeof payload.key === 'string' ? payload.key.trim().toLowerCase() : ''
+        if (!key) continue
+        if (byKey.has(key)) {
+          duplicates.push(
+            `${definition.name}: duplicate key "${key}" ("${byKey.get(key).title}" and "${record.title}").`,
+          )
+          continue
+        }
+        byKey.set(key, record)
+      }
+    }
+
+    console.log(`CMS duplicate key check — ${displayTarget(connectionString)}\n`)
+    if (duplicates.length === 0) {
+      console.log('✓ No duplicate published CMS keys found.')
+      process.exit(0)
+    }
+    for (const duplicate of duplicates) console.log(`  ✗ ${duplicate}`)
+    console.log(
+      `\n${duplicates.length} duplicate published key${duplicates.length === 1 ? '' : 's'} found.`,
+    )
+    process.exit(1)
+  }
+
   const problems = []
   const warnings = []
   const lines = []

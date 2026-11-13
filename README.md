@@ -243,9 +243,18 @@ alt text, profile URLs used as project source links, and images hosted on known
 stock-photo services such as Unsplash, Pexels, Pixabay or placeholder hosts) fail
 only with `--strict`.
 
-`pnpm build` runs `scripts/prebuild-cms-check.mjs`. It executes the health
-check when `DATABASE_URL` is configured and skips it with a warning for local
-builds without a database.
+`pnpm cms:check:duplicates` is the deployment gate for duplicate published
+keys. It checks only keyed records and exits `1` with the conflicting records
+when two published records share a key. `pnpm build` runs this gate first and
+exits nonzero before `next build` if duplicates are found. It then runs the full
+health check when `DATABASE_URL` is configured; that report is advisory for
+other content issues. Local builds without a database skip both checks with a
+warning.
+
+`.github/workflows/cms-duplicates.yml` runs the same duplicate gate for pushes
+to `main`, same-repository pull requests, and manual runs. Add `DATABASE_URL` as
+a repository Actions secret for the workflow. Fork pull requests skip the job
+because repository secrets are not available to them.
 
 ## Adding a new collection
 
@@ -288,6 +297,7 @@ the following in the CMS after deploying:
 | `pnpm start` | Start the production server on `0.0.0.0:3000`. |
 | `pnpm lint` | ESLint. |
 | `pnpm cms:check` | Validate published CMS content against the schema. |
+| `pnpm cms:check:duplicates` | Fail on duplicate published keys in keyed collections. |
 | `pnpm cms:repair` | Dry-run repair for missing keys and blank seeded fields. |
 | `pnpm cms:dedupe` | Read-only plan for duplicate published CMS records. |
 | `pnpm cms:dedupe:apply` | Unpublish safe duplicate records with a backup and verification. |

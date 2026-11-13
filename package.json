@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "prebuild": "node scripts/prebuild-cms-check.mjs",
     "cms:check": "node scripts/check-site-content.mjs",
+    "cms:check:duplicates": "node scripts/check-site-content.mjs --duplicates-only",
     "cms:repair": "node scripts/repair-cms-content.mjs",
     "cms:dedupe": "node scripts/repair-cms-content.mjs --dedupe-plan",
     "cms:dedupe:apply": "node scripts/repair-cms-content.mjs --apply-dedupe",
