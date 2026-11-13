@@ -2121,3 +2121,17 @@ html.theme-transitioning *::after {
   html.theme-transitioning *::before,
   html.theme-transitioning *::after { transition-duration: 0.01ms !important; }
 }
+
+/* Circular theme reveal: the new palette is clipped open from the toggle. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none !important; }
+}
