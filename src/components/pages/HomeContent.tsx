@@ -15,7 +15,6 @@ import { getProjectsResult } from '@/lib/projects'
 import { getGalleryResult } from '@/lib/gallery'
 import {
   CMS_COLLECTIONS,
-  CMS_SETTINGS_RECORDS,
   SECTIONS,
   type SiteSectionDefinition,
 } from '@/lib/cms-schema'
@@ -222,6 +221,15 @@ export default async function HomeContent() {
     return typeof raw === 'string' && raw.trim() ? (raw as string) : undefined
   }
   const profileImage = profileText('avatarUrl') || profileText('imageUrl')
+  const displayName = profileText('fullName') || site.brand.name || 'Ashok Rimal'
+  const heroHeading = heroData.heading?.trim() || displayName
+  const heroSubtitle = heroData.subtitle?.trim() || profileText('summary')
+  const heroLocation = heroData.location?.trim() || profileText('location') || site.contact.location
+  const availability =
+    profileText('availability') ||
+    profileText('status') ||
+    site.contact.availability ||
+    site.footer.availabilityText
 
   // Hero numbers are derived from the projects actually shown, never typed in
   // the CMS, so the numbers can never disagree with the cards below them.
@@ -271,7 +279,7 @@ export default async function HomeContent() {
                   <div className="relative aspect-[4/5] w-full rounded-[24px] overflow-hidden border border-line-subtle bg-overlay-faint">
                     <img
                       src={profileImage}
-                      alt={profileText('fullName') || ''}
+                      alt={displayName}
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
                     />
@@ -293,10 +301,10 @@ export default async function HomeContent() {
                         <span>{profileText('headline')}</span>
                       </span>
                     )}
-                    {site.contact.location && (
+                    {heroLocation && (
                       <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/80 border border-line-subtle text-ink shadow-xs">
                         <Compass className="w-3.5 h-3.5 text-accent" />
-                        <span>{site.contact.location}</span>
+                        <span>{heroLocation}</span>
                       </span>
                     )}
                   </div>
@@ -525,7 +533,7 @@ export default async function HomeContent() {
               SYSTEM ONLINE
             </span>
             <span className="home-hero-coord">
-              PLAYER_001 // {site.contact.location || 'UNKNOWN SECTOR'}
+              PLAYER_001 // {heroLocation || 'UNKNOWN SECTOR'}
             </span>
             <span className="home-hero-coord home-hero-coord--end">AWAKENED</span>
           </div>
@@ -541,24 +549,14 @@ export default async function HomeContent() {
                 <div className="max-w-xl">
                   <CmsErrorState message={heroResult.message} />
                 </div>
-              ) : heroData.heading ? (
+              ) : (
                 <h1 id="hero-heading" className="home-hero-heading">
-                  {heroData.heading.replace(/\.$/, '')}
+                  {heroHeading.replace(/\.$/, '')}
                   <span aria-hidden="true">.</span>
                 </h1>
-              ) : (
-                <div className="max-w-xl">
-                  <EmptyState
-                    icon={Compass}
-                    message={CMS_SETTINGS_RECORDS.hero.emptyState.message}
-                    hint={CMS_SETTINGS_RECORDS.hero.emptyState.hint}
-                    actionLabel={CMS_SETTINGS_RECORDS.hero.emptyState.actionLabel}
-                    actionHref={CMS_SETTINGS_RECORDS.hero.emptyState.actionHref}
-                  />
-                </div>
               )}
 
-              {heroData.subtitle && <p className="home-hero-subtitle">{heroData.subtitle}</p>}
+              {heroSubtitle && <p className="home-hero-subtitle">{heroSubtitle}</p>}
 
               <div className="home-hero-actions">
                 <Link href="/projects" className="home-button home-button--primary">
@@ -585,7 +583,7 @@ export default async function HomeContent() {
                   {profileImage ? (
                     <img
                       src={profileImage}
-                      alt={profileText('fullName') || ''}
+                      alt={displayName}
                       className="home-portal-image"
                       referrerPolicy="no-referrer"
                     />
@@ -599,8 +597,8 @@ export default async function HomeContent() {
               </div>
               <div className="home-portal-caption">
                 <span>PLAYER PROFILE</span>
-                <strong>{profileText('fullName') || heroData.heading || 'UNKNOWN'}</strong>
-                <span>{site.contact.availability || 'SIGNAL ACTIVE'}</span>
+                <strong>{displayName}</strong>
+                <span>{availability || 'SIGNAL ACTIVE'}</span>
               </div>
             </Reveal>
           </div>
@@ -616,7 +614,7 @@ export default async function HomeContent() {
       </section>
 
       <Reveal>
-        <HeroFacts stats={heroStats} location={heroData.location} />
+        <HeroFacts stats={heroStats} location={heroLocation} />
       </Reveal>
 
       <div className="home-shell">
@@ -654,8 +652,8 @@ export default async function HomeContent() {
               </Link>
             </div>
             <div className="home-outro-bottomline">
-              <span>{site.contact.email || 'SIGNAL READY'}</span>
-              <span>{site.contact.location || 'REMOTE'}</span>
+              <span>{site.contact.email || profileText('email') || 'SIGNAL READY'}</span>
+              <span>{heroLocation || 'REMOTE'}</span>
             </div>
           </section>
         </Reveal>
