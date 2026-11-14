@@ -88,6 +88,7 @@ export default function AdminSignIn({ configured, returnTo = '/admin' }: { confi
             <label className="block text-xs text-muted">
               Email
               <input
+                name="email"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -100,6 +101,7 @@ export default function AdminSignIn({ configured, returnTo = '/admin' }: { confi
             <label className="block text-xs text-muted">
               Password
               <input
+                name="password"
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -133,6 +135,7 @@ export default function AdminSignIn({ configured, returnTo = '/admin' }: { confi
             <label className="block text-xs text-muted">
               Email
               <input
+                name="email"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -145,6 +148,7 @@ export default function AdminSignIn({ configured, returnTo = '/admin' }: { confi
             <label className="block text-xs text-muted">
               Password
               <input
+                name="password"
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -158,6 +162,7 @@ export default function AdminSignIn({ configured, returnTo = '/admin' }: { confi
             <label className="block text-xs text-muted">
               Confirm password
               <input
+                name="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
