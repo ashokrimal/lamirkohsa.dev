@@ -39,6 +39,7 @@ import {
 import { CmsToastProvider, useCmsToast } from '@/components/admin/ui/CmsToast'
 import ImageUploadField from '@/components/admin/ImageUploadField'
 import ContentSetupGuide from '@/components/admin/ContentSetupGuide'
+import VaultCommandHub from '@/components/admin/vaults/VaultCommandHub'
 import SiteAppearanceEditor from '@/components/admin/SiteAppearanceEditor'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
 import { CmsStatCard, CmsSectionCard } from '@/components/admin/ui/CmsCard'
@@ -825,6 +826,8 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
               </a>
             </div>
           </div>
+
+          <VaultCommandHub records={cmsRecords} />
 
           {/* 4 Metric KPI Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

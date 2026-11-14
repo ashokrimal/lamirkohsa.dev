@@ -235,15 +235,15 @@ export function CmsDistributionChart({ items }: { items: DistributionItem[] }) {
       {/* Legend Grid */}
       <div className="grid grid-cols-2 gap-2 text-xs">
         {items.map((item, idx) => (
-          <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-50/60 border border-slate-100">
-            <div className="flex items-center gap-2">
+          <div key={idx} className="flex min-w-0 items-center justify-between gap-2 p-2 rounded-lg bg-slate-50/60 border border-slate-100">
+            <div className="flex min-w-0 items-center gap-2">
               <span
                 className="w-2.5 h-2.5 rounded-full shrink-0"
                 style={{ backgroundColor: item.color }}
               />
               <span className="text-slate-600 truncate">{item.label}</span>
             </div>
-            <span className="font-semibold text-slate-800">{item.count}</span>
+            <span className="shrink-0 font-semibold text-slate-800">{item.count}</span>
           </div>
         ))}
       </div>

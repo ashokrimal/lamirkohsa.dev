@@ -18,15 +18,26 @@ export async function POST(request: Request) {
   const formData = await request.formData()
   const file = formData.get('file')
   const isImage = file instanceof File && file.type.startsWith('image/')
+  const isAudio =
+    file instanceof File &&
+    (file.type.startsWith('audio/') || /\.(mp3|wav|m4a|ogg|flac|aac)$/i.test(file.name))
   const isPdf = file instanceof File && file.type === 'application/pdf'
-  if (!(isImage || isPdf)) return NextResponse.json({ error: 'Please upload an image or PDF file.' }, { status: 400 })
-  if (file.size > (isPdf ? 20 : 8) * 1024 * 1024) return NextResponse.json({ error: isPdf ? 'PDFs must be smaller than 20MB.' : 'Images must be smaller than 8MB.' }, { status: 400 })
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/^-+|-+$/g, '') || 'upload-image'
+  if (!(isImage || isAudio || isPdf)) {
+    return NextResponse.json({ error: 'Please upload an image, audio track or PDF file.' }, { status: 400 })
+  }
+  const sizeLimit = isAudio ? 30 : isPdf ? 20 : 8
+  if (file.size > sizeLimit * 1024 * 1024) {
+    return NextResponse.json(
+      { error: isAudio ? 'Audio tracks must be smaller than 30MB.' : isPdf ? 'PDFs must be smaller than 20MB.' : 'Images must be smaller than 8MB.' },
+      { status: 400 },
+    )
+  }
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/^-+|-+$/g, '') || 'upload-file'
   try {
     const blob = await put(`site/${ownerId}/${Date.now()}-${safeName}`, file, { access: 'public', addRandomSuffix: false })
-    return NextResponse.json({ url: blob.url })
+    return NextResponse.json({ url: blob.url, kind: isAudio ? 'audio' : isPdf ? 'pdf' : 'image' })
   } catch (error) {
-    console.error('[v0] Image upload failed:', error)
-    return NextResponse.json({ error: 'Image upload failed. Please try again.' }, { status: 502 })
+    console.error('[v0] File upload failed:', error)
+    return NextResponse.json({ error: 'File upload failed. Please try again.' }, { status: 502 })
   }
 }

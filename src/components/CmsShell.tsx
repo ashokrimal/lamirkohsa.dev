@@ -9,6 +9,10 @@ import {
   FolderKanban,
   Image,
   Music,
+  Film,
+  BookOpen,
+  GraduationCap,
+  Globe2,
   Inbox,
   Settings,
   HelpCircle,
@@ -19,11 +23,12 @@ import {
   Bell,
   Sparkles,
   ChevronRight,
-  User,
   LogOut,
   ShieldCheck,
   CheckCircle2,
-  Clock,
+  PanelLeftClose,
+  PanelLeftOpen,
+  MoreHorizontal,
 } from 'lucide-react'
 import { CmsCommandPalette } from '@/components/admin/ui/CmsCommandPalette'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
@@ -33,7 +38,6 @@ interface NavItem {
   label: string
   icon: React.ComponentType<{ className?: string }>
   badge?: string | number
-  /** Optional deep link; falls back to /admin?section=<id>. */
   href?: string
 }
 
@@ -44,52 +48,67 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: 'Workspace',
+    label: 'Command',
     items: [
-      { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-      { id: 'content', label: 'Content Records', icon: FileText },
-      { id: 'projects', label: 'Projects', icon: FolderKanban },
-      { id: 'setup', label: 'Content Setup', icon: CheckCircle2 },
-      { id: 'appearance', label: 'Hero & Footer', icon: Sparkles },
+      { id: 'overview', label: 'Studio overview', icon: LayoutDashboard, href: '/admin' },
+      { id: 'inbox', label: 'Inbox & mail', icon: Inbox, href: '/admin/inbox', badge: 'New' },
     ],
   },
   {
-    label: 'Portfolio & Media',
+    label: 'Content vaults',
     items: [
-      { id: 'gallery', label: 'Visual Gallery', icon: Image },
-      {
-        id: 'content',
-        label: 'Media Library',
-        icon: Music,
-        href: '/admin?section=content&collection=Music',
-      },
+      { id: 'music', label: 'Music', icon: Music, href: '/admin/music' },
+      { id: 'gallery', label: 'Gallery', icon: Image, href: '/admin/gallery' },
+      { id: 'media', label: 'Media', icon: Film, href: '/admin/media' },
+      { id: 'blogs', label: 'Blogs & writing', icon: BookOpen, href: '/admin/blogs' },
+      { id: 'projects', label: 'Projects & code', icon: FolderKanban, href: '/admin/projects' },
+      { id: 'career', label: 'Career', icon: GraduationCap, href: '/admin/career' },
     ],
   },
   {
-    label: 'Communications',
+    label: 'Studio',
     items: [
-      { id: 'inbox', label: 'Inbox & Mail', icon: Inbox, badge: 'New' },
+      { id: 'meta', label: 'About & meta', icon: Globe2, href: '/admin/meta' },
+      { id: 'appearance', label: 'Hero & footer', icon: Sparkles, href: '/admin?section=appearance' },
+      { id: 'setup', label: 'Content setup', icon: CheckCircle2, href: '/admin?section=setup' },
+      { id: 'content', label: 'All records', icon: FileText, href: '/admin?section=content' },
+      { id: 'settings', label: 'Settings', icon: Settings, href: '/admin?section=settings' },
     ],
   },
+]
+
+const mobileNavItems: NavItem[] = [
+  { id: 'overview', label: 'Home', icon: LayoutDashboard, href: '/admin' },
+  { id: 'music', label: 'Music', icon: Music, href: '/admin/music' },
+  { id: 'gallery', label: 'Gallery', icon: Image, href: '/admin/gallery' },
+  { id: 'media', label: 'Media', icon: Film, href: '/admin/media' },
 ]
 
 export default function CmsShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()
-  const currentSection = searchParams.get('section') || 'overview'
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [helpModalOpen, setHelpModalOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const search = searchParams.toString()
 
-  // Close mobile nav on change
+  useEffect(() => {
+    try {
+      setCollapsed(window.localStorage.getItem('studio-sidebar') === 'collapsed')
+    } catch {
+      // Storage can be unavailable in private browsing.
+    }
+  }, [])
+
+  // Close the drawer after a route or query change.
   useEffect(() => {
     setMobileNavOpen(false)
-  }, [currentSection, pathname])
+  }, [pathname, search])
 
-  // Keyboard shortcut ⌘K or / to open search
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -101,133 +120,148 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  function hrefFor(item: NavItem) {
+    return item.href ?? `/admin?section=${item.id}`
+  }
+
+  function isActive(item: NavItem) {
+    const [path, query] = hrefFor(item).split('?')
+    if (query) return pathname === path && search === query
+    return pathname === path
+  }
+
+  const activeItem = navGroups.flatMap((group) => group.items).find(isActive)
+  const currentLabel = activeItem?.label ?? pathname.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') ?? 'Studio'
+
+  const toggleCollapsed = () => {
+    const next = !collapsed
+    setCollapsed(next)
+    try {
+      window.localStorage.setItem('studio-sidebar', next ? 'collapsed' : 'open')
+    } catch {
+      // Ignore storage failures.
+    }
+  }
+
   const handleNavigate = (section: string) => {
     router.push(`/admin?section=${section}`)
   }
 
-  const notifications: Array<{ id: number; title: string; desc: string; time: string; unread: boolean }> = []
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col antialiased">
-      {/* Mobile Top Navigation */}
-      <header className="lg:hidden sticky top-0 z-40 bg-surface border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs">
+    <div className="studio-vault-admin flex min-h-screen flex-col bg-slate-50 text-slate-800 antialiased">
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 shadow-xs lg:hidden">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setMobileNavOpen(!mobileNavOpen)}
-            className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100"
+            className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100"
             aria-label="Toggle mobile menu"
+            aria-expanded={mobileNavOpen}
           >
-            {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-md bg-teal-600 text-inverse font-bold text-xs flex items-center justify-center">
-              A
-            </span>
-            <span className="text-sm font-semibold text-slate-900">Studio CMS</span>
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-teal-600 text-xs font-bold text-white">A</span>
+            <span className="text-sm font-semibold text-slate-900">Studio Vaults</span>
           </div>
         </div>
-
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setCommandPaletteOpen(true)}
-            className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100"
+            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"
             aria-label="Search"
           >
-            <Search className="w-4 h-4" />
+            <Search className="h-4 w-4" />
           </button>
           <a
             href="https://ashokrimal.com.np"
             target="_blank"
             rel="noreferrer"
-            className="text-xs font-medium text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md"
+            className="rounded-md bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-700"
           >
             Live ↗
           </a>
         </div>
       </header>
 
-      {/* Main Container */}
-      <div className="flex-1 flex w-full relative">
-        {/* Desktop & Mobile Drawer Sidebar */}
+      <div className="relative flex w-full flex-1">
         <aside
-          className={`fixed lg:sticky top-0 left-0 z-40 h-screen w-64 bg-surface border-r border-slate-200/90 flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0 ${
-            mobileNavOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
-          }`}
+          className={`fixed left-0 top-0 z-40 flex h-screen w-72 shrink-0 flex-col justify-between border-r border-slate-200/90 bg-white transition-all duration-300 ease-in-out lg:sticky ${
+            collapsed ? 'lg:w-20' : 'lg:w-64'
+          } ${mobileNavOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}`}
         >
-          {/* Top Brand Section */}
-          <div className="p-4 border-b border-slate-100">
-            <div className="flex items-center justify-between">
-              <Link href="/admin" className="flex items-center gap-2.5 group">
-                <div className="w-8 h-8 rounded-lg bg-slate-900 text-inverse flex items-center justify-center font-bold text-sm tracking-tight group-hover:bg-teal-600 transition-colors shadow-xs">
+          <div className="border-b border-slate-100 p-3.5">
+            <div className={`flex items-center gap-2 ${collapsed ? 'lg:justify-between' : 'justify-between'}`}>
+              <Link href="/admin" className="flex min-w-0 items-center gap-2.5 group">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-sm font-bold tracking-tight text-white shadow-xs transition-colors group-hover:bg-teal-600">
                   AR
                 </div>
-                <div>
-                  <h1 className="text-xs font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+                <div className={`min-w-0 ${collapsed ? 'lg:hidden' : ''}`}>
+                  <h1 className="flex items-center gap-1.5 text-xs font-bold tracking-tight text-slate-900">
                     Ashok Rimal
-                    <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                    <ShieldCheck className="h-3.5 w-3.5 text-teal-600" />
                   </h1>
-                  <p className="text-[10px] text-slate-400 font-medium">SaaS Content Studio</p>
+                  <p className="text-[10px] font-medium text-slate-400">Studio &amp; Vault</p>
                 </div>
               </Link>
 
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live
-              </span>
+              <button
+                type="button"
+                onClick={toggleCollapsed}
+                className="hidden rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 lg:inline-flex"
+                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              </button>
             </div>
 
-            {/* Accessible Quick Search Trigger Button */}
             <button
               type="button"
               onClick={() => setCommandPaletteOpen(true)}
-              className="mt-3.5 w-full flex items-center justify-between px-3 py-1.5 text-xs text-slate-400 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors"
+              className={`mt-3 w-full items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-100 ${
+                collapsed ? 'hidden lg:flex lg:justify-center lg:px-0' : 'flex'
+              }`}
             >
               <span className="flex items-center gap-2">
-                <Search className="w-3.5 h-3.5 text-slate-400" />
-                <span>Search dashboard...</span>
+                <Search className="h-3.5 w-3.5 text-slate-400" />
+                <span className={collapsed ? 'lg:hidden' : ''}>Search dashboard…</span>
               </span>
-              <kbd className="text-[10px] font-mono text-slate-400 bg-surface px-1.5 py-0.2 rounded border border-slate-200 shadow-2xs">
+              <kbd className={`rounded border border-slate-200 bg-white px-1.5 text-[10px] font-mono text-slate-400 shadow-2xs ${collapsed ? 'lg:hidden' : ''}`}>
                 ⌘K
               </kbd>
             </button>
           </div>
 
-          {/* Grouped Navigation Links */}
-          <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-5" aria-label="Main sidebar navigation">
+          <nav className="flex-1 space-y-5 overflow-y-auto px-2.5 py-3" aria-label="Main sidebar navigation">
             {navGroups.map((group) => (
               <div key={group.label} className="space-y-1">
-                <h3 className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <h3 className={`px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 ${collapsed ? 'lg:hidden' : ''}`}>
                   {group.label}
                 </h3>
-                <div className="space-y-0.5 mt-1">
+                <div className="mt-1 space-y-0.5">
                   {group.items.map((item) => {
                     const Icon = item.icon
-                    const href = item.href ?? `/admin?section=${item.id}`
-                    const isActive = item.href
-                      ? `${pathname}?${searchParams.toString()}` === item.href
-                      : currentSection === item.id
+                    const active = isActive(item)
                     return (
                       <Link
-                        key={item.label}
-                        href={href}
-                        className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                          isActive
-                            ? 'bg-teal-50/80 text-teal-900 font-semibold shadow-2xs'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                        key={`${group.label}-${item.label}`}
+                        href={hrefFor(item)}
+                        title={collapsed ? item.label : undefined}
+                        aria-current={active ? 'page' : undefined}
+                        className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                          collapsed ? 'lg:justify-center lg:px-0' : ''
+                        } ${
+                          active
+                            ? 'bg-teal-50/80 font-semibold text-teal-900 shadow-2xs'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                         }`}
                       >
-                        <span className="flex items-center gap-2.5">
-                          <Icon
-                            className={`w-4 h-4 shrink-0 ${
-                              isActive ? 'text-teal-600' : 'text-slate-400'
-                            }`}
-                          />
-                          <span>{item.label}</span>
-                        </span>
+                        <Icon className={`h-4 w-4 shrink-0 ${active ? 'text-teal-600' : 'text-slate-400'}`} />
+                        <span className={collapsed ? 'lg:hidden' : ''}>{item.label}</span>
                         {item.badge && (
-                          <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800">
+                          <span className={`ml-auto rounded-full bg-teal-100 px-1.5 py-0.2 text-[10px] font-semibold text-teal-800 ${collapsed ? 'lg:hidden' : ''}`}>
                             {item.badge}
                           </span>
                         )}
@@ -239,202 +273,177 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          {/* Bottom Settings, Support & User Controls */}
-          <div className="p-3 border-t border-slate-100 bg-slate-50/50 space-y-1">
+          <div className="space-y-1 border-t border-slate-100 bg-slate-50/50 p-2.5">
             <Link
-              href="/admin?section=settings"
-              className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                currentSection === 'settings'
-                  ? 'bg-teal-50 text-teal-900 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-surface'
+              href="/admin/account"
+              title={collapsed ? 'Account' : undefined}
+              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-white hover:text-slate-900 ${
+                collapsed ? 'lg:justify-center lg:px-0' : ''
               }`}
             >
-              <span className="flex items-center gap-2.5">
-                <Settings
-                  className={`w-4 h-4 shrink-0 ${
-                    currentSection === 'settings' ? 'text-teal-600' : 'text-slate-400'
-                  }`}
-                />
-                <span>Settings</span>
-              </span>
+              <ShieldCheck className="h-4 w-4 shrink-0 text-slate-400" />
+              <span className={collapsed ? 'lg:hidden' : ''}>Owner account</span>
             </Link>
 
             <button
               type="button"
               onClick={() => setHelpModalOpen(true)}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-surface transition-colors"
+              title={collapsed ? 'Support & docs' : undefined}
+              className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-white hover:text-slate-900 ${
+                collapsed ? 'lg:justify-center lg:px-0' : ''
+              }`}
             >
-              <span className="flex items-center gap-2.5">
-                <HelpCircle className="w-4 h-4 shrink-0 text-slate-400" />
-                <span>Support &amp; Docs</span>
-              </span>
-              <kbd className="text-[10px] font-mono text-slate-400 bg-surface px-1 rounded border border-slate-200">
-                ?
-              </kbd>
+              <HelpCircle className="h-4 w-4 shrink-0 text-slate-400" />
+              <span className={collapsed ? 'lg:hidden' : ''}>Support &amp; docs</span>
             </button>
 
-            {/* Profile User Card */}
-            <div className="pt-2 mt-2 border-t border-slate-200/60 flex items-center justify-between px-2 py-1">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 rounded-full bg-teal-600 text-inverse font-bold text-xs flex items-center justify-center shrink-0">
-                  AR
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-slate-800 truncate">Ashok Rimal</p>
-                  <Link href="/admin/account" className="text-[10px] text-slate-400 truncate hover:text-teal-700">
-                    Owner account
-                  </Link>
+            <div className={`mt-2 flex items-center gap-2 border-t border-slate-200/60 px-2 pt-2 ${collapsed ? 'lg:justify-center lg:px-0' : 'justify-between'}`}>
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">AR</div>
+                <div className={`min-w-0 ${collapsed ? 'lg:hidden' : ''}`}>
+                  <p className="truncate text-xs font-semibold text-slate-800">Ashok Rimal</p>
+                  <p className="truncate text-[10px] text-slate-400">Owner account</p>
                 </div>
               </div>
-
               <Link
                 href="/admin/sign-out"
                 title="Sign out"
-                className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                className="rounded-md p-1 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
                 aria-label="Sign out"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="h-3.5 w-3.5" />
               </Link>
             </div>
           </div>
         </aside>
 
-        {/* Mobile backdrop */}
         {mobileNavOpen && (
           <div
-            className="fixed inset-0 z-30 bg-slate-900/40 lg:hidden backdrop-blur-2xs"
+            className="fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-2xs lg:hidden"
             onClick={() => setMobileNavOpen(false)}
             aria-hidden="true"
           />
         )}
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-          {/* Top Bar on Desktop */}
-          <header className="hidden lg:flex sticky top-0 z-30 bg-surface/95 backdrop-blur-md border-b border-slate-200/80 px-8 py-3.5 items-center justify-between">
-            {/* Breadcrumb */}
+        <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+          <header className="sticky top-0 z-30 hidden items-center justify-between border-b border-slate-200/80 bg-white/95 px-8 py-3.5 backdrop-blur-md lg:flex">
             <div className="flex items-center gap-2 text-xs text-slate-500">
-              <Link href="/admin" className="hover:text-slate-800 font-medium">
-                CMS Studio
+              <Link href="/admin" className="font-medium hover:text-slate-800">
+                Studio &amp; Vault
               </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-              <span className="font-semibold text-slate-800 capitalize">
-                {currentSection.replace('-', ' ')}
-              </span>
+              <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
+              <span className="font-semibold capitalize text-slate-800">{currentLabel}</span>
             </div>
 
-            {/* Actions & Live Links */}
             <div className="flex items-center gap-3">
-              {/* Notification Popover Button */}
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setNotificationsOpen(!notificationsOpen)}
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors relative"
+                  className="relative rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
                   aria-label="View notifications"
                 >
-                  <Bell className="w-4 h-4" />
-                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-teal-500 ring-2 ring-inverse" />
+                  <Bell className="h-4 w-4" />
                 </button>
 
-                {/* Notification Dropdown Popover */}
                 {notificationsOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-surface rounded-xl border border-slate-200 shadow-xl p-3 z-50 animate-in fade-in-0 zoom-in-95">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-100 text-xs">
-                      <span className="font-semibold text-slate-800">Activity &amp; Notifications</span>
-                      <button
-                        type="button"
-                        onClick={() => setNotificationsOpen(false)}
-                        className="text-[11px] text-teal-700 hover:underline"
-                      >
-                        Mark all read
+                  <div className="absolute right-0 z-50 mt-2 w-80 animate-in rounded-xl border border-slate-200 bg-white p-3 shadow-xl fade-in-0 zoom-in-95">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2 text-xs">
+                      <span className="font-semibold text-slate-800">Activity &amp; notifications</span>
+                      <button type="button" onClick={() => setNotificationsOpen(false)} className="text-[11px] text-teal-700 hover:underline">
+                        Close
                       </button>
                     </div>
-                    <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
-                      {notifications.length === 0 && (
-                        <p className="px-4 py-6 text-center text-[11px] text-slate-500">
-                          No new activity.
-                        </p>
-                      )}
-                      {notifications.map((n) => (
-                        <div key={n.id} className="py-2.5 flex items-start gap-2.5 text-xs">
-                          <div className="w-2 h-2 rounded-full bg-teal-500 mt-1 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-slate-800">{n.title}</p>
-                            <p className="text-slate-500 text-[11px] mt-0.5">{n.desc}</p>
-                            <span className="text-[10px] text-slate-400 mt-1 inline-block">{n.time}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="px-4 py-6 text-center text-[11px] text-slate-500">No new activity.</p>
                   </div>
                 )}
               </div>
 
-              {/* View Live Portfolio Link */}
               <a
                 href="https://ashokrimal.com.np"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-surface hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
               >
-                <span>Preview Site</span>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                <span>Preview site</span>
+                <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
               </a>
             </div>
           </header>
 
-          {/* Primary Viewport Content */}
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-            {children}
-          </main>
+          <main className="mx-auto w-full max-w-7xl flex-1 p-4 pb-24 sm:p-6 lg:p-8 lg:pb-8">{children}</main>
         </div>
       </div>
 
-      {/* Global Command Palette (⌘K) */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+        aria-label="Mobile vault navigation"
+      >
+        <div className="mx-auto flex max-w-lg items-stretch justify-around">
+          {mobileNavItems.map((item) => {
+            const Icon = item.icon
+            const active = isActive(item)
+            return (
+              <Link
+                key={item.label}
+                href={hrefFor(item)}
+                aria-current={active ? 'page' : undefined}
+                className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-semibold transition-colors ${
+                  active ? 'text-teal-700' : 'text-slate-400 hover:text-slate-700'
+                }`}
+              >
+                <Icon className={`h-4 w-4 ${active ? 'text-teal-600' : ''}`} />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            )
+          })}
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-semibold text-slate-400 hover:text-slate-700"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+            <span>More</span>
+          </button>
+        </div>
+      </nav>
+
       <CmsCommandPalette
         isOpen={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
         onNavigate={handleNavigate}
       />
 
-      {/* Support & Documentation Modal */}
       <CmsModal
         isOpen={helpModalOpen}
         onClose={() => setHelpModalOpen(false)}
-        title="CMS Help & Documentation"
-        description="Guidelines for managing content, media feeds, and site configuration."
+        title="Studio help & documentation"
+        description="How the vaults, uploads and publishing flow work."
       >
         <div className="space-y-4 text-xs text-slate-600">
-          <div className="p-3 bg-teal-50/70 border border-teal-200/60 rounded-xl text-teal-950">
-            <h4 className="font-semibold">Zero-Downtime Public Site Sync</h4>
+          <div className="rounded-xl border border-teal-200/60 bg-teal-50/70 p-3 text-teal-950">
+            <h4 className="font-semibold">Domain-isolated publishing</h4>
             <p className="mt-1 leading-relaxed">
-              Every edit made in this dashboard writes to the database and revalidates Next.js cached pages automatically. Changes reflect on the public site immediately.
+              Each vault writes to its own CMS collection and revalidates the public pages automatically. Drafts stay out of the public site.
             </p>
           </div>
-
           <div>
-            <h4 className="font-semibold text-slate-900 mb-1">Keyboard Shortcuts</h4>
-            <ul className="space-y-1.5 text-slate-600">
-              <li className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span>Open Command Palette &amp; Search</span>
-                <kbd className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">⌘K / Ctrl+K</kbd>
+            <h4 className="mb-1 font-semibold text-slate-900">Keyboard shortcuts</h4>
+            <ul className="space-y-1.5">
+              <li className="flex items-center justify-between border-b border-slate-100 py-1">
+                <span>Open command palette</span>
+                <kbd className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px]">⌘K / Ctrl+K</kbd>
               </li>
-              <li className="flex justify-between items-center py-1 border-b border-slate-100">
+              <li className="flex items-center justify-between py-1">
                 <span>Close any open modal</span>
-                <kbd className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">Esc</kbd>
-              </li>
-              <li className="flex justify-between items-center py-1">
-                <span>Toggle support modal</span>
-                <kbd className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">?</kbd>
+                <kbd className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px]">Esc</kbd>
               </li>
             </ul>
           </div>
-
           <div>
-            <h4 className="font-semibold text-slate-900 mb-1">Integrations &amp; Feeds</h4>
+            <h4 className="mb-1 font-semibold text-slate-900">Uploads</h4>
             <p className="leading-relaxed">
-              Connected APIs (ListenBrainz, Last.fm, GitHub, MyAnimeList, and AniList) cache for 30 minutes to stay within rate limits while keeping status widgets active.
+              Images and music require Blob storage. Without it, paste a public URL instead. Gallery and media dropzones create drafts with automatic thumbnails.
             </p>
           </div>
         </div>

@@ -485,6 +485,18 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .bg-blue-600, .bg-indigo-600 { background: var(--accent) !important; }
 .border-gray-200, .border-gray-300, .border-slate-700 { border-color: var(--line) !important; }
 
+/* The editorial overrides above are for public pages. Restore the dark/utility
+   palette inside the Studio shell, which is a separate product surface. */
+.studio-vault-admin .bg-slate-900 { background: #0f172a !important; }
+.studio-vault-admin .bg-slate-950 { background: #020617 !important; }
+.studio-vault-admin .bg-gradient-to-br { background: linear-gradient(135deg, #f1f5f9, #fff, #f0fdfa) !important; }
+.studio-vault-admin .text-white { color: #fff !important; }
+.studio-vault-admin .text-slate-100 { color: #f1f5f9 !important; }
+.studio-vault-admin .text-slate-200 { color: #e2e8f0 !important; }
+.studio-vault-admin .text-slate-400 { color: #94a3b8 !important; }
+.studio-vault-admin .overflow-x-auto { scrollbar-width: none; }
+.studio-vault-admin .overflow-x-auto::-webkit-scrollbar { display: none; }
+
 .gallery-page { padding-block: 72px 120px; }
 .admin-page { padding-block: 132px 120px; }
 .admin-lede { max-width: 560px; margin: 16px 0 0; color: var(--muted); line-height: 1.6; }

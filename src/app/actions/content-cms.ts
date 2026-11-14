@@ -3,7 +3,7 @@
 import { auth } from '@/lib/auth'
 import { db, hasDatabaseConfig } from '@/lib/db'
 import { cmsContent } from '@/lib/db/schema'
-import { and, asc, desc, eq } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { getAdminActorId } from '@/lib/admin-auth'
@@ -634,6 +634,55 @@ export async function deleteCmsContent(id: number) {
   }
 
   revalidateCms(collection)
+}
+
+export type BulkResetMode = 'draft' | 'delete'
+
+/**
+ * Bulk-resets whole collections from a vault. Moving to draft is reversible;
+ * deleting is permanent. Unlike the single-record mutations, this action
+ * refuses to run before owner authentication so a stray call can never wipe a
+ * collection through the in-memory fallback.
+ */
+export async function resetCmsContent(
+  collections: string[],
+  mode: BulkResetMode,
+): Promise<{ count: number }> {
+  const allowed = new Set(Object.values(CMS_SCHEMA.collections).map((entry) => entry.name))
+  const targets = Array.from(new Set(collections.filter((collection) => allowed.has(collection))))
+  if (!targets.length) throw new Error('No valid collections were selected for reset.')
+  if (mode !== 'draft' && mode !== 'delete') throw new Error('Unknown reset mode.')
+
+  const userId = await requireUser()
+  const repo = getMemoryRepo()
+  const affected = repo.getAll().filter((record) => targets.includes(record.collection))
+
+  if (mode === 'delete') {
+    affected.forEach((record) => repo.delete(record.id))
+  } else {
+    affected.forEach((record) => repo.update(record.id, { status: 'draft' }))
+  }
+
+  let count = affected.length
+  try {
+    const rows =
+      mode === 'delete'
+        ? await db
+            .delete(cmsContent)
+            .where(and(eq(cmsContent.userId, userId), inArray(cmsContent.collection, targets)))
+            .returning({ id: cmsContent.id })
+        : await db
+            .update(cmsContent)
+            .set({ status: 'draft', updatedAt: new Date() })
+            .where(and(eq(cmsContent.userId, userId), inArray(cmsContent.collection, targets)))
+            .returning({ id: cmsContent.id })
+    count = rows.length
+  } catch (error) {
+    console.warn('[CMS] Bulk reset fell back to the memory repo:', error)
+  }
+
+  targets.forEach((collection) => revalidateCms(collection))
+  return { count }
 }
 
 export async function toggleCmsStatus(id: number) {
