@@ -20,14 +20,10 @@ export async function middleware(request: NextRequest) {
     .getAll()
     .some((cookie) => cookie.name.includes('better-auth.session_token'))
 
-  if (pathname === '/admin/sign-in' && (hasAdminCookie || hasBetterAuthCookie)) {
-    const requested = request.nextUrl.searchParams.get('returnTo')
-    const target =
-      requested && requested.startsWith('/admin') && !requested.startsWith('//')
-        ? requested
-        : '/admin'
-    return NextResponse.redirect(new URL(target, request.url), 307)
-  }
+  // Do not bounce /admin/sign-in back to /admin based on cookie presence alone.
+  // A stale or invalid admin cookie would otherwise alternate between the page
+  // guard and this redirect forever. The sign-in page validates the real session
+  // server-side and redirects only when it is still valid.
 
   if (pathname.startsWith('/admin') && pathname !== '/admin/sign-in' && pathname !== '/admin/sign-out') {
     if (!hasAdminCookie && !hasBetterAuthCookie) {
