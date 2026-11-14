@@ -20,6 +20,9 @@
     "cms:backfill": "node scripts/backfill-legacy-media.mjs"
   },
   "dependencies": {
+    "@react-three/drei": "9.122.0",
+    "@react-three/fiber": "8.18.0",
+    "@react-three/postprocessing": "2.19.1",
     "@vercel/blob": "^2.8.2",
     "@vercel/connect": "^2.8.0",
     "better-auth": "^1.7.15",
@@ -29,11 +32,13 @@
     "fast-xml-parser": "^5.11.2",
     "framer-motion": "^12.23.24",
     "googleapis": "^189.0.0",
+    "gsap": "3.13.0",
     "jsonfile": "^6.1.0",
     "lenis": "^1.3.27",
     "lucide-react": "^0.441.0",
     "next": "14.2.5",
     "pg": "^8.23.1",
+    "postprocessing": "6.37.8",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-error-boundary": "^6.0.0",

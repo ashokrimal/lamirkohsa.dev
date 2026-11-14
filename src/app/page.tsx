@@ -1,16 +1,14 @@
-import { PageLayout } from '@/components/layouts/PageLayout';
-import HomeContent from '@/components/pages/HomeContent';
+import type { Metadata } from 'next';
+import ImmersivePortfolio from '@/components/immersive/ImmersivePortfolio';
+import './immersive/immersive.css';
 
-export const revalidate = 300;
+export const metadata: Metadata = {
+  title: { absolute: 'Ashok Rimal — Creative Technologist' },
+  description:
+    'An immersive, scroll-driven portfolio by Ashok Rimal — full-stack creative technologist working across product, 3D, and motion.',
+  alternates: { canonical: '/' },
+};
 
 export default function HomePage() {
-  return (
-    <PageLayout
-      loadingVariant="page"
-      errorTitle="Error loading page"
-      errorMessage="We're having trouble loading the page. Please try again later."
-    >
-      <HomeContent />
-    </PageLayout>
-  );
+  return <ImmersivePortfolio />;
 }

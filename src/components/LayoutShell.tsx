@@ -23,6 +23,7 @@ export default function LayoutShell({ children, site, isCmsHost = false }: Layou
   const pathname = usePathname()
   const isCmsRoute = pathname.startsWith('/admin')
   const isAdminSignIn = pathname.startsWith('/admin/sign-in')
+  const isImmersive = pathname === '/' || pathname.startsWith('/immersive')
   // The CMS host is read after mount so the shared layout stays free of request
   // headers and the public pages can be cached and revalidated.
   const [isCmsHostname, setIsCmsHostname] = useState(false)
@@ -36,6 +37,8 @@ export default function LayoutShell({ children, site, isCmsHost = false }: Layou
         <Suspense fallback={<Loading />}>
           {showCmsShell ? (
             <CmsShell>{children}</CmsShell>
+          ) : isImmersive ? (
+            <div className="min-h-screen">{children}</div>
           ) : isAdminSignIn ? (
             <div className="min-h-screen">{children}</div>
           ) : (
