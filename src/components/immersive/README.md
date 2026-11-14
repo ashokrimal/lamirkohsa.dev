@@ -1,6 +1,6 @@
 # Immersive portfolio
 
-A scroll-driven 3D portfolio rendered at `/` and aliased at `/immersive`. The original CMS homepage lives at `/classic`.
+A scroll-driven 3D portfolio rendered at `/`. `/immersive` permanently redirects to `/`, and the original CMS homepage lives at `/classic`.
 
 ## Structure
 
