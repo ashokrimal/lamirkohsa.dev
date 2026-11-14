@@ -1324,56 +1324,13 @@ em, .accent-text { font-style: normal; }
    ============================================================================ */
 .home-awakening {
   --home-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  --home-bg: #edf3f8;
-  --home-panel: rgba(255, 255, 255, 0.62);
-  --home-cyan: #0e7490;
-  --home-violet: #5b21b6;
-  --home-grid: rgba(8, 47, 73, 0.055);
-  --home-line: rgba(8, 47, 73, 0.14);
-  --home-glow: rgba(14, 116, 144, 0.16);
-
-  --paper-rgb: 237 243 248;
-  --surface-rgb: 255 255 255;
-  --ink-rgb: 6 18 32;
-  --ink-secondary-rgb: 45 64 84;
-  --muted-rgb: 86 105 125;
-  --accent-rgb: 14 116 144;
-  --accent-secondary-rgb: 91 33 182;
-  --inverse-rgb: 255 255 255;
-  --scrim-rgb: 8 47 73;
-
-  --paper: rgb(var(--paper-rgb));
-  --surface: rgb(var(--surface-rgb));
-  --ink: rgb(var(--ink-rgb));
-  --ink-secondary: rgb(var(--ink-secondary-rgb));
-  --muted: rgb(var(--muted-rgb));
-  --accent: rgb(var(--accent-rgb));
-  --accent-secondary: rgb(var(--accent-secondary-rgb));
-  --accent-soft: rgba(14, 116, 144, 0.1);
-  --surface-glass: rgba(255, 255, 255, 0.66);
-  --line: var(--home-line);
-  --color-background: var(--paper);
-  --color-surface: var(--surface);
-  --color-surface-glass: var(--surface-glass);
-  --color-surface-sunken: #f5f9fc;
-  --color-surface-tinted: #eef6fa;
-  --color-foreground: var(--ink);
-  --color-foreground-secondary: var(--ink-secondary);
-  --color-foreground-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-accent-secondary: var(--accent-secondary);
-  --color-accent-soft: var(--accent-soft);
-  --color-border: rgba(8, 47, 73, 0.13);
-  --color-border-hairline: rgba(8, 47, 73, 0.04);
-  --color-border-faint: rgba(8, 47, 73, 0.06);
-  --color-border-soft: rgba(8, 47, 73, 0.08);
-  --color-border-subtle: rgba(8, 47, 73, 0.1);
-  --color-border-medium: rgba(8, 47, 73, 0.18);
-  --color-border-strong: rgba(8, 47, 73, 0.28);
-  --color-overlay: rgba(8, 47, 73, 0.04);
-  --color-overlay-faint: rgba(8, 47, 73, 0.02);
-  --color-overlay-subtle: rgba(8, 47, 73, 0.06);
-  --color-overlay-medium: rgba(8, 47, 73, 0.08);
+  --home-bg: var(--paper);
+  --home-panel: rgb(var(--surface-rgb) / 0.62);
+  --home-cyan: var(--accent);
+  --home-violet: var(--accent-secondary);
+  --home-grid: rgb(var(--scrim-rgb) / 0.045);
+  --home-line: var(--line);
+  --home-glow: rgb(var(--accent-rgb) / 0.14);
 
   position: relative;
   isolation: isolate;
@@ -1385,56 +1342,13 @@ em, .accent-text { font-style: normal; }
 
 .dark .home-awakening,
 [data-theme="dark"] .home-awakening {
-  --home-bg: #04070d;
-  --home-panel: rgba(8, 16, 28, 0.68);
-  --home-cyan: #67e8f9;
-  --home-violet: #a78bfa;
-  --home-grid: rgba(125, 211, 252, 0.07);
-  --home-line: rgba(147, 210, 255, 0.16);
-  --home-glow: rgba(103, 232, 249, 0.17);
-
-  --paper-rgb: 4 7 13;
-  --surface-rgb: 9 17 29;
-  --ink-rgb: 235 247 255;
-  --ink-secondary-rgb: 172 196 216;
-  --muted-rgb: 130 153 176;
-  --accent-rgb: 103 232 249;
-  --accent-secondary-rgb: 167 139 250;
-  --inverse-rgb: 4 7 13;
-  --scrim-rgb: 147 210 255;
-
-  --paper: rgb(var(--paper-rgb));
-  --surface: rgb(var(--surface-rgb));
-  --ink: rgb(var(--ink-rgb));
-  --ink-secondary: rgb(var(--ink-secondary-rgb));
-  --muted: rgb(var(--muted-rgb));
-  --accent: rgb(var(--accent-rgb));
-  --accent-secondary: rgb(var(--accent-secondary-rgb));
-  --accent-soft: rgba(103, 232, 249, 0.12);
-  --surface-glass: rgba(8, 16, 28, 0.72);
-  --line: var(--home-line);
-  --color-background: var(--paper);
-  --color-surface: var(--surface);
-  --color-surface-glass: var(--surface-glass);
-  --color-surface-sunken: #070d17;
-  --color-surface-tinted: #0b1624;
-  --color-foreground: var(--ink);
-  --color-foreground-secondary: var(--ink-secondary);
-  --color-foreground-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-accent-secondary: var(--accent-secondary);
-  --color-accent-soft: var(--accent-soft);
-  --color-border: rgba(147, 210, 255, 0.15);
-  --color-border-hairline: rgba(147, 210, 255, 0.05);
-  --color-border-faint: rgba(147, 210, 255, 0.07);
-  --color-border-soft: rgba(147, 210, 255, 0.09);
-  --color-border-subtle: rgba(147, 210, 255, 0.11);
-  --color-border-medium: rgba(147, 210, 255, 0.2);
-  --color-border-strong: rgba(147, 210, 255, 0.3);
-  --color-overlay: rgba(147, 210, 255, 0.05);
-  --color-overlay-faint: rgba(147, 210, 255, 0.025);
-  --color-overlay-subtle: rgba(147, 210, 255, 0.07);
-  --color-overlay-medium: rgba(147, 210, 255, 0.1);
+  --home-bg: var(--paper);
+  --home-panel: rgb(var(--surface-rgb) / 0.7);
+  --home-cyan: var(--accent);
+  --home-violet: var(--accent-secondary);
+  --home-grid: rgb(var(--scrim-rgb) / 0.06);
+  --home-line: var(--line);
+  --home-glow: rgb(var(--accent-rgb) / 0.18);
 }
 
 .home-ambient {
@@ -1444,14 +1358,14 @@ em, .accent-text { font-style: normal; }
   pointer-events: none;
   background:
     radial-gradient(ellipse 52% 42% at 12% 4%, var(--home-glow), transparent 70%),
-    radial-gradient(ellipse 44% 38% at 88% 18%, rgba(91, 33, 182, 0.11), transparent 72%),
-    radial-gradient(ellipse 60% 38% at 50% 96%, rgba(14, 116, 144, 0.08), transparent 75%);
+    radial-gradient(ellipse 44% 38% at 88% 18%, rgb(var(--accent-secondary-rgb) / 0.11), transparent 72%),
+    radial-gradient(ellipse 60% 38% at 50% 96%, rgb(var(--accent-rgb) / 0.08), transparent 75%);
 }
 .dark .home-ambient {
   background:
     radial-gradient(ellipse 52% 42% at 12% 4%, var(--home-glow), transparent 70%),
-    radial-gradient(ellipse 44% 38% at 88% 18%, rgba(167, 139, 250, 0.12), transparent 72%),
-    radial-gradient(ellipse 60% 38% at 50% 96%, rgba(103, 232, 249, 0.07), transparent 75%);
+    radial-gradient(ellipse 44% 38% at 88% 18%, rgb(var(--accent-secondary-rgb) / 0.12), transparent 72%),
+    radial-gradient(ellipse 60% 38% at 50% 96%, rgb(var(--accent-rgb) / 0.07), transparent 75%);
 }
 
 .home-grid-overlay {
@@ -1495,7 +1409,7 @@ em, .accent-text { font-style: normal; }
   border: 1px solid var(--home-line);
   background:
     linear-gradient(138deg, var(--home-panel), transparent 48%),
-    linear-gradient(180deg, transparent 56%, rgba(14, 116, 144, 0.035));
+    linear-gradient(180deg, transparent 56%, rgb(var(--accent-rgb) / 0.035));
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.03),
     0 50px 120px -70px var(--home-glow);
@@ -1507,7 +1421,7 @@ em, .accent-text { font-style: normal; }
   inset: 0;
   z-index: 0;
   background-image:
-    linear-gradient(90deg, var(--home-bg) 0%, rgba(237, 243, 248, 0.72) 46%, rgba(237, 243, 248, 0.18) 100%),
+    linear-gradient(90deg, var(--home-bg) 0%, rgb(var(--paper-rgb) / 0.72) 46%, rgb(var(--paper-rgb) / 0.18) 100%),
     var(--hero-image, none);
   background-position: 0 0, 72% 22%;
   background-size: auto, cover;
@@ -1517,7 +1431,7 @@ em, .accent-text { font-style: normal; }
 }
 .dark .home-hero-frame::before {
   background-image:
-    linear-gradient(90deg, var(--home-bg) 0%, rgba(4, 7, 13, 0.78) 46%, rgba(4, 7, 13, 0.22) 100%),
+    linear-gradient(90deg, var(--home-bg) 0%, rgb(var(--paper-rgb) / 0.78) 46%, rgb(var(--paper-rgb) / 0.22) 100%),
     var(--hero-image, none);
   opacity: 0.42;
 }
@@ -1527,7 +1441,7 @@ em, .accent-text { font-style: normal; }
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(125, 211, 252, 0.018) 3px 4px);
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgb(var(--scrim-rgb) / 0.018) 3px 4px);
   opacity: 0.55;
 }
 
@@ -1950,7 +1864,7 @@ em, .accent-text { font-style: normal; }
 .home-awakening .horizontal-collection-view-all {
   border-radius: 4px;
   border-color: var(--home-line);
-  box-shadow: 0 20px 60px -44px rgba(3, 18, 30, 0.34);
+  box-shadow: 0 20px 60px -44px rgb(var(--scrim-rgb) / 0.34);
 }
 .dark .home-awakening .apple-card,
 .dark .home-awakening .horizontal-collection-view-all {
