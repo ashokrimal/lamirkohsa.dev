@@ -20,14 +20,18 @@
     "cms:backfill": "node scripts/backfill-legacy-media.mjs"
   },
   "dependencies": {
+    "@google/genai": "^3.3.0",
+    "@radix-ui/react-tooltip": "^1.4.1",
     "@react-three/drei": "9.122.0",
     "@react-three/fiber": "8.18.0",
     "@react-three/postprocessing": "2.19.1",
+    "@types/d3": "^7.4.3",
     "@vercel/blob": "^2.8.2",
     "@vercel/connect": "^2.8.0",
     "better-auth": "^1.7.15",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "d3": "^7.9.2",
     "drizzle-orm": "^0.45.4",
     "fast-xml-parser": "^5.11.2",
     "framer-motion": "^12.23.24",

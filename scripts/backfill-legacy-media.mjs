@@ -51,6 +51,7 @@
 import { access, mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { Client } from 'pg'
+import { createPgClientOptions, resolveDatabaseUrl } from './db-env.mjs'
 import { loadCmsSchema } from './load-cms-schema.mjs'
 
 const { CMS_COLLECTIONS } = await loadCmsSchema()
@@ -257,13 +258,15 @@ main().catch((error) => {
 })
 
 async function main() {
-  const connectionString = process.env.DATABASE_URL
+  const connectionString = resolveDatabaseUrl()
   if (!connectionString) {
-    console.error('DATABASE_URL is required.')
+    console.error(
+      'A PostgreSQL connection URL (DATABASE_URL, POSTGRES_URL, POSTGRES_PRISMA_URL, POSTGRES_URL_NON_POOLING, or DATABASE_URL_UNPOOLED) is required.',
+    )
     process.exit(1)
   }
 
-  const client = new Client({ connectionString })
+  const client = new Client(createPgClientOptions(connectionString))
   await client.connect()
 
   let transaction = false

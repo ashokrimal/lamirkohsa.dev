@@ -32,6 +32,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { Client } from 'pg'
+import { createPgClientOptions, resolveDatabaseUrl } from './db-env.mjs'
 import { loadCmsSchema } from './load-cms-schema.mjs'
 import {
   buildSeedRecords,
@@ -900,10 +901,14 @@ async function applyDedupe(client, connectionString, rows, plan, reviewedPlan) {
 }
 
 async function main() {
-  const connectionString = process.env.DATABASE_URL
-  if (!connectionString) throw new Error('DATABASE_URL is required.')
+  const connectionString = resolveDatabaseUrl()
+  if (!connectionString) {
+    throw new Error(
+      'A PostgreSQL connection URL (DATABASE_URL, POSTGRES_URL, POSTGRES_PRISMA_URL, POSTGRES_URL_NON_POOLING, or DATABASE_URL_UNPOOLED) is required.',
+    )
+  }
 
-  const client = new Client({ connectionString })
+  const client = new Client(createPgClientOptions(connectionString))
   await client.connect()
 
   try {

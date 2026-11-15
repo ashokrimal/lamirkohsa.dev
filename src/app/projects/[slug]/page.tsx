@@ -1,12 +1,9 @@
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import {
   CheckCircle2,
   Circle,
   Clock,
-  Coins,
-  Cpu,
   GitBranch,
   Target,
 } from 'lucide-react'
@@ -23,6 +20,8 @@ import {
   PageShell,
 } from '@/components/ui/PageChrome'
 import { ProjectDocumentation } from '@/components/projects/ProjectDocumentation'
+import { CaseStudyHeroImage } from '@/components/projects/CaseStudyHeroImage'
+import { CaseStudyLayerTooltip } from '@/components/projects/CaseStudyLayerTooltip'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import type { CmsResult } from '@/lib/cms-schema'
 import { isRepositoryUrl } from '@/lib/urls'
@@ -100,6 +99,14 @@ export default async function ProjectCaseStudyPage({
   const sections = pageCopy?.sections
   const sourceUrl = isRepositoryUrl(project.github) ? project.github : undefined
   const dossier = buildProjectDossier(project)
+  const costTooltipLayers = dossier.cost.breakdown.map((item) => ({
+    layer: item.layer,
+    context: item.cost,
+  }))
+  const techTooltipLayers = dossier.techDetails.map((tech) => ({
+    layer: tech.layer,
+    context: tech.name,
+  }))
 
   const headerMetaParts = [
     project.category,
@@ -158,7 +165,7 @@ export default async function ProjectCaseStudyPage({
 
         <div className="py-5 sm:px-6 flex flex-col gap-1.5">
           <div className="flex items-center gap-2 text-xs text-muted">
-            <Coins className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
+            <CaseStudyLayerTooltip kind="cost" layers={costTooltipLayers} />
             <span>Project cost</span>
           </div>
           <p className="text-sm font-semibold text-ink tracking-tight tabular-nums">
@@ -171,7 +178,7 @@ export default async function ProjectCaseStudyPage({
 
         <div className="py-5 sm:pl-6 flex flex-col gap-1.5">
           <div className="flex items-center gap-2 text-xs text-muted">
-            <Cpu className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
+            <CaseStudyLayerTooltip kind="tech" layers={techTooltipLayers} />
             <span>Tech stack</span>
           </div>
           <p className="text-sm font-semibold text-ink tracking-tight tabular-nums">
@@ -187,19 +194,10 @@ export default async function ProjectCaseStudyPage({
       </section>
 
       {project.image && (
-        <div className="mt-10 md:mt-12 apple-card overflow-hidden">
-          <div className="relative aspect-[16/9] bg-overlay-faint">
-            <Image
-              src={project.image}
-              alt={project.altText || project.title}
-              fill
-              sizes="(max-width: 1024px) 100vw, 1200px"
-              referrerPolicy="no-referrer"
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
+        <CaseStudyHeroImage
+          src={project.image}
+          alt={project.altText || project.title}
+        />
       )}
 
       {/* 01. CASE STUDY PLAN: Problem, Approach & Execution Phases */}
@@ -376,7 +374,12 @@ export default async function ProjectCaseStudyPage({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted">Cost breakdown</span>
-                <Coins className="w-4 h-4 text-accent" aria-hidden="true" />
+                <CaseStudyLayerTooltip
+                  kind="cost"
+                  size="md"
+                  align="end"
+                  layers={costTooltipLayers}
+                />
               </div>
               <h3 className="text-lg font-semibold text-ink tracking-tight tabular-nums">
                 {dossier.cost.headline}
@@ -416,9 +419,17 @@ export default async function ProjectCaseStudyPage({
           <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start">
             {dossier.techDetails.length > 0 && (
               <article className="apple-card p-6 md:p-7">
-                <h3 className="text-xs font-medium text-muted">
-                  {sections?.details?.secondaryLabel || 'Technology stack & roles'}
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-medium text-muted">
+                    {sections?.details?.secondaryLabel || 'Technology stack & roles'}
+                  </h3>
+                  <CaseStudyLayerTooltip
+                    kind="tech"
+                    size="md"
+                    align="end"
+                    layers={techTooltipLayers}
+                  />
+                </div>
                 <ul className="mt-4 divide-y divide-line-hairline">
                   {dossier.techDetails.map((tech) => (
                     <li key={tech.name} className="py-3.5 first:pt-0 last:pb-0 space-y-1">

@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight, Camera, Code2, Compass, FolderGit2, Github, ImageOff } from 'lucide-react'
 import {
@@ -20,7 +21,8 @@ import {
 } from '@/lib/cms-schema'
 import { getMediaSections } from '@/lib/media-content'
 import { uiStrings } from '@/lib/ui-strings'
-import { ProjectCard, type ProjectData } from '@/components/ui/ProjectCard'
+import { type ProjectData } from '@/components/ui/ProjectCard'
+import { FeaturedProjectsCollection } from '@/components/projects/FeaturedProjectsCollection'
 import { PhotoCard } from '@/components/ui/PhotoCard'
 import { MediaPoster } from '@/components/ui/MediaPoster'
 import { HorizontalCollection } from '@/components/ui/HorizontalCollection'
@@ -172,6 +174,7 @@ export default async function HomeContent() {
       summary: project.summary,
       description: project.description,
       techStack: project.techStack,
+      techDefinitions: project.techDefinitions,
       image: project.image,
       altText: project.altText,
       live: project.live,
@@ -277,10 +280,12 @@ export default async function HomeContent() {
               <div className="mt-10 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 md:gap-10 items-start">
                 {profileImage && (
                   <div className="relative aspect-[4/5] w-full rounded-[24px] overflow-hidden border border-line-subtle bg-overlay-faint">
-                    <img
+                    <Image
                       src={profileImage}
                       alt={displayName}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 40vw"
+                      className="object-cover"
                       referrerPolicy="no-referrer"
                     />
                   </div>
@@ -442,10 +447,8 @@ export default async function HomeContent() {
                   actionHref={section.emptyState.actionHref}
                 />
               ) : (
-                <HorizontalCollection
-                  items={featuredProjects.map((project) => (
-                    <ProjectCard key={project.id ?? project.title} project={project} />
-                  ))}
+                <FeaturedProjectsCollection
+                  projects={featuredProjects}
                   previewCount={sectionMeta?.previewCount ?? PREVIEW_COUNT}
                   viewAllHref={sectionMeta?.href || section.route}
                   viewAllLabel={sectionMeta?.primaryLabel || uiStrings.projects.viewAll.en}
@@ -569,6 +572,10 @@ export default async function HomeContent() {
                     ↵
                   </span>
                 </Link>
+                <Link href="/a2" className="home-button">
+                  <span>3D edition</span>
+                  <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
               </div>
             </Reveal>
 
@@ -581,9 +588,11 @@ export default async function HomeContent() {
                 </div>
                 <div className="home-portal-core">
                   {profileImage ? (
-                    <img
+                    <Image
                       src={profileImage}
                       alt={displayName}
+                      fill
+                      sizes="(max-width: 768px) 240px, 320px"
                       className="home-portal-image"
                       referrerPolicy="no-referrer"
                     />

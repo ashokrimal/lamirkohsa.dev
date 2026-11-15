@@ -1,11 +1,10 @@
 'use server'
 
 import { and, eq } from 'drizzle-orm'
-import { revalidatePath, revalidateTag } from 'next/cache'
 import { db } from '@/lib/db'
 import { cmsContent } from '@/lib/db/schema'
 import { getAdminActorId } from '@/lib/admin-auth'
-import { CMS_CACHE_TAG, cmsCollectionTag } from '@/lib/cms-cache'
+import { revalidateCmsCache } from '@/lib/cms-revalidation'
 import { CMS_COLLECTIONS, CMS_KEYS } from '@/lib/cms-schema'
 
 export type SiteAdminResult = { ok: true } | { ok: false; error: string }
@@ -17,11 +16,7 @@ async function requireOwner() {
 }
 
 function revalidateSite() {
-  revalidateTag(CMS_CACHE_TAG)
-  revalidateTag(cmsCollectionTag(CMS_COLLECTIONS.siteSettings))
-  for (const path of ['/', '/about', '/media', '/projects', '/contact', '/admin']) {
-    revalidatePath(path)
-  }
+  revalidateCmsCache(CMS_COLLECTIONS.siteSettings)
 }
 
 /** Creates or merges one Site Settings record without dropping other fields. */

@@ -1,10 +1,15 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import * as Tooltip from '@radix-ui/react-tooltip'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ChevronDown, ListFilter, RotateCcw, Search, X } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import type { ProjectEntry, ProjectFilterTag } from '@/lib/projects'
+import {
+  resolveTechUsageMetadata,
+  type CmsTechDefinition,
+} from '@/lib/tech-metadata'
 import { uiStrings } from '@/lib/ui-strings'
 
 export interface FilterOption {
@@ -152,6 +157,7 @@ export function ProjectFilterControls({
 interface ProjectFilterPanelProps {
   projects: ProjectEntry[]
   cmsTechTags?: ProjectFilterTag[]
+  cmsTechDefinitions?: Record<string, CmsTechDefinition>
   isOpen: boolean
   selectedCategory: string | null
   selectedTechs: string[]
@@ -167,6 +173,7 @@ interface ProjectFilterPanelProps {
 export function ProjectFilterPanel({
   projects,
   cmsTechTags,
+  cmsTechDefinitions,
   isOpen,
   selectedCategory,
   selectedTechs,
@@ -407,43 +414,77 @@ export function ProjectFilterPanel({
                 )}
               </div>
 
-              <div
-                className="flex flex-wrap items-center gap-1.5"
-                role="group"
-                aria-label={uiStrings.projects.techStackLabel.en}
-              >
-                {visibleTechs.map((tech) => {
-                  const isSelected = selectedTechSet.has(tech.normalized)
-                  const isEmptyInScope = tech.count === 0 && !isSelected
+              <Tooltip.Provider delayDuration={200} skipDelayDuration={250}>
+                <div
+                  className="flex flex-wrap items-center gap-1.5"
+                  role="group"
+                  aria-label={uiStrings.projects.techStackLabel.en}
+                >
+                  {visibleTechs.map((tech) => {
+                    const isSelected = selectedTechSet.has(tech.normalized)
+                    const isEmptyInScope = tech.count === 0 && !isSelected
+                    const meta = resolveTechUsageMetadata(tech.value, {
+                      globalDefinitions: cmsTechDefinitions,
+                    })
 
-                  return (
-                    <button
-                      key={tech.normalized}
-                      type="button"
-                      onClick={() => {
-                        sensoryAudio.playClick()
-                        onToggleTech(tech.value)
-                      }}
-                      aria-pressed={isSelected}
-                      className={`inline-flex min-h-[32px] items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                        isSelected
-                          ? 'border border-accent bg-accent text-inverse shadow-xs'
-                          : isEmptyInScope
-                            ? 'border border-line-hairline bg-transparent text-muted/60 hover:border-line-subtle hover:text-ink-secondary'
-                            : 'border border-line-hairline bg-overlay-faint text-ink-secondary hover:border-line-subtle hover:bg-overlay hover:text-ink'
-                      }`}
-                    >
-                      <span>{tech.value}</span>
-                      <span
-                        className={`font-mono text-[10px] tabular-nums ${
-                          isSelected ? 'text-inverse/75' : 'text-muted'
-                        }`}
-                      >
-                        {tech.count}
-                      </span>
-                    </button>
-                  )
-                })}
+                    return (
+                      <Tooltip.Root key={tech.normalized}>
+                        <Tooltip.Trigger asChild>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sensoryAudio.playClick()
+                              onToggleTech(tech.value)
+                            }}
+                            aria-pressed={isSelected}
+                            className={`inline-flex min-h-[32px] items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                              isSelected
+                                ? 'border border-accent bg-accent text-inverse shadow-xs'
+                                : isEmptyInScope
+                                  ? 'border border-line-hairline bg-transparent text-muted/60 hover:border-line-subtle hover:text-ink-secondary'
+                                  : 'border border-line-hairline bg-overlay-faint text-ink-secondary hover:border-line-subtle hover:bg-overlay hover:text-ink'
+                            }`}
+                          >
+                            <span>{tech.value}</span>
+                            <span
+                              className={`font-mono text-[10px] tabular-nums ${
+                                isSelected ? 'text-inverse/75' : 'text-muted'
+                              }`}
+                            >
+                              {tech.count}
+                            </span>
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            side="top"
+                            align="start"
+                            sideOffset={8}
+                            collisionPadding={12}
+                            className="z-50 w-64 sm:w-72 rounded-xl border border-line-medium bg-surface p-3 text-left shadow-xl"
+                          >
+                            <div className="flex items-baseline justify-between gap-2 pb-1.5 border-b border-line-hairline">
+                              <span className="text-xs font-semibold text-ink">{tech.value}</span>
+                              {meta.layer && (
+                                <span className="text-[10px] font-mono text-accent truncate max-w-[9rem]">
+                                  {meta.layer}
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-2 text-[11px] leading-snug text-ink-secondary">
+                              {meta.description}
+                            </p>
+                            {meta.source === 'cms' && (
+                              <p className="mt-1.5 text-[10px] font-mono text-muted">
+                                From project CMS metadata
+                              </p>
+                            )}
+                            <Tooltip.Arrow className="fill-surface" width={10} height={5} />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                    )
+                  })}
 
                 {hiddenTechCount > 0 && (
                   <button
@@ -458,19 +499,20 @@ export function ProjectFilterPanel({
                   </button>
                 )}
 
-                {showAllTechs && techOptions.length > DEFAULT_TECH_VISIBLE && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sensoryAudio.playClick()
-                      setShowAllTechs(false)
-                    }}
-                    className="inline-flex min-h-[32px] items-center rounded-full px-2.5 py-1 text-[11px] font-medium text-muted hover:text-ink hover:bg-overlay transition-colors cursor-pointer whitespace-nowrap shrink-0"
-                  >
-                    {uiStrings.projects.showLessTech.en}
-                  </button>
-                )}
-              </div>
+                  {showAllTechs && techOptions.length > DEFAULT_TECH_VISIBLE && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sensoryAudio.playClick()
+                        setShowAllTechs(false)
+                      }}
+                      className="inline-flex min-h-[32px] items-center rounded-full px-2.5 py-1 text-[11px] font-medium text-muted hover:text-ink hover:bg-overlay transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      {uiStrings.projects.showLessTech.en}
+                    </button>
+                  )}
+                </div>
+              </Tooltip.Provider>
             </div>
           )}
         </motion.div>

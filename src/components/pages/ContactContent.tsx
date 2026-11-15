@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useMemo } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowUpRight, Clock, Github, Globe, Linkedin, Mail, MapPin, Phone } from 'lucide-react'
 import ScrollObserver from '@/components/ScrollObserver'
 import ContactForm from '@/components/ContactForm'
@@ -46,6 +47,7 @@ function ChannelSection({
   socials: SiteSocial[]
   error?: string
 }) {
+  const reduceMotion = useReducedMotion()
   const channels = copy?.sections?.channels
   const formEnabled = contact.formEnabled !== false
   const hasChannels = Boolean(contact.email || contact.phone || socials.length > 0)
@@ -69,7 +71,13 @@ function ChannelSection({
 
       <div className="space-y-6">
         {hasChannels && (
-          <aside className="apple-card p-6 md:p-7 space-y-5">
+          <motion.aside
+            className="apple-card p-6 md:p-7 space-y-5"
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.12 }}
+            transition={{ duration: 0.55, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div>
               {channels?.eyebrow && (
                 <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
@@ -154,11 +162,17 @@ function ChannelSection({
                 )
               })}
             </div>
-          </aside>
+          </motion.aside>
         )}
 
         {(contact.location || contact.timeZone || contact.availability) && (
-          <aside className="apple-card p-6 md:p-7">
+          <motion.aside
+            className="apple-card p-6 md:p-7"
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.12 }}
+            transition={{ duration: 0.55, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+          >
             {copy?.sections?.coordinates?.title && (
               <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
                 {copy.sections.coordinates.title}
@@ -190,7 +204,7 @@ function ChannelSection({
                 </div>
               )}
             </dl>
-          </aside>
+          </motion.aside>
         )}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { pool } from '@/lib/db'
+import { hasDatabaseConfig, pool } from '@/lib/db'
 import { isAdminAuthConfigured } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
@@ -12,14 +12,13 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET() {
   const env = {
-    database: Boolean(
-      process.env.DATABASE_URL ||
-        process.env.POSTGRES_URL ||
-        process.env.POSTGRES_PRISMA_URL ||
-        process.env.DATABASE_URL_UNPOOLED,
+    database: hasDatabaseConfig(),
+    betterAuthSecret: Boolean(process.env.BETTER_AUTH_SECRET || process.env.BETTER_AUTH_API_KEY),
+    betterAuthUrl: Boolean(
+      process.env.BETTER_AUTH_URL ||
+        process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+        process.env.VERCEL_URL,
     ),
-    betterAuthSecret: Boolean(process.env.BETTER_AUTH_SECRET),
-    betterAuthUrl: Boolean(process.env.BETTER_AUTH_URL),
     adminSignIn: await isAdminAuthConfigured(),
     email: Boolean(process.env.RESEND_API_KEY),
     contactRecipient: Boolean(process.env.CONTACT_TO_EMAIL || process.env.ADMIN_EMAIL),

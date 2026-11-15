@@ -5,9 +5,10 @@ import { db, hasDatabaseConfig } from '@/lib/db'
 import { cmsContent } from '@/lib/db/schema'
 import { and, asc, desc, eq, inArray } from 'drizzle-orm'
 import { headers } from 'next/headers'
-import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
+import { unstable_cache } from 'next/cache'
 import { getAdminActorId } from '@/lib/admin-auth'
 import { CMS_CACHE_TAG, CMS_REVALIDATE_SECONDS, cmsCollectionTag } from '@/lib/cms-cache'
+import { revalidateCmsCache } from '@/lib/cms-revalidation'
 import {
   CMS_COLLECTIONS,
   CMS_KEYS,
@@ -197,6 +198,24 @@ async function fetchPublishedCollection(collection: string): Promise<CmsRecord[]
   })
 }
 
+const cachedCollectionReaders = new Map<string, () => Promise<CmsRecord[]>>()
+
+function getCachedCollectionReader(collection: string): () => Promise<CmsRecord[]> {
+  let reader = cachedCollectionReaders.get(collection)
+  if (!reader) {
+    reader = unstable_cache(
+      () => fetchPublishedCollection(collection),
+      ['cms-published', collection],
+      {
+        tags: [CMS_CACHE_TAG, cmsCollectionTag(collection)],
+        revalidate: CMS_REVALIDATE_SECONDS,
+      },
+    )
+    cachedCollectionReaders.set(collection, reader)
+  }
+  return reader
+}
+
 /**
  * Retrieve all published records for a collection.
  *
@@ -214,14 +233,7 @@ export async function getPublishedCmsContentResult(
   }
 
   try {
-    const rows = await unstable_cache(
-      () => fetchPublishedCollection(collection),
-      ['cms-published', collection],
-      {
-        tags: [CMS_CACHE_TAG, cmsCollectionTag(collection)],
-        revalidate: CMS_REVALIDATE_SECONDS,
-      }
-    )()
+    const rows = await getCachedCollectionReader(collection)()
 
     if (rows.length > 0) {
       // Keep the in-memory copy available to admin previews during this process.
@@ -784,14 +796,5 @@ export async function saveCmsImage(url: string) {
 }
 
 function revalidateCms(collection?: string) {
-  revalidateTag(CMS_CACHE_TAG)
-  if (collection) revalidateTag(cmsCollectionTag(collection))
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/projects')
-  revalidatePath('/projects/[slug]', 'page')
-  revalidatePath('/media')
-  revalidatePath('/contact')
-  revalidatePath('/blogs')
-  revalidatePath('/admin')
+  revalidateCmsCache(collection)
 }

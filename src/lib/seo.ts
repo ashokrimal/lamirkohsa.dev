@@ -1,6 +1,23 @@
 import type { Metadata } from 'next'
 import type { PageCopy } from '@/lib/site-content'
 
+function normalizeOrigin(value?: string) {
+  const trimmed = value?.trim()
+  if (!trimmed) return undefined
+  const withProtocol = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`
+  return withProtocol.replace(/\/+$/, '')
+}
+
+function resolveSiteUrl() {
+  return (
+    normalizeOrigin(process.env.NEXT_PUBLIC_SITE_URL) ||
+    normalizeOrigin(process.env.APP_URL) ||
+    normalizeOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL) ||
+    normalizeOrigin(process.env.VERCEL_URL) ||
+    'https://ashokrimal.com.np'
+  )
+}
+
 /**
  * The SEO title pattern is part of the site structure, not CMS content.
  * Next.js applies it through `title.template` in the root layout.
@@ -9,7 +26,7 @@ export const SITE_NAME = 'Ashok Rimal'
 
 export const SEO_TITLE_TEMPLATE = `%s · ${SITE_NAME}`
 
-export const SITE_URL = 'https://ashokrimal.com.np'
+export const SITE_URL = resolveSiteUrl()
 
 /**
  * Builds page metadata from the CMS Page Copy record. Per-page `seoTitle`,

@@ -2,13 +2,14 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, Calendar, Github, Layers, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Calendar, Eye, Github, Layers } from 'lucide-react'
 import { Card3D } from '@/components/ui/Card3D'
 import { TechStack } from '@/components/ui/TechStack'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
 import { uiStrings } from '@/lib/ui-strings'
 import { isRepositoryUrl } from '@/lib/urls'
+import type { CmsTechDefinition } from '@/lib/tech-metadata'
 
 export interface ProjectData {
   id?: number | string
@@ -20,6 +21,7 @@ export interface ProjectData {
   challenge?: string
   solution?: string
   techStack?: string[]
+  techDefinitions?: Record<string, CmsTechDefinition>
   image?: string
   altText?: string
   live?: string
@@ -27,6 +29,10 @@ export interface ProjectData {
   status?: string
   featured?: boolean
   completionDate?: string
+  duration?: string
+  cost?: string
+  model?: string
+  features?: string[]
   phases?: Array<{ phase?: string; name: string; completed?: boolean }>
 }
 
@@ -34,9 +40,15 @@ interface ProjectCardProps {
   project: ProjectData
   variant?: 'featured' | 'standard' | 'compact'
   index?: number
+  onQuickView?: () => void
 }
 
-export function ProjectCard({ project, variant = 'standard', index }: ProjectCardProps) {
+export function ProjectCard({
+  project,
+  variant = 'standard',
+  index,
+  onQuickView,
+}: ProjectCardProps) {
   const isFeatured = variant === 'featured' || project.featured
   // Every card opens the case study route, never an inline expansion.
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
@@ -122,14 +134,35 @@ export function ProjectCard({ project, variant = 'standard', index }: ProjectCar
 
           {/* Tech Stack */}
           {project.techStack && project.techStack.length > 0 && (
-            <div className="pt-1">
-              <TechStack items={project.techStack} limit={5} />
+            <div className="relative z-20 pt-1">
+              <TechStack
+                items={project.techStack}
+                limit={5}
+                definitions={project.techDefinitions}
+                projectTitle={project.title}
+                projectCategory={project.category}
+              />
             </div>
           )}
 
           {/* Actions with Anti-Boxy Apple Pill Buttons */}
           <div className="relative z-20 pt-4 border-t border-line-hairline flex items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {onQuickView && (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    sensoryAudio.playClick()
+                    onQuickView()
+                  }}
+                  aria-label={uiStrings.project.quickViewAria(project.title)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-overlay px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-accent hover:text-accent cursor-pointer"
+                >
+                  <Eye className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
+                  <span>{uiStrings.project.quickView.en}</span>
+                </button>
+              )}
               {project.live && project.live !== '#' && (
                 <a
                   href={project.live}
@@ -157,7 +190,7 @@ export function ProjectCard({ project, variant = 'standard', index }: ProjectCar
               )}
             </div>
 
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-accent shrink-0">
               <span>{uiStrings.project.viewCaseStudy.en}</span>
               <ArrowUpRight className="w-3 h-3" />
             </span>

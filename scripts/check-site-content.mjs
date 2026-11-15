@@ -15,6 +15,7 @@
  * 2 could not read the database.
  */
 import { Client } from 'pg'
+import { createPgClientOptions, resolveDatabaseUrl } from './db-env.mjs'
 import { loadCmsSchema } from './load-cms-schema.mjs'
 
 const strict = process.argv.includes('--strict')
@@ -128,13 +129,15 @@ function collectImageFields(value, path, found) {
 
 async function main() {
   const { CMS_SCHEMA, SECTIONS, NAV_ROUTES } = await loadCmsSchema()
-  const connectionString = process.env.DATABASE_URL
+  const connectionString = resolveDatabaseUrl()
   if (!connectionString) {
-    console.error('DATABASE_URL is required.')
+    console.error(
+      'A PostgreSQL connection URL (DATABASE_URL, POSTGRES_URL, POSTGRES_PRISMA_URL, POSTGRES_URL_NON_POOLING, or DATABASE_URL_UNPOOLED) is required.',
+    )
     process.exit(2)
   }
 
-  const client = new Client({ connectionString })
+  const client = new Client(createPgClientOptions(connectionString))
   try {
     await client.connect()
   } catch (error) {

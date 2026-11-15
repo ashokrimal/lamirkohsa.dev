@@ -1,12 +1,32 @@
+import { unstable_cache } from 'next/cache'
 import { db, hasDatabaseConfig } from '@/lib/db'
 import { profileSettings } from '@/lib/db/schema'
+import {
+  CMS_CACHE_TAG,
+  CMS_PROFILE_SETTINGS_COLLECTION,
+  CMS_REVALIDATE_SECONDS,
+  cmsCollectionTag,
+} from '@/lib/cms-cache'
 import type { CmsResult } from '@/lib/cms-schema'
 
 export type PublicProfileSettings = typeof profileSettings.$inferSelect
 
+const getCachedPublicProfileSettings = unstable_cache(
+  async (): Promise<PublicProfileSettings | null> => {
+    const rows = await db.select().from(profileSettings).limit(1)
+    return rows[0] ?? null
+  },
+  ['cms-profile-settings'],
+  {
+    tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)],
+    revalidate: CMS_REVALIDATE_SECONDS,
+  },
+)
+
 /**
- * Result-aware profile settings read. The public media pages need to tell an
- * unconfigured profile apart from a database failure.
+ * Result-aware profile settings read. Cached via Next.js ISR (`unstable_cache` +
+ * `revalidateTag`) so public pages remain statically cacheable while updates
+ * saved in `/admin` invalidate immediately.
  */
 export async function getPublicProfileSettingsResult(): Promise<
   CmsResult<PublicProfileSettings>
@@ -16,8 +36,9 @@ export async function getPublicProfileSettingsResult(): Promise<
   }
 
   try {
-    const rows = await db.select().from(profileSettings).limit(1)
-    return { status: 'ok', data: rows[0] ?? null }
+    const settings = await getCachedPublicProfileSettings()
+    if (!settings) return { status: 'empty' }
+    return { status: 'ok', data: settings }
   } catch (error) {
     const code =
       error && typeof error === 'object' && 'code' in error && typeof (error as { code?: unknown }).code === 'string'
@@ -37,13 +58,13 @@ export async function getGitHubStatus(username?: string) {
   try {
     const [profileResponse, reposResponse, eventsResponse] = await Promise.all([
       fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, {
-        next: { revalidate: 1800 },
+        next: { revalidate: 1800, tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)] },
       }),
       fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=100`, {
-        next: { revalidate: 1800 },
+        next: { revalidate: 1800, tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)] },
       }),
       fetch(`https://api.github.com/users/${encodeURIComponent(username)}/events/public?per_page=5`, {
-        next: { revalidate: 1800 },
+        next: { revalidate: 1800, tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)] },
       }),
     ])
     if (!profileResponse.ok) return null

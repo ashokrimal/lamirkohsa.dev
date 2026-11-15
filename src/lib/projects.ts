@@ -1,6 +1,12 @@
 import { getPublishedCmsContentResult, type CmsRecord } from '@/app/actions/content-cms'
 import { CMS_COLLECTIONS, type CmsResult } from '@/lib/cms-schema'
 import { toSlug } from '@/lib/slug'
+import {
+  extractCmsTechDefinitions,
+  resolveTechUsageMetadata,
+  TECH_ROLE_CATALOG,
+  type CmsTechDefinition,
+} from '@/lib/tech-metadata'
 
 export interface ProjectPhase {
   phase?: string
@@ -39,6 +45,7 @@ export interface ProjectEntry {
   phases: ProjectPhase[]
   features: string[]
   techStack: string[]
+  techDefinitions?: Record<string, CmsTechDefinition>
   featured: boolean
   github?: string
   live?: string
@@ -145,8 +152,15 @@ export interface ProjectDossier {
 function stringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value
-      .filter((item): item is string => typeof item === 'string')
-      .map((item) => item.trim())
+      .map((item) => {
+        if (typeof item === 'string') return item.trim()
+        if (item && typeof item === 'object') {
+          const obj = item as Record<string, unknown>
+          const label = obj.name ?? obj.label ?? obj.tech ?? obj.technology ?? obj.title
+          return typeof label === 'string' ? label.trim() : ''
+        }
+        return ''
+      })
       .filter(Boolean)
   }
   if (typeof value === 'string' && value.trim()) {
@@ -186,6 +200,7 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
     ...stringArray(payload.techStack),
     ...stringArray(payload.tags),
   ])
+  const techDefinitions = extractCmsTechDefinitions(payload)
 
   return {
     id: record.id,
@@ -225,6 +240,7 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
       : [],
     features: stringArray(payload.features),
     techStack,
+    ...(techDefinitions ? { techDefinitions } : {}),
     featured: payload.featured === true,
     github: optionalString(payload.github),
     live: optionalString(payload.live),
@@ -383,101 +399,20 @@ function inferDuration(project: ProjectEntry): ProjectDossier['duration'] {
   }
 }
 
-const TECH_ROLE_MAP: Record<string, { layer: string; role: string; adrWhy: string }> = {
-  'next.js': {
-    layer: 'Frontend & SSR',
-    role: 'App Router architecture, server rendering, routing, and edge-ready optimization',
-    adrWhy: 'Selected for co-located server rendering, file-system routing, and built-in API route boundaries.',
-  },
-  react: {
-    layer: 'UI Runtime',
-    role: 'Component-driven interactive user interface and declarative state orchestration',
-    adrWhy: 'Selected for composable state isolation and deterministic UI updates across views.',
-  },
-  'react.js': {
-    layer: 'UI Runtime',
-    role: 'Component-driven interactive views, stateful forms, and keyboard navigation',
-    adrWhy: 'Selected for declarative component boundaries and strong ecosystem compatibility.',
-  },
-  'react native': {
-    layer: 'Mobile Runtime',
-    role: 'Cross-platform iOS & Android UI components tuned for low-bandwidth devices',
-    adrWhy: 'Selected to maintain a single TypeScript codebase across mobile targets without native duplication.',
-  },
-  expo: {
-    layer: 'Mobile Platform',
-    role: 'Managed native build pipeline, push notifications, and OTA deployment workflow',
-    adrWhy: 'Selected to accelerate device previews, binary builds, and over-the-air patch releases.',
-  },
-  typescript: {
-    layer: 'Type System',
-    role: 'End-to-end compile-time type safety across domain models, actions, and UI props',
-    adrWhy: 'Enforces strict request/response contracts across client and server layers prior to deploy.',
-  },
-  'tailwind css': {
-    layer: 'Design System',
-    role: 'Token-driven utility styling, responsive breakpoints, and accessible contrast scales',
-    adrWhy: 'Keeps spacing, typography, and color tokens deterministic with zero unused stylesheet bloat.',
-  },
-  'framer motion': {
-    layer: 'Motion Layer',
-    role: 'Physics-based state transitions and compositor-friendly micro-interactions',
-    adrWhy: 'Provides GPU-composited transforms and built-in reduced-motion accessibility guards.',
-  },
-  'node.js': {
-    layer: 'Backend Runtime',
-    role: 'Server execution environment, API orchestration, and asynchronous job handling',
-    adrWhy: 'Shares TypeScript/JavaScript language runtime between frontend validation and backend handlers.',
-  },
-  'express.js': {
-    layer: 'API Server',
-    role: 'REST endpoint routing, middleware validation, and request lifecycle handling',
-    adrWhy: 'Chosen for lightweight, unopinionated HTTP middleware composition and predictable routing.',
-  },
-  express: {
-    layer: 'API Server',
-    role: 'HTTP routing, authentication guards, and service controller layer',
-    adrWhy: 'Chosen for explicit middleware pipelines and low operational overhead.',
-  },
-  'socket.io': {
-    layer: 'Realtime Transport',
-    role: 'Bi-directional low-latency WebSocket event channels with automatic reconnection',
-    adrWhy: 'Handles room-based pub/sub events with automatic transport fallback and exponential backoff.',
-  },
-  firebase: {
-    layer: 'Realtime & Auth BaaS',
-    role: 'Live document synchronization, role-scoped security rules, and authentication',
-    adrWhy: 'Eliminates custom auth/socket boilerplate while enforcing document rules at the boundary.',
-  },
-  mongodb: {
-    layer: 'Document Database',
-    role: 'Flexible schema persistence for catalogs, inventory ledgers, and transactional records',
-    adrWhy: 'Supports nested catalog/order attributes cleanly with indexed query aggregation.',
-  },
-  postgres: {
-    layer: 'Relational Database',
-    role: 'ACID-compliant structured data storage and relational queries',
-    adrWhy: 'Guarantees transactional integrity, foreign-key invariants, and indexed queries.',
-  },
-  postgresql: {
-    layer: 'Relational Database',
-    role: 'ACID-compliant structured data storage and relational queries',
-    adrWhy: 'Guarantees transactional integrity and schema-validated relational modeling.',
-  },
-  stripe: {
-    layer: 'Payments & Webhooks',
-    role: 'PCI-compliant checkout sessions and signed webhook order fulfillment pipelines',
-    adrWhy: 'Offloads card handling to PCI-certified sessions verified via HMAC webhook signatures.',
-  },
-}
-
-function describeTechStack(stack: string[]): TechStackDetail[] {
+function describeTechStack(
+  stack: string[],
+  project?: Pick<ProjectEntry, 'techDefinitions' | 'title' | 'category'>,
+): TechStackDetail[] {
   return stack.map((name) => {
-    const info = TECH_ROLE_MAP[name.trim().toLowerCase()]
+    const resolved = resolveTechUsageMetadata(name, {
+      projectDefinitions: project?.techDefinitions,
+      projectTitle: project?.title,
+      projectCategory: project?.category,
+    })
     return {
       name,
-      layer: info?.layer ?? 'Engineering Tooling',
-      role: info?.role ?? `Core implementation dependency supporting ${name} workflows`,
+      layer: resolved.layer ?? 'Engineering Tooling',
+      role: resolved.description,
     }
   })
 }
@@ -1180,7 +1115,7 @@ function buildDocumentationSuite(
   // --- PRODUCT DOCUMENTATION (Explains how the software works & how to use it) ---
 
   const adrRows: string[][] = techDetails.slice(0, 5).map((tech, idx) => {
-    const info = TECH_ROLE_MAP[tech.name.trim().toLowerCase()]
+    const info = TECH_ROLE_CATALOG[tech.name.trim().toLowerCase()]
     return [
       `ADR-0${idx + 1}`,
       tech.name,
@@ -1519,7 +1454,7 @@ export function buildProjectDossier(project: ProjectEntry): ProjectDossier {
     }
   }
 
-  const techDetails = describeTechStack(parsedStack)
+  const techDetails = describeTechStack(parsedStack, project)
   const duration = inferDuration(project)
   const model = inferModel(project)
   const cost = inferCost(project, parsedStack)

@@ -20,9 +20,13 @@ import {
 } from '@/components/ui/ProjectFilter'
 import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import type { ProjectEntry, ProjectFilterTag } from '@/lib/projects'
+import { mergeCmsTechDefinitions } from '@/lib/tech-metadata'
 import type { PageCopy } from '@/lib/site-content'
 import { uiStrings } from '@/lib/ui-strings'
 import { sensoryAudio } from '@/lib/sensory-audio'
+import { IndustryTrendsSidebar } from '@/components/projects/IndustryTrendsSidebar'
+import { TechDistributionChart } from '@/components/projects/TechDistributionChart'
+import { ProjectQuickViewDrawer } from '@/components/projects/ProjectQuickViewDrawer'
 
 interface ProjectsContentProps {
   projects: ProjectEntry[]
@@ -32,7 +36,7 @@ interface ProjectsContentProps {
 }
 
 const PAGE_KEY = 'projects'
-const DEFAULT_SECTIONS = ['intro', 'work'] as const
+const DEFAULT_SECTIONS = ['intro', 'work', 'distribution'] as const
 
 type SectionId = (typeof DEFAULT_SECTIONS)[number]
 
@@ -49,6 +53,7 @@ export default function ProjectsContent({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedTechs, setSelectedTechs] = useState<string[]>([])
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+  const [quickViewProject, setQuickViewProject] = useState<ProjectEntry | null>(null)
 
   // Restore any deep-linked filters (?q=...&category=...&tech=...) on mount without CSR bailouts
   useEffect(() => {
@@ -137,6 +142,60 @@ export default function ProjectsContent({
     [projects, selectedCategory, selectedTechs, searchQuery],
   )
 
+  const cmsTechDefinitions = useMemo(
+    () => mergeCmsTechDefinitions(projects),
+    [projects],
+  )
+
+  const trendContext = useMemo(() => {
+    const scopeProjects =
+      selectedCategory || selectedTechs.length > 0
+        ? filterProjects(projects, selectedCategory, selectedTechs, '')
+        : projects
+    const sourceProjects = scopeProjects.length > 0 ? scopeProjects : projects
+
+    const techSeen = new Set<string>()
+    const technologies: string[] = []
+
+    for (const tech of selectedTechs) {
+      const normalized = tech.trim().toLowerCase()
+      if (normalized && !techSeen.has(normalized)) {
+        techSeen.add(normalized)
+        technologies.push(tech.trim())
+      }
+    }
+
+    for (const project of sourceProjects) {
+      for (const tech of project.techStack) {
+        const normalized = tech.trim().toLowerCase()
+        if (normalized && !techSeen.has(normalized)) {
+          techSeen.add(normalized)
+          technologies.push(tech.trim())
+        }
+      }
+    }
+
+    const catSeen = new Set<string>()
+    const categories: string[] = []
+    if (selectedCategory?.trim()) {
+      catSeen.add(selectedCategory.trim().toLowerCase())
+      categories.push(selectedCategory.trim())
+    }
+    for (const project of sourceProjects) {
+      const cat = project.category?.trim()
+      if (cat && !catSeen.has(cat.toLowerCase())) {
+        catSeen.add(cat.toLowerCase())
+        categories.push(cat)
+      }
+    }
+
+    const projectTitles = sourceProjects
+      .map((project) => project.title?.trim())
+      .filter((title): title is string => Boolean(title))
+
+    return { technologies, categories, projectTitles }
+  }, [projects, selectedCategory, selectedTechs])
+
   const hasFilterOptions = useMemo(
     () =>
       Boolean(techTags?.length) ||
@@ -214,6 +273,7 @@ export default function ProjectsContent({
           <ProjectFilterPanel
             projects={projects}
             cmsTechTags={techTags}
+            cmsTechDefinitions={cmsTechDefinitions}
             isOpen={isFiltersOpen}
             selectedCategory={selectedCategory}
             selectedTechs={selectedTechs}
@@ -223,46 +283,65 @@ export default function ProjectsContent({
             onClear={handleClearFilters}
           />
 
-          {filteredProjects.length > 0 ? (
-            <div className="space-y-10 md:space-y-12">
-              <AnimatePresence mode="popLayout" initial={false}>
-                {filteredProjects.map((project, index) => (
-                  <motion.div
-                    key={project.slug || project.id || project.title}
-                    layout={!reduceMotion}
-                    initial={reduceMotion ? undefined : { opacity: 0, y: 12 }}
-                    animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10 items-start">
+            <div className="lg:col-span-8 min-w-0">
+              {filteredProjects.length > 0 ? (
+                <div className="space-y-10 md:space-y-12">
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    {filteredProjects.map((project, index) => (
+                      <motion.div
+                        key={project.slug || project.id || project.title}
+                        layout={!reduceMotion}
+                        initial={reduceMotion ? undefined : { opacity: 0, y: 12 }}
+                        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+                        exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <ProjectRow
+                          project={project}
+                          index={index}
+                          globalTechDefinitions={cmsTechDefinitions}
+                          onQuickView={() => setQuickViewProject(project)}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div
+                  className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line-medium bg-transparent px-6 py-12 text-center"
+                  role="status"
+                >
+                  <SearchX className="h-5 w-5 text-muted" aria-hidden="true" />
+                  <div className="space-y-1">
+                    <p className="text-sm text-ink">{uiStrings.projects.noMatchesTitle.en}</p>
+                    <p className="text-xs text-muted">{uiStrings.projects.noMatchesHint.en}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sensoryAudio.playClick()
+                      handleClearFilters()
+                    }}
+                    className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface/80 px-4 py-2 text-xs font-medium text-ink shadow-xs transition-colors hover:border-line-medium hover:text-accent cursor-pointer"
                   >
-                    <ProjectRow project={project} index={index} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                    <RotateCcw className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+                    <span>{uiStrings.projects.clearFilters.en}</span>
+                  </button>
+                </div>
+              )}
             </div>
-          ) : (
-            <div
-              className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line-medium bg-transparent px-6 py-12 text-center"
-              role="status"
-            >
-              <SearchX className="h-5 w-5 text-muted" aria-hidden="true" />
-              <div className="space-y-1">
-                <p className="text-sm text-ink">{uiStrings.projects.noMatchesTitle.en}</p>
-                <p className="text-xs text-muted">{uiStrings.projects.noMatchesHint.en}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  sensoryAudio.playClick()
-                  handleClearFilters()
-                }}
-                className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface/80 px-4 py-2 text-xs font-medium text-ink shadow-xs transition-colors hover:border-line-medium hover:text-accent cursor-pointer"
-              >
-                <RotateCcw className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
-                <span>{uiStrings.projects.clearFilters.en}</span>
-              </button>
+
+            <div className="lg:col-span-4 min-w-0">
+              <IndustryTrendsSidebar
+                technologies={trendContext.technologies}
+                categories={trendContext.categories}
+                projectTitles={trendContext.projectTitles}
+                activeFilterCount={activeFilterCount}
+                onSelectTech={handleToggleTech}
+              />
             </div>
-          )}
+          </div>
         </div>
       ) : (
         <EmptyState
@@ -276,23 +355,47 @@ export default function ProjectsContent({
     </DevSection>
   )
 
-  const sectionMap: Record<SectionId, JSX.Element> = { intro, work }
+  const distribution = (
+    <DevSection
+      pageKey={PAGE_KEY}
+      sectionId="distribution"
+      label={uiStrings.projects.distribution.title.en}
+      fallbackAccent="var(--accent-secondary)"
+      className="pt-0"
+    >
+      {!error && projects.length > 0 && (
+        <TechDistributionChart
+          projects={projects}
+          selectedTechs={selectedTechs}
+          onToggleTech={handleToggleTech}
+        />
+      )}
+    </DevSection>
+  )
+
+  const sectionMap: Record<SectionId, JSX.Element> = { intro, work, distribution }
 
   return (
     <ErrorBoundary>
       <Suspense fallback={<Loading />}>
         <PageShell>
           <ScrollObserver />
-          <div className="space-y-8 md:space-y-10">
+          <div className="space-y-10 md:space-y-14">
             {mode === 'classic' ? (
               <>
                 {intro}
                 {work}
+                {distribution}
               </>
             ) : (
               orderedSections.map((sectionId) => <div key={sectionId}>{sectionMap[sectionId]}</div>)
             )}
           </div>
+          <ProjectQuickViewDrawer
+            project={quickViewProject}
+            globalTechDefinitions={cmsTechDefinitions}
+            onClose={() => setQuickViewProject(null)}
+          />
           <PageNav />
         </PageShell>
       </Suspense>

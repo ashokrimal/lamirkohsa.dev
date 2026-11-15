@@ -5,8 +5,8 @@ import { db } from '@/lib/db'
 import { profileSettings } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
-import { revalidatePath, revalidateTag } from 'next/cache'
-import { CMS_CACHE_TAG, cmsCollectionTag } from '@/lib/cms-cache'
+import { CMS_PROFILE_SETTINGS_COLLECTION } from '@/lib/cms-cache'
+import { revalidateCmsCache } from '@/lib/cms-revalidation'
 import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 import { getAdminActorId } from '@/lib/admin-auth'
 
@@ -76,9 +76,6 @@ export async function saveProfileSettings(formData: FormData) {
     console.warn('[Settings] Save simulated/fallback:', err)
   }
 
-  revalidatePath('/media')
-  revalidatePath('/admin')
-  revalidateTag(CMS_CACHE_TAG)
-  revalidateTag(cmsCollectionTag(CMS_COLLECTIONS.siteSettings))
+  revalidateCmsCache(CMS_COLLECTIONS.siteSettings, CMS_PROFILE_SETTINGS_COLLECTION)
   return { success: true }
 }

@@ -123,7 +123,7 @@ export function HomeDepthSection({
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, amount: 0.08 }}
-        transition={{ duration: 0.5, ease: EASE_APPLE }}
+        transition={{ duration: 0.8, ease: EASE_APPLE }}
       >
         {children}
       </motion.div>
@@ -196,7 +196,7 @@ export function HomeStaggerItem({
           y: 0,
           rotateX: 0,
           transition: {
-            duration: 0.52,
+            duration: 0.8,
             ease: EASE_APPLE,
           },
         },

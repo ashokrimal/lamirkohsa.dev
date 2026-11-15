@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Sun, Moon, Laptop } from 'lucide-react'
 import { useTheme, type Theme, type ThemeOrigin } from '@/contexts/ThemeContext'
 import { sensoryAudio } from '@/lib/sensory-audio'
@@ -21,6 +22,7 @@ function originFromEvent(event: React.MouseEvent<HTMLButtonElement>): ThemeOrigi
 export function ThemeToggle({ className = '', variant = 'button' }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const reduceMotion = useReducedMotion()
 
   useEffect(() => {
     setMounted(true)
@@ -90,11 +92,31 @@ export function ThemeToggle({ className = '', variant = 'button' }: ThemeToggleP
       title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
       aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
     >
-      {isDark ? (
-        <Sun className="w-3.5 h-3.5 text-amber-400 transition-transform duration-300 rotate-0 hover:rotate-45" />
-      ) : (
-        <Moon className="w-3.5 h-3.5 text-ink transition-transform duration-300 -rotate-12 hover:rotate-0" />
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        {isDark ? (
+          <motion.span
+            key="sun"
+            initial={reduceMotion ? false : { opacity: 0, rotate: -30, scale: 0.8 }}
+            animate={{ opacity: 1, rotate: 0, scale: 1 }}
+            exit={reduceMotion ? undefined : { opacity: 0, rotate: 30, scale: 0.8 }}
+            transition={{ duration: reduceMotion ? 0.01 : 0.2 }}
+            className="inline-flex items-center justify-center"
+          >
+            <Sun className="w-3.5 h-3.5 text-amber-400" />
+          </motion.span>
+        ) : (
+          <motion.span
+            key="moon"
+            initial={reduceMotion ? false : { opacity: 0, rotate: 30, scale: 0.8 }}
+            animate={{ opacity: 1, rotate: 0, scale: 1 }}
+            exit={reduceMotion ? undefined : { opacity: 0, rotate: -30, scale: 0.8 }}
+            transition={{ duration: reduceMotion ? 0.01 : 0.2 }}
+            className="inline-flex items-center justify-center"
+          >
+            <Moon className="w-3.5 h-3.5 text-ink" />
+          </motion.span>
+        )}
+      </AnimatePresence>
     </button>
   )
 }

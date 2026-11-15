@@ -517,6 +517,7 @@ export const CMS_SCHEMA: CmsSchema = {
         text('userManualDoc', 'End-User — Manual & Release Notes (Markdown)'),
         array('features', 'Features'),
         array('techStack', 'Tech stack'),
+        object('techDefinitions', 'Tech stack definitions'),
         array('phases', 'Phases'),
         text('github', 'Source URL'),
         text('live', 'Live URL'),

@@ -1,11 +1,10 @@
 'use server'
 
 import { and, eq } from 'drizzle-orm'
-import { revalidatePath, revalidateTag } from 'next/cache'
 import { db } from '@/lib/db'
 import { cmsContent } from '@/lib/db/schema'
 import { getAdminActorId } from '@/lib/admin-auth'
-import { CMS_CACHE_TAG, cmsCollectionTag } from '@/lib/cms-cache'
+import { revalidateCmsCache } from '@/lib/cms-revalidation'
 import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 
 async function getUserId() {
@@ -68,10 +67,6 @@ export async function importMovieExport(formData: FormData) {
       ),
     )
   await db.insert(cmsContent).values(rows)
-  revalidatePath('/admin')
-  revalidateTag(CMS_CACHE_TAG)
-  revalidateTag(cmsCollectionTag(CMS_COLLECTIONS.movies))
-  revalidatePath('/media')
-  revalidatePath('/media/movies')
+  revalidateCmsCache(CMS_COLLECTIONS.movies)
   return { imported: rows.length }
 }

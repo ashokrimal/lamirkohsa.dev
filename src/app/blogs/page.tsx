@@ -10,6 +10,7 @@ import { toSlug } from '@/lib/slug'
 import { getPageCopy } from '@/lib/site-content'
 import { uiStrings } from '@/lib/ui-strings'
 import { pageMetadata } from '@/lib/seo'
+import NewsletterForm from '@/components/blogs/NewsletterForm'
 
 export const revalidate = 300
 
@@ -196,6 +197,10 @@ export default async function BlogsPage() {
           />
         </div>
       )}
+
+      <div className="mt-14 md:mt-20">
+        <NewsletterForm />
+      </div>
 
       <PageNav />
     </PageShell>

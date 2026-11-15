@@ -58,6 +58,9 @@ export const uiStrings = {
     openProject: text('Open project'),
     previewAlt: (title: string) => `${title} preview`,
     openCaseStudy: (title: string) => `Open the ${title} case study`,
+    quickView: text('Quick view'),
+    quickViewAria: (title: string) => `Quick view ${title} details`,
+    closeQuickView: text('Close quick view'),
     sourceTitle: text('View source code'),
     executionPhases: (count: number) =>
       `${count} Execution ${count === 1 ? 'Phase' : 'Phases'}`,
@@ -117,6 +120,19 @@ export const uiStrings = {
     words: (count: number) => `~${count} words`,
     readingTimeTitle: (words: number) =>
       `Estimated reading time: ~${words} words at 200 WPM`,
+    newsletterEyebrow: text('Dispatch', '뉴스레터'),
+    newsletterTitle: text('New notes, delivered quietly.'),
+    newsletterDescription: text(
+      'Occasional writing on engineering, design systems, and software craft. No noise.',
+    ),
+    newsletterEmailLabel: text('Email address'),
+    newsletterPlaceholder: 'you@example.com',
+    newsletterSubmit: text('Subscribe'),
+    newsletterSubscribing: text('Subscribing…'),
+    newsletterSuccess: text("You're on the list. Thanks for reading along."),
+    newsletterAlreadySubscribed: text("You're already subscribed—good to have you here."),
+    newsletterInvalidEmail: text('Please enter a valid email address.'),
+    newsletterFailed: text('Could not complete subscription. Please try again.'),
   },
   projects: {
     featuredAria: text('Featured projects'),
@@ -137,6 +153,26 @@ export const uiStrings = {
     noMatchesHint: text('Try adjusting your search query, category, or technology filters.'),
     showMoreTech: (count: number) => `+${count} more`,
     showLessTech: text('Show less'),
+    industryTrends: {
+      eyebrow: text('Live Search Grounded', '기술 동향'),
+      title: text('Industry Trends'),
+      refreshAria: text('Refresh industry trends'),
+      loading: text('Scanning ecosystem shifts via Google Search…'),
+      sourcesLabel: text('Grounded sources'),
+      queriesLabel: text('Search queries'),
+      retryLabel: text('Retry lookup'),
+      emptyHint: text('Add project technologies to surface relevant industry trends.'),
+    },
+    distribution: {
+      eyebrow: text('Stack Telemetry', '기술 분포'),
+      title: text('Technology Distribution'),
+      description: text(
+        'Proportional breakdown of frameworks, runtimes, and tools across published projects. Select any slice to filter.',
+      ),
+      totalLabel: text('Technologies'),
+      otherLabel: text('Other tools'),
+      projectsCount: (count: number) => `${count} ${count === 1 ? 'project' : 'projects'}`,
+    },
   },
   home: {
     viewAllPhotographs: text('View all photographs'),

@@ -2,22 +2,31 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Calendar, Layers } from 'lucide-react'
+import { ArrowUpRight, Calendar, Eye, Layers } from 'lucide-react'
 import { TechStack } from '@/components/ui/TechStack'
+import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
 import { uiStrings } from '@/lib/ui-strings'
 import type { ProjectData } from '@/components/ui/ProjectCard'
+import type { CmsTechDefinition } from '@/lib/tech-metadata'
 
 interface ProjectRowProps {
   project: ProjectData & { description?: string }
   index: number
+  globalTechDefinitions?: Record<string, CmsTechDefinition>
+  onQuickView?: () => void
 }
 
 /**
  * A single editorial project row. Media and copy swap sides on alternate rows,
- * and clicking anywhere on the row opens the full project case study page.
+ * clicking the card opens the full case study, and Quick view opens a drawer preview.
  */
-export function ProjectRow({ project, index }: ProjectRowProps) {
+export function ProjectRow({
+  project,
+  index,
+  globalTechDefinitions,
+  onQuickView,
+}: ProjectRowProps) {
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
   const summary = project.summary || project.description
   const reversed = index % 2 === 1
@@ -85,8 +94,39 @@ export function ProjectRow({ project, index }: ProjectRowProps) {
           )}
 
           {project.techStack && project.techStack.length > 0 && (
-            <TechStack items={project.techStack} limit={5} className="mt-4" />
+            <TechStack
+              items={project.techStack}
+              limit={5}
+              definitions={project.techDefinitions}
+              globalDefinitions={globalTechDefinitions}
+              projectTitle={project.title}
+              projectCategory={project.category}
+              className="relative z-20 mt-4"
+            />
           )}
+
+          <div className="relative z-20 mt-5 flex flex-wrap items-center gap-3">
+            {onQuickView && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  sensoryAudio.playClick()
+                  onQuickView()
+                }}
+                aria-label={uiStrings.project.quickViewAria(project.title)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-overlay-faint px-3.5 py-1.5 text-xs font-medium text-ink transition-colors hover:border-accent hover:bg-overlay hover:text-accent cursor-pointer"
+              >
+                <Eye className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+                <span>{uiStrings.project.quickView.en}</span>
+              </button>
+            )}
+
+            <span className="pointer-events-none inline-flex items-center gap-1 text-xs font-medium text-accent">
+              <span>{uiStrings.project.viewCaseStudy.en}</span>
+              <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </span>
+          </div>
         </div>
       </div>
     </article>

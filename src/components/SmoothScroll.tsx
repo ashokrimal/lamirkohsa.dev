@@ -13,7 +13,7 @@ import Lenis from 'lenis'
  */
 export function SmoothScroll() {
   const pathname = usePathname()
-  const disabled = pathname === '/' || pathname.startsWith('/immersive')
+  const disabled = pathname.startsWith('/a2') || pathname.startsWith('/immersive')
 
   useEffect(() => {
     if (disabled) return

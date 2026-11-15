@@ -21,6 +21,7 @@
  *   - Page Copy, Media Collections, the users/auth tables and the schema.
  */
 import { Client } from 'pg'
+import { createPgClientOptions, resolveDatabaseUrl } from './db-env.mjs'
 import { loadCmsSchema } from './load-cms-schema.mjs'
 
 const { CMS_COLLECTIONS, CMS_KEYS, CMS_SCHEMA } = await loadCmsSchema()
@@ -66,10 +67,14 @@ function fail(message) {
 }
 
 async function main() {
-  const connectionString = process.env.DATABASE_URL
-  if (!connectionString) fail('DATABASE_URL is required.')
+  const connectionString = resolveDatabaseUrl()
+  if (!connectionString) {
+    fail(
+      'A PostgreSQL connection URL (DATABASE_URL, POSTGRES_URL, POSTGRES_PRISMA_URL, POSTGRES_URL_NON_POOLING, or DATABASE_URL_UNPOOLED) is required.',
+    )
+  }
 
-  const client = new Client({ connectionString })
+  const client = new Client(createPgClientOptions(connectionString))
   await client.connect()
 
   try {
