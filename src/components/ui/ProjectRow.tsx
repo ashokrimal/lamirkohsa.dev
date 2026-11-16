@@ -14,6 +14,7 @@ interface ProjectRowProps {
   project: ProjectData & { description?: string }
   index: number
   globalTechDefinitions?: Record<string, CmsTechDefinition>
+  activeTechs?: string[]
   onQuickView?: () => void
 }
 
@@ -25,6 +26,7 @@ export function ProjectRow({
   project,
   index,
   globalTechDefinitions,
+  activeTechs,
   onQuickView,
 }: ProjectRowProps) {
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
@@ -99,6 +101,7 @@ export function ProjectRow({
               limit={5}
               definitions={project.techDefinitions}
               globalDefinitions={globalTechDefinitions}
+              activeTechs={activeTechs}
               projectTitle={project.title}
               projectCategory={project.category}
               className="relative z-20 mt-4"

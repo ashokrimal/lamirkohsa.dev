@@ -12,9 +12,11 @@ export interface HeroStat {
 export function HeroFacts({
   stats,
   location,
+  embedded = false,
 }: {
   stats?: HeroStat[]
   location?: string
+  embedded?: boolean
 }) {
   const lines = (location || '')
     .split('\n')
@@ -24,8 +26,8 @@ export function HeroFacts({
   const visibleStats = (stats || []).filter((stat) => stat.label || stat.value)
   if (visibleStats.length === 0 && lines.length === 0) return null
 
-  return (
-    <section className="shell-width hero-facts" aria-label={uiStrings.hero.ariaLabel.en}>
+  const cards = (
+    <>
       {visibleStats.map((stat, index) => (
         <article className="hero-fact-card" key={`${stat.label}-${index}`}>
           <strong>{stat.value}</strong>
@@ -44,6 +46,24 @@ export function HeroFacts({
           ))}
         </article>
       )}
+    </>
+  )
+
+  if (embedded) {
+    return (
+      <div
+        className="hero-facts hero-facts--embedded"
+        role="region"
+        aria-label={uiStrings.hero.ariaLabel.en}
+      >
+        {cards}
+      </div>
+    )
+  }
+
+  return (
+    <section className="shell-width hero-facts" aria-label={uiStrings.hero.ariaLabel.en}>
+      {cards}
     </section>
   )
 }

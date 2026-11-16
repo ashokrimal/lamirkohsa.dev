@@ -542,7 +542,39 @@ export default async function HomeContent() {
           </div>
 
           <div className="home-hero-grid">
-            <Reveal className="home-hero-copy" delay={0.05}>
+            <Reveal className="home-portal" delay={0.05}>
+              <div className="home-portal-visual">
+                <div className="home-portal-orbit home-portal-orbit--outer" aria-hidden="true" />
+                <div className="home-portal-orbit home-portal-orbit--inner" aria-hidden="true" />
+                <div className="home-portal-spark" aria-hidden="true">
+                  ✦
+                </div>
+                <div className="home-portal-core">
+                  {profileImage ? (
+                    <Image
+                      src={profileImage}
+                      alt={displayName}
+                      fill
+                      sizes="(max-width: 768px) 240px, 320px"
+                      className="home-portal-image"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span className="home-portal-initials" aria-hidden="true">
+                      {heroData.initials || 'AW'}
+                    </span>
+                  )}
+                  <span className="home-portal-scan" aria-hidden="true" />
+                </div>
+              </div>
+              <div className="home-portal-caption">
+                <span>PLAYER PROFILE</span>
+                <strong>{displayName}</strong>
+                <span>{availability || 'SIGNAL ACTIVE'}</span>
+              </div>
+            </Reveal>
+
+            <Reveal className="home-hero-copy" delay={0.14}>
               <p className="home-hero-eyebrow">
                 <span>{profileText('headline') || 'CREATIVE DEVELOPER'}</span>
                 <span className="home-hero-eyebrow-code">SYS_001</span>
@@ -578,53 +610,21 @@ export default async function HomeContent() {
                 </Link>
               </div>
             </Reveal>
-
-            <Reveal className="home-portal" delay={0.16}>
-              <div className="home-portal-visual">
-                <div className="home-portal-orbit home-portal-orbit--outer" aria-hidden="true" />
-                <div className="home-portal-orbit home-portal-orbit--inner" aria-hidden="true" />
-                <div className="home-portal-spark" aria-hidden="true">
-                  ✦
-                </div>
-                <div className="home-portal-core">
-                  {profileImage ? (
-                    <Image
-                      src={profileImage}
-                      alt={displayName}
-                      fill
-                      sizes="(max-width: 768px) 240px, 320px"
-                      className="home-portal-image"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <span className="home-portal-initials" aria-hidden="true">
-                      {heroData.initials || 'AW'}
-                    </span>
-                  )}
-                  <span className="home-portal-scan" aria-hidden="true" />
-                </div>
-              </div>
-              <div className="home-portal-caption">
-                <span>PLAYER PROFILE</span>
-                <strong>{displayName}</strong>
-                <span>{availability || 'SIGNAL ACTIVE'}</span>
-              </div>
-            </Reveal>
           </div>
 
-          <Reveal className="home-hero-footer" delay={0.24}>
+          <Reveal className="home-hero-footer" delay={0.22}>
             <span className="home-scroll-cue">
               <span className="home-scroll-dot" />
               {uiStrings.hero.scrollHint.en}
             </span>
             <span>{uiStrings.hero.metaRight(1, SECTIONS.length)}</span>
           </Reveal>
+
+          <Reveal className="home-hero-facts-wrap" delay={0.28}>
+            <HeroFacts stats={heroStats} location={heroLocation} embedded />
+          </Reveal>
         </div>
       </section>
-
-      <Reveal>
-        <HeroFacts stats={heroStats} location={heroLocation} />
-      </Reveal>
 
       <div className="home-shell">
         {(sectionsResult.status === 'error' || dataError) && (

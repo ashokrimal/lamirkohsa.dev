@@ -80,7 +80,7 @@ export function IndustryTrendsSidebar({
           error?: string
         }
 
-        if (!response.ok) {
+        if (!response.ok || payload.available === false || payload.error) {
           throw new Error(payload.error || 'Unable to load industry trends.')
         }
 

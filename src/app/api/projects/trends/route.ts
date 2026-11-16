@@ -17,6 +17,9 @@ export interface GroundingSource {
 }
 
 export interface IndustryTrendsResponse {
+  available?: boolean
+  error?: string
+  code?: string
   summary: string
   trends: IndustryTrendItem[]
   sources: GroundingSource[]
@@ -225,13 +228,19 @@ export async function POST(request: NextRequest) {
 
   const ai = createGeminiClient()
   if (!ai) {
-    return NextResponse.json(
-      {
-        error:
-          'Google Search trend intelligence requires GEMINI_API_KEY to be configured on the server.',
-      },
-      { status: 503 },
-    )
+    return NextResponse.json({
+      available: false,
+      code: 'missing',
+      error:
+        'Live Google Search trends require a valid GEMINI_API_KEY configured in server secrets.',
+      summary: '',
+      trends: [],
+      sources: [],
+      searchQueries: [],
+      technologies,
+      generatedAt: new Date().toISOString(),
+      cached: false,
+    })
   }
 
   const techContext = technologies.length ? technologies.join(', ') : 'modern full-stack web engineering'
@@ -282,10 +291,20 @@ export async function POST(request: NextRequest) {
       expiresAt: Date.now() + CACHE_TTL_MS,
     })
 
-    return NextResponse.json({ ...payload, cached: false })
+    return NextResponse.json({ ...payload, available: true, cached: false })
   } catch (error) {
-    const { status, message } = extractGeminiErrorStatus(error)
-    console.error('[projects/trends] Google Search grounding failed:', message)
-    return NextResponse.json({ error: message }, { status })
+    const { code, message } = extractGeminiErrorStatus(error)
+    return NextResponse.json({
+      available: false,
+      code,
+      error: message,
+      summary: '',
+      trends: [],
+      sources: [],
+      searchQueries: [],
+      technologies,
+      generatedAt: new Date().toISOString(),
+      cached: false,
+    })
   }
 }

@@ -22,6 +22,7 @@ import {
 import { ProjectDocumentation } from '@/components/projects/ProjectDocumentation'
 import { CaseStudyHeroImage } from '@/components/projects/CaseStudyHeroImage'
 import { CaseStudyLayerTooltip } from '@/components/projects/CaseStudyLayerTooltip'
+import { ShareProjectButton } from '@/components/projects/ShareProjectButton'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import type { CmsResult } from '@/lib/cms-schema'
 import { isRepositoryUrl } from '@/lib/urls'
@@ -134,6 +135,7 @@ export default async function ProjectCaseStudyPage({
             </div>
           ) : undefined
         }
+        actions={<ShareProjectButton projectTitle={project.title} slug={project.slug} />}
       />
 
       {/* Project Specification Summary Strip: Model, Duration, Cost & Stack */}

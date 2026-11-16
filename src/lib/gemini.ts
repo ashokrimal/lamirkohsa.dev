@@ -5,7 +5,10 @@ import { GoogleGenAI } from '@google/genai'
  * Never import this module from a Client Component.
  */
 export function createGeminiClient(): GoogleGenAI | null {
-  const apiKey = process.env.GEMINI_API_KEY?.trim()
+  const rawKey = process.env.GEMINI_API_KEY
+  if (!rawKey) return null
+
+  const apiKey = rawKey.trim().replace(/^["']|["']$/g, '').trim()
   if (!apiKey) return null
 
   return new GoogleGenAI({
@@ -20,7 +23,9 @@ export function createGeminiClient(): GoogleGenAI | null {
 
 export function extractGeminiErrorStatus(error: unknown): {
   status: number
+  code: 'auth' | 'rate_limit' | 'unavailable'
   message: string
+  detail: string
 } {
   const rawMessage =
     error instanceof Error
@@ -29,31 +34,45 @@ export function extractGeminiErrorStatus(error: unknown): {
         ? error
         : 'Failed to query Gemini API.'
 
-  const normalized = rawMessage.toUpperCase()
+  const sanitizedDetail = rawMessage.replace(/AIza[0-9A-Za-z_-]{20,}/g, '[REDACTED_KEY]')
+  const normalized = sanitizedDetail.toUpperCase()
 
-  if (normalized.includes('PERMISSION_DENIED') || normalized.includes('API_KEY_INVALID')) {
+  if (
+    normalized.includes('PERMISSION_DENIED') ||
+    normalized.includes('API_KEY_INVALID') ||
+    normalized.includes('API KEY NOT VALID')
+  ) {
     return {
       status: 403,
-      message: 'Gemini API authentication failed. Verify GEMINI_API_KEY in server configuration.',
+      code: 'auth',
+      message:
+        'Live Google Search trends require a valid GEMINI_API_KEY configured in server secrets.',
+      detail: sanitizedDetail,
     }
   }
 
   if (normalized.includes('RESOURCE_EXHAUSTED') || normalized.includes('429')) {
     return {
       status: 429,
+      code: 'rate_limit',
       message: 'Trend lookup rate limit reached. Please retry in a moment.',
+      detail: sanitizedDetail,
     }
   }
 
   if (normalized.includes('NOT_FOUND') || normalized.includes('404')) {
     return {
       status: 502,
-      message: 'Configured Gemini model was unavailable.',
+      code: 'unavailable',
+      message: 'Configured Gemini model was temporarily unavailable.',
+      detail: sanitizedDetail,
     }
   }
 
   return {
     status: 502,
-    message: rawMessage || 'Unable to fetch industry trends from Google Search grounding.',
+    code: 'unavailable',
+    message: 'Unable to fetch industry trends from Google Search grounding right now.',
+    detail: sanitizedDetail,
   }
 }

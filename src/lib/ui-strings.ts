@@ -61,6 +61,10 @@ export const uiStrings = {
     quickView: text('Quick view'),
     quickViewAria: (title: string) => `Quick view ${title} details`,
     closeQuickView: text('Close quick view'),
+    share: text('Share'),
+    shareAria: (title: string) => `Copy link to ${title}`,
+    copiedToast: text('Copied!'),
+    copiedSubtitle: text('Project URL copied to clipboard.'),
     sourceTitle: text('View source code'),
     executionPhases: (count: number) =>
       `${count} Execution ${count === 1 ? 'Phase' : 'Phases'}`,

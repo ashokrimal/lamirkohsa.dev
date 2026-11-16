@@ -16,18 +16,22 @@ interface TechStackProps {
   definitions?: Record<string, CmsTechDefinition>
   /** Aggregated CMS definition metadata across project records. */
   globalDefinitions?: Record<string, CmsTechDefinition>
+  /** Optional list of active filter tokens so matched tags highlight on project cards. */
+  activeTechs?: string[]
   projectTitle?: string
   projectCategory?: string
 }
 
 function TechStackTag({
   tech,
+  isHighlighted = false,
   definitions,
   globalDefinitions,
   projectTitle,
   projectCategory,
 }: {
   tech: string
+  isHighlighted?: boolean
   definitions?: Record<string, CmsTechDefinition>
   globalDefinitions?: Record<string, CmsTechDefinition>
   projectTitle?: string
@@ -51,7 +55,11 @@ function TechStackTag({
             setOpen((prev) => !prev)
           }}
           aria-label={`${tech}: ${meta.description}`}
-          className="inline-flex items-center rounded-full border border-line-hairline bg-overlay px-3 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:border-line-medium hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 cursor-help"
+          className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 cursor-help ${
+            isHighlighted
+              ? 'border-accent/45 bg-overlay-medium text-accent'
+              : 'border-line-hairline bg-overlay text-ink-secondary hover:border-line-medium hover:text-ink'
+          }`}
         >
           {tech}
         </button>
@@ -95,12 +103,16 @@ export function TechStack({
   className = '',
   definitions,
   globalDefinitions,
+  activeTechs,
   projectTitle,
   projectCategory,
 }: TechStackProps) {
   if (!items.length) return null
   const visible = typeof limit === 'number' ? items.slice(0, limit) : items
   const hidden = items.length - visible.length
+  const highlightedSet = new Set(
+    (activeTechs ?? []).map((item) => item.trim().toLowerCase()).filter(Boolean),
+  )
 
   return (
     <Tooltip.Provider delayDuration={150} skipDelayDuration={250}>
@@ -109,6 +121,7 @@ export function TechStack({
           <TechStackTag
             key={tech}
             tech={tech}
+            isHighlighted={highlightedSet.has(tech.trim().toLowerCase())}
             definitions={definitions}
             globalDefinitions={globalDefinitions}
             projectTitle={projectTitle}
