@@ -15,7 +15,15 @@ import {
   SITE_URL,
 } from '@/lib/seo';
 
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#f6f7f8' };
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f4f1eb' },
+    { media: '(prefers-color-scheme: dark)', color: '#161618' },
+  ],
+};
 
 /**
  * Site-wide metadata. The brand name, role line and tagline come from the CMS;
@@ -92,7 +100,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('portfolio_theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var dark=(t==='dark'||(!t&&d)||(t==='system'&&d));var root=document.documentElement;if(dark){root.classList.add('dark');root.classList.remove('light');root.setAttribute('data-theme','dark');root.style.colorScheme='dark';}else{root.classList.remove('dark');root.classList.add('light');root.setAttribute('data-theme','light');root.style.colorScheme='light';}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('portfolio_theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var setting=(t==='light'||t==='dark'||t==='system')?t:'system';var dark=(setting==='dark'||(setting==='system'&&d));var root=document.documentElement;if(dark){root.classList.add('dark');root.classList.remove('light');root.setAttribute('data-theme','dark');root.style.colorScheme='dark';}else{root.classList.remove('dark');root.classList.add('light');root.setAttribute('data-theme','light');root.style.colorScheme='light';}root.setAttribute('data-theme-setting',setting);}catch(e){}})();`,
           }}
         />
       </head>

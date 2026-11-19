@@ -1,4 +1,8 @@
-import { getPublishedCmsContentResult, type CmsRecord } from '@/app/actions/content-cms'
+import {
+  getFreshPublishedCmsContentResult,
+  getPublishedCmsContentResult,
+  type CmsRecord,
+} from '@/app/actions/content-cms'
 import { CMS_COLLECTIONS, type CmsResult } from '@/lib/cms-schema'
 import { toSlug } from '@/lib/slug'
 import {
@@ -42,6 +46,8 @@ export interface ProjectEntry {
   testPlanDoc?: string
   runbookDoc?: string
   userManualDoc?: string
+  structureDoc?: string
+  toolsList?: string[]
   phases: ProjectPhase[]
   features: string[]
   techStack: string[]
@@ -122,6 +128,53 @@ export interface DocumentationToolGroup {
   usage: string
 }
 
+export interface ProjectGanttTrack {
+  id: string
+  phaseLabel: string
+  name: string
+  period: string
+  description: string
+  startWeek: number
+  durationWeeks: number
+  startPct: number
+  widthPct: number
+  completed: boolean
+}
+
+export interface ProjectGanttTimeline {
+  totalWeeks: number
+  unitLabel: 'Week' | 'Stage'
+  ticks: string[]
+  windowLabel: string
+  tracks: ProjectGanttTrack[]
+}
+
+export interface ProjectStructureModule {
+  path: string
+  purpose: string
+}
+
+export interface ProjectStructureSummary {
+  rootName: string
+  architectureStyle: string
+  tree: string
+  modules: ProjectStructureModule[]
+  source: 'cms' | 'inferred'
+}
+
+export interface ProjectToolItem {
+  name: string
+  role: string
+  source: 'stack' | 'tooling'
+}
+
+export interface ProjectToolCategory {
+  id: string
+  category: string
+  summary: string
+  items: ProjectToolItem[]
+}
+
 export interface ProjectDossier {
   challengeText?: string
   solutionText?: string
@@ -143,6 +196,9 @@ export interface ProjectDossier {
     breakdown: CostBreakdownItem[]
   }
   techDetails: TechStackDetail[]
+  gantt: ProjectGanttTimeline
+  structure: ProjectStructureSummary
+  toolsUsed: ProjectToolCategory[]
   hasCustomDocumentation: boolean
   documentationSections: DocumentationSection[]
   workflowSteps: DocumentationWorkflowStep[]
@@ -199,6 +255,8 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
   const techStack = dedupeTags([
     ...stringArray(payload.techStack),
     ...stringArray(payload.tags),
+    ...stringArray(payload.tech),
+    ...stringArray(payload.technologies),
   ])
   const techDefinitions = extractCmsTechDefinitions(payload)
 
@@ -207,9 +265,12 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
     slug: record.slug || toSlug(record.title),
     title: record.title,
     category: optionalString(payload.category),
-    image: optionalString(payload.imageUrl),
+    image:
+      optionalString(payload.imageUrl) ??
+      optionalString(payload.coverUrl) ??
+      optionalString(payload.image),
     altText: optionalString(payload.altText),
-    completionDate: optionalString(payload.completionDate),
+    completionDate: optionalString(payload.completionDate) ?? optionalString(payload.date),
     period: optionalString(payload.period),
     status: optionalString(payload.status),
     summary: optionalString(payload.summary),
@@ -235,15 +296,32 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
     testPlanDoc: optionalString(payload.testPlanDoc) ?? optionalString(payload.testPlan),
     runbookDoc: optionalString(payload.runbookDoc) ?? optionalString(payload.runbook),
     userManualDoc: optionalString(payload.userManualDoc) ?? optionalString(payload.userManual),
+    structureDoc:
+      optionalString(payload.projectStructure) ??
+      optionalString(payload.structure) ??
+      optionalString(payload.folderStructure),
+    toolsList: dedupeTags([
+      ...stringArray(payload.tools),
+      ...stringArray(payload.toolsUsed),
+      ...stringArray(payload.devTools),
+    ]),
     phases: Array.isArray(payload.phases)
       ? (payload.phases as ProjectPhase[]).filter((phase) => Boolean(phase?.name))
       : [],
     features: stringArray(payload.features),
     techStack,
     ...(techDefinitions ? { techDefinitions } : {}),
-    featured: payload.featured === true,
-    github: optionalString(payload.github),
-    live: optionalString(payload.live),
+    featured: payload.featured === true || payload.featured === 'true',
+    github:
+      optionalString(payload.github) ??
+      optionalString(payload.githubUrl) ??
+      optionalString(payload.repo) ??
+      optionalString(payload.sourceUrl),
+    live:
+      optionalString(payload.live) ??
+      optionalString(payload.liveUrl) ??
+      optionalString(payload.demoUrl) ??
+      optionalString(payload.url),
   }
 }
 
@@ -1427,6 +1505,436 @@ function buildDocumentationSuite(
   return { sections, workflowSteps, recommendedTools }
 }
 
+function parsePhaseDateRange(
+  period: string | undefined,
+  fallbackYear: number,
+): { start: Date; end: Date } | null {
+  if (!period) return null
+  const parts = period
+    .split(/[–—-]/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+  if (parts.length === 0) return null
+
+  const start = parseShortDateToken(parts[0], fallbackYear)
+  const end = parts.length > 1 ? parseShortDateToken(parts[parts.length - 1], fallbackYear) : start
+  if (!start || !end || end.getTime() < start.getTime()) return null
+  return { start, end }
+}
+
+function buildGanttTimeline(
+  project: ProjectEntry,
+  duration: ProjectDossier['duration'],
+): ProjectGanttTimeline {
+  const year = inferYear(project)
+  const isCompletedProject = (project.status || '').toLowerCase().includes('complet') ||
+    (project.status || '').toLowerCase().includes('production')
+
+  const sourcePhases: ProjectPhase[] =
+    project.phases.length > 0
+      ? project.phases
+      : [
+          {
+            phase: 'Phase 1',
+            name: 'Discovery & Scope',
+            period: 'Sprint 1',
+            description: `Defined functional requirements, user flows, and core constraints for ${project.title}.`,
+            completed: true,
+          },
+          {
+            phase: 'Phase 2',
+            name: 'System & Data Architecture',
+            period: 'Sprint 2',
+            description: 'Modeled data schemas, service boundaries, and API contracts.',
+            completed: true,
+          },
+          {
+            phase: 'Phase 3',
+            name: 'Core Implementation',
+            period: 'Sprint 3–4',
+            description: `Built interactive views and core logic using ${project.techStack.slice(0, 3).join(', ') || 'the application stack'}.`,
+            completed: isCompletedProject,
+          },
+          {
+            phase: 'Phase 4',
+            name: 'QA, Polish & Delivery',
+            period: 'Sprint 5',
+            description: 'Completed verification sweeps, responsive refinements, and deployment checks.',
+            completed: isCompletedProject,
+          },
+        ]
+
+  const parsedRanges = sourcePhases.map((p) => parsePhaseDateRange(p.period, year))
+  const allParsed = parsedRanges.every((r): r is { start: Date; end: Date } => r !== null)
+
+  if (allParsed && parsedRanges.length > 0) {
+    const minMs = Math.min(...parsedRanges.map((r) => r!.start.getTime()))
+    const maxMs = Math.max(...parsedRanges.map((r) => r!.end.getTime()))
+    const totalDays = Math.max(7, Math.round((maxMs - minMs) / 86400000) + 1)
+    const totalWeeks = Math.max(4, Math.ceil(totalDays / 7))
+    const tickCount = Math.min(8, totalWeeks)
+    const step = Math.max(1, Math.ceil(totalWeeks / tickCount))
+    const ticks: string[] = []
+    for (let w = 1; w <= totalWeeks; w += step) {
+      ticks.push(`W${w}`)
+    }
+    if (ticks[ticks.length - 1] !== `W${totalWeeks}` && ticks.length < 8) {
+      ticks.push(`W${totalWeeks}`)
+    }
+
+    const tracks: ProjectGanttTrack[] = sourcePhases.map((phase, idx) => {
+      const range = parsedRanges[idx]!
+      const offsetDays = Math.max(0, Math.round((range.start.getTime() - minMs) / 86400000))
+      const spanDays = Math.max(1, Math.round((range.end.getTime() - range.start.getTime()) / 86400000) + 1)
+      const startPct = Math.min(90, Math.max(0, Number(((offsetDays / totalDays) * 100).toFixed(1))))
+      const rawWidth = Number(((spanDays / totalDays) * 100).toFixed(1))
+      const widthPct = Math.max(10, Math.min(100 - startPct, rawWidth))
+      const startWeek = Math.max(1, Math.floor(offsetDays / 7) + 1)
+      const durationWeeks = Math.max(1, Math.round(spanDays / 7))
+
+      return {
+        id: `phase-${idx + 1}`,
+        phaseLabel: phase.phase || `Phase ${idx + 1}`,
+        name: phase.name,
+        period: phase.period || `Week ${startWeek}`,
+        description:
+          phase.description || `Completed ${phase.name.toLowerCase()} deliverables for ${project.title}.`,
+        startWeek,
+        durationWeeks,
+        startPct,
+        widthPct,
+        completed: phase.completed ?? isCompletedProject,
+      }
+    })
+
+    return {
+      totalWeeks,
+      unitLabel: 'Week',
+      ticks,
+      windowLabel: duration.period || duration.headline,
+      tracks,
+    }
+  }
+
+  // Fallback balanced sequential Gantt schedule scaled across totalWeeks
+  const totalWeeks = Math.max(sourcePhases.length * 2, 6)
+  const ticks = Array.from({ length: totalWeeks }, (_, i) => `W${i + 1}`)
+  const stepWidth = 100 / sourcePhases.length
+  const weeksPerPhase = totalWeeks / sourcePhases.length
+
+  const tracks: ProjectGanttTrack[] = sourcePhases.map((phase, idx) => {
+    const startPct = Number((idx * stepWidth).toFixed(1))
+    const widthPct = Number(stepWidth.toFixed(1))
+    const startWeek = Math.floor(idx * weeksPerPhase) + 1
+    const durationWeeks = Math.max(1, Math.round(weeksPerPhase))
+    const endWeek = Math.min(totalWeeks, startWeek + durationWeeks - 1)
+
+    return {
+      id: `phase-${idx + 1}`,
+      phaseLabel: phase.phase || `Phase ${idx + 1}`,
+      name: phase.name,
+      period: phase.period || (startWeek === endWeek ? `Week ${startWeek}` : `Weeks ${startWeek}–${endWeek}`),
+      description:
+        phase.description || `Executed ${phase.name.toLowerCase()} milestones cleanly within schedule.`,
+      startWeek,
+      durationWeeks,
+      startPct,
+      widthPct,
+      completed: phase.completed ?? isCompletedProject,
+    }
+  })
+
+  return {
+    totalWeeks,
+    unitLabel: 'Week',
+    ticks,
+    windowLabel: duration.period || duration.headline,
+    tracks,
+  }
+}
+
+function buildProjectStructureTree(
+  project: ProjectEntry,
+  stack: string[],
+): ProjectStructureSummary {
+  const rootName = project.slug || toSlug(project.title) || 'project-root'
+  const lower = stack.map((t) => t.toLowerCase())
+  const hasNext = lower.some((t) => t.includes('next'))
+  const hasExpo = lower.some((t) => t.includes('expo') || t.includes('react native'))
+  const hasExpressOrNode = lower.some((t) => t.includes('express') || t.includes('node'))
+  const hasReact = lower.some((t) => t.includes('react'))
+  const hasMongo = lower.some((t) => t.includes('mongo'))
+  const hasPostgres = lower.some((t) => t.includes('postgres') || t.includes('drizzle') || t.includes('prisma'))
+  const hasFirebase = lower.some((t) => t.includes('firebase'))
+  const hasStripe = lower.some((t) => t.includes('stripe'))
+  const hasSocket = lower.some((t) => t.includes('socket'))
+
+  if (project.structureDoc) {
+    return {
+      rootName,
+      architectureStyle: `${project.category || 'Application'} Repository Layout`,
+      tree: project.structureDoc,
+      modules: [
+        { path: 'src/', purpose: 'Core domain logic, UI components, and shared helpers.' },
+        { path: 'config / env', purpose: 'Environment contracts, schema settings, and build tooling.' },
+      ],
+      source: 'cms',
+    }
+  }
+
+  if (hasExpo) {
+    const dataNode = hasFirebase
+      ? '├── services/\n│   ├── firebase.ts        # Auth & Firestore realtime sync\n│   └── notifications.ts   # Push delivery & offline queue'
+      : '├── services/\n│   ├── api-client.ts      # Typed REST / offline cache layer\n│   └── storage.ts         # Local session & sync state'
+    const tree = [
+      `${rootName}/`,
+      '├── app/',
+      '│   ├── _layout.tsx        # Root navigation & theme provider',
+      '│   ├── (auth)/            # Onboarding & session guards',
+      '│   └── (tabs)/            # Primary user workflow screens',
+      '├── components/',
+      '│   ├── ui/                # Low-bandwidth reusable primitives',
+      '│   └── domain/            # Feature-specific interactive views',
+      dataNode,
+      '├── hooks/                 # Network & responsive viewport state',
+      '├── app.json               # Expo build profile & permissions',
+      '└── package.json',
+    ].join('\n')
+
+    return {
+      rootName,
+      architectureStyle: 'Expo / React Native Cross-Platform App',
+      tree,
+      modules: [
+        { path: 'app/', purpose: 'File-based screen navigation, auth gates, and tab layout routing.' },
+        { path: 'components/', purpose: 'Accessible mobile primitives tuned for responsive viewports.' },
+        { path: 'services/', purpose: hasFirebase ? 'Realtime Firestore subscriptions and auth boundary.' : 'Typed network layer with optimistic updates.' },
+        { path: 'hooks/', purpose: 'Reusable connectivity, session, and hardware state hooks.' },
+      ],
+      source: 'inferred',
+    }
+  }
+
+  if (hasNext) {
+    const integrationLines: string[] = []
+    if (hasMongo) integrationLines.push('│   ├── mongodb.ts         # Mongoose/Atlas connection & catalog models')
+    if (hasPostgres) integrationLines.push('│   ├── db.ts              # PostgreSQL schema & typed queries')
+    if (hasFirebase) integrationLines.push('│   ├── firebase.ts        # Realtime sync & rule-scoped auth')
+    if (hasStripe) integrationLines.push('│   ├── stripe.ts          # Checkout sessions & webhook verification')
+    if (hasSocket) integrationLines.push('│   └── socket.ts          # Room-based realtime WebSocket client')
+    if (integrationLines.length === 0) {
+      integrationLines.push('│   └── data.ts            # Typed domain services & state mappers')
+    }
+
+    const tree = [
+      `${rootName}/`,
+      '├── src/',
+      '│   ├── app/',
+      '│   │   ├── layout.tsx     # Shared shell, metadata & font setup',
+      '│   │   ├── page.tsx       # Server-rendered primary landing flow',
+      '│   │   └── api/           # Route handlers & signed webhooks',
+      '│   ├── components/',
+      '│   │   ├── ui/            # Design-system tokens & primitives',
+      '│   │   └── features/      # Interactive client feature modules',
+      '│   └── lib/',
+      ...integrationLines,
+      '├── next.config.mjs',
+      '└── package.json',
+    ].join('\n')
+
+    return {
+      rootName,
+      architectureStyle: 'Next.js Full-Stack App Router Architecture',
+      tree,
+      modules: [
+        { path: 'src/app/', purpose: 'Server-first App Router pages and isolated /api/* route boundaries.' },
+        { path: 'src/components/', purpose: 'Modular UI primitives paired with interactive client islands.' },
+        { path: 'src/lib/', purpose: 'Domain mappers, database adapters, and third-party SDK wrappers.' },
+        { path: 'src/app/api/', purpose: 'Validated server endpoints handling auth, mutations, and webhooks.' },
+      ],
+      source: 'inferred',
+    }
+  }
+
+  if (hasExpressOrNode && hasReact) {
+    const dbFile = hasMongo
+      ? 'mongoose / MongoDB schemas'
+      : hasPostgres
+        ? 'PostgreSQL / SQL models'
+        : 'Relational / document models'
+    const tree = [
+      `${rootName}/`,
+      '├── client/',
+      '│   ├── src/pages/         # Role-scoped dashboard & views',
+      '│   ├── src/components/    # Form controls, tables & state UI',
+      '│   └── src/services/      # Authenticated API fetch client',
+      '├── server/',
+      '│   ├── routes/            # Versioned REST /api/* endpoints',
+      '│   ├── controllers/       # Business logic & payload validation',
+      `│   ├── models/            # ${dbFile}`,
+      '│   └── middleware/        # Auth guards, CORS & error handlers',
+      '├── .env.example',
+      '└── package.json',
+    ].join('\n')
+
+    return {
+      rootName,
+      architectureStyle: 'Decoupled React Frontend + Node/Express REST API',
+      tree,
+      modules: [
+        { path: 'client/src/', purpose: 'Reactive frontend views, tables, and API service bindings.' },
+        { path: 'server/routes/', purpose: 'Resource endpoints guarded by role & validation middleware.' },
+        { path: 'server/controllers/', purpose: 'Business rules isolated cleanly from HTTP transport.' },
+        { path: 'server/models/', purpose: `${dbFile} enforcing domain integrity.` },
+      ],
+      source: 'inferred',
+    }
+  }
+
+  const tree = [
+    `${rootName}/`,
+    '├── src/',
+    '│   ├── ui/                # Interactive screens & layout components',
+    '│   ├── core/              # Domain logic & validation rules',
+    '│   ├── services/          # Data persistence & external integrations',
+    '│   └── utils/             # Shared formatters & configuration',
+    '├── tests/                 # Automated verification & regression checks',
+    '├── .env.example',
+    '└── README.md',
+  ].join('\n')
+
+  return {
+    rootName,
+    architectureStyle: `${project.category || 'Modular Software'} Layered Structure`,
+    tree,
+    modules: [
+      { path: 'src/ui/', purpose: 'Presentation views, layout primitives, and user workflows.' },
+      { path: 'src/core/', purpose: 'Typed business logic decoupled from delivery transport.' },
+      { path: 'src/services/', purpose: 'Database adapters, storage, and external API integrations.' },
+      { path: 'tests/', purpose: 'Unit and integration coverage protecting critical paths.' },
+    ],
+    source: 'inferred',
+  }
+}
+
+function buildProjectToolsUsed(
+  project: ProjectEntry,
+  techDetails: TechStackDetail[],
+  stack: string[],
+): ProjectToolCategory[] {
+  const frontendMatchers = /next|react|tailwind|framer|motion|three|webgl|glsl|gsap|radix|expo|ui|css|html|typescript/i
+  const backendMatchers = /node|express|mongo|postgres|drizzle|prisma|firebase|stripe|socket|python|sql|api|auth/i
+
+  const frontendItems: ProjectToolItem[] = []
+  const backendItems: ProjectToolItem[] = []
+  const deliveryItems: ProjectToolItem[] = []
+  const seenNames = new Set<string>()
+
+  const pushUnique = (target: ProjectToolItem[], item: ProjectToolItem) => {
+    const key = item.name.trim().toLowerCase()
+    if (!key || seenNames.has(key)) return
+    seenNames.add(key)
+    target.push(item)
+  }
+
+  for (const tech of techDetails) {
+    const descriptor = `${tech.name} ${tech.layer}`
+    if (backendMatchers.test(descriptor)) {
+      pushUnique(backendItems, { name: tech.name, role: tech.role, source: 'stack' })
+    } else if (frontendMatchers.test(descriptor)) {
+      pushUnique(frontendItems, { name: tech.name, role: tech.role, source: 'stack' })
+    } else {
+      pushUnique(deliveryItems, { name: tech.name, role: tech.role, source: 'stack' })
+    }
+  }
+
+  for (const extraTool of project.toolsList ?? []) {
+    pushUnique(deliveryItems, {
+      name: extraTool,
+      role: 'Workflow, QA, or operational utility used during project delivery.',
+      source: 'tooling',
+    })
+  }
+
+  const lower = stack.map((s) => s.toLowerCase())
+  const hasNextOrReact = lower.some((s) => s.includes('next') || s.includes('react'))
+  const hasExpo = lower.some((s) => s.includes('expo') || s.includes('react native'))
+
+  if (frontendItems.length === 0) {
+    pushUnique(frontendItems, {
+      name: project.category === 'Mobile' ? 'Cross-Platform UI Layer' : 'Responsive Web UI',
+      role: `Component architecture tailored for ${project.title} user workflows.`,
+      source: 'tooling',
+    })
+  }
+
+  if (backendItems.length === 0) {
+    pushUnique(backendItems, {
+      name: 'Structured State & Data Layer',
+      role: 'Validated data models, configuration schemas, and predictable state updates.',
+      source: 'tooling',
+    })
+  }
+
+  // Add standard verified engineering workflow & delivery tooling that complements the stack
+  pushUnique(deliveryItems, {
+    name: 'Git & GitHub',
+    role: 'Branch isolation, feature pull requests, and release commit history.',
+    source: 'tooling',
+  })
+
+  if (hasNextOrReact || hasExpo) {
+    pushUnique(deliveryItems, {
+      name: 'ESLint & TypeScript Checks',
+      role: 'Static syntax, hook-dependency, and compile-time contract verification.',
+      source: 'tooling',
+    })
+  }
+
+  pushUnique(deliveryItems, {
+    name: 'Figma & System Diagrams',
+    role: 'Interface wireframing, token scale checks, and architecture planning before code.',
+    source: 'tooling',
+  })
+
+  if (hasExpo) {
+    pushUnique(deliveryItems, {
+      name: 'Expo EAS CLI',
+      role: 'Managed device previews, store binary builds, and OTA update releases.',
+      source: 'tooling',
+    })
+  } else {
+    pushUnique(deliveryItems, {
+      name: project.live?.includes('vercel') ? 'Vercel CLI & Edge CDN' : 'Postman / API Contract Checks',
+      role: project.live?.includes('vercel')
+        ? 'Automated preview deployments, environment isolation, and production hosting.'
+        : 'Endpoint request validation, status verification, and payload schema checks.',
+      source: 'tooling',
+    })
+  }
+
+  return [
+    {
+      id: 'frontend-runtime',
+      category: 'Interface & Client Runtime',
+      summary: 'Presentation frameworks, styling system, and interactive motion layers.',
+      items: frontendItems,
+    },
+    {
+      id: 'backend-persistence',
+      category: 'Backend, Data & Integrations',
+      summary: 'APIs, persistence stores, authentication, and realtime or payment bridges.',
+      items: backendItems,
+    },
+    {
+      id: 'design-qa-delivery',
+      category: 'Design, QA & Delivery Tooling',
+      summary: 'Version control, static verification, prototyping, and release workflows.',
+      items: deliveryItems,
+    },
+  ]
+}
+
 /** Builds the complete case study dossier for a single project detail page. */
 export function buildProjectDossier(project: ProjectEntry): ProjectDossier {
   // Handle compact legacy records that pack lines into description
@@ -1459,6 +1967,9 @@ export function buildProjectDossier(project: ProjectEntry): ProjectDossier {
   const model = inferModel(project)
   const cost = inferCost(project, parsedStack)
   const solutionText = project.solution
+  const gantt = buildGanttTimeline(project, duration)
+  const structure = buildProjectStructureTree(project, parsedStack)
+  const toolsUsed = buildProjectToolsUsed(project, techDetails, parsedStack)
 
   const hasCustomDocumentation = Boolean(
     project.documentation?.trim() ||
@@ -1490,6 +2001,9 @@ export function buildProjectDossier(project: ProjectEntry): ProjectDossier {
     model,
     cost,
     techDetails,
+    gantt,
+    structure,
+    toolsUsed,
     hasCustomDocumentation,
     documentationSections: sections,
     workflowSteps,
@@ -1497,9 +2011,13 @@ export function buildProjectDossier(project: ProjectEntry): ProjectDossier {
   }
 }
 
-/** Public project list with an explicit empty/error state. */
-export async function getProjectsResult(): Promise<CmsResult<ProjectEntry[]>> {
-  const result = await getPublishedCmsContentResult(CMS_COLLECTIONS.projects)
+/** Public project list from CMS with an explicit empty/error state. */
+export async function getProjectsResult(options?: {
+  fresh?: boolean
+}): Promise<CmsResult<ProjectEntry[]>> {
+  const result = options?.fresh
+    ? await getFreshPublishedCmsContentResult(CMS_COLLECTIONS.projects)
+    : await getPublishedCmsContentResult(CMS_COLLECTIONS.projects)
   if (result.status !== 'ok') return result
   return { status: 'ok', data: mapProjectRecords(result.data) }
 }

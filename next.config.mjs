@@ -7,7 +7,6 @@ const nextConfig = {
   ...(isDev ? { distDir: '.next-dev' } : {}),
   async redirects() {
     return [
-      { source: '/immersive', destination: '/a2', permanent: true },
       { source: '/classic', destination: '/', permanent: true },
       { source: '/anime', destination: '/media/anime', permanent: true },
       { source: '/music', destination: '/media/music', permanent: true },

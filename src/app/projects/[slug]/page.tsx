@@ -4,8 +4,10 @@ import {
   CheckCircle2,
   Circle,
   Clock,
+  FolderTree,
   GitBranch,
   Target,
+  Wrench,
 } from 'lucide-react'
 import {
   buildProjectDossier,
@@ -20,6 +22,7 @@ import {
   PageShell,
 } from '@/components/ui/PageChrome'
 import { ProjectDocumentation } from '@/components/projects/ProjectDocumentation'
+import { ProjectGanttChart } from '@/components/projects/ProjectGanttChart'
 import { CaseStudyHeroImage } from '@/components/projects/CaseStudyHeroImage'
 import { CaseStudyLayerTooltip } from '@/components/projects/CaseStudyLayerTooltip'
 import { ShareProjectButton } from '@/components/projects/ShareProjectButton'
@@ -28,7 +31,7 @@ import type { CmsResult } from '@/lib/cms-schema'
 import { articleMetadata } from '@/lib/seo'
 import { isRepositoryUrl } from '@/lib/urls'
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 async function findProjectWithNeighbors(slug: string): Promise<
   CmsResult<{
@@ -36,7 +39,7 @@ async function findProjectWithNeighbors(slug: string): Promise<
     nextProject?: ProjectEntry
   }>
 > {
-  const result = await getProjectsResult()
+  const result = await getProjectsResult({ fresh: true })
   if (result.status !== 'ok') return result
 
   const index = result.data.findIndex((project) => project.slug === slug)
@@ -197,10 +200,11 @@ export default async function ProjectCaseStudyPage({
         />
       )}
 
-      {/* 01. CASE STUDY PLAN: Problem, Approach & Execution Phases */}
+      {/* 01. CASE STUDY PLAN: Problem, Approach, Gantt Chart & Execution Phases */}
       {(dossier.challengeText ||
         dossier.solutionText ||
         dossier.caseStudyPlanText ||
+        dossier.gantt.tracks.length > 0 ||
         project.phases.length > 0) && (
         <PageSection
           number={0}
@@ -210,7 +214,7 @@ export default async function ProjectCaseStudyPage({
           accent={sections?.problem?.accent || 'plan.'}
           description={
             sections?.problem?.description ||
-            'Problem definition, architectural direction, and step-by-step milestone execution.'
+            'Problem definition, architectural direction, Gantt schedule, and step-by-step milestone execution.'
           }
         >
           {(dossier.challengeText || dossier.solutionText) && (
@@ -240,12 +244,14 @@ export default async function ProjectCaseStudyPage({
 
           {dossier.caseStudyPlanText && (
             <article className="mt-6 apple-card p-6 md:p-7">
-              <h3 className="text-xs font-medium text-muted">Execution & research plan</h3>
+              <h3 className="text-xs font-medium text-muted">Execution &amp; research plan</h3>
               <p className="mt-3 text-sm md:text-[15px] text-ink-secondary leading-relaxed whitespace-pre-line">
                 {dossier.caseStudyPlanText}
               </p>
             </article>
           )}
+
+          <ProjectGanttChart gantt={dossier.gantt} projectTitle={project.title} />
 
           {project.phases.length > 0 && (
             <div className="mt-8">
@@ -400,62 +406,139 @@ export default async function ProjectCaseStudyPage({
         </div>
       </PageSection>
 
-      {/* 03. TECH STACK ARCHITECTURE & DELIVERED FEATURES */}
-      {(dossier.techDetails.length > 0 || project.features.length > 0) && (
+      {/* 03. TECH STACK ARCHITECTURE, STRUCTURE, TOOLS & DELIVERED FEATURES */}
+      {(dossier.techDetails.length > 0 ||
+        project.features.length > 0 ||
+        dossier.toolsUsed.length > 0) && (
         <PageSection
           number={2}
           eyebrow={sections?.details?.eyebrow || 'Architecture & Capabilities'}
           krEyebrow={sections?.details?.krEyebrow}
-          title={sections?.details?.title || 'Tech stack and'}
-          accent={sections?.details?.accent || 'features.'}
+          title={sections?.details?.title || 'Tech stack, structure and'}
+          accent={sections?.details?.accent || 'tools.'}
           description={
             sections?.details?.description ||
-            'Each technology selected for its specific architectural responsibility alongside shipped product capabilities.'
+            'Each technology selected for its architectural responsibility, codebase structure, engineering tools used, and shipped capabilities.'
           }
         >
-          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start">
-            {dossier.techDetails.length > 0 && (
-              <article className="apple-card p-6 md:p-7">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-medium text-muted">
-                    {sections?.details?.secondaryLabel || 'Technology stack & roles'}
-                  </h3>
-                  <CaseStudyLayerTooltip
-                    kind="tech"
-                    size="md"
-                    align="end"
-                    layers={techTooltipLayers}
-                  />
-                </div>
-                <ul className="mt-4 divide-y divide-line-hairline">
-                  {dossier.techDetails.map((tech) => (
-                    <li key={tech.name} className="py-3.5 first:pt-0 last:pb-0 space-y-1">
-                      <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <span className="text-sm font-semibold text-ink">{tech.name}</span>
-                        <span className="text-xs font-mono text-muted">{tech.layer}</span>
-                      </div>
-                      <p className="text-xs text-ink-secondary leading-relaxed">{tech.role}</p>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            )}
+          {(dossier.techDetails.length > 0 || project.features.length > 0) && (
+            <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start">
+              {dossier.techDetails.length > 0 && (
+                <article className="apple-card p-6 md:p-7">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-medium text-muted">
+                      {sections?.details?.secondaryLabel || 'Technology stack & roles'}
+                    </h3>
+                    <CaseStudyLayerTooltip
+                      kind="tech"
+                      size="md"
+                      align="end"
+                      layers={techTooltipLayers}
+                    />
+                  </div>
+                  <ul className="mt-4 divide-y divide-line-hairline">
+                    {dossier.techDetails.map((tech) => (
+                      <li key={tech.name} className="py-3.5 first:pt-0 last:pb-0 space-y-1">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <span className="text-sm font-semibold text-ink">{tech.name}</span>
+                          <span className="text-xs font-mono text-muted">{tech.layer}</span>
+                        </div>
+                        <p className="text-xs text-ink-secondary leading-relaxed">{tech.role}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              )}
 
-            {project.features.length > 0 && (
-              <article className="apple-card p-6 md:p-7">
-                <h3 className="text-xs font-medium text-muted">
-                  {sections?.details?.primaryLabel || 'Shipped capabilities'}
+              {project.features.length > 0 && (
+                <article className="apple-card p-6 md:p-7">
+                  <h3 className="text-xs font-medium text-muted">
+                    {sections?.details?.primaryLabel || 'Shipped capabilities'}
+                  </h3>
+                  <ul className="mt-4 space-y-3 text-sm text-ink-secondary">
+                    {project.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2.5">
+                        <Target className="w-3.5 h-3.5 text-accent mt-1 shrink-0" aria-hidden="true" />
+                        <span className="leading-relaxed">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              )}
+            </div>
+          )}
+
+          {/* Project Structure & Tools Used */}
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <article className="apple-card p-6 md:p-7 space-y-5">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-xs font-medium text-muted">
+                  <FolderTree className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
+                  <span>Project structure</span>
+                </div>
+                <h3 className="text-base font-semibold text-ink tracking-tight">
+                  {dossier.structure.architectureStyle}
                 </h3>
-                <ul className="mt-4 space-y-3 text-sm text-ink-secondary">
-                  {project.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2.5">
-                      <Target className="w-3.5 h-3.5 text-accent mt-1 shrink-0" aria-hidden="true" />
-                      <span className="leading-relaxed">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            )}
+              </div>
+
+              <pre className="overflow-x-auto rounded-xl border border-line-hairline bg-overlay-faint px-4 py-3.5 font-mono text-[11px] sm:text-xs leading-relaxed text-ink">
+                <code>{dossier.structure.tree}</code>
+              </pre>
+
+              <dl className="divide-y divide-line-hairline border-t border-line-hairline pt-2 text-xs">
+                {dossier.structure.modules.map((mod) => (
+                  <div
+                    key={mod.path}
+                    className="py-2.5 last:pb-0 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4"
+                  >
+                    <dt className="font-mono font-medium text-accent shrink-0 sm:w-32 truncate">
+                      {mod.path}
+                    </dt>
+                    <dd className="text-ink-secondary leading-relaxed">{mod.purpose}</dd>
+                  </div>
+                ))}
+              </dl>
+            </article>
+
+            <article className="apple-card p-6 md:p-7 space-y-5">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-xs font-medium text-muted">
+                  <Wrench className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
+                  <span>Tools &amp; engineering ecosystem</span>
+                </div>
+                <h3 className="text-base font-semibold text-ink tracking-tight">
+                  Tools used across build &amp; delivery
+                </h3>
+              </div>
+
+              <div className="space-y-5">
+                {dossier.toolsUsed.map((group) => (
+                  <div key={group.id} className="space-y-2.5">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line-hairline pb-1.5">
+                      <h4 className="text-xs font-semibold text-ink tracking-tight">
+                        {group.category}
+                      </h4>
+                      <span className="text-[11px] text-muted tabular-nums">
+                        {group.items.length} {group.items.length === 1 ? 'tool' : 'tools'}
+                      </span>
+                    </div>
+
+                    <ul className="space-y-2.5">
+                      {group.items.map((tool) => (
+                        <li key={tool.name} className="flex items-start gap-3 text-xs">
+                          <span className="inline-block shrink-0 rounded-md border border-line-subtle bg-overlay-faint px-2 py-0.5 font-mono text-[11px] font-medium text-ink">
+                            {tool.name}
+                          </span>
+                          <span className="text-ink-secondary leading-relaxed pt-0.5">
+                            {tool.role}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </article>
           </div>
         </PageSection>
       )}

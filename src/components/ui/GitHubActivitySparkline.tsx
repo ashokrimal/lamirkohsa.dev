@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   Github,
   GitCommit,
@@ -9,7 +9,10 @@ import {
   Star,
   ExternalLink,
   FolderGit2,
+  RotateCcw,
 } from 'lucide-react'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { CMS_SCHEMA } from '@/lib/cms-schema'
 import { sensoryAudio } from '@/lib/sensory-audio'
 
 interface SparklineDay {
@@ -18,7 +21,7 @@ interface SparklineDay {
   count: number
 }
 
-interface GitHubActivityData {
+export interface GitHubActivityData {
   username: string
   publicRepos: number
   totalStars: number
@@ -37,105 +40,209 @@ interface GitHubActivitySparklineProps {
   username?: string
   className?: string
   showRecentCommits?: boolean
+  initialData?: GitHubActivityData | null
 }
+
+type SparklineStatus = 'loading' | 'ready' | 'missing-username' | 'unavailable'
 
 export function GitHubActivitySparkline({
   username,
   className = '',
   showRecentCommits = true,
+  initialData = null,
 }: GitHubActivitySparklineProps) {
-  const [data, setData] = useState<GitHubActivityData | null>(null)
+  const cleanUsername = username?.trim() || ''
+  const [data, setData] = useState<GitHubActivityData | null>(initialData)
+  const [status, setStatus] = useState<SparklineStatus>(
+    initialData ? 'ready' : cleanUsername ? 'loading' : 'missing-username',
+  )
+  const [attempt, setAttempt] = useState(0)
   const [hoveredDay, setHoveredDay] = useState<SparklineDay | null>(null)
 
+  const handleRetry = useCallback(() => {
+    sensoryAudio.playClick()
+    setStatus('loading')
+    setAttempt((n) => n + 1)
+  }, [])
+
   useEffect(() => {
+    if (initialData) {
+      setData(initialData)
+      setStatus('ready')
+      return
+    }
+    if (!cleanUsername) {
+      setData(null)
+      setStatus('missing-username')
+      return
+    }
+
     let mounted = true
+    setStatus('loading')
+
     const fetchGitHub = async () => {
       try {
-        if (!username) return
         const [profileRes, reposRes, eventsRes] = await Promise.all([
-          fetch(`https://api.github.com/users/${username}`),
-          fetch(`https://api.github.com/users/${username}/repos?sort=pushed&per_page=10`),
-          fetch(`https://api.github.com/users/${username}/events/public?per_page=30`),
+          fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}`),
+          fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}/repos?sort=pushed&per_page=10`),
+          fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}/events/public?per_page=30`),
         ])
 
-        if (profileRes.ok && eventsRes.ok) {
-          const profile = await profileRes.json()
-          const events = await eventsRes.json()
-          const repos = reposRes.ok ? await reposRes.json() : []
-
-          const daysMap = new Map<string, number>()
-          const now = new Date()
-          for (let i = 29; i >= 0; i--) {
-            const d = new Date()
-            d.setDate(now.getDate() - i)
-            const key = d.toISOString().slice(0, 10)
-            daysMap.set(key, 0)
-          }
-
-          let totalCommits = 0
-          const pushEvents: Array<{ repo: string; message: string; date: string; url: string }> = []
-
-          if (Array.isArray(events)) {
-            events.forEach((evt) => {
-              if (evt.type === 'PushEvent' && evt.created_at) {
-                const dateKey = evt.created_at.slice(0, 10)
-                const count = evt.payload?.commits?.length || 1
-                if (daysMap.has(dateKey)) {
-                  daysMap.set(dateKey, (daysMap.get(dateKey) || 0) + count)
-                  totalCommits += count
-                }
-                const firstMsg = evt.payload?.commits?.[0]?.message || 'Code commit'
-                if (pushEvents.length < 3) {
-                  pushEvents.push({
-                    repo: evt.repo?.name || '',
-                    message: firstMsg.split('\n')[0].slice(0, 70),
-                    date: dateKey,
-                    url: `https://github.com/${evt.repo?.name || username}`,
-                  })
-                }
-              }
-            })
-          }
-
-          const sparklineList: SparklineDay[] = Array.from(daysMap.entries()).map(([date, count]) => {
-            const d = new Date(date)
-            const dayLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-            return { date, dayLabel, count }
-          })
-
-          const stars = Array.isArray(repos)
-            ? repos.reduce((sum: number, r: { stargazers_count?: number }) => sum + (r.stargazers_count || 0), 0)
-            : 0
-
-          // Streak: consecutive days with commits, counting back from today.
-          let streak = 0
-          for (let i = sparklineList.length - 1; i >= 0; i--) {
-            if (sparklineList[i].count > 0) streak += 1
-            else break
-          }
-
+        if (!profileRes.ok || !eventsRes.ok) {
           if (mounted) {
-            setData({
-              username,
-              publicRepos: profile.public_repos ?? 0,
-              totalStars: stars,
-              total30DayCommits: totalCommits,
-              activeStreak: streak,
-              sparkline: sparklineList,
-              recentActivities: pushEvents,
-            })
+            setData(null)
+            setStatus('unavailable')
           }
+          return
         }
-      } catch {}
+
+        const profile = await profileRes.json()
+        const events = await eventsRes.json()
+        const repos = reposRes.ok ? await reposRes.json() : []
+
+        const daysMap = new Map<string, number>()
+        const now = new Date()
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date()
+          d.setDate(now.getDate() - i)
+          const key = d.toISOString().slice(0, 10)
+          daysMap.set(key, 0)
+        }
+
+        let totalCommits = 0
+        const pushEvents: Array<{ repo: string; message: string; date: string; url: string }> = []
+
+        if (Array.isArray(events)) {
+          events.forEach((evt) => {
+            if (evt.type === 'PushEvent' && evt.created_at) {
+              const dateKey = evt.created_at.slice(0, 10)
+              const count = evt.payload?.commits?.length || 1
+              if (daysMap.has(dateKey)) {
+                daysMap.set(dateKey, (daysMap.get(dateKey) || 0) + count)
+                totalCommits += count
+              }
+              const firstMsg = evt.payload?.commits?.[0]?.message || 'Code commit'
+              if (pushEvents.length < 3) {
+                pushEvents.push({
+                  repo: evt.repo?.name || '',
+                  message: firstMsg.split('\n')[0].slice(0, 70),
+                  date: dateKey,
+                  url: `https://github.com/${evt.repo?.name || cleanUsername}`,
+                })
+              }
+            }
+          })
+        }
+
+        const sparklineList: SparklineDay[] = Array.from(daysMap.entries()).map(([date, count]) => {
+          const d = new Date(date)
+          const dayLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          return { date, dayLabel, count }
+        })
+
+        const stars = Array.isArray(repos)
+          ? repos.reduce((sum: number, r: { stargazers_count?: number }) => sum + (r.stargazers_count || 0), 0)
+          : 0
+
+        // Streak: consecutive days with commits, counting back from today.
+        let streak = 0
+        for (let i = sparklineList.length - 1; i >= 0; i--) {
+          if (sparklineList[i].count > 0) streak += 1
+          else break
+        }
+
+        if (mounted) {
+          setData({
+            username: cleanUsername,
+            publicRepos: profile.public_repos ?? 0,
+            totalStars: stars,
+            total30DayCommits: totalCommits,
+            activeStreak: streak,
+            sparkline: sparklineList,
+            recentActivities: pushEvents,
+          })
+          setStatus('ready')
+        }
+      } catch {
+        if (mounted) {
+          setData(null)
+          setStatus('unavailable')
+        }
+      }
     }
 
     fetchGitHub()
     return () => {
       mounted = false
     }
-  }, [username])
+  }, [cleanUsername, initialData, attempt])
 
-  if (!data) return null
+  if (status === 'missing-username') {
+    const empty = CMS_SCHEMA.sections.home.github.emptyState
+    return (
+      <EmptyState
+        eyebrow="GitHub Activity"
+        icon={Github}
+        message={empty.message}
+        hint={empty.hint}
+        className={className}
+      />
+    )
+  }
+
+  if (status === 'loading') {
+    return (
+      <div
+        className={`apple-card p-6 md:p-7 space-y-5 animate-pulse ${className}`}
+        aria-label={`Loading GitHub activity for ${cleanUsername}`}
+      >
+        <div className="flex items-center justify-between pb-3 border-b border-line-subtle">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-overlay-faint" />
+            <div className="space-y-2">
+              <div className="h-4 w-40 rounded bg-overlay-faint" />
+              <div className="h-3 w-28 rounded bg-overlay-faint" />
+            </div>
+          </div>
+          <div className="h-6 w-32 rounded-full bg-overlay-faint" />
+        </div>
+        <div className="h-24 w-full rounded-2xl bg-overlay-faint" />
+      </div>
+    )
+  }
+
+  if (status === 'unavailable' || !data) {
+    return (
+      <EmptyState
+        eyebrow={`GitHub API · @${cleanUsername}`}
+        icon={GitCommit}
+        message={`Could not load live activity for @${cleanUsername}.`}
+        hint="GitHub's public REST API returned no recent activity right now, or public rate limits are temporarily active."
+        className={className}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface/80 px-4 py-2 text-xs font-medium text-ink-secondary shadow-xs transition-colors hover:border-line-medium hover:text-accent cursor-pointer"
+            >
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+              Retry sync
+            </button>
+            <a
+              href={`https://github.com/${encodeURIComponent(cleanUsername)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface/80 px-4 py-2 text-xs font-medium text-ink-secondary shadow-xs transition-colors hover:border-line-medium hover:text-accent"
+            >
+              <span>Open github.com/{cleanUsername}</span>
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+            </a>
+          </>
+        }
+      />
+    )
+  }
 
   const maxCommitDay = Math.max(...data.sparkline.map((d) => d.count), 1)
 

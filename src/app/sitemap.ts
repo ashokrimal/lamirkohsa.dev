@@ -24,7 +24,6 @@ const staticRoutes = [
   { path: '/skills', priority: 0.7 },
   { path: '/certificates', priority: 0.7 },
   { path: '/contact', priority: 0.8 },
-  { path: '/a2', priority: 0.7 },
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

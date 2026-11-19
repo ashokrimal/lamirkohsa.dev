@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { ABOUT_SECTIONS, CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { uiStrings } from '@/lib/ui-strings'
-import { Compass, Globe, Heart, Sparkles } from 'lucide-react'
+import { Github, Heart, Link2, PieChart, Sparkles, User } from 'lucide-react'
 import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
 import { TechDistributionChart } from '@/components/projects/TechDistributionChart'
 import { getPublicProfileSettingsResult } from '@/app/actions/media'
@@ -200,11 +200,10 @@ export default async function AboutContent() {
       ) : (
         <section className="pt-10 md:pt-14">
           <EmptyState
-            icon={Compass}
+            eyebrow="Profile"
+            icon={User}
             message={CMS_SCHEMA.sections.pages.about.emptyState.message}
             hint={CMS_SCHEMA.sections.pages.about.emptyState.hint}
-            actionLabel={CMS_SCHEMA.sections.pages.about.emptyState.actionLabel}
-            actionHref={CMS_SCHEMA.sections.pages.about.emptyState.actionHref}
           />
         </section>
       )}
@@ -225,10 +224,9 @@ export default async function AboutContent() {
           <ExperienceTimeline
             items={education}
             type="education"
+            emptyEyebrow="Education"
             emptyMessage={CMS_SCHEMA.collections.education.emptyState.message}
             emptyHint={CMS_SCHEMA.collections.education.emptyState.hint}
-            emptyActionLabel={CMS_SCHEMA.collections.education.emptyState.actionLabel}
-            emptyActionHref={CMS_SCHEMA.collections.education.emptyState.actionHref}
           />
         )}
       </PageSection>
@@ -249,10 +247,9 @@ export default async function AboutContent() {
           <ExperienceTimeline
             items={experience}
             type="experience"
+            emptyEyebrow="Experience"
             emptyMessage={CMS_SCHEMA.collections.experience.emptyState.message}
             emptyHint={CMS_SCHEMA.collections.experience.emptyState.hint}
-            emptyActionLabel={CMS_SCHEMA.collections.experience.emptyState.actionLabel}
-            emptyActionHref={CMS_SCHEMA.collections.experience.emptyState.actionHref}
           />
         )}
       </PageSection>
@@ -273,11 +270,10 @@ export default async function AboutContent() {
           <SkillDisplay skills={skills} />
         ) : (
           <EmptyState
+            eyebrow="Technical Skills"
             icon={Sparkles}
             message={CMS_SCHEMA.collections.skills.emptyState.message}
             hint={CMS_SCHEMA.collections.skills.emptyState.hint}
-            actionLabel={CMS_SCHEMA.collections.skills.emptyState.actionLabel}
-            actionHref={CMS_SCHEMA.collections.skills.emptyState.actionHref}
           />
         )}
       </PageSection>
@@ -307,11 +303,10 @@ export default async function AboutContent() {
           </ul>
         ) : (
           <EmptyState
+            eyebrow="Interests"
             icon={Heart}
             message={CMS_SCHEMA.collections.interests.emptyState.message}
             hint={CMS_SCHEMA.collections.interests.emptyState.hint}
-            actionLabel={CMS_SCHEMA.collections.interests.emptyState.actionLabel}
-            actionHref={CMS_SCHEMA.collections.interests.emptyState.actionHref}
           />
         )}
       </PageSection>
@@ -346,16 +341,15 @@ export default async function AboutContent() {
           </ul>
         ) : (
           <EmptyState
-            icon={Globe}
+            eyebrow="Social Channels"
+            icon={Link2}
             message={CMS_SCHEMA.collections.socialLinks.emptyState.message}
             hint={CMS_SCHEMA.collections.socialLinks.emptyState.hint}
-            actionLabel={CMS_SCHEMA.collections.socialLinks.emptyState.actionLabel}
-            actionHref={CMS_SCHEMA.collections.socialLinks.emptyState.actionHref}
           />
         )}
       </PageSection>
 
-      {/* 7. GITHUB ACTIVITY — always the final section */}
+      {/* 7. GITHUB ACTIVITY */}
       <PageSection
         id="github"
         number={sectionIndex('github')}
@@ -365,40 +359,44 @@ export default async function AboutContent() {
         accent={sections?.github?.accent}
         description={sections?.github?.description}
       >
-        {profileResult.status === 'error' ? (
-          <CmsErrorState message={profileResult.message} />
+        {publicSettingsResult.status === 'error' ? (
+          <CmsErrorState message={publicSettingsResult.message} />
         ) : githubUsername ? (
           <GitHubActivitySparkline username={githubUsername} showRecentCommits={true} />
         ) : (
           <EmptyState
-            icon={Globe}
+            eyebrow="GitHub Activity"
+            icon={Github}
             message={CMS_SCHEMA.sections.home.github.emptyState.message}
             hint={CMS_SCHEMA.sections.home.github.emptyState.hint}
-            actionLabel={CMS_SCHEMA.sections.home.github.emptyState.actionLabel}
-            actionHref={CMS_SCHEMA.sections.home.github.emptyState.actionHref}
           />
         )}
       </PageSection>
 
       {/* 8. TECHNOLOGY DISTRIBUTION — the closing view of how the work is built */}
-      {projects.length > 0 && (
-        <PageSection
-          id="technology"
-          number={ABOUT_SECTIONS.length}
-          eyebrow={sections?.distribution?.eyebrow}
-          title={sections?.distribution?.title ?? 'Technology distribution'}
-          accent={sections?.distribution?.accent}
-          description={sections?.distribution?.description}
-          linkHref={"/projects"}
-          linkLabel={"All projects"}
-        >
-          {projectsResult.status === 'error' ? (
-            <CmsErrorState message={projectsResult.message} />
-          ) : (
-            <TechDistributionChart projects={projects} />
-          )}
-        </PageSection>
-      )}
+      <PageSection
+        id="technology"
+        number={ABOUT_SECTIONS.length}
+        eyebrow={sections?.distribution?.eyebrow}
+        title={sections?.distribution?.title ?? 'Technology distribution'}
+        accent={sections?.distribution?.accent}
+        description={sections?.distribution?.description}
+        linkHref="/projects"
+        linkLabel="All projects"
+      >
+        {projectsResult.status === 'error' ? (
+          <CmsErrorState message={projectsResult.message} />
+        ) : projects.length > 0 ? (
+          <TechDistributionChart projects={projects} />
+        ) : (
+          <EmptyState
+            eyebrow="Stack Telemetry"
+            icon={PieChart}
+            message="No technology distribution data yet."
+            hint="Technology shares and stack categories will appear here once published projects declare stack tags."
+          />
+        )}
+      </PageSection>
 
       <PageNav />
     </PageShell>

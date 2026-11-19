@@ -3,7 +3,7 @@
 import { auth } from '@/lib/auth'
 import { db, hasDatabaseConfig } from '@/lib/db'
 import { cmsContent } from '@/lib/db/schema'
-import { and, asc, desc, eq, inArray } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { unstable_cache } from 'next/cache'
 import { getAdminActorId } from '@/lib/admin-auth'
@@ -166,6 +166,7 @@ function getMemoryRepo(): MemoryCmsRepository {
 // --- CMS QUERY FUNCTIONS FOR FRONTEND & ADMIN ---
 
 async function fetchPublishedCollection(collection: string): Promise<CmsRecord[]> {
+  const normalizedCollection = collection.trim().toLowerCase()
   const rows = await db
     .select({
       id: cmsContent.id,
@@ -180,7 +181,10 @@ async function fetchPublishedCollection(collection: string): Promise<CmsRecord[]
     })
     .from(cmsContent)
     .where(
-      and(eq(cmsContent.collection, collection), eq(cmsContent.status, 'published'))
+      and(
+        sql`lower(trim(${cmsContent.collection})) = ${normalizedCollection}`,
+        sql`lower(trim(${cmsContent.status})) = 'published'`,
+      )
     )
     .orderBy(asc(cmsContent.sortOrder), desc(cmsContent.createdAt))
 
@@ -244,6 +248,35 @@ export async function getPublishedCmsContentResult(
     return { status: 'empty' }
   } catch (error) {
     console.error(`[CMS] Could not read published "${collection}"${errorCode(error)}.`)
+    if (process.env.NODE_ENV !== 'production') console.error(error)
+    return {
+      status: 'error',
+      message: `${collection} content is temporarily unavailable.`,
+    }
+  }
+}
+
+/**
+ * Bypass Next.js Data Cache to read freshly published records directly from
+ * Postgres (useful when an external CMS studio writes to the shared database).
+ */
+export async function getFreshPublishedCmsContentResult(
+  collection: string,
+): Promise<CmsResult<CmsRecord[]>> {
+  if (!hasDatabaseConfig()) {
+    warnMissingDatabase()
+    return { status: 'empty' }
+  }
+
+  try {
+    const rows = await fetchPublishedCollection(collection)
+    if (rows.length > 0) {
+      rows.forEach((r) => getMemoryRepo().update(r.id, r))
+      return { status: 'ok', data: rows }
+    }
+    return { status: 'empty' }
+  } catch (error) {
+    console.error(`[CMS] Could not read fresh published "${collection}"${errorCode(error)}.`)
     if (process.env.NODE_ENV !== 'production') console.error(error)
     return {
       status: 'error',

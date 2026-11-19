@@ -7,7 +7,7 @@ import { Loading } from '../Loading';
 
 interface PageLayoutProps {
   children: ReactNode;
-  loadingVariant?: 'page' | 'card' | 'list' | 'hero' | 'profile';
+  loadingVariant?: 'page' | 'home' | 'card' | 'list' | 'hero' | 'profile';
   errorTitle?: string;
   errorMessage?: string;
 }

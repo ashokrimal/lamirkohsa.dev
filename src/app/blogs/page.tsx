@@ -191,11 +191,10 @@ export default async function BlogsPage() {
       ) : (
         <div className="mt-10 md:mt-14">
           <EmptyState
+            eyebrow="Journal"
             icon={NotebookPen}
             message={CMS_SCHEMA.sections.pages.blogs.emptyState.message}
             hint={CMS_SCHEMA.sections.pages.blogs.emptyState.hint}
-            actionLabel={CMS_SCHEMA.sections.pages.blogs.emptyState.actionLabel}
-            actionHref={CMS_SCHEMA.sections.pages.blogs.emptyState.actionHref}
           />
         </div>
       )}

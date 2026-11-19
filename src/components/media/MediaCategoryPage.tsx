@@ -2,7 +2,7 @@ import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { MediaPoster, type MediaKind } from '@/components/ui/MediaPoster'
 import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSection } from '@/lib/media-content'
-import { ImageOff } from 'lucide-react'
+import { BookOpen, Disc3, Film, Tv, type LucideIcon } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_MEDIA_RECORDS } from '@/lib/cms-schema'
@@ -16,6 +16,13 @@ const COPY_KEY: Record<MediaKind, string> = {
   manga: 'media-manga',
 }
 
+const MEDIA_ICONS: Record<MediaKind, LucideIcon> = {
+  music: Disc3,
+  movies: Film,
+  anime: Tv,
+  manga: BookOpen,
+}
+
 /** The complete listing for one media category. All records come from the CMS. */
 export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
   const [copyResult, collectionsResult] = await Promise.all([
@@ -26,6 +33,7 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
   const section = await getMediaSection(kind, collections)
   const pageCopy = copyResult.status === 'ok' ? copyResult.data[COPY_KEY[kind]] : undefined
   const emptyState = CMS_MEDIA_RECORDS[kind].emptyState
+  const EmptyIcon = MEDIA_ICONS[kind]
 
   return (
     <PageShell>
@@ -62,11 +70,10 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
       ) : (
         <div className="mt-12">
           <EmptyState
-            icon={ImageOff}
+            eyebrow={section.label}
+            icon={EmptyIcon}
             message={emptyState.message}
             hint={emptyState.hint}
-            actionLabel={emptyState.actionLabel}
-            actionHref={emptyState.actionHref}
           />
         </div>
       )}

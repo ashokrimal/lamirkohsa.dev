@@ -4,22 +4,23 @@ import {
   ArrowUpRight,
   Code2,
   Compass,
+  Film,
   FolderGit2,
   Github,
-  ImageOff,
+  PieChart,
   Sparkles,
+  User,
 } from 'lucide-react'
 import {
   getHeroSectionConfigResult,
   getHomepageSectionsConfigResult,
   getProfileContentResult,
-  getPublishedCmsContentResult,
   type HomepageSectionsConfig,
 } from '@/app/actions/content-cms'
 import { getPublicProfileSettingsResult } from '@/app/actions/media'
 import { EMPTY_SITE_CONFIG, getMediaCollections, getSiteConfig } from '@/lib/site-content'
 import { getProjectsResult } from '@/lib/projects'
-import { CMS_COLLECTIONS, SECTIONS, type SiteSectionDefinition } from '@/lib/cms-schema'
+import { CMS_SETTINGS_RECORDS, SECTIONS, type SiteSectionDefinition } from '@/lib/cms-schema'
 import { getMediaSections } from '@/lib/media-content'
 import { uiStrings } from '@/lib/ui-strings'
 import { type ProjectData } from '@/components/ui/ProjectCard'
@@ -42,25 +43,9 @@ const SECTION_LINKS: Record<string, { href: string; label: string }> = {
   github: { href: '/about/github', label: 'GitHub activity' },
 }
 
-function dedupe<T>(items: T[], keyFn: (item: T) => string | number | undefined): T[] {
-  const seen = new Set<string | number>()
-  return items.filter((item) => {
-    const key = keyFn(item)
-    if (key === undefined || key === '' || seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-}
-
 /**
- * The homepage: hero, introduction, featured projects + technology distribution,
- * media shelf and GitHub status, in the fixed order from `SECTIONS`.
- *
- * It renders through the same page frame as every other public page — hero,
- * numbered section headers, rules and card components — so the home page reads
- * as the first page of one site rather than a separate experience. Section
- * numbers are derived from that registry and the published records, never typed.
- * A section with no published records keeps its place and shows its own empty state.
+ * The homepage: hero, introduction + compact technology distribution,
+ * featured projects, media shelf and GitHub status, in the fixed order from `SECTIONS`.
  */
 export default async function HomeContent() {
   const [
@@ -68,7 +53,6 @@ export default async function HomeContent() {
     sectionsResult,
     profileResult,
     projectsResult,
-    socialLinksResult,
     siteResult,
     mediaCollectionsResult,
     publicSettingsResult,
@@ -76,8 +60,7 @@ export default async function HomeContent() {
     getHeroSectionConfigResult(),
     getHomepageSectionsConfigResult(),
     getProfileContentResult(),
-    getProjectsResult(),
-    getPublishedCmsContentResult(CMS_COLLECTIONS.socialLinks),
+    getProjectsResult({ fresh: true }),
     getSiteConfig(),
     getMediaCollections(),
     getPublicProfileSettingsResult(),
@@ -92,10 +75,7 @@ export default async function HomeContent() {
   const mediaCollections = mediaCollectionsResult.status === 'ok' ? mediaCollectionsResult.data : []
   const projects = projectsResult.status === 'ok' ? projectsResult.data : []
   const profile = profileResult.status === 'ok' ? profileResult.data : {}
-  const socialLinksRaw = socialLinksResult.status === 'ok' ? socialLinksResult.data : []
-  const dataError = [socialLinksResult, siteResult].find(
-    (result) => result.status === 'error',
-  ) as { status: 'error'; message: string } | undefined
+  const dataError = siteResult.status === 'error' ? siteResult : undefined
 
   const mediaSections = await getMediaSections(mediaCollections)
 
@@ -120,6 +100,12 @@ export default async function HomeContent() {
       category: project.category,
       summary: project.summary,
       description: project.description,
+      challenge: project.challenge,
+      solution: project.solution,
+      duration: project.duration,
+      cost: project.cost,
+      model: project.model,
+      features: project.features,
       techStack: project.techStack,
       techDefinitions: project.techDefinitions,
       image: project.image,
@@ -131,16 +117,6 @@ export default async function HomeContent() {
       completionDate: project.completionDate,
       phases: project.phases,
     }))
-
-  const socialLinks = dedupe(
-    socialLinksRaw.map((s) => ({
-      id: s.id,
-      label: typeof s.payload?.label === 'string' ? s.payload.label : s.title,
-      href: typeof s.payload?.href === 'string' ? s.payload.href : '',
-      handle: typeof s.payload?.handle === 'string' ? s.payload.handle : undefined,
-    })),
-    (s) => s.href || s.label,
-  ).filter((s) => s.href)
 
   const mediaPreview = mediaSections.flatMap((section) =>
     section.items.map((item) => ({ kind: section.kind, item, href: section.href })),
@@ -156,7 +132,6 @@ export default async function HomeContent() {
     return typeof raw === 'string' && raw.trim() ? (raw as string) : undefined
   }
   const profileImage = profileText('avatarUrl') || profileText('imageUrl')
-  // A hero image set in the CMS keeps its place as the introduction portrait.
   const portraitImage = heroImageUrl || profileImage
   const displayName = profileText('fullName') || site.brand.name || ''
   const heroHeading = heroData.heading?.trim() || displayName
@@ -174,14 +149,13 @@ export default async function HomeContent() {
     const sectionMeta = meta[section.id]
 
     switch (section.id) {
-      // 1. ABOUT / INTRODUCTION
+      // 1. ABOUT / INTRODUCTION + TECHNOLOGY DISTRIBUTION
       case 'about': {
         const hasAbout = Boolean(
           profileText('summary') ||
             profileText('bio') ||
             portraitImage ||
-            profileText('headline') ||
-            socialLinks.length,
+            profileText('headline'),
         )
         if (profileResult.status === 'error') {
           return <CmsErrorState message={profileResult.message} />
@@ -189,68 +163,63 @@ export default async function HomeContent() {
         if (!hasAbout) {
           return (
             <EmptyState
-              icon={Compass}
+              eyebrow="Introduction"
+              icon={User}
               message={section.emptyState.message}
               hint={section.emptyState.hint}
-              actionLabel={section.emptyState.actionLabel}
-              actionHref={section.emptyState.actionHref}
             />
           )
         }
 
         return (
-          <div className="grid grid-cols-1 items-start gap-8 md:gap-10 lg:grid-cols-[0.8fr_1.2fr]">
-            {portraitImage && (
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[24px] border border-line-subtle bg-overlay-faint">
-                <Image
-                  src={portraitImage}
-                  alt={heroImageAlt || displayName}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 40vw"
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-            )}
-
-            <div className="space-y-5 text-sm leading-relaxed text-muted md:text-base">
-              {profileText('summary') && (
-                <p className="text-lg leading-relaxed tracking-tight text-ink md:text-2xl">
-                  {profileText('summary')}
-                </p>
+          <div className="space-y-10 md:space-y-12">
+            <div className="grid grid-cols-1 items-start gap-8 md:gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+              {portraitImage && (
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[24px] border border-line-subtle bg-overlay-faint">
+                  <Image
+                    src={portraitImage}
+                    alt={heroImageAlt || displayName}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
               )}
-              {profileText('bio') && <p>{profileText('bio')}</p>}
 
-              <div className="flex flex-wrap gap-2.5 pt-1">
-                {profileText('headline') && (
-                  <MetaChip icon={Code2}>{profileText('headline')}</MetaChip>
+              <div className="space-y-5 text-sm leading-relaxed text-muted md:text-base">
+                {profileText('summary') && (
+                  <p className="text-lg leading-relaxed tracking-tight text-ink md:text-2xl">
+                    {profileText('summary')}
+                  </p>
                 )}
-                {heroLocation && <MetaChip icon={Compass}>{heroLocation}</MetaChip>}
-                {availability && <MetaChip icon={Sparkles}>{availability}</MetaChip>}
-              </div>
+                {profileText('bio') && <p>{profileText('bio')}</p>}
 
-              {socialLinks.length > 0 && (
-                <ul className="flex flex-wrap gap-2.5 pt-2 text-xs">
-                  {socialLinks.map((link) => (
-                    <li key={link.id}>
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle px-3 py-1.5 text-ink-secondary transition-colors hover:border-line-medium hover:text-accent"
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                <div className="flex flex-wrap gap-2.5 pt-1">
+                  {profileText('headline') && (
+                    <MetaChip icon={Code2}>{profileText('headline')}</MetaChip>
+                  )}
+                  {heroLocation && <MetaChip icon={Compass}>{heroLocation}</MetaChip>}
+                  {availability && <MetaChip icon={Sparkles}>{availability}</MetaChip>}
+                </div>
+              </div>
             </div>
+
+            {projects.length > 0 ? (
+              <HomeTechDistribution projects={projects} />
+            ) : projectsResult.status !== 'error' ? (
+              <EmptyState
+                eyebrow="Stack Telemetry"
+                icon={PieChart}
+                message="No technology distribution data yet."
+                hint="Technology weights and category filters will populate once published projects include stack tags."
+              />
+            ) : null}
           </div>
         )
       }
 
-      // 2. FEATURED PROJECTS & TECHNOLOGY DISTRIBUTION
+      // 2. FEATURED PROJECTS (Fetched directly from CMS)
       case 'projects': {
         if (projectsResult.status === 'error') {
           return <CmsErrorState message={projectsResult.message} />
@@ -258,53 +227,42 @@ export default async function HomeContent() {
         if (featuredProjects.length === 0) {
           return (
             <EmptyState
+              eyebrow="Selected Works"
               icon={FolderGit2}
               message={section.emptyState.message}
               hint={section.emptyState.hint}
-              actionLabel={section.emptyState.actionLabel}
-              actionHref={section.emptyState.actionHref}
             />
           )
         }
         return (
-          <div className="space-y-10 md:space-y-12">
-            <FeaturedProjectsCollection
-              projects={featuredProjects}
-              previewCount={sectionMeta?.previewCount ?? PREVIEW_COUNT}
-              viewAllHref={sectionMeta?.href || section.route}
-              viewAllLabel={sectionMeta?.primaryLabel || uiStrings.projects.viewAll.en}
-              ariaLabel={uiStrings.projects.featuredAria.en}
-            />
-            <HomeTechDistribution projects={projects} />
-          </div>
+          <FeaturedProjectsCollection
+            projects={featuredProjects}
+            previewCount={sectionMeta?.previewCount ?? PREVIEW_COUNT}
+            viewAllHref={sectionMeta?.href || section.route}
+            viewAllLabel={sectionMeta?.primaryLabel || uiStrings.projects.viewAll.en}
+            ariaLabel={uiStrings.projects.featuredAria.en}
+          />
         )
       }
 
-      // 6. MEDIA PREVIEW
+      // 3. MEDIA PREVIEW
       case 'media': {
         const mediaError = mediaSections.find((entry) => entry.error)?.error
         if (mediaError) return <CmsErrorState message={mediaError} />
         if (mediaPreview.length === 0) {
           return (
             <EmptyState
-              icon={ImageOff}
+              eyebrow="Media Archive"
+              icon={Film}
               message={section.emptyState.message}
               hint={section.emptyState.hint}
-              actionLabel={section.emptyState.actionLabel}
-              actionHref={section.emptyState.actionHref}
             />
           )
         }
-        return (
-          <MediaShelf
-            items={mediaPreview}
-            viewAllHref={sectionMeta?.href || section.route}
-            viewAllLabel={sectionMeta?.primaryLabel || uiStrings.home.viewAllMedia.en}
-          />
-        )
+        return <MediaShelf items={mediaPreview} />
       }
 
-      // 7. GITHUB STATUS
+      // 4. GITHUB STATUS
       case 'github': {
         if (publicSettingsResult.status === 'error') {
           return <CmsErrorState message={publicSettingsResult.message} />
@@ -312,11 +270,10 @@ export default async function HomeContent() {
         if (!githubUsername) {
           return (
             <EmptyState
+              eyebrow="GitHub Activity"
               icon={Github}
               message={section.emptyState.message}
               hint={section.emptyState.hint}
-              actionLabel={section.emptyState.actionLabel}
-              actionHref={section.emptyState.actionHref}
             />
           )
         }
@@ -332,6 +289,15 @@ export default async function HomeContent() {
     <PageShell>
       {heroResult.status === 'error' ? (
         <CmsErrorState message={heroResult.message} />
+      ) : !heroHeading && !heroSubtitle ? (
+        <div className="pt-8 md:pt-12">
+          <EmptyState
+            eyebrow="Hero"
+            icon={Compass}
+            message={CMS_SETTINGS_RECORDS.hero.emptyState.message}
+            hint={CMS_SETTINGS_RECORDS.hero.emptyState.hint}
+          />
+        </div>
       ) : (
         <PageHero
           eyebrow={heroEyebrow}

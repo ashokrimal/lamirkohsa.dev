@@ -338,7 +338,7 @@ export function ProjectQuickViewDrawer({
                   sensoryAudio.playClick()
                   onClose()
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-overlay px-4 py-2 text-xs font-semibold text-accent transition-colors hover:border-accent hover:bg-overlay-medium"
+                className="apple-btn-primary !py-2 !px-4 !text-xs"
               >
                 <span>{uiStrings.project.viewCaseStudy.en}</span>
                 <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />

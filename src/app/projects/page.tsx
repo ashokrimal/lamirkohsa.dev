@@ -4,7 +4,7 @@ import { extractProjectTechTags, getProjectsResult } from '@/lib/projects'
 import { getPageCopy } from '@/lib/site-content'
 import { pageMetadata } from '@/lib/seo'
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
@@ -12,9 +12,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ProjectsPage() {
-  // Case study detail lives on /projects/[slug]; the index lists CMS records and
-  // computes the initial technology stack tags from published CMS projects.
-  const [projectsResult, copyResult] = await Promise.all([getProjectsResult(), getPageCopy()])
+  // Case study detail lives on /projects/[slug]; the index fetches live CMS
+  // records and computes technology stack tags from published CMS projects.
+  const [projectsResult, copyResult] = await Promise.all([
+    getProjectsResult({ fresh: true }),
+    getPageCopy(),
+  ])
   const projects = projectsResult.status === 'ok' ? projectsResult.data : []
   const copy = copyResult.status === 'ok' ? copyResult.data.projects : undefined
   const techTags = extractProjectTechTags(projects)

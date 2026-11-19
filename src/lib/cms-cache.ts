@@ -18,7 +18,6 @@ export function cmsCollectionTag(collection: string) {
 
 export const CMS_PUBLIC_REVALIDATE_PATHS = [
   '/',
-  '/a2',
   '/about',
   '/about/gallery',
   '/about/github',

@@ -1,8 +1,8 @@
 import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { HorizontalCollection } from '@/components/ui/HorizontalCollection'
-import { MediaPoster } from '@/components/ui/MediaPoster'
-import { ImageOff } from 'lucide-react'
+import { MediaPoster, type MediaKind } from '@/components/ui/MediaPoster'
+import { BookOpen, Disc3, Film, Tv, type LucideIcon } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_MEDIA_RECORDS, CMS_SCHEMA } from '@/lib/cms-schema'
@@ -12,11 +12,18 @@ import { uiStrings } from '@/lib/ui-strings'
 
 const PREVIEW_COUNT = 5
 
+const MEDIA_ICONS: Record<MediaKind, LucideIcon> = {
+  music: Disc3,
+  movies: Film,
+  anime: Tv,
+  manga: BookOpen,
+}
+
 /**
  * The media page: Music, Movies, Anime and Manga in that order. Each section is
  * one horizontal collection of CMS records followed by a View all card. Every
- * category keeps its place; one with no published records shows an empty state
- * instead of samples.
+ * category keeps its place; one with no published records shows its own individual
+ * empty state instead of samples.
  */
 export default async function MediaHomeContent() {
   const [copyResult, collectionsResult] = await Promise.all([
@@ -48,6 +55,7 @@ export default async function MediaHomeContent() {
             CMS_MEDIA_RECORDS[section.kind].key,
         )
         const emptyState = CMS_MEDIA_RECORDS[section.kind].emptyState
+        const EmptyIcon = MEDIA_ICONS[section.kind]
 
         return (
           <section
@@ -60,17 +68,18 @@ export default async function MediaHomeContent() {
               eyebrow={section.label}
               title={section.label}
               description={section.description}
+              linkHref={section.href}
+              linkLabel={`Open ${section.label.toLowerCase()}`}
             />
             <div className="mt-8">
               {section.error ? (
                 <CmsErrorState message={section.error} />
               ) : section.items.length === 0 ? (
                 <EmptyState
-                  icon={ImageOff}
+                  eyebrow={section.label}
+                  icon={EmptyIcon}
                   message={emptyState.message}
                   hint={emptyState.hint}
-                  actionLabel={emptyState.actionLabel}
-                  actionHref={emptyState.actionHref}
                 />
               ) : (
                 <HorizontalCollection

@@ -2,31 +2,25 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, Calendar, Eye, Layers } from 'lucide-react'
-import { TechStack } from '@/components/ui/TechStack'
+import { Calendar, Eye, Layers } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
 import { uiStrings } from '@/lib/ui-strings'
 import type { ProjectData } from '@/components/ui/ProjectCard'
-import type { CmsTechDefinition } from '@/lib/tech-metadata'
 
 interface ProjectRowProps {
   project: ProjectData & { description?: string }
   index: number
-  globalTechDefinitions?: Record<string, CmsTechDefinition>
-  activeTechs?: string[]
   onQuickView?: () => void
 }
 
 /**
  * A single editorial project row. Media and copy swap sides on alternate rows,
- * clicking the card opens the full case study, and Quick view opens a drawer preview.
+ * clicking the card opens the case study, and the floating Quick look chip opens a drawer preview.
  */
 export function ProjectRow({
   project,
   index,
-  globalTechDefinitions,
-  activeTechs,
   onQuickView,
 }: ProjectRowProps) {
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
@@ -55,7 +49,7 @@ export function ProjectRow({
                   className="object-cover transition-[transform,filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045] group-hover:contrast-[1.04] group-hover:saturate-[1.08] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                 />
                 <div
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
                   aria-hidden="true"
                 />
               </>
@@ -64,6 +58,29 @@ export function ProjectRow({
                 <Layers className="h-6 w-6 opacity-70 transition-opacity duration-300 group-hover:opacity-40" aria-hidden="true" />
               </div>
             )}
+
+            {/* Floating Quick Look Chip — right-most corner of the project banner */}
+            {onQuickView && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  sensoryAudio.playClick()
+                  onQuickView()
+                }}
+                aria-label={uiStrings.project.quickViewAria(project.title)}
+                className={`absolute top-3.5 right-3.5 z-20 inline-flex items-center gap-1.5 rounded-full backdrop-blur-md px-3 py-1.5 text-xs font-medium shadow-sm transition-all duration-200 cursor-pointer ${
+                  project.image
+                    ? 'border border-white/25 bg-black/55 text-white hover:bg-black/75 hover:border-white/45'
+                    : 'border border-line-subtle bg-surface/90 text-ink hover:border-accent hover:text-accent'
+                }`}
+              >
+                <Eye className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+                <span>{uiStrings.project.quickView.en}</span>
+              </button>
+            )}
+
             <div
               className={`pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 sm:p-5 opacity-0 translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-y-0 motion-reduce:transition-none motion-reduce:translate-y-0 ${
                 project.image ? 'text-white' : 'bg-gradient-to-t from-surface/95 via-surface/75 to-transparent text-ink'
@@ -71,27 +88,19 @@ export function ProjectRow({
               aria-hidden="true"
             >
               <div className="min-w-0 space-y-0.5">
-                <p
-                  className={`font-mono text-[10px] uppercase tracking-[0.16em] truncate ${
-                    project.image ? 'text-white/75' : 'text-muted'
-                  }`}
-                >
-                  {project.category || uiStrings.project.viewCaseStudy.en}
-                  {project.techStack && project.techStack.length > 0
-                    ? ` · ${project.techStack.slice(0, 3).join(' · ')}`
-                    : ''}
-                </p>
+                {project.category && (
+                  <p
+                    className={`font-mono text-[10px] uppercase tracking-[0.16em] truncate ${
+                      project.image ? 'text-white/75' : 'text-muted'
+                    }`}
+                  >
+                    {project.category}
+                  </p>
+                )}
                 <p className="text-xs sm:text-sm font-medium truncate">
                   {project.title}
                 </p>
               </div>
-              <span
-                className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full backdrop-blur-md ${
-                  project.image ? 'bg-white/15 text-white' : 'border border-line-subtle bg-surface/90 text-accent'
-                }`}
-              >
-                <ArrowUpRight className="h-4 w-4" />
-              </span>
             </div>
           </div>
         </div>
@@ -129,42 +138,6 @@ export function ProjectRow({
           {summary && (
             <p className="mt-3 text-sm leading-relaxed text-muted line-clamp-2">{summary}</p>
           )}
-
-          {project.techStack && project.techStack.length > 0 && (
-            <TechStack
-              items={project.techStack}
-              limit={5}
-              definitions={project.techDefinitions}
-              globalDefinitions={globalTechDefinitions}
-              activeTechs={activeTechs}
-              projectTitle={project.title}
-              projectCategory={project.category}
-              className="relative z-20 mt-4"
-            />
-          )}
-
-          <div className="relative z-20 mt-5 flex flex-wrap items-center gap-3">
-            {onQuickView && (
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  sensoryAudio.playClick()
-                  onQuickView()
-                }}
-                aria-label={uiStrings.project.quickViewAria(project.title)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-overlay-faint px-3.5 py-1.5 text-xs font-medium text-ink transition-colors hover:border-accent hover:bg-overlay hover:text-accent cursor-pointer"
-              >
-                <Eye className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
-                <span>{uiStrings.project.quickView.en}</span>
-              </button>
-            )}
-
-            <span className="pointer-events-none inline-flex items-center gap-1 text-xs font-medium text-accent">
-              <span>{uiStrings.project.viewCaseStudy.en}</span>
-              <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </span>
-          </div>
         </div>
       </div>
     </article>

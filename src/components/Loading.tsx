@@ -1,6 +1,7 @@
 import { Skeleton, SkeletonCard, SkeletonList } from './Skeleton';
+import { HomeLoadingSequence } from './ui/HomeLoadingSequence';
 
-type LoadingVariant = 'page' | 'card' | 'list' | 'hero' | 'profile';
+type LoadingVariant = 'page' | 'home' | 'card' | 'list' | 'hero' | 'profile';
 
 interface LoadingProps {
   variant?: LoadingVariant;
@@ -10,6 +11,9 @@ interface LoadingProps {
 export function Loading({ variant = 'page', className = '' }: LoadingProps) {
   const renderContent = () => {
     switch (variant) {
+      case 'home':
+        return <HomeLoadingSequence />;
+
       case 'card':
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">

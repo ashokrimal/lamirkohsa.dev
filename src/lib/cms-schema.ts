@@ -205,9 +205,7 @@ function pageCopyRecord(key: string, label: string, titleRequired = true): CmsRe
     optionalFields: copyFields(),
     emptyState: {
       message: `${label} copy is not published yet.`,
-      hint: 'Add the page copy in the CMS to fill this page heading.',
-      actionLabel: 'Edit page copy in admin',
-      actionHref: `/admin?section=content&collection=${encodeURIComponent('Page Copy')}`,
+      hint: 'Page introduction and header details for this view will appear here once published.',
     },
   }
 }
@@ -235,10 +233,8 @@ export const CMS_SCHEMA: CmsSchema = {
             array('socials', 'Social links'),
           ],
           emptyState: {
-            message: 'Navigation is not published yet.',
-            hint: 'Add primary, footer and social links in the CMS.',
-            actionLabel: 'Edit navigation in admin',
-            actionHref: '/admin?section=subpage',
+            message: 'Navigation links are not configured yet.',
+            hint: 'Primary, footer, and social navigation routes will appear here once published.',
           },
         },
         footer: {
@@ -256,10 +252,8 @@ export const CMS_SCHEMA: CmsSchema = {
             text('canonical', 'Canonical domain'),
           ],
           emptyState: {
-            message: 'Footer copy is not published yet.',
-            hint: 'Add the footer tagline and links in the CMS.',
-            actionLabel: 'Edit footer in admin',
-            actionHref: '/admin?section=appearance',
+            message: 'Footer details are not published yet.',
+            hint: 'Studio colophon, availability status, and quick links will appear here once published.',
           },
         },
         brand: {
@@ -273,10 +267,8 @@ export const CMS_SCHEMA: CmsSchema = {
             text('domain', 'Domain'),
           ],
           emptyState: {
-            message: 'Brand details are not published yet.',
-            hint: 'Add the site name in the CMS.',
-            actionLabel: 'Edit brand in admin',
-            actionHref: '/admin?section=content&collection=Site%20Settings',
+            message: 'Brand identity is not published yet.',
+            hint: 'Name, studio role, and domain details will appear here once published.',
           },
         },
         contactDetails: {
@@ -295,10 +287,8 @@ export const CMS_SCHEMA: CmsSchema = {
             { key: 'formEnabled', label: 'Contact form enabled', type: 'boolean' },
           ],
           emptyState: {
-            message: 'Contact details are not published yet.',
-            hint: 'Add an email or location in the CMS.',
-            actionLabel: 'Edit contact details in admin',
-            actionHref: '/admin?section=content&collection=Site%20Settings',
+            message: 'Contact details are not available yet.',
+            hint: 'Direct email, phone, and studio location coordinates will appear here once published.',
           },
         },
         hero: {
@@ -314,10 +304,8 @@ export const CMS_SCHEMA: CmsSchema = {
             text('imageAlt', 'Hero image alt text'),
           ],
           emptyState: {
-            message: 'Hero text is not published yet.',
-            hint: 'Add the headline and intro in Hero & Footer.',
-            actionLabel: 'Edit hero in admin',
-            actionHref: '/admin?section=appearance',
+            message: 'Hero introduction is not available yet.',
+            hint: 'Headline, studio focus, and opening introduction will appear here once published.',
           },
         },
         homepageSections: {
@@ -327,18 +315,14 @@ export const CMS_SCHEMA: CmsSchema = {
           requiredFields: [array('order', 'Section order', true)],
           optionalFields: [object('enabled', 'Visibility'), object('sectionMeta', 'Section copy')],
           emptyState: {
-            message: 'Homepage structure is not configured yet.',
-            hint: 'Add the section order in the CMS.',
-            actionLabel: 'Edit homepage sections in admin',
-            actionHref: '/admin?section=content&collection=Site%20Settings',
+            message: 'Homepage sections are not configured yet.',
+            hint: 'Section ordering and headings will appear here once published.',
           },
         },
       },
       emptyState: {
-        message: 'Site settings are not published yet.',
-        hint: 'Add navigation, brand, footer and hero records in the CMS.',
-        actionLabel: 'Open Site Settings in admin',
-        actionHref: '/admin?section=content&collection=Site%20Settings',
+        message: 'Site details are not published yet.',
+        hint: 'Navigation, brand identity, and studio metadata will appear here once published.',
       },
     },
 
@@ -354,10 +338,8 @@ export const CMS_SCHEMA: CmsSchema = {
         ]),
       ),
       emptyState: {
-        message: 'Page copy is not published yet.',
-        hint: 'Add page copy records in the CMS.',
-        actionLabel: 'Edit page copy in admin',
-        actionHref: '/admin?section=content&collection=Page%20Copy',
+        message: 'Page headings are not published yet.',
+        hint: 'Custom section introductions and descriptions will appear here once published.',
       },
     },
 
@@ -382,10 +364,8 @@ export const CMS_SCHEMA: CmsSchema = {
             { key: 'previewCount', label: 'Preview count', type: 'number' },
           ],
           emptyState: {
-            message: 'No music published yet.',
-            hint: 'Add music items from the CMS.',
-            actionLabel: 'Add music in admin',
-            actionHref: `/admin?section=content&collection=${encodeURIComponent('Music')}`,
+            message: 'No music albums published yet.',
+            hint: 'Featured records, artists, and listening notes will appear here once published.',
           },
         },
         movies: {
@@ -403,10 +383,8 @@ export const CMS_SCHEMA: CmsSchema = {
             { key: 'previewCount', label: 'Preview count', type: 'number' },
           ],
           emptyState: {
-            message: 'No movies published yet.',
-            hint: 'Add movie items from the CMS.',
-            actionLabel: 'Add movies in admin',
-            actionHref: `/admin?section=content&collection=${encodeURIComponent('Movies')}`,
+            message: 'No films published yet.',
+            hint: 'Watched feature films, directors, and ratings will appear here once published.',
           },
         },
         anime: {
@@ -424,10 +402,8 @@ export const CMS_SCHEMA: CmsSchema = {
             { key: 'previewCount', label: 'Preview count', type: 'number' },
           ],
           emptyState: {
-            message: 'No anime published yet.',
-            hint: 'Add anime items from the CMS.',
-            actionLabel: 'Add anime in admin',
-            actionHref: `/admin?section=content&collection=${encodeURIComponent('Anime')}`,
+            message: 'No anime series published yet.',
+            hint: 'Tracked anime series, studios, and ratings will appear here once published.',
           },
         },
         manga: {
@@ -445,18 +421,14 @@ export const CMS_SCHEMA: CmsSchema = {
             { key: 'previewCount', label: 'Preview count', type: 'number' },
           ],
           emptyState: {
-            message: 'No manga published yet.',
-            hint: 'Add manga items from the CMS.',
-            actionLabel: 'Add manga in admin',
-            actionHref: `/admin?section=content&collection=${encodeURIComponent('Manga')}`,
+            message: 'No manga volumes published yet.',
+            hint: 'Reading logs, mangaka credits, and ratings will appear here once published.',
           },
         },
       },
       emptyState: {
-        message: 'Media collections are not configured yet.',
-        hint: 'Add music, movies, anime and manga records in the CMS.',
-        actionLabel: 'Edit media collections in admin',
-        actionHref: '/admin?section=content&collection=Media%20Collections',
+        message: 'Media archives are currently empty.',
+        hint: 'Curated music, films, anime, and manga collections will appear here once published.',
       },
     },
 
@@ -480,9 +452,7 @@ export const CMS_SCHEMA: CmsSchema = {
       ],
       emptyState: {
         message: 'No introduction published yet.',
-        hint: 'Add your profile, summary and bio in the CMS.',
-        actionLabel: 'Add introduction in admin',
-        actionHref: `/admin?section=content&collection=${encodeURIComponent('Profile')}`,
+        hint: 'Personal biography, focus areas, and studio overview will appear here once published.',
       },
     },
 
@@ -523,10 +493,8 @@ export const CMS_SCHEMA: CmsSchema = {
         text('live', 'Live URL'),
       ],
       emptyState: {
-        message: 'No projects published yet',
-        hint: 'Add a project in the CMS to show it here.',
-        actionLabel: 'Add a project in admin',
-        actionHref: '/admin?section=projects',
+        message: 'No projects published yet.',
+        hint: 'Selected engineering builds, architecture notes, and case studies will appear here once published.',
       },
     },
 
@@ -537,10 +505,8 @@ export const CMS_SCHEMA: CmsSchema = {
       requiredFields: [text('imageUrl', 'Image', true)],
       optionalFields: [text('altText', 'Alt text'), text('category', 'Category'), text('description', 'Description'), text('location', 'Location')],
       emptyState: {
-        message: 'No gallery images published yet.',
-        hint: 'Upload photos to show them here.',
-        actionLabel: 'Add images in admin',
-        actionHref: `/admin?section=content&collection=${encodeURIComponent('Gallery')}`,
+        message: 'No gallery photographs published yet.',
+        hint: 'Photography frames, camera notes, and visual moments will appear here once published.',
       },
     },
 
@@ -551,10 +517,8 @@ export const CMS_SCHEMA: CmsSchema = {
       requiredFields: [text('organization', 'Organization', true), text('period', 'Period', true)],
       optionalFields: [text('location', 'Location'), text('description', 'Description'), array('highlights', 'Highlights')],
       emptyState: {
-        message: 'No experience published yet',
-        hint: 'Add a role in the CMS to show it on the timeline.',
-        actionLabel: 'Add experience in admin',
-        actionHref: `/admin?section=content&collection=${encodeURIComponent('Experience')}`,
+        message: 'No experience entries published yet.',
+        hint: 'Engineering roles, product teams, and key milestones will appear on the timeline once published.',
       },
     },
 
@@ -565,10 +529,8 @@ export const CMS_SCHEMA: CmsSchema = {
       requiredFields: [text('organization', 'Organization', true), text('period', 'Period', true)],
       optionalFields: [text('location', 'Location'), text('description', 'Description'), array('highlights', 'Highlights')],
       emptyState: {
-        message: 'No education published yet',
-        hint: 'Add a qualification in the CMS to show it on the timeline.',
-        actionLabel: 'Add education in admin',
-        actionHref: `/admin?section=content&collection=${encodeURIComponent('Education')}`,
+        message: 'No education entries published yet.',
+        hint: 'Academic degrees, institutions, and coursework highlights will appear on the timeline once published.',
       },
     },
 
@@ -579,10 +541,8 @@ export const CMS_SCHEMA: CmsSchema = {
       requiredFields: [array('items', 'Skill items', true)],
       optionalFields: [text('category', 'Category'), text('level', 'Level')],
       emptyState: {
-        message: 'No skills published yet.',
-        hint: 'Add a skill group in the CMS.',
-        actionLabel: 'Add skills in admin',
-        actionHref: `/admin?section=content&collection=Skills`,
+        message: 'No skill groups published yet.',
+        hint: 'Core languages, frameworks, and technical capabilities will appear here once published.',
       },
     },
 
@@ -599,9 +559,7 @@ export const CMS_SCHEMA: CmsSchema = {
       ],
       emptyState: {
         message: 'No certificates published yet.',
-        hint: 'Add a credential in the CMS.',
-        actionLabel: 'Add certificates in admin',
-        actionHref: `/admin?section=content&collection=Certificates`,
+        hint: 'Verified technical credentials and certifications will appear here once published.',
       },
     },
 
@@ -613,9 +571,7 @@ export const CMS_SCHEMA: CmsSchema = {
       optionalFields: [text('handle', 'Handle')],
       emptyState: {
         message: 'No social links published yet.',
-        hint: 'Add a social link in the CMS.',
-        actionLabel: 'Add social links in admin',
-        actionHref: `/admin?section=content&collection=Social%20Links`,
+        hint: 'External developer profiles and social handles will appear here once published.',
       },
     },
 
@@ -626,10 +582,8 @@ export const CMS_SCHEMA: CmsSchema = {
       requiredFields: [text('label', 'Label', true)],
       optionalFields: [],
       emptyState: {
-        message: 'No interests published yet.',
-        hint: 'Add an interest in the CMS.',
-        actionLabel: 'Add interests in admin',
-        actionHref: `/admin?section=content&collection=Interests`,
+        message: 'No personal interests published yet.',
+        hint: 'Creative pursuits, study areas, and personal curiosities will appear here once published.',
       },
     },
 
@@ -641,9 +595,7 @@ export const CMS_SCHEMA: CmsSchema = {
       optionalFields: [text('description', 'Description'), text('category', 'Category'), text('date', 'Date'), text('imageUrl', 'Image')],
       emptyState: {
         message: 'No journal entries published yet.',
-        hint: 'Add a note in the CMS to start the journal.',
-        actionLabel: 'Add a note in admin',
-        actionHref: `/admin?section=content&collection=Blogs`,
+        hint: 'Engineering notes, architecture deep-dives, and essays will appear here once published.',
       },
     },
 
@@ -665,9 +617,7 @@ export const CMS_SCHEMA: CmsSchema = {
       ],
       emptyState: {
         message: 'No media items published yet.',
-        hint: 'Add music, movies, anime or manga from the admin.',
-        actionLabel: 'Add media in admin',
-        actionHref: `/admin?section=content&collection=${encodeURIComponent('Music')}`,
+        hint: 'Music, films, anime, and manga recommendations will appear here once published.',
       },
     },
   },
@@ -679,19 +629,15 @@ export const CMS_SCHEMA: CmsSchema = {
         collection: CMS_COLLECTIONS.profile,
         emptyState: {
           message: 'No introduction published yet.',
-          hint: 'Add your profile, summary and bio in the CMS.',
-          actionLabel: 'Add introduction in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Profile')}`,
+          hint: 'Personal biography, focus areas, and studio overview will appear here once published.',
         },
       },
       gallery: {
         label: 'Gallery',
         collection: CMS_COLLECTIONS.gallery,
         emptyState: {
-          message: 'No gallery images published yet.',
-          hint: 'Upload photos to show them here.',
-          actionLabel: 'Add images in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Gallery')}`,
+          message: 'No gallery photographs published yet.',
+          hint: 'Photographic frames and location captures will appear here once published.',
         },
       },
       blogArticle: {
@@ -699,39 +645,31 @@ export const CMS_SCHEMA: CmsSchema = {
         collection: CMS_COLLECTIONS.blogs,
         emptyState: {
           message: 'This note has no body yet.',
-          hint: 'Add the article text in the CMS to publish the full note.',
-          actionLabel: 'Edit this note in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Blogs')}`,
+          hint: 'The full essay content for this journal entry is not available yet.',
         },
       },
       experience: {
         label: 'Experience',
         collection: CMS_COLLECTIONS.experience,
         emptyState: {
-          message: 'No experience published yet',
-          hint: 'Add a role in the CMS to show it on the timeline.',
-          actionLabel: 'Add experience in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Experience')}`,
+          message: 'No experience entries published yet.',
+          hint: 'Engineering roles and key milestones will appear on the timeline once published.',
         },
       },
       education: {
         label: 'Education',
         collection: CMS_COLLECTIONS.education,
         emptyState: {
-          message: 'No education published yet',
-          hint: 'Add a qualification in the CMS to show it on the timeline.',
-          actionLabel: 'Add education in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Education')}`,
+          message: 'No education entries published yet.',
+          hint: 'Academic degrees and coursework highlights will appear on the timeline once published.',
         },
       },
       projects: {
         label: 'Projects',
         collection: CMS_COLLECTIONS.projects,
         emptyState: {
-          message: 'No projects published yet',
-          hint: 'Published projects appear here and on the projects page.',
-          actionLabel: 'Add a project in admin',
-          actionHref: '/admin?section=projects',
+          message: 'No featured projects published yet.',
+          hint: 'Highlighted builds and case studies will appear here once published.',
         },
       },
       media: {
@@ -739,19 +677,15 @@ export const CMS_SCHEMA: CmsSchema = {
         collection: CMS_COLLECTIONS.mediaCollections,
         emptyState: {
           message: 'No media items published yet.',
-          hint: 'Add music, movies, anime or manga from the admin.',
-          actionLabel: 'Add media in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Music')}`,
+          hint: 'Recently logged music, films, anime, and manga will appear here once published.',
         },
       },
       github: {
         label: 'GitHub',
         collection: CMS_COLLECTIONS.profile,
         emptyState: {
-          message: 'GitHub status is not connected yet.',
-          hint: 'Set your GitHub username in admin settings to show activity here.',
-          actionLabel: 'Connect GitHub in admin',
-          actionHref: '/admin/settings',
+          message: 'GitHub activity feed is not connected.',
+          hint: 'Public commit cadence, repository stats, and recent dispatches will stream here once a GitHub username is linked.',
         },
       },
     },
@@ -761,29 +695,23 @@ export const CMS_SCHEMA: CmsSchema = {
         collection: CMS_COLLECTIONS.profile,
         emptyState: {
           message: 'No introduction published yet.',
-          hint: 'Add your profile, summary and bio in the CMS.',
-          actionLabel: 'Add introduction in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Profile')}`,
+          hint: 'Personal biography, profile details, and studio focus will appear here once published.',
         },
       },
       projects: {
         label: 'Projects',
         collection: CMS_COLLECTIONS.projects,
         emptyState: {
-          message: 'No projects published yet',
-          hint: 'Add a project in the CMS to show it here.',
-          actionLabel: 'Add a project in admin',
-          actionHref: '/admin?section=projects',
+          message: 'No projects published yet.',
+          hint: 'Completed builds, architecture case studies, and shipped systems will appear here once published.',
         },
       },
       gallery: {
         label: 'Gallery',
         collection: CMS_COLLECTIONS.gallery,
         emptyState: {
-          message: 'No gallery images published yet.',
-          hint: 'Upload images to the gallery collection.',
-          actionLabel: 'Add images in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Gallery')}`,
+          message: 'No gallery photographs published yet.',
+          hint: 'Curated photographs and visual studies will appear here once published.',
         },
       },
       blogs: {
@@ -791,39 +719,31 @@ export const CMS_SCHEMA: CmsSchema = {
         collection: CMS_COLLECTIONS.blogs,
         emptyState: {
           message: 'No journal entries published yet.',
-          hint: 'Add a note in the CMS to start the journal.',
-          actionLabel: 'Add a note in admin',
-          actionHref: `/admin?section=content&collection=Blogs`,
+          hint: 'Written notes, essays, and technical articles will appear here once published.',
         },
       },
       experience: {
         label: 'Experience',
         collection: CMS_COLLECTIONS.experience,
         emptyState: {
-          message: 'No experience published yet',
-          hint: 'Add a role in the CMS to show it on the timeline.',
-          actionLabel: 'Add experience in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Experience')}`,
+          message: 'No experience entries published yet.',
+          hint: 'Roles, product engineering milestones, and highlights will appear here once published.',
         },
       },
       education: {
         label: 'Education',
         collection: CMS_COLLECTIONS.education,
         emptyState: {
-          message: 'No education published yet',
-          hint: 'Add a qualification in the CMS to show it on the timeline.',
-          actionLabel: 'Add education in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Education')}`,
+          message: 'No education entries published yet.',
+          hint: 'Academic qualifications and coursework details will appear here once published.',
         },
       },
       skills: {
         label: 'Skills',
         collection: CMS_COLLECTIONS.skills,
         emptyState: {
-          message: 'No skills published yet.',
-          hint: 'Add a skill group in the CMS.',
-          actionLabel: 'Add skills in admin',
-          actionHref: `/admin?section=content&collection=Skills`,
+          message: 'No skill groups published yet.',
+          hint: 'Languages, frameworks, and infrastructure tools will appear here once published.',
         },
       },
       certificates: {
@@ -831,79 +751,63 @@ export const CMS_SCHEMA: CmsSchema = {
         collection: CMS_COLLECTIONS.certificates,
         emptyState: {
           message: 'No certificates published yet.',
-          hint: 'Add a credential in the CMS.',
-          actionLabel: 'Add certificates in admin',
-          actionHref: `/admin?section=content&collection=Certificates`,
+          hint: 'Verified credentials and issuing organizations will appear here once published.',
         },
       },
       resume: {
         label: 'Résumé',
         collection: CMS_COLLECTIONS.profile,
         emptyState: {
-          message: 'No résumé content published yet.',
-          hint: 'Add profile, experience and education records in the CMS.',
-          actionLabel: 'Add résumé content in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Profile')}`,
+          message: 'No résumé details published yet.',
+          hint: 'Profile summary, work experience, and academic history will appear here once published.',
         },
       },
       contact: {
         label: 'Contact',
         collection: CMS_COLLECTIONS.siteSettings,
         emptyState: {
-          message: 'Contact details are not published yet.',
-          hint: 'Add an email or location in the CMS.',
-          actionLabel: 'Edit contact details in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Site Settings')}`,
+          message: 'Contact details are currently unavailable.',
+          hint: 'Direct email, studio location, and communication channels will appear here once published.',
         },
       },
       media: {
         label: 'Media',
         collection: CMS_COLLECTIONS.mediaCollections,
         emptyState: {
-          message: 'No media published yet.',
-          hint: 'Add music, movies, anime or manga from the admin.',
-          actionLabel: 'Add media in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Music')}`,
+          message: 'No media items published yet.',
+          hint: 'Curated music, films, anime, and manga archives will appear here once published.',
         },
       },
       music: {
         label: 'Music',
         collection: CMS_COLLECTIONS.music,
         emptyState: {
-          message: 'No music published yet.',
-          hint: 'Add music items from the CMS.',
-          actionLabel: 'Add music in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Music')}`,
+          message: 'No music albums published yet.',
+          hint: 'Featured records, artists, and listening logs will appear here once published.',
         },
       },
       movies: {
         label: 'Movies',
         collection: CMS_COLLECTIONS.movies,
         emptyState: {
-          message: 'No movies published yet.',
-          hint: 'Add movie items from the CMS.',
-          actionLabel: 'Add movies in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Movies')}`,
+          message: 'No films published yet.',
+          hint: 'Watched feature films, directors, and ratings will appear here once published.',
         },
       },
       anime: {
         label: 'Anime',
         collection: CMS_COLLECTIONS.anime,
         emptyState: {
-          message: 'No anime published yet.',
-          hint: 'Add anime items from the CMS.',
-          actionLabel: 'Add anime in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Anime')}`,
+          message: 'No anime series published yet.',
+          hint: 'Tracked anime titles, studios, and ratings will appear here once published.',
         },
       },
       manga: {
         label: 'Manga',
         collection: CMS_COLLECTIONS.manga,
         emptyState: {
-          message: 'No manga published yet.',
-          hint: 'Add manga items from the CMS.',
-          actionLabel: 'Add manga in admin',
-          actionHref: `/admin?section=content&collection=${encodeURIComponent('Manga')}`,
+          message: 'No manga volumes published yet.',
+          hint: 'Reading logs, mangaka credits, and ratings will appear here once published.',
         },
       },
     },

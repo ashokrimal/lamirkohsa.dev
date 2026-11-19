@@ -167,14 +167,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    }
+    mediaQuery.addListener(handleChange)
+    return () => mediaQuery.removeListener(handleChange)
   }, [theme, resolvedTheme, runThemeCrossFade])
 
   const setTheme = (nextTheme: Theme, _origin?: ThemeOrigin) => {
     void _origin
     try {
-      localStorage.setItem(STORAGE_KEY, nextTheme)
+      if (nextTheme === 'system') {
+        localStorage.removeItem(STORAGE_KEY)
+      } else {
+        localStorage.setItem(STORAGE_KEY, nextTheme)
+      }
       document.cookie = `${COOKIE_NAME}=${nextTheme}; path=/; max-age=31536000; SameSite=Lax`
     } catch {}
 
@@ -191,8 +199,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }
 
   const toggleTheme = (origin?: ThemeOrigin) => {
-    // Cycles between light and dark; if system, moves to the opposite of current resolved
-    const next: Theme = resolvedTheme === 'dark' ? 'light' : 'dark'
+    // Flip between light and dark; if returning to the device's current theme, resume Auto ('system') mode.
+    const targetResolved: ResolvedTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
+    const next: Theme = targetResolved === getSystemTheme() ? 'system' : targetResolved
     setTheme(next, origin)
   }
 

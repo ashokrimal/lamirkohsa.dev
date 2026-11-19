@@ -18,7 +18,7 @@ export function Skeleton({
   className = '',
   ...props
 }: SkeletonProps) {
-  const baseClasses = 'animate-pulse bg-gray-200 dark:bg-gray-700';
+  const baseClasses = 'animate-pulse bg-overlay-medium';
   
   const variants = {
     text: 'h-4',

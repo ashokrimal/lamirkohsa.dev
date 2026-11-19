@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import { PageLayout } from '@/components/layouts/PageLayout';
 import HomeContent from '@/components/pages/HomeContent';
+import { HomeEntranceGate } from '@/components/ui/HomeLoadingSequence';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
 
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
 
 const PAGE_TITLE = `${SITE_NAME} — Product Engineer & Creative Technologist`;
 const PAGE_DESCRIPTION =
-  "Explore Ashok Rimal's portfolio featuring shipped full-stack systems, case studies, interactive 3D web experiences, and creative experiments.";
+  "Explore Ashok Rimal's portfolio featuring shipped full-stack systems, case studies, interactive data visualizations, and creative engineering experiments.";
 const OG_IMAGE_URL = `${SITE_URL}/opengraph-image`;
 
 export const metadata: Metadata = {
@@ -50,7 +51,7 @@ const STRUCTURED_DATA = {
       mainEntityOfPage: SITE_URL,
       jobTitle: 'Product Engineer & Creative Technologist',
       description:
-        'Product engineer and creative technologist based in Butwal building considered interfaces, 3D web experiences, and resilient full-stack systems.',
+        'Product engineer and creative technologist based in Butwal building considered interfaces, structured case studies, and resilient full-stack systems.',
       email: 'mailto:info.ashokrimal@gmail.com',
       address: {
         '@type': 'PostalAddress',
@@ -86,8 +87,7 @@ const STRUCTURED_DATA = {
       creator: { '@id': `${SITE_URL}/#person` },
       featureList: [
         'Dynamic Postgres-backed CMS collections with ISR tag revalidation',
-        'Structured project case studies, experience timelines, and media shelves',
-        'Interactive 3D edition accessible at /a2',
+        'Structured project case studies, technology distributions, and media shelves',
         'Accessible reduced-motion scroll reveal choreography',
       ],
       offers: {
@@ -107,11 +107,13 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
       />
       <PageLayout
-        loadingVariant="page"
+        loadingVariant="home"
         errorTitle="Error loading page"
         errorMessage="We're having trouble loading the page. Please try again later."
       >
-        <HomeContent />
+        <HomeEntranceGate>
+          <HomeContent />
+        </HomeEntranceGate>
       </PageLayout>
     </>
   );

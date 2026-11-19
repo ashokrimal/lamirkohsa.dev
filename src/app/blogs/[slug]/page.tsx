@@ -136,11 +136,10 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
       ) : (
         <div className="mt-10 md:mt-14">
           <EmptyState
+            eyebrow="Journal Entry"
             icon={NotebookPen}
             message={CMS_SCHEMA.sections.home.blogArticle.emptyState.message}
             hint={CMS_SCHEMA.sections.home.blogArticle.emptyState.hint}
-            actionLabel={CMS_SCHEMA.sections.home.blogArticle.emptyState.actionLabel}
-            actionHref={CMS_SCHEMA.sections.home.blogArticle.emptyState.actionHref}
           />
         </div>
       )}

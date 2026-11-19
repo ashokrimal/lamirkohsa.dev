@@ -103,10 +103,9 @@ export default async function CollectionPage({
             <ExperienceTimeline
               items={mapTimeline(experienceRaw)}
               type="experience"
+              emptyEyebrow="Experience"
               emptyMessage={CMS_SCHEMA.collections.experience.emptyState.message}
               emptyHint={CMS_SCHEMA.collections.experience.emptyState.hint}
-              emptyActionLabel={CMS_SCHEMA.collections.experience.emptyState.actionLabel}
-              emptyActionHref={CMS_SCHEMA.collections.experience.emptyState.actionHref}
             />
           ))}
 
@@ -117,10 +116,9 @@ export default async function CollectionPage({
             <ExperienceTimeline
               items={mapTimeline(educationRaw)}
               type="education"
+              emptyEyebrow="Education"
               emptyMessage={CMS_SCHEMA.collections.education.emptyState.message}
               emptyHint={CMS_SCHEMA.collections.education.emptyState.hint}
-              emptyActionLabel={CMS_SCHEMA.collections.education.emptyState.actionLabel}
-              emptyActionHref={CMS_SCHEMA.collections.education.emptyState.actionHref}
             />
           ))}
 
@@ -131,11 +129,10 @@ export default async function CollectionPage({
             <SkillDisplay skills={skills} />
           ) : (
             <EmptyState
+              eyebrow="Technical Skills"
               icon={Sparkles}
               message={CMS_SCHEMA.collections.skills.emptyState.message}
               hint={CMS_SCHEMA.collections.skills.emptyState.hint}
-              actionLabel={CMS_SCHEMA.collections.skills.emptyState.actionLabel}
-              actionHref={CMS_SCHEMA.collections.skills.emptyState.actionHref}
             />
           ))}
 
@@ -150,11 +147,10 @@ export default async function CollectionPage({
             </div>
           ) : (
             <EmptyState
+              eyebrow="Certificates"
               icon={Award}
               message={CMS_SCHEMA.collections.certificates.emptyState.message}
               hint={CMS_SCHEMA.collections.certificates.emptyState.hint}
-              actionLabel={CMS_SCHEMA.collections.certificates.emptyState.actionLabel}
-              actionHref={CMS_SCHEMA.collections.certificates.emptyState.actionHref}
             />
           ))}
       </div>

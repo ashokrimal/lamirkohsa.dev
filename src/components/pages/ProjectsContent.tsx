@@ -1,9 +1,8 @@
 'use client'
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ArrowUpRight, FolderGit2, Layers, RotateCcw, SearchX } from 'lucide-react'
+import { FolderGit2, Layers, RotateCcw, SearchX } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_SCHEMA } from '@/lib/cms-schema'
@@ -25,7 +24,6 @@ import { mergeCmsTechDefinitions } from '@/lib/tech-metadata'
 import type { PageCopy } from '@/lib/site-content'
 import { uiStrings } from '@/lib/ui-strings'
 import { sensoryAudio } from '@/lib/sensory-audio'
-import { IndustryTrendsSidebar } from '@/components/projects/IndustryTrendsSidebar'
 import { ProjectQuickViewDrawer } from '@/components/projects/ProjectQuickViewDrawer'
 
 interface ProjectsContentProps {
@@ -159,55 +157,6 @@ export default function ProjectsContent({
     [projects],
   )
 
-  const trendContext = useMemo(() => {
-    const scopeProjects =
-      selectedCategory || selectedTechs.length > 0
-        ? filterProjects(projects, selectedCategory, selectedTechs, '')
-        : projects
-    const sourceProjects = scopeProjects.length > 0 ? scopeProjects : projects
-
-    const techSeen = new Set<string>()
-    const technologies: string[] = []
-
-    for (const tech of selectedTechs) {
-      const normalized = tech.trim().toLowerCase()
-      if (normalized && !techSeen.has(normalized)) {
-        techSeen.add(normalized)
-        technologies.push(tech.trim())
-      }
-    }
-
-    for (const project of sourceProjects) {
-      for (const tech of project.techStack) {
-        const normalized = tech.trim().toLowerCase()
-        if (normalized && !techSeen.has(normalized)) {
-          techSeen.add(normalized)
-          technologies.push(tech.trim())
-        }
-      }
-    }
-
-    const catSeen = new Set<string>()
-    const categories: string[] = []
-    if (selectedCategory?.trim()) {
-      catSeen.add(selectedCategory.trim().toLowerCase())
-      categories.push(selectedCategory.trim())
-    }
-    for (const project of sourceProjects) {
-      const cat = project.category?.trim()
-      if (cat && !catSeen.has(cat.toLowerCase())) {
-        catSeen.add(cat.toLowerCase())
-        categories.push(cat)
-      }
-    }
-
-    const projectTitles = sourceProjects
-      .map((project) => project.title?.trim())
-      .filter((title): title is string => Boolean(title))
-
-    return { technologies, categories, projectTitles }
-  }, [projects, selectedCategory, selectedTechs])
-
   const hasFilterOptions = useMemo(
     () =>
       Boolean(techTags?.length) ||
@@ -268,12 +217,6 @@ export default function ProjectsContent({
             </div>
           ) : undefined
         }
-        actions={
-          <Link href="/a2" className="apple-btn-secondary">
-            <span>3D edition</span>
-            <ArrowUpRight className="h-3.5 w-3.5 text-muted" aria-hidden="true" />
-          </Link>
-        }
       />
     </DevSection>
   )
@@ -303,100 +246,85 @@ export default function ProjectsContent({
             onClear={handleClearFilters}
           />
 
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10 items-start">
-            <div className="lg:col-span-8 min-w-0">
-              <AnimatePresence mode="wait" initial={false}>
-                {filteredProjects.length > 0 ? (
-                  <motion.div
-                    key={filterTransitionKey}
-                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
-                    transition={{ duration: reduceMotion ? 0.1 : 0.2, ease: EASE_SETTLE }}
-                    className="space-y-10 md:space-y-12"
+          <div className="min-w-0">
+            <AnimatePresence mode="wait" initial={false}>
+              {filteredProjects.length > 0 ? (
+                <motion.div
+                  key={filterTransitionKey}
+                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
+                  transition={{ duration: reduceMotion ? 0.1 : 0.2, ease: EASE_SETTLE }}
+                  className="space-y-10 md:space-y-12"
+                >
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    {filteredProjects.map((project, index) => (
+                      <motion.div
+                        key={project.slug || project.id || project.title}
+                        layout={!reduceMotion}
+                        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+                        transition={{
+                          opacity: {
+                            duration: reduceMotion ? 0.1 : 0.26,
+                            delay: reduceMotion ? 0 : Math.min(index * 0.04, 0.18),
+                            ease: EASE_SETTLE,
+                          },
+                          y: {
+                            duration: reduceMotion ? 0.1 : 0.28,
+                            delay: reduceMotion ? 0 : Math.min(index * 0.04, 0.18),
+                            ease: EASE_SETTLE,
+                          },
+                          layout: { duration: 0.28, ease: EASE_SETTLE },
+                        }}
+                      >
+                        <ProjectRow
+                          project={project}
+                          index={index}
+                          onQuickView={() => setQuickViewProject(project)}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={`empty-${filterTransitionKey}`}
+                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
+                  transition={{ duration: reduceMotion ? 0.1 : 0.22, ease: EASE_SETTLE }}
+                  className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line-medium bg-transparent px-6 py-12 text-center"
+                  role="status"
+                >
+                  <SearchX className="h-5 w-5 text-muted" aria-hidden="true" />
+                  <div className="space-y-1">
+                    <p className="text-sm text-ink">{uiStrings.projects.noMatchesTitle.en}</p>
+                    <p className="text-xs text-muted">{uiStrings.projects.noMatchesHint.en}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sensoryAudio.playClick()
+                      handleClearFilters()
+                    }}
+                    className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface/80 px-4 py-2 text-xs font-medium text-ink shadow-xs transition-colors hover:border-line-medium hover:text-accent cursor-pointer"
                   >
-                    <AnimatePresence mode="popLayout" initial={false}>
-                      {filteredProjects.map((project, index) => (
-                        <motion.div
-                          key={project.slug || project.id || project.title}
-                          layout={!reduceMotion}
-                          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
-                          transition={{
-                            opacity: {
-                              duration: reduceMotion ? 0.1 : 0.26,
-                              delay: reduceMotion ? 0 : Math.min(index * 0.04, 0.18),
-                              ease: EASE_SETTLE,
-                            },
-                            y: {
-                              duration: reduceMotion ? 0.1 : 0.28,
-                              delay: reduceMotion ? 0 : Math.min(index * 0.04, 0.18),
-                              ease: EASE_SETTLE,
-                            },
-                            layout: { duration: 0.28, ease: EASE_SETTLE },
-                          }}
-                        >
-                          <ProjectRow
-                            project={project}
-                            index={index}
-                            globalTechDefinitions={cmsTechDefinitions}
-                            activeTechs={selectedTechs}
-                            onQuickView={() => setQuickViewProject(project)}
-                          />
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key={`empty-${filterTransitionKey}`}
-                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
-                    transition={{ duration: reduceMotion ? 0.1 : 0.22, ease: EASE_SETTLE }}
-                    className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line-medium bg-transparent px-6 py-12 text-center"
-                    role="status"
-                  >
-                    <SearchX className="h-5 w-5 text-muted" aria-hidden="true" />
-                    <div className="space-y-1">
-                      <p className="text-sm text-ink">{uiStrings.projects.noMatchesTitle.en}</p>
-                      <p className="text-xs text-muted">{uiStrings.projects.noMatchesHint.en}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        sensoryAudio.playClick()
-                        handleClearFilters()
-                      }}
-                      className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface/80 px-4 py-2 text-xs font-medium text-ink shadow-xs transition-colors hover:border-line-medium hover:text-accent cursor-pointer"
-                    >
-                      <RotateCcw className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
-                      <span>{uiStrings.projects.clearFilters.en}</span>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <div className="lg:col-span-4 min-w-0">
-              <IndustryTrendsSidebar
-                technologies={trendContext.technologies}
-                categories={trendContext.categories}
-                projectTitles={trendContext.projectTitles}
-                activeFilterCount={activeFilterCount}
-                onSelectTech={handleToggleTech}
-              />
-            </div>
+                    <RotateCcw className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+                    <span>{uiStrings.projects.clearFilters.en}</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       ) : (
         <EmptyState
+          eyebrow="Selected Works"
           icon={FolderGit2}
           message={CMS_SCHEMA.sections.pages.projects.emptyState.message}
           hint={CMS_SCHEMA.sections.pages.projects.emptyState.hint}
-          actionLabel={CMS_SCHEMA.sections.pages.projects.emptyState.actionLabel}
-          actionHref={CMS_SCHEMA.sections.pages.projects.emptyState.actionHref}
         />
       )}
     </DevSection>

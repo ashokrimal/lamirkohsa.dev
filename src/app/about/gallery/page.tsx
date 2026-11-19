@@ -44,11 +44,10 @@ export default async function GalleryPage() {
           <GalleryGrid items={photos} columns={3} />
         ) : (
           <EmptyState
+            eyebrow="Photo Gallery"
             icon={ImageOff}
             message={CMS_SCHEMA.sections.pages.gallery.emptyState.message}
             hint={CMS_SCHEMA.sections.pages.gallery.emptyState.hint}
-            actionLabel={CMS_SCHEMA.sections.pages.gallery.emptyState.actionLabel}
-            actionHref={CMS_SCHEMA.sections.pages.gallery.emptyState.actionHref}
           />
         )}
       </div>

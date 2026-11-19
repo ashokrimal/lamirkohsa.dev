@@ -56,7 +56,15 @@ function ChannelSection({
   if (error) return <CmsErrorState message={error} />
 
   if (!hasContactMethod) {
-    return <EmptyState icon={Mail} message={uiStrings.contact.noMethod.en} />
+    const empty = CMS_SCHEMA.collections.siteSettings.records?.contactDetails.emptyState
+    return (
+      <EmptyState
+        eyebrow="Contact Details"
+        icon={Mail}
+        message={empty?.message || uiStrings.contact.noMethod.en}
+        hint={empty?.hint}
+      />
+    )
   }
 
   return (
@@ -70,7 +78,7 @@ function ChannelSection({
       {formEnabled && <ContactForm responseTime={contact.responseTime} />}
 
       <div className="space-y-6">
-        {hasChannels && (
+        {hasChannels ? (
           <motion.aside
             className="apple-card p-6 md:p-7 space-y-5"
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
@@ -163,9 +171,16 @@ function ChannelSection({
               })}
             </div>
           </motion.aside>
+        ) : (
+          <EmptyState
+            eyebrow="Direct Channels"
+            icon={Globe}
+            message="No direct email, phone, or social links listed yet."
+            hint="Direct email addresses, phone numbers, and verified social profiles will appear here once published."
+          />
         )}
 
-        {(contact.location || contact.timeZone || contact.availability) && (
+        {(contact.location || contact.timeZone || contact.availability) ? (
           <motion.aside
             className="apple-card p-6 md:p-7"
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
@@ -205,6 +220,13 @@ function ChannelSection({
               )}
             </dl>
           </motion.aside>
+        ) : (
+          <EmptyState
+            eyebrow="Studio Coordinates"
+            icon={MapPin}
+            message="Location, timezone, and availability are currently unlisted."
+            hint="Current city, local timezone, and studio availability will appear here once published."
+          />
         )}
       </div>
     </div>
