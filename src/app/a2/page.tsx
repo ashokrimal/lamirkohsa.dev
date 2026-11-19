@@ -1,115 +1,96 @@
-import type { Metadata } from 'next';
-import ImmersivePortfolio from '@/components/immersive/ImmersivePortfolio';
-import { SITE_NAME, SITE_URL } from '@/lib/seo';
-import '../immersive/immersive.css';
+import type { Metadata } from 'next'
+import A2Experience from '@/components/a2/A2Experience'
+import { getA2Content } from '@/lib/a2-content'
+import { SITE_URL } from '@/lib/seo'
+import './a2.css'
 
-export const revalidate = 300;
+export const revalidate = 300
 
-const PAGE_URL = `${SITE_URL}/a2`;
-const OG_IMAGE_URL = `${PAGE_URL}/opengraph-image`;
-const PAGE_TITLE = 'Ashok Rimal — Interactive 3D Creative Portfolio';
-const PAGE_DESCRIPTION =
-  "Explore Ashok Rimal's interactive 3D creative portfolio featuring scroll-driven WebGL scenes, selected case studies, toolkit, and studio contact.";
+const PAGE_URL = `${SITE_URL}/a2`
 
-export const metadata: Metadata = {
-  title: { absolute: PAGE_TITLE },
-  description: PAGE_DESCRIPTION,
-  alternates: { canonical: '/a2' },
-  openGraph: {
-    type: 'website',
-    title: PAGE_TITLE,
-    description: PAGE_DESCRIPTION,
-    url: PAGE_URL,
-    siteName: SITE_NAME,
-    images: [
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getA2Content()
+  const name = content.profile.fullName || content.brand.name || 'Portfolio'
+  const role = content.profile.headline || content.brand.role || 'Creative technologist'
+  const description =
+    content.hero.subtitle ||
+    content.profile.summary ||
+    `${name} — an interactive 3D portfolio of ${role.toLowerCase()} work, built with WebGL, motion and a live CMS.`
+  const title = `${name} — Interactive 3D Portfolio`
+
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: '/a2' },
+    openGraph: {
+      type: 'website',
+      title,
+      description,
+      url: PAGE_URL,
+      siteName: name,
+      images: [
+        {
+          url: '/a2/opengraph-image',
+          width: 1200,
+          height: 630,
+          alt: `${name} — Interactive 3D Portfolio`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/a2/opengraph-image'],
+    },
+  }
+}
+
+export default async function A2Page() {
+  const content = await getA2Content()
+  const name = content.profile.fullName || content.brand.name || ''
+  const role = content.profile.headline || content.brand.role || ''
+  const email = content.profile.email || content.contact.email || ''
+  const location = content.profile.location || content.contact.location || ''
+  const knownAbout = content.skills.flatMap((group) => group.items).slice(0, 14)
+
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
       {
-        url: '/a2/opengraph-image',
-        width: 1200,
-        height: 630,
-        alt: 'Ashok Rimal — Interactive 3D Creative Technologist Portfolio',
+        '@type': 'Person',
+        '@id': `${SITE_URL}/#person`,
+        name,
+        url: SITE_URL,
+        mainEntityOfPage: PAGE_URL,
+        jobTitle: role,
+        ...(content.profile.summary ? { description: content.profile.summary } : {}),
+        ...(email ? { email: `mailto:${email}` } : {}),
+        ...(location
+          ? { address: { '@type': 'PostalAddress', addressLocality: location, addressCountry: 'NP' } }
+          : {}),
+        sameAs: content.socials.map((social) => social.href),
+        ...(knownAbout.length ? { knowsAbout: knownAbout } : {}),
+      },
+      {
+        '@type': 'WebPage',
+        '@id': `${PAGE_URL}#page`,
+        url: PAGE_URL,
+        name: `${name} — Interactive 3D Portfolio`,
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        about: { '@id': `${SITE_URL}/#person` },
+        inLanguage: 'en-US',
       },
     ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: PAGE_TITLE,
-    description: PAGE_DESCRIPTION,
-    creator: '@lamirkohsa',
-    images: ['/a2/opengraph-image'],
-  },
-};
+  }
 
-const STRUCTURED_DATA = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Person',
-      '@id': `${SITE_URL}/#person`,
-      name: 'Ashok Rimal',
-      alternateName: 'lamirkohsa',
-      url: SITE_URL,
-      mainEntityOfPage: PAGE_URL,
-      jobTitle: 'Full-Stack Creative Technologist',
-      description:
-        'Full-stack creative technologist and product engineer designing interfaces, real-time 3D web experiences, and resilient systems.',
-      email: 'mailto:info.ashokrimal@gmail.com',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: 'Kathmandu',
-        addressCountry: 'NP',
-      },
-      sameAs: ['https://github.com/ashokrimal', 'https://www.linkedin.com'],
-      knowsAbout: [
-        'Next.js',
-        'React',
-        'TypeScript',
-        'Three.js',
-        'React Three Fiber',
-        'GLSL',
-        'GSAP',
-        'Framer Motion',
-        'PostgreSQL',
-        'Drizzle ORM',
-      ],
-    },
-    {
-      '@type': 'SoftwareApplication',
-      '@id': `${PAGE_URL}#software`,
-      name: 'Ashok Rimal Interactive 3D Portfolio (A2)',
-      url: PAGE_URL,
-      applicationCategory: 'DesignApplication',
-      applicationSubCategory: 'Interactive 3D Web Portfolio',
-      operatingSystem: 'Any (Web Browser with WebGL)',
-      browserRequirements: 'Requires JavaScript and a WebGL2-capable browser',
-      inLanguage: 'en-US',
-      isAccessibleForFree: true,
-      description: PAGE_DESCRIPTION,
-      image: OG_IMAGE_URL,
-      author: { '@id': `${SITE_URL}/#person` },
-      creator: { '@id': `${SITE_URL}/#person` },
-      featureList: [
-        'Scroll-linked Three.js 3D camera choreography',
-        'Real-time WebGL lighting, post-processing bloom, and depth of field',
-        'Interactive 3D project showcase cards with case-study modal inspection',
-        'Reduced-motion accessible chapter reveal animations',
-      ],
-      offers: {
-        '@type': 'Offer',
-        price: '0',
-        priceCurrency: 'USD',
-      },
-    },
-  ],
-};
-
-export default function A2HomePage() {
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <ImmersivePortfolio />
+      <A2Experience content={content} />
     </>
-  );
+  )
 }
