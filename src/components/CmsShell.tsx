@@ -79,9 +79,10 @@ const navGroups: NavGroup[] = [
   },
 ]
 
+// Music lives inside the Media vault (/admin/media/music), so the compact
+// mobile bar keeps a single Media entry instead of a second music shortcut.
 const mobileNavItems: NavItem[] = [
   { id: 'overview', label: 'Home', icon: LayoutDashboard, href: '/admin' },
-  { id: 'music', label: 'Music', icon: Music, href: '/admin/music' },
   { id: 'gallery', label: 'Gallery', icon: Image, href: '/admin/gallery' },
   { id: 'media', label: 'Media', icon: Film, href: '/admin/media' },
 ]

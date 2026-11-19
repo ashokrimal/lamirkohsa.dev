@@ -91,14 +91,21 @@ export async function POST(request: Request) {
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error)
     console.error('[studio] File upload failed:', detail)
-    const unauthorized = /token|unauthorized|forbidden|access/i.test(detail)
-    return NextResponse.json(
-      {
-        error: unauthorized
-          ? 'Blob storage rejected the upload. Check that BLOB_READ_WRITE_TOKEN belongs to an active Vercel Blob store, or paste an image URL instead.'
-          : 'File upload failed. Please try again.',
-      },
-      { status: 502 },
-    )
+
+    // The token env var can outlive the store it came from, so point the owner
+    // at the actual fix instead of a generic "try again".
+    let message = 'File upload failed. Please try again.'
+    if (/not found|deleted|does not exist|no such store/i.test(detail)) {
+      message =
+        'The Blob store linked to this deployment no longer exists. Create a Blob store in Vercel → Storage, connect it to this project so BLOB_READ_WRITE_TOKEN is issued, then redeploy. You can paste an image URL in the meantime.'
+    } else if (/private/i.test(detail) && /access/i.test(detail)) {
+      message =
+        'The connected Blob store is private, so images cannot be served publicly. Connect a public Blob store to this project and redeploy, or paste an image URL instead.'
+    } else if (/token|unauthorized|forbidden|access|permission/i.test(detail)) {
+      message =
+        'Blob storage rejected the upload. Check that BLOB_READ_WRITE_TOKEN belongs to an active Vercel Blob store, or paste an image URL instead.'
+    }
+
+    return NextResponse.json({ error: message }, { status: 502 })
   }
 }
