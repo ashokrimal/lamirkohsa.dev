@@ -25,6 +25,7 @@ import { CaseStudyLayerTooltip } from '@/components/projects/CaseStudyLayerToolt
 import { ShareProjectButton } from '@/components/projects/ShareProjectButton'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import type { CmsResult } from '@/lib/cms-schema'
+import { articleMetadata } from '@/lib/seo'
 import { isRepositoryUrl } from '@/lib/urls'
 
 export const revalidate = 300
@@ -57,20 +58,14 @@ export async function generateMetadata({
   if (result.status === 'error') return {}
   if (result.status !== 'ok' || !result.data.project) notFound()
   const project = result.data.project
-  const description = project.summary || project.description
-  return {
+  const description = (project.summary || project.description)?.replace(/\s+/g, ' ').trim().slice(0, 160) || undefined
+
+  return articleMetadata({
     title: project.title,
-    ...(description ? { description } : {}),
-    ...(project.image
-      ? {
-          openGraph: {
-            title: project.title,
-            ...(description ? { description } : {}),
-            images: [{ url: project.image }],
-          },
-        }
-      : {}),
-  }
+    description,
+    path: `/projects/${project.slug}`,
+    image: project.image,
+  })
 }
 
 export default async function ProjectCaseStudyPage({

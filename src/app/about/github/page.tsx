@@ -8,7 +8,7 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data['media-github'] : undefined)
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data['media-github'] : undefined, undefined, '/about/github')
 }
 
 export default function GitHubPage() {

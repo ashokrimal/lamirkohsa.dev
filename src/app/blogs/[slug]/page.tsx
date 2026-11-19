@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_COLLECTIONS, CMS_SCHEMA, type CmsResult } from '@/lib/cms-schema'
 import { uiStrings } from '@/lib/ui-strings'
+import { articleMetadata } from '@/lib/seo'
 import { NotebookPen } from 'lucide-react'
 
 export const revalidate = 300
@@ -60,21 +61,26 @@ export async function generateMetadata({
   if (result.status !== 'ok' || !result.data) notFound()
   const blog = result.data
   const payload = readPayload(blog)
-  const description = getBody(blog).slice(0, 160)
-  const image = typeof payload.imageUrl === 'string' ? payload.imageUrl : undefined
-  return {
-    title: `${blog.title} — ${uiStrings.journal.label.en}`,
-    ...(description ? { description } : {}),
-    ...(image
-      ? {
-          openGraph: {
-            title: blog.title,
-            ...(description ? { description } : {}),
-            images: [{ url: image }],
-          },
-        }
-      : {}),
-  }
+  const excerpt = typeof payload.excerpt === 'string' ? payload.excerpt : getBody(blog)
+  const description = excerpt.replace(/\s+/g, ' ').trim().slice(0, 160) || undefined
+  const image =
+    (typeof payload.coverUrl === 'string' && payload.coverUrl) ||
+    (typeof payload.imageUrl === 'string' && payload.imageUrl) ||
+    undefined
+  const date =
+    (typeof payload.publishAt === 'string' && payload.publishAt) ||
+    (typeof payload.date === 'string' && payload.date) ||
+    undefined
+  const publishedTime =
+    date && !Number.isNaN(Date.parse(date)) ? new Date(date).toISOString() : undefined
+
+  return articleMetadata({
+    title: blog.title,
+    description,
+    path: `/blogs/${blog.slug || toSlug(blog.title)}`,
+    image,
+    publishedTime,
+  })
 }
 
 export default async function BlogArticlePage({ params }: { params: { slug: string } }) {

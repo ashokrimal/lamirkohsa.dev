@@ -16,9 +16,11 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.journal : undefined, {
-    title: CMS_SCHEMA.sections.pages.blogs.label,
-  })
+  return pageMetadata(
+    copyResult.status === 'ok' ? copyResult.data.journal : undefined,
+    { title: CMS_SCHEMA.sections.pages.blogs.label },
+    '/blogs',
+  )
 }
 
 interface BlogPayload {

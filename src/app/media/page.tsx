@@ -10,9 +10,11 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.media : undefined, {
-    title: CMS_SCHEMA.sections.pages.media.label,
-  })
+  return pageMetadata(
+    copyResult.status === 'ok' ? copyResult.data.media : undefined,
+    { title: CMS_SCHEMA.sections.pages.media.label },
+    '/media',
+  )
 }
 
 export default function MediaPage() {

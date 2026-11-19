@@ -7,7 +7,7 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.about : undefined)
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.about : undefined, undefined, '/about')
 }
 
 export default function AboutPage() {

@@ -9,9 +9,11 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.contact : undefined, {
-    title: CMS_SCHEMA.sections.pages.contact.label,
-  })
+  return pageMetadata(
+    copyResult.status === 'ok' ? copyResult.data.contact : undefined,
+    { title: CMS_SCHEMA.sections.pages.contact.label },
+    '/contact',
+  )
 }
 
 export default async function ContactPage() {

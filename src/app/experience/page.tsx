@@ -7,7 +7,7 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.experience : undefined)
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.experience : undefined, undefined, '/experience')
 }
 
 export default function ExperiencePage() {

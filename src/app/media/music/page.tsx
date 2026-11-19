@@ -7,7 +7,7 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data['media-music'] : undefined)
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data['media-music'] : undefined, undefined, '/media/music')
 }
 
 export default function MusicCollectionPage() {

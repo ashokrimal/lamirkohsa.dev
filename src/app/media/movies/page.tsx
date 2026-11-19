@@ -7,7 +7,7 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data['media-films'] : undefined)
+  return pageMetadata(copyResult.status === 'ok' ? copyResult.data['media-films'] : undefined, undefined, '/media/movies')
 }
 
 export default function MoviesPage() {
