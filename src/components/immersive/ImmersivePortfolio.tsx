@@ -275,7 +275,7 @@ export default function ImmersivePortfolio() {
                       transition={{ duration: 0.55, delay: 0.08, ease: IMMERSIVE_EASE }}
                     >
                       <span>BASED IN</span>
-                      <strong>Kathmandu, NP</strong>
+                      <strong>Butwal, NP</strong>
                     </motion.div>
                     <motion.div
                       initial={reduceMotion ? false : { opacity: 0, y: 12 }}

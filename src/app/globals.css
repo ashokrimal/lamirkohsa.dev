@@ -2072,3 +2072,76 @@ html.theme-transitioning *::after {
   ::view-transition-old(root),
   ::view-transition-new(root) { animation: none !important; }
 }
+
+/* ---------------------------------------------------------------------------
+   Homepage media shelf
+   A compact grid of small, category-tagged posters instead of one wide row.
+--------------------------------------------------------------------------- */
+.media-shelf { display: flex; flex-direction: column; gap: 18px; }
+
+.media-shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.media-shelf-grid > li { display: flex; min-width: 0; }
+.media-shelf-grid > li > * { width: 100%; }
+
+.media-poster--compact { border-radius: 18px; }
+.media-poster--compact:hover { transform: translateY(-2px); }
+
+.media-poster-kind {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(8, 10, 12, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  font-family: var(--home-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.media-shelf-link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--home-line);
+  border-radius: 999px;
+  color: var(--ink);
+  font-family: var(--home-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color 0.25s ease, color 0.25s ease;
+}
+.media-shelf-link:hover { border-color: var(--home-cyan); color: var(--home-cyan); }
+
+/* Hero facts with only the location card left collapse into a slim bar. */
+.hero-facts--location-only { grid-template-columns: minmax(0, 1fr); }
+.hero-facts--location-only .hero-fact-card { min-height: 0; }
+
+.home-awakening .hero-facts--location-only .hero-fact-card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  min-height: 0;
+  padding: 13px 18px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.home-awakening .hero-facts--location-only .hero-fact-card strong {
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}

@@ -24,7 +24,7 @@ import { uiStrings } from '@/lib/ui-strings'
 import { type ProjectData } from '@/components/ui/ProjectCard'
 import { FeaturedProjectsCollection } from '@/components/projects/FeaturedProjectsCollection'
 import { PhotoCard } from '@/components/ui/PhotoCard'
-import { MediaPoster } from '@/components/ui/MediaPoster'
+import { MediaShelf } from '@/components/ui/MediaShelf'
 import { HorizontalCollection } from '@/components/ui/HorizontalCollection'
 import { HeroFacts } from '@/components/ui/HeroFacts'
 import { Reveal } from '@/components/ui/Reveal'
@@ -227,37 +227,13 @@ export default async function HomeContent() {
   const displayName = profileText('fullName') || site.brand.name || 'Ashok Rimal'
   const heroHeading = heroData.heading?.trim() || displayName
   const heroSubtitle = heroData.subtitle?.trim() || profileText('summary')
-  const heroLocation = heroData.location?.trim() || profileText('location') || site.contact.location
+  const heroLocation =
+    heroData.location?.trim() || profileText('location') || site.contact.location || 'Butwal, Nepal'
   const availability =
     profileText('availability') ||
     profileText('status') ||
     site.contact.availability ||
     site.footer.availabilityText
-
-  // Hero numbers are derived from the projects actually shown, never typed in
-  // the CMS, so the numbers can never disagree with the cards below them.
-  const disciplineCount = new Set(
-    featuredProjects
-      .map((project) => project.category?.trim())
-      .filter((category): category is string => Boolean(category)),
-  ).size
-  const heroStats =
-    featuredProjects.length > 0
-      ? [
-          {
-            label: uiStrings.hero.selectedProjects.en,
-            value: String(featuredProjects.length).padStart(2, '0'),
-          },
-          ...(disciplineCount > 0
-            ? [
-                {
-                  label: uiStrings.hero.disciplines.en,
-                  value: String(disciplineCount).padStart(2, '0'),
-                },
-              ]
-            : []),
-        ]
-      : undefined
 
   const renderSection = (section: SiteSectionDefinition, index: number) => {
     const sectionMeta = meta[section.id]
@@ -478,14 +454,10 @@ export default async function HomeContent() {
                   actionHref={section.emptyState.actionHref}
                 />
               ) : (
-                <HorizontalCollection
-                  items={mediaPreview.map(({ kind, item }) => (
-                    <MediaPoster key={`${kind}-${item.id}`} kind={kind} item={item} />
-                  ))}
-                  previewCount={sectionMeta?.previewCount ?? PREVIEW_COUNT}
+                <MediaShelf
+                  items={mediaPreview}
                   viewAllHref={sectionMeta?.href || section.route}
                   viewAllLabel={sectionMeta?.primaryLabel || uiStrings.home.viewAllMedia.en}
-                  ariaLabel={uiStrings.media.previewAria.en}
                 />
               )}
             </div>
@@ -621,7 +593,7 @@ export default async function HomeContent() {
           </Reveal>
 
           <Reveal className="home-hero-facts-wrap" delay={0.28}>
-            <HeroFacts stats={heroStats} location={heroLocation} embedded />
+            <HeroFacts location={heroLocation} embedded />
           </Reveal>
         </div>
       </section>

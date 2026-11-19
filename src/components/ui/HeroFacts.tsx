@@ -26,6 +26,9 @@ export function HeroFacts({
   const visibleStats = (stats || []).filter((stat) => stat.label || stat.value)
   if (visibleStats.length === 0 && lines.length === 0) return null
 
+  // With only the location left the cards collapse into one slim bar.
+  const locationOnly = visibleStats.length === 0
+
   const cards = (
     <>
       {visibleStats.map((stat, index) => (
@@ -52,7 +55,7 @@ export function HeroFacts({
   if (embedded) {
     return (
       <div
-        className="hero-facts hero-facts--embedded"
+        className={`hero-facts hero-facts--embedded${locationOnly ? ' hero-facts--location-only' : ''}`}
         role="region"
         aria-label={uiStrings.hero.ariaLabel.en}
       >
@@ -62,7 +65,10 @@ export function HeroFacts({
   }
 
   return (
-    <section className="shell-width hero-facts" aria-label={uiStrings.hero.ariaLabel.en}>
+    <section
+      className={`shell-width hero-facts${locationOnly ? ' hero-facts--location-only' : ''}`}
+      aria-label={uiStrings.hero.ariaLabel.en}
+    >
       {cards}
     </section>
   )

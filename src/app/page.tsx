@@ -50,11 +50,11 @@ const STRUCTURED_DATA = {
       mainEntityOfPage: SITE_URL,
       jobTitle: 'Product Engineer & Creative Technologist',
       description:
-        'Product engineer and creative technologist based in Kathmandu building considered interfaces, 3D web experiences, and resilient full-stack systems.',
+        'Product engineer and creative technologist based in Butwal building considered interfaces, 3D web experiences, and resilient full-stack systems.',
       email: 'mailto:info.ashokrimal@gmail.com',
       address: {
         '@type': 'PostalAddress',
-        addressLocality: 'Kathmandu',
+        addressLocality: 'Butwal',
         addressCountry: 'NP',
       },
       sameAs: ['https://github.com/ashokrimal', 'https://www.linkedin.com'],
