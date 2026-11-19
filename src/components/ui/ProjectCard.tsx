@@ -73,8 +73,21 @@ export function ProjectCard({
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               referrerPolicy="no-referrer"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+              className="object-cover transition-[transform,filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045] group-hover:contrast-[1.04] group-hover:saturate-[1.08] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             />
+            <div
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
+              aria-hidden="true"
+            />
+            <div
+              className="pointer-events-none absolute inset-x-4 bottom-3 flex items-center justify-between gap-2 text-white opacity-0 translate-y-1.5 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-y-0 motion-reduce:transition-none motion-reduce:translate-y-0"
+              aria-hidden="true"
+            >
+              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/85 truncate">
+                {uiStrings.project.viewCaseStudy.en}
+              </span>
+              <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-white" />
+            </div>
 
             {/* Apple Frosted Glass Pill Badges */}
             <div className="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none">

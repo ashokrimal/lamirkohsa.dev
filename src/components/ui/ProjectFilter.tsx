@@ -69,8 +69,10 @@ interface ProjectFilterControlsProps {
   activeFilterCount: number
   hasFilterOptions: boolean
   isFiltersOpen: boolean
+  hasAnyActiveState: boolean
   onSearchChange: (query: string) => void
   onToggleFilters: () => void
+  onClearAll: () => void
 }
 
 /**
@@ -82,8 +84,10 @@ export function ProjectFilterControls({
   activeFilterCount,
   hasFilterOptions,
   isFiltersOpen,
+  hasAnyActiveState,
   onSearchChange,
   onToggleFilters,
+  onClearAll,
 }: ProjectFilterControlsProps) {
   return (
     <>
@@ -148,6 +152,20 @@ export function ProjectFilterControls({
             }`}
             aria-hidden="true"
           />
+        </button>
+      )}
+
+      {hasAnyActiveState && !isFiltersOpen && (
+        <button
+          type="button"
+          onClick={() => {
+            sensoryAudio.playClick()
+            onClearAll()
+          }}
+          className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-line-subtle bg-surface/85 px-3 text-xs sm:text-sm font-medium text-ink-secondary whitespace-nowrap shrink-0 shadow-xs transition-colors hover:border-accent hover:bg-surface hover:text-ink cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          <RotateCcw className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+          <span>{uiStrings.projects.clearAll.en}</span>
         </button>
       )}
     </>
@@ -289,26 +307,6 @@ export function ProjectFilterPanel({
           transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
           className="mb-8 rounded-2xl border border-line-subtle bg-surface/85 backdrop-blur-xl p-4 sm:p-5 space-y-4"
         >
-          {hasAnyActiveState && (
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  sensoryAudio.playClick()
-                  onClear()
-                }}
-                className="inline-flex h-7 items-center gap-1.5 rounded-full border border-line-subtle bg-transparent px-2.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-line-medium hover:bg-overlay hover:text-ink cursor-pointer whitespace-nowrap shrink-0"
-              >
-                <RotateCcw className="h-3 w-3 text-accent" aria-hidden="true" />
-                <span>{uiStrings.projects.clearFilters.en}</span>
-                {uiStrings.projects.clearFilters.kr && (
-                  <span lang="ko" className="font-korean text-[10px] text-muted font-normal">
-                    {uiStrings.projects.clearFilters.kr}
-                  </span>
-                )}
-              </button>
-            </div>
-          )}
 
           {categories.length > 0 && (
             <div className="space-y-2">
@@ -400,18 +398,42 @@ export function ProjectFilterPanel({
               }`}
             >
               <div
-                className={`flex items-center gap-1.5 text-[11px] text-muted ${
+                className={`flex items-center justify-between gap-3 ${
                   categories.length > 0 ? 'pt-2' : ''
                 }`}
               >
-                <span className="font-mono uppercase tracking-[0.14em]">
-                  {uiStrings.projects.techStackLabel.en}
-                </span>
-                {uiStrings.projects.techStackLabel.kr && (
-                  <span lang="ko" className="font-korean text-[10px]">
-                    · {uiStrings.projects.techStackLabel.kr}
+                <div className="flex items-center gap-1.5 text-[11px] text-muted">
+                  <span className="font-mono uppercase tracking-[0.14em]">
+                    {uiStrings.projects.techStackLabel.en}
                   </span>
-                )}
+                  {uiStrings.projects.techStackLabel.kr && (
+                    <span lang="ko" className="font-korean text-[10px]">
+                      · {uiStrings.projects.techStackLabel.kr}
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={!hasAnyActiveState}
+                  onClick={() => {
+                    if (!hasAnyActiveState) return
+                    sensoryAudio.playClick()
+                    onClear()
+                  }}
+                  aria-label="Clear all project filters"
+                  className={`inline-flex h-7 items-center gap-1.5 rounded-full border px-3 text-[11px] font-medium whitespace-nowrap shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                    hasAnyActiveState
+                      ? 'border-line-subtle bg-overlay-faint text-ink-secondary hover:border-accent hover:bg-overlay hover:text-ink cursor-pointer'
+                      : 'border-line-hairline bg-transparent text-muted/45 cursor-not-allowed'
+                  }`}
+                >
+                  <RotateCcw
+                    className={`h-3 w-3 ${hasAnyActiveState ? 'text-accent' : 'text-muted/45'}`}
+                    aria-hidden="true"
+                  />
+                  <span>{uiStrings.projects.clearAll.en}</span>
+                </button>
               </div>
 
               <Tooltip.Provider delayDuration={200} skipDelayDuration={250}>

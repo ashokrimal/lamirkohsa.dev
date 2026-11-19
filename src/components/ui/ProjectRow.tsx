@@ -43,21 +43,56 @@ export function ProjectRow({
 
       <div className="grid items-center gap-6 md:grid-cols-12 md:gap-10">
         <div className={`md:col-span-7 ${reversed ? 'md:order-2' : ''}`}>
-          <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-line-hairline bg-overlay-faint">
+          <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-line-hairline bg-overlay-faint transition-[border-color,box-shadow] duration-500 ease-out group-hover:border-line-medium group-hover:shadow-md">
             {project.image ? (
-              <Image
-                src={project.image}
-                alt={project.altText || uiStrings.project.previewAlt(project.title)}
-                fill
-                sizes="(max-width: 768px) 100vw, 58vw"
-                referrerPolicy="no-referrer"
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-              />
+              <>
+                <Image
+                  src={project.image}
+                  alt={project.altText || uiStrings.project.previewAlt(project.title)}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 58vw"
+                  referrerPolicy="no-referrer"
+                  className="object-cover transition-[transform,filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045] group-hover:contrast-[1.04] group-hover:saturate-[1.08] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                />
+                <div
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
+                  aria-hidden="true"
+                />
+              </>
             ) : (
-              <div className="flex h-full items-center justify-center text-muted">
-                <Layers className="h-6 w-6" aria-hidden="true" />
+              <div className="flex h-full items-center justify-center bg-gradient-to-br from-overlay-faint via-transparent to-overlay-subtle text-muted transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
+                <Layers className="h-6 w-6 opacity-70 transition-opacity duration-300 group-hover:opacity-40" aria-hidden="true" />
               </div>
             )}
+            <div
+              className={`pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 sm:p-5 opacity-0 translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-y-0 motion-reduce:transition-none motion-reduce:translate-y-0 ${
+                project.image ? 'text-white' : 'bg-gradient-to-t from-surface/95 via-surface/75 to-transparent text-ink'
+              }`}
+              aria-hidden="true"
+            >
+              <div className="min-w-0 space-y-0.5">
+                <p
+                  className={`font-mono text-[10px] uppercase tracking-[0.16em] truncate ${
+                    project.image ? 'text-white/75' : 'text-muted'
+                  }`}
+                >
+                  {project.category || uiStrings.project.viewCaseStudy.en}
+                  {project.techStack && project.techStack.length > 0
+                    ? ` · ${project.techStack.slice(0, 3).join(' · ')}`
+                    : ''}
+                </p>
+                <p className="text-xs sm:text-sm font-medium truncate">
+                  {project.title}
+                </p>
+              </div>
+              <span
+                className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full backdrop-blur-md ${
+                  project.image ? 'bg-white/15 text-white' : 'border border-line-subtle bg-surface/90 text-accent'
+                }`}
+              >
+                <ArrowUpRight className="h-4 w-4" />
+              </span>
+            </div>
           </div>
         </div>
 

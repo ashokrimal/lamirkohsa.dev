@@ -1,8 +1,9 @@
 'use client'
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { FolderGit2, Layers, RotateCcw, SearchX } from 'lucide-react'
+import { ArrowUpRight, FolderGit2, Layers, RotateCcw, SearchX } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_SCHEMA } from '@/lib/cms-schema'
@@ -71,6 +72,7 @@ export default function ProjectsContent({
       if (q) setSearchQuery(q)
       if (cat) setSelectedCategory(cat)
       if (techs.length) setSelectedTechs(techs)
+      if (cat || techs.length) setIsFiltersOpen(true)
     } catch {}
   }, [])
 
@@ -258,11 +260,19 @@ export default function ProjectsContent({
                 activeFilterCount={activeFilterCount}
                 hasFilterOptions={hasFilterOptions}
                 isFiltersOpen={isFiltersOpen}
+                hasAnyActiveState={hasAnyActiveState}
                 onSearchChange={handleSearchChange}
                 onToggleFilters={() => setIsFiltersOpen((open) => !open)}
+                onClearAll={handleClearFilters}
               />
             </div>
           ) : undefined
+        }
+        actions={
+          <Link href="/a2" className="apple-btn-secondary">
+            <span>3D edition</span>
+            <ArrowUpRight className="h-3.5 w-3.5 text-muted" aria-hidden="true" />
+          </Link>
         }
       />
     </DevSection>

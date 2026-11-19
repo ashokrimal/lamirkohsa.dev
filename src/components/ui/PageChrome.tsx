@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PageHeroMotion } from '@/components/ui/PageHeroMotion'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { uiStrings } from '@/lib/ui-strings'
 
@@ -33,31 +34,15 @@ export function PageHero({
   actions?: ReactNode
 }) {
   return (
-    <header className="border-b border-line pb-10 md:pb-14">
-      <div className="max-w-3xl space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-muted">
-            {eyebrow}
-          </span>
-          {krEyebrow && (
-            <span lang="ko" className="font-korean text-[11px] text-muted">
-              · {krEyebrow}
-            </span>
-          )}
-        </div>
-
-        <h1 className="text-4xl md:text-6xl font-semibold tracking-[-0.05em] leading-[0.98] text-ink">
-          {title} {accent && <span className="text-accent">{accent}</span>}
-        </h1>
-
-        {description && (
-          <p className="max-w-2xl text-sm md:text-base text-muted leading-relaxed">{description}</p>
-        )}
-
-        {meta && <div className="flex flex-wrap items-center gap-2 pt-2">{meta}</div>}
-        {actions && <div className="flex flex-wrap items-center gap-3 pt-2">{actions}</div>}
-      </div>
-    </header>
+    <PageHeroMotion
+      eyebrow={eyebrow}
+      krEyebrow={krEyebrow}
+      title={title}
+      accent={accent}
+      description={description}
+      meta={meta}
+      actions={actions}
+    />
   )
 }
 

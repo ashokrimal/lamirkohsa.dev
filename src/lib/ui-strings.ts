@@ -149,6 +149,7 @@ export const uiStrings = {
     categoryLabel: text('Category', '카테고리'),
     techStackLabel: text('Technology', '기술 스택'),
     clearFilters: text('Reset', '초기화'),
+    clearAll: text('Clear All'),
     showingCount: (visible: number, total: number) =>
       visible === total
         ? `${total} ${total === 1 ? 'project' : 'projects'}`

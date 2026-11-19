@@ -2,7 +2,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowUpRight,
-  Camera,
   Code2,
   Compass,
   FolderGit2,
@@ -15,56 +14,32 @@ import {
   getHomepageSectionsConfigResult,
   getProfileContentResult,
   getPublishedCmsContentResult,
-  type CmsRecord,
   type HomepageSectionsConfig,
 } from '@/app/actions/content-cms'
 import { getPublicProfileSettingsResult } from '@/app/actions/media'
 import { EMPTY_SITE_CONFIG, getMediaCollections, getSiteConfig } from '@/lib/site-content'
 import { getProjectsResult } from '@/lib/projects'
-import { getGalleryResult } from '@/lib/gallery'
 import { CMS_COLLECTIONS, SECTIONS, type SiteSectionDefinition } from '@/lib/cms-schema'
 import { getMediaSections } from '@/lib/media-content'
 import { uiStrings } from '@/lib/ui-strings'
 import { type ProjectData } from '@/components/ui/ProjectCard'
 import { FeaturedProjectsCollection } from '@/components/projects/FeaturedProjectsCollection'
-import { PhotoCard } from '@/components/ui/PhotoCard'
+import { HomeTechDistribution } from '@/components/projects/HomeTechDistribution'
 import { MediaShelf } from '@/components/ui/MediaShelf'
-import { HorizontalCollection } from '@/components/ui/HorizontalCollection'
 import { Reveal } from '@/components/ui/Reveal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
-import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
 import { MetaChip, PageHero, PageSection, PageShell } from '@/components/ui/PageChrome'
 
 const PREVIEW_COUNT = 5
 
-type SectionMeta = HomepageSectionsConfig['sectionMeta'][string]
-
 /** The link each home section offers beside its heading. */
 const SECTION_LINKS: Record<string, { href: string; label: string }> = {
   about: { href: '/about', label: 'Read more' },
-  gallery: { href: '/about/gallery', label: 'Open gallery' },
-  experience: { href: '/experience', label: 'Full experience' },
-  education: { href: '/education', label: 'Education' },
   projects: { href: '/projects', label: 'All projects' },
   media: { href: '/media', label: 'Open media' },
   github: { href: '/about/github', label: 'GitHub activity' },
-}
-
-function mapTimeline(records: CmsRecord[]) {
-  return records.map((record) => {
-    const payload = record.payload || {}
-    return {
-      id: record.id,
-      title: record.title,
-      organization: typeof payload.organization === 'string' ? payload.organization : '',
-      period: typeof payload.period === 'string' ? payload.period : '',
-      location: typeof payload.location === 'string' ? payload.location : undefined,
-      description: typeof payload.description === 'string' ? payload.description : '',
-      highlights: Array.isArray(payload.highlights) ? (payload.highlights as string[]) : undefined,
-    }
-  })
 }
 
 function dedupe<T>(items: T[], keyFn: (item: T) => string | number | undefined): T[] {
@@ -78,15 +53,14 @@ function dedupe<T>(items: T[], keyFn: (item: T) => string | number | undefined):
 }
 
 /**
- * The homepage: hero, introduction, gallery images, experience, education,
- * projects, media and GitHub status, in the fixed order from `SECTIONS`.
+ * The homepage: hero, introduction, featured projects + technology distribution,
+ * media shelf and GitHub status, in the fixed order from `SECTIONS`.
  *
  * It renders through the same page frame as every other public page — hero,
  * numbered section headers, rules and card components — so the home page reads
  * as the first page of one site rather than a separate experience. Section
- * numbers and the hero's counts are derived from that registry and the
- * published records, never typed. A section with no published records keeps its
- * place and shows its own empty state.
+ * numbers are derived from that registry and the published records, never typed.
+ * A section with no published records keeps its place and shows its own empty state.
  */
 export default async function HomeContent() {
   const [
@@ -94,24 +68,18 @@ export default async function HomeContent() {
     sectionsResult,
     profileResult,
     projectsResult,
-    galleryResult,
     socialLinksResult,
     siteResult,
     mediaCollectionsResult,
-    experienceResult,
-    educationResult,
     publicSettingsResult,
   ] = await Promise.all([
     getHeroSectionConfigResult(),
     getHomepageSectionsConfigResult(),
     getProfileContentResult(),
     getProjectsResult(),
-    getGalleryResult(),
     getPublishedCmsContentResult(CMS_COLLECTIONS.socialLinks),
     getSiteConfig(),
     getMediaCollections(),
-    getPublishedCmsContentResult(CMS_COLLECTIONS.experience),
-    getPublishedCmsContentResult(CMS_COLLECTIONS.education),
     getPublicProfileSettingsResult(),
   ])
 
@@ -123,11 +91,8 @@ export default async function HomeContent() {
   const site = siteResult.status === 'ok' ? siteResult.data : EMPTY_SITE_CONFIG
   const mediaCollections = mediaCollectionsResult.status === 'ok' ? mediaCollectionsResult.data : []
   const projects = projectsResult.status === 'ok' ? projectsResult.data : []
-  const galleryData = galleryResult.status === 'ok' ? galleryResult.data : []
   const profile = profileResult.status === 'ok' ? profileResult.data : {}
   const socialLinksRaw = socialLinksResult.status === 'ok' ? socialLinksResult.data : []
-  const experienceRaw = experienceResult.status === 'ok' ? experienceResult.data : []
-  const educationRaw = educationResult.status === 'ok' ? educationResult.data : []
   const dataError = [socialLinksResult, siteResult].find(
     (result) => result.status === 'error',
   ) as { status: 'error'; message: string } | undefined
@@ -167,19 +132,6 @@ export default async function HomeContent() {
       phases: project.phases,
     }))
 
-  const galleryItems = dedupe(
-    galleryData.map((photo) => ({
-      id: photo.id,
-      title: photo.title,
-      imageUrl: photo.imageUrl,
-      altText: photo.altText,
-      category: photo.category,
-      description: photo.description ?? '',
-      location: photo.location,
-    })),
-    (photo) => photo.title || photo.imageUrl || photo.id,
-  )
-
   const socialLinks = dedupe(
     socialLinksRaw.map((s) => ({
       id: s.id,
@@ -195,8 +147,6 @@ export default async function HomeContent() {
   )
 
   const meta = sectionsConfig.sectionMeta || {}
-  const experience = mapTimeline(experienceRaw)
-  const education = mapTimeline(educationRaw)
   const githubUsername =
     publicSettingsResult.status === 'ok' ? publicSettingsResult.data?.githubUsername || '' : ''
 
@@ -300,70 +250,7 @@ export default async function HomeContent() {
         )
       }
 
-      // 2. PHOTOS / GALLERY
-      case 'gallery': {
-        if (galleryResult.status === 'error') {
-          return <CmsErrorState message={galleryResult.message} />
-        }
-        if (galleryItems.length === 0) {
-          return (
-            <EmptyState
-              icon={Camera}
-              message={section.emptyState.message}
-              hint={section.emptyState.hint}
-              actionLabel={section.emptyState.actionLabel}
-              actionHref={section.emptyState.actionHref}
-            />
-          )
-        }
-        return (
-          <HorizontalCollection
-            items={galleryItems.map((item) => (
-              <PhotoCard key={item.id} item={item} />
-            ))}
-            previewCount={sectionMeta?.previewCount ?? PREVIEW_COUNT}
-            viewAllHref={sectionMeta?.href || section.route}
-            viewAllLabel={sectionMeta?.primaryLabel || uiStrings.home.viewAllPhotographs.en}
-            ariaLabel={uiStrings.gallery.collectionAria.en}
-          />
-        )
-      }
-
-      // 3. EXPERIENCE
-      case 'experience': {
-        if (experienceResult.status === 'error') {
-          return <CmsErrorState message={experienceResult.message} />
-        }
-        return (
-          <ExperienceTimeline
-            items={experience}
-            type="experience"
-            emptyMessage={section.emptyState.message}
-            emptyHint={section.emptyState.hint}
-            emptyActionLabel={section.emptyState.actionLabel}
-            emptyActionHref={section.emptyState.actionHref}
-          />
-        )
-      }
-
-      // 4. EDUCATION
-      case 'education': {
-        if (educationResult.status === 'error') {
-          return <CmsErrorState message={educationResult.message} />
-        }
-        return (
-          <ExperienceTimeline
-            items={education}
-            type="education"
-            emptyMessage={section.emptyState.message}
-            emptyHint={section.emptyState.hint}
-            emptyActionLabel={section.emptyState.actionLabel}
-            emptyActionHref={section.emptyState.actionHref}
-          />
-        )
-      }
-
-      // 5. FEATURED PROJECTS
+      // 2. FEATURED PROJECTS & TECHNOLOGY DISTRIBUTION
       case 'projects': {
         if (projectsResult.status === 'error') {
           return <CmsErrorState message={projectsResult.message} />
@@ -380,13 +267,16 @@ export default async function HomeContent() {
           )
         }
         return (
-          <FeaturedProjectsCollection
-            projects={featuredProjects}
-            previewCount={sectionMeta?.previewCount ?? PREVIEW_COUNT}
-            viewAllHref={sectionMeta?.href || section.route}
-            viewAllLabel={sectionMeta?.primaryLabel || uiStrings.projects.viewAll.en}
-            ariaLabel={uiStrings.projects.featuredAria.en}
-          />
+          <div className="space-y-10 md:space-y-12">
+            <FeaturedProjectsCollection
+              projects={featuredProjects}
+              previewCount={sectionMeta?.previewCount ?? PREVIEW_COUNT}
+              viewAllHref={sectionMeta?.href || section.route}
+              viewAllLabel={sectionMeta?.primaryLabel || uiStrings.projects.viewAll.en}
+              ariaLabel={uiStrings.projects.featuredAria.en}
+            />
+            <HomeTechDistribution projects={projects} />
+          </div>
         )
       }
 
@@ -463,10 +353,6 @@ export default async function HomeContent() {
               </Link>
               <Link href="/contact" className="apple-btn-secondary">
                 <span>Get in touch</span>
-              </Link>
-              <Link href="/a2" className="apple-btn-secondary">
-                <span>3D edition</span>
-                <ArrowUpRight className="h-3.5 w-3.5 text-muted" aria-hidden="true" />
               </Link>
             </>
           }

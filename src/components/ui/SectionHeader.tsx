@@ -42,43 +42,50 @@ export function SectionHeader({
   const Heading = headingAs
 
   return (
-    <div className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-line ${className}`}>
-      <div className="max-w-2xl space-y-2">
-        {renderedEyebrow && (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted">
-              {renderedEyebrow}
+    <div className={`pb-6 border-b border-line ${className}`}>
+      {renderedEyebrow && (
+        <div className="mb-2 flex items-center gap-2">
+          <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted">
+            {renderedEyebrow}
+          </span>
+          {krEyebrow && (
+            <span lang="ko" className="text-[11px] font-korean text-muted tracking-normal font-normal">
+              · {krEyebrow}
             </span>
-            {krEyebrow && (
-              <span lang="ko" className="text-[11px] font-korean text-muted tracking-normal font-normal">
-                · {krEyebrow}
-              </span>
-            )}
-          </div>
-        )}
-        <Heading className="text-3xl md:text-5xl font-semibold text-ink tracking-[-0.04em] leading-[1.05]">
+          )}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between gap-3 sm:gap-6">
+        <Heading className="min-w-0 text-2xl sm:text-3xl md:text-5xl font-semibold text-ink tracking-[-0.04em] leading-[1.05]">
           {title}{' '}
           {accent && <span className="font-normal text-accent">{accent}</span>}
         </Heading>
-        {description && (
-          <p className="mt-2 text-sm md:text-base text-muted leading-relaxed font-normal">
-            {description}
-          </p>
+
+        {(actions || (linkHref && linkLabel)) && (
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {actions}
+            {linkHref && linkLabel && (
+              <Link
+                href={linkHref}
+                className="media-shelf-link group whitespace-nowrap shrink-0"
+              >
+                <span>{linkLabel}</span>
+                <ArrowUpRight
+                  className="h-3.5 w-3.5 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent"
+                  aria-hidden="true"
+                />
+              </Link>
+            )}
+          </div>
         )}
       </div>
 
-      <div className="flex items-center gap-3 shrink-0">
-        {actions}
-        {linkHref && linkLabel && (
-          <Link
-            href={linkHref}
-            className="apple-btn-secondary group"
-          >
-            <span>{linkLabel}</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-muted group-hover:text-ink transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </Link>
-        )}
-      </div>
+      {description && (
+        <p className="mt-2 max-w-2xl text-sm md:text-base text-muted leading-relaxed font-normal">
+          {description}
+        </p>
+      )}
     </div>
   )
 }

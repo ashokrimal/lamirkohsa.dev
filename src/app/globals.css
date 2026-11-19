@@ -2121,17 +2121,25 @@ html.theme-transitioning *::after {
   align-items: center;
   gap: 8px;
   padding: 9px 16px;
-  border: 1px solid var(--home-line);
+  border: 1px solid var(--home-line, var(--line));
   border-radius: 999px;
   color: var(--ink);
-  font-family: var(--home-mono);
+  font-family: var(--home-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace);
   font-size: 0.58rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   text-decoration: none;
   transition: border-color 0.25s ease, color 0.25s ease;
 }
-.media-shelf-link:hover { border-color: var(--home-cyan); color: var(--home-cyan); }
+.media-shelf-link:hover { border-color: var(--home-cyan, var(--accent)); color: var(--home-cyan, var(--accent)); }
+@media (max-width: 640px) {
+  .media-shelf-link {
+    gap: 6px;
+    padding: 7px 12px;
+    font-size: 0.54rem;
+    letter-spacing: 0.12em;
+  }
+}
 
 /* Hero facts with only the location card left collapse into a slim bar. */
 .hero-facts--location-only { grid-template-columns: minmax(0, 1fr); }

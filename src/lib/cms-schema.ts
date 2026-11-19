@@ -956,24 +956,6 @@ export const SECTIONS: readonly SiteSectionDefinition[] = [
     ...CMS_SCHEMA.sections.home.about,
   },
   {
-    id: 'gallery',
-    route: '/about/gallery',
-    component: 'HomeGallery',
-    ...CMS_SCHEMA.sections.home.gallery,
-  },
-  {
-    id: 'experience',
-    route: '/experience',
-    component: 'HomeExperience',
-    ...CMS_SCHEMA.sections.home.experience,
-  },
-  {
-    id: 'education',
-    route: '/education',
-    component: 'HomeEducation',
-    ...CMS_SCHEMA.sections.home.education,
-  },
-  {
     id: 'projects',
     route: '/projects',
     component: 'HomeProjects',
