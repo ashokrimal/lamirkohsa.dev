@@ -5,28 +5,27 @@ import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   LayoutDashboard,
-  FileText,
+  Gauge,
   FolderKanban,
   Image,
-  Music,
   Film,
   BookOpen,
   GraduationCap,
   Globe2,
   Github,
   Inbox,
-  Settings,
+  Navigation,
+  Sparkles,
+  UserCog,
   HelpCircle,
   Search,
   ExternalLink,
   Menu,
   X,
   Bell,
-  Sparkles,
   ChevronRight,
   LogOut,
   ShieldCheck,
-  CheckCircle2,
   PanelLeftClose,
   PanelLeftOpen,
   MoreHorizontal,
@@ -40,6 +39,8 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>
   badge?: string | number
   href?: string
+  /** Renders a button instead of a link; support opens the help modal. */
+  action?: 'support'
 }
 
 interface NavGroup {
@@ -49,42 +50,48 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: 'Command',
+    label: 'Content vaults',
     items: [
-      { id: 'overview', label: 'Studio overview', icon: LayoutDashboard, href: '/admin' },
-      { id: 'inbox', label: 'Inbox & mail', icon: Inbox, href: '/admin/inbox', badge: 'New' },
+      { id: 'gallery', label: 'Gallery', icon: Image, href: '/admin/gallery' },
+      // Music is a tab inside the Media vault (/admin/media/music).
+      { id: 'media', label: 'Media', icon: Film, href: '/admin/media' },
+      { id: 'projects', label: 'Projects', icon: FolderKanban, href: '/admin/projects' },
+      { id: 'career', label: 'Careers', icon: GraduationCap, href: '/admin/career' },
+      { id: 'blogs', label: 'Blogs', icon: BookOpen, href: '/admin/blogs' },
     ],
   },
   {
-    label: 'Content vaults',
+    label: 'Command',
     items: [
-      { id: 'music', label: 'Music', icon: Music, href: '/admin/music' },
-      { id: 'gallery', label: 'Gallery', icon: Image, href: '/admin/gallery' },
-      { id: 'media', label: 'Media', icon: Film, href: '/admin/media' },
-      { id: 'blogs', label: 'Blogs & writing', icon: BookOpen, href: '/admin/blogs' },
-      { id: 'projects', label: 'Projects & code', icon: FolderKanban, href: '/admin/projects' },
-      { id: 'career', label: 'Career', icon: GraduationCap, href: '/admin/career' },
+      { id: 'overview', label: 'Overview', icon: LayoutDashboard, href: '/admin' },
+      { id: 'dashboard', label: 'Dashboard', icon: Gauge, href: '/admin?section=content' },
+      { id: 'inbox', label: 'Inbox', icon: Inbox, href: '/admin/inbox', badge: 'New' },
     ],
   },
   {
     label: 'Studio',
     items: [
-      { id: 'meta', label: 'About & meta', icon: Globe2, href: '/admin/meta' },
-      { id: 'github', label: 'GitHub activity', icon: Github, href: '/admin/github' },
-      { id: 'appearance', label: 'Hero & footer', icon: Sparkles, href: '/admin?section=appearance' },
-      { id: 'setup', label: 'Content setup', icon: CheckCircle2, href: '/admin?section=setup' },
-      { id: 'content', label: 'All records', icon: FileText, href: '/admin?section=content' },
-      { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
+      { id: 'hero', label: 'Hero section', icon: Sparkles, href: '/admin?section=hero' },
+      { id: 'footer', label: 'Footer & navigation', icon: Navigation, href: '/admin?section=footer' },
+      { id: 'meta', label: 'Discovery', icon: Globe2, href: '/admin/meta' },
+      { id: 'github', label: 'GitHub', icon: Github, href: '/admin/github' },
+    ],
+  },
+  {
+    label: 'Settings',
+    items: [
+      { id: 'accounts', label: 'Accounts', icon: UserCog, href: '/admin/settings' },
+      { id: 'support', label: 'Support & docs', icon: HelpCircle, action: 'support' },
     ],
   },
 ]
 
-// Music lives inside the Media vault (/admin/media/music), so the compact
-// mobile bar keeps a single Media entry instead of a second music shortcut.
+// The compact bar carries the three places the owner checks daily; everything
+// else stays one tap away behind More.
 const mobileNavItems: NavItem[] = [
-  { id: 'overview', label: 'Home', icon: LayoutDashboard, href: '/admin' },
-  { id: 'gallery', label: 'Gallery', icon: Image, href: '/admin/gallery' },
-  { id: 'media', label: 'Media', icon: Film, href: '/admin/media' },
+  { id: 'home', label: 'Home', icon: LayoutDashboard, href: '/admin' },
+  { id: 'dashboard', label: 'Dashboard', icon: Gauge, href: '/admin?section=content' },
+  { id: 'inbox', label: 'Inbox', icon: Inbox, href: '/admin/inbox' },
 ]
 
 export default function CmsShell({ children }: { children: React.ReactNode }) {
@@ -249,20 +256,15 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
                   {group.items.map((item) => {
                     const Icon = item.icon
                     const active = isActive(item)
-                    return (
-                      <Link
-                        key={`${group.label}-${item.label}`}
-                        href={hrefFor(item)}
-                        title={collapsed ? item.label : undefined}
-                        aria-current={active ? 'page' : undefined}
-                        className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                          collapsed ? 'lg:justify-center lg:px-0' : ''
-                        } ${
-                          active
-                            ? 'bg-teal-50/80 font-semibold text-teal-900 shadow-2xs'
-                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                        }`}
-                      >
+                    const itemClass = `flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                      collapsed ? 'lg:justify-center lg:px-0' : ''
+                    } ${
+                      active
+                        ? 'bg-teal-50/80 font-semibold text-teal-900 shadow-2xs'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    }`
+                    const content = (
+                      <>
                         <Icon className={`h-4 w-4 shrink-0 ${active ? 'text-teal-600' : 'text-slate-400'}`} />
                         <span className={collapsed ? 'lg:hidden' : ''}>{item.label}</span>
                         {item.badge && (
@@ -270,6 +272,32 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
                             {item.badge}
                           </span>
                         )}
+                      </>
+                    )
+
+                    if (item.action === 'support') {
+                      return (
+                        <button
+                          key={`${group.label}-${item.label}`}
+                          type="button"
+                          onClick={() => setHelpModalOpen(true)}
+                          title={collapsed ? item.label : undefined}
+                          className={itemClass}
+                        >
+                          {content}
+                        </button>
+                      )
+                    }
+
+                    return (
+                      <Link
+                        key={`${group.label}-${item.label}`}
+                        href={hrefFor(item)}
+                        title={collapsed ? item.label : undefined}
+                        aria-current={active ? 'page' : undefined}
+                        className={itemClass}
+                      >
+                        {content}
                       </Link>
                     )
                   })}
@@ -279,30 +307,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="space-y-1 border-t border-slate-100 bg-slate-50/50 p-2.5">
-            <Link
-              href="/admin/settings"
-              title={collapsed ? 'Settings' : undefined}
-              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-white hover:text-slate-900 ${
-                collapsed ? 'lg:justify-center lg:px-0' : ''
-              }`}
-            >
-              <Settings className="h-4 w-4 shrink-0 text-slate-400" />
-              <span className={collapsed ? 'lg:hidden' : ''}>Settings &amp; account</span>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => setHelpModalOpen(true)}
-              title={collapsed ? 'Support & docs' : undefined}
-              className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-white hover:text-slate-900 ${
-                collapsed ? 'lg:justify-center lg:px-0' : ''
-              }`}
-            >
-              <HelpCircle className="h-4 w-4 shrink-0 text-slate-400" />
-              <span className={collapsed ? 'lg:hidden' : ''}>Support &amp; docs</span>
-            </button>
-
-            <div className={`mt-2 flex items-center gap-2 border-t border-slate-200/60 px-2 pt-2 ${collapsed ? 'lg:justify-center lg:px-0' : 'justify-between'}`}>
+            <div className={`flex items-center gap-2 px-2 py-1 ${collapsed ? 'lg:justify-center lg:px-0' : 'justify-between'}`}>
               <div className="flex min-w-0 items-center gap-2.5">
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">AR</div>
                 <div className={`min-w-0 ${collapsed ? 'lg:hidden' : ''}`}>

@@ -301,6 +301,17 @@ export default function VaultEditor({
                 />
               )}
 
+              {field.type === 'document' && (
+                <ImageUploadField
+                  label={field.label}
+                  value={String(value ?? '')}
+                  onChange={(next) => setField(field.key, next)}
+                  hint={field.help}
+                  accept="image/*,application/pdf"
+                  allowPdf
+                />
+              )}
+
               {field.type === 'audio' && (
                 <AudioUploadField
                   label={field.label}

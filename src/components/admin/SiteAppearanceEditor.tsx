@@ -118,10 +118,13 @@ export default function SiteAppearanceEditor({
   hero,
   navigation,
   footer,
+  mode = 'all',
 }: {
   hero?: Payload
   navigation?: Payload
   footer?: Payload
+  /** Dedicated hero or footer sections show only their own form. */
+  mode?: 'all' | 'hero' | 'footer'
 }) {
   const router = useRouter()
   const [heroImage, setHeroImage] = useState(text(hero, 'imageUrl'))
@@ -164,6 +167,7 @@ export default function SiteAppearanceEditor({
 
   return (
     <div className="space-y-6">
+      {mode !== 'footer' && (
       <form onSubmit={submitHero} className="rounded-2xl border border-slate-200/90 bg-surface p-5 md:p-6 space-y-4">
         <div>
           <h2 className="text-sm font-semibold text-slate-900">Hero</h2>
@@ -227,7 +231,9 @@ export default function SiteAppearanceEditor({
           </button>
         </div>
       </form>
+      )}
 
+      {mode !== 'hero' && (
       <form onSubmit={submitChrome} className="rounded-2xl border border-slate-200/90 bg-surface p-5 md:p-6 space-y-5">
         <div>
           <h2 className="text-sm font-semibold text-slate-900">Footer & navigation</h2>
@@ -295,6 +301,7 @@ export default function SiteAppearanceEditor({
           </button>
         </div>
       </form>
+      )}
     </div>
   )
 }

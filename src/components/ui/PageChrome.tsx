@@ -122,24 +122,31 @@ export function PageSection({
 }
 
 export function PageNav({
-  backHref = '/',
+  backHref,
   backLabel = uiStrings.pageNav.back.en,
   nextHref,
   nextLabel,
 }: {
+  /** Pass a parent route to show a back link; pages never link back home. */
   backHref?: string
   backLabel?: string
   nextHref?: string
   nextLabel?: string
 }) {
+  if (!backHref && !(nextHref && nextLabel)) return null
+
   return (
     <nav className="mt-14 md:mt-20 pt-6 border-t border-line flex flex-wrap items-center justify-between gap-4 text-xs">
-      <Link
-        href={backHref}
-        className="inline-flex items-center gap-1.5 text-muted hover:text-ink transition-colors"
-      >
-        ← {backLabel}
-      </Link>
+      {backHref ? (
+        <Link
+          href={backHref}
+          className="inline-flex items-center gap-1.5 text-muted hover:text-ink transition-colors"
+        >
+          ← {backLabel}
+        </Link>
+      ) : (
+        <span />
+      )}
       {nextHref && nextLabel && (
         <Link
           href={nextHref}

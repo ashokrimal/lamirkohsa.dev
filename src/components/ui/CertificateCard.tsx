@@ -9,6 +9,8 @@ export interface CertificateData {
   credentialUrl?: string
   credentialId?: string
   description?: string
+  /** Uploaded photo of the certificate, or a PDF of it. */
+  imageUrl?: string
 }
 
 interface CertificateCardProps {
@@ -16,10 +18,24 @@ interface CertificateCardProps {
 }
 
 export function CertificateCard({ certificate }: CertificateCardProps) {
+  const isPdf = certificate.imageUrl ? /\.pdf(?:$|[?#])/i.test(certificate.imageUrl) : false
+
   return (
     <Card3D maxTilt={5}>
       <article className="apple-card p-6 flex flex-col justify-between h-full hover:border-line-medium transition-all">
         <div>
+          {certificate.imageUrl && !isPdf && (
+            <div className="mb-4 overflow-hidden rounded-xl border border-line-faint bg-overlay">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={certificate.imageUrl}
+                alt={certificate.title}
+                className="h-40 w-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          )}
+
           <div className="flex items-center justify-between gap-2 mb-3">
             <span className="w-10 h-10 rounded-2xl bg-overlay text-accent border border-line-faint flex items-center justify-center shrink-0">
               <Award className="w-5 h-5" />
@@ -50,6 +66,18 @@ export function CertificateCard({ certificate }: CertificateCardProps) {
             <span className="text-[11px] text-muted">
               ID: {certificate.credentialId}
             </span>
+          )}
+          {isPdf && certificate.imageUrl && (
+            <a
+              href={certificate.imageUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="apple-btn-secondary !py-1.5 !px-3.5 !text-xs"
+            >
+              <span>Open certificate</span>
+              <span lang="ko" className="font-korean text-[10px] text-muted">증명서</span>
+              <ArrowUpRight className="w-3 h-3 text-muted" />
+            </a>
           )}
           {certificate.credentialUrl && (
             <a

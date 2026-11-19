@@ -69,10 +69,12 @@ export default async function CollectionPage({
     id: record.id,
     title: record.title,
     organization: stringValue(record.payload, 'organization'),
-    date: stringValue(record.payload, 'date') || undefined,
+    // Older entries stored the year as `period`.
+    date: stringValue(record.payload, 'date') || stringValue(record.payload, 'period') || undefined,
     credentialUrl: stringValue(record.payload, 'credentialUrl') || undefined,
     credentialId: stringValue(record.payload, 'credentialId') || undefined,
     description: stringValue(record.payload, 'description') || undefined,
+    imageUrl: stringValue(record.payload, 'imageUrl') || undefined,
   }))
 
   return (

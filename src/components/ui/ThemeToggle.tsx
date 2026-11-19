@@ -32,7 +32,7 @@ export function ThemeToggle({ className = '', variant = 'button' }: ThemeToggleP
     // Render placeholder with same dimensions to prevent layout shifts
     return (
       <div
-        className={`w-8 h-8 rounded-full bg-overlay ${className}`}
+        className={`h-8 w-8 rounded-xl ${className}`}
         aria-hidden="true"
       />
     )
@@ -88,7 +88,7 @@ export function ThemeToggle({ className = '', variant = 'button' }: ThemeToggleP
         sensoryAudio.playToggle()
         toggleTheme(originFromEvent(event))
       }}
-      className={`p-1.5 rounded-full bg-overlay hover:bg-overlay-medium text-muted hover:text-ink transition-all duration-200 cursor-pointer active:scale-95 ${className}`}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-xl text-muted hover:bg-overlay hover:text-ink transition-colors duration-200 cursor-pointer active:scale-95 ${className}`}
       title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
       aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
     >

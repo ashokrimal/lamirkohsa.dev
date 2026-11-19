@@ -146,7 +146,7 @@ export default function ContactForm({
             type="text"
             id="name"
             name="name"
-            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60"
+            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-base text-ink caret-accent focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60 md:text-sm"
             placeholder={uiStrings.contact.namePlaceholder}
             required
           />
@@ -160,7 +160,7 @@ export default function ContactForm({
             type="email"
             id="email"
             name="email"
-            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60"
+            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-base text-ink caret-accent focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60 md:text-sm"
             placeholder={uiStrings.contact.emailPlaceholder}
             required
           />
@@ -174,7 +174,7 @@ export default function ContactForm({
             type="text"
             id="subject"
             name="subject"
-            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60"
+            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-base text-ink caret-accent focus:border-accent focus:bg-surface focus:outline-none transition-all placeholder:text-muted/60 md:text-sm"
             placeholder={uiStrings.contact.subjectPlaceholder}
             required
           />
@@ -188,7 +188,7 @@ export default function ContactForm({
             id="message"
             name="message"
             rows={4}
-            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-sm text-ink focus:border-accent focus:bg-surface focus:outline-none transition-all leading-relaxed placeholder:text-muted/60"
+            className="w-full rounded-2xl border border-line bg-overlay-faint px-4 py-2.5 text-base text-ink caret-accent focus:border-accent focus:bg-surface focus:outline-none transition-all leading-relaxed placeholder:text-muted/60 md:text-sm"
             placeholder={uiStrings.contact.messagePlaceholder}
             required
           />

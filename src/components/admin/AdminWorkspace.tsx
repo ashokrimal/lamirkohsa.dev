@@ -746,10 +746,18 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
     return cmsRecords.filter((r) => r.collection === activeContentCategory)
   }, [cmsRecords, activeContentCategory])
 
+  // Each chrome editor reads its own Site Settings record; looking them all up
+  // by the hero key used to hand the hero payload to the footer form.
+  const settingRecordKeys: Record<string, string> = {
+    'Hero Section': CMS_KEYS.hero,
+    Navigation: CMS_KEYS.navigation,
+    Footer: CMS_KEYS.footer,
+  }
   const settingRecord = (title: string) =>
     cmsRecords.find(
       (record) =>
-        record.collection === CMS_COLLECTIONS.siteSettings && record.payload?.key === CMS_KEYS.hero,
+        record.collection === CMS_COLLECTIONS.siteSettings &&
+        record.payload?.key === settingRecordKeys[title],
     )
 
   const openCreateRecord = (collection: string = CMS_COLLECTIONS.projects) => {
@@ -769,16 +777,23 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
 
   return (
     <div className="space-y-6">
-      {/* SECTION: HERO & FOOTER */}
-      {section === 'appearance' && (
+      {/* SECTION: HERO / FOOTER & NAVIGATION */}
+      {['appearance', 'hero', 'footer'].includes(section) && (
         <div className="space-y-6">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">Hero & footer</h1>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">
+              {section === 'hero' ? 'Hero section' : section === 'footer' ? 'Footer & navigation' : 'Hero & footer'}
+            </h1>
             <p className="text-xs text-slate-500 mt-0.5">
-              Change the homepage image and copy, and point footer links anywhere without touching code.
+              {section === 'hero'
+                ? 'The homepage headline, supporting copy and portrait image.'
+                : section === 'footer'
+                  ? 'Footer copy and the footer, collection and social links shown across the site.'
+                  : 'Change the homepage image and copy, and point footer links anywhere without touching code.'}
             </p>
           </div>
           <SiteAppearanceEditor
+            mode={section === 'hero' ? 'hero' : section === 'footer' ? 'footer' : 'all'}
             hero={settingRecord('Hero Section')?.payload}
             navigation={settingRecord('Navigation')?.payload}
             footer={settingRecord('Footer')?.payload}

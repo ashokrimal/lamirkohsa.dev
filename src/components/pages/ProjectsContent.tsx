@@ -25,7 +25,6 @@ import type { PageCopy } from '@/lib/site-content'
 import { uiStrings } from '@/lib/ui-strings'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { IndustryTrendsSidebar } from '@/components/projects/IndustryTrendsSidebar'
-import { TechDistributionChart } from '@/components/projects/TechDistributionChart'
 import { ProjectQuickViewDrawer } from '@/components/projects/ProjectQuickViewDrawer'
 
 interface ProjectsContentProps {
@@ -36,7 +35,7 @@ interface ProjectsContentProps {
 }
 
 const PAGE_KEY = 'projects'
-const DEFAULT_SECTIONS = ['intro', 'work', 'distribution'] as const
+const DEFAULT_SECTIONS = ['intro', 'work'] as const
 const EASE_SETTLE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
 type SectionId = (typeof DEFAULT_SECTIONS)[number]
@@ -393,25 +392,7 @@ export default function ProjectsContent({
     </DevSection>
   )
 
-  const distribution = (
-    <DevSection
-      pageKey={PAGE_KEY}
-      sectionId="distribution"
-      label={uiStrings.projects.distribution.title.en}
-      fallbackAccent="var(--accent-secondary)"
-      className="pt-0"
-    >
-      {!error && projects.length > 0 && (
-        <TechDistributionChart
-          projects={projects}
-          selectedTechs={selectedTechs}
-          onToggleTech={handleToggleTech}
-        />
-      )}
-    </DevSection>
-  )
-
-  const sectionMap: Record<SectionId, JSX.Element> = { intro, work, distribution }
+  const sectionMap: Record<SectionId, JSX.Element> = { intro, work }
 
   return (
     <ErrorBoundary>
@@ -423,7 +404,6 @@ export default function ProjectsContent({
               <>
                 {intro}
                 {work}
-                {distribution}
               </>
             ) : (
               orderedSections.map((sectionId) => <div key={sectionId}>{sectionMap[sectionId]}</div>)

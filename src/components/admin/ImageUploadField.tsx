@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Loader2, Upload, X } from 'lucide-react'
+import { FileText, Loader2, Upload, X } from 'lucide-react'
 import {
   IMAGE_UPLOAD_MAX_BYTES,
   prepareImageForUpload,
@@ -16,6 +16,12 @@ interface ImageUploadFieldProps {
   name?: string
   hint?: string
   accept?: string
+  /** Renders a PDF value as a document link instead of a broken image preview. */
+  allowPdf?: boolean
+}
+
+function isPdfUrl(url: string) {
+  return /\.pdf(?:$|[?#])/i.test(url)
 }
 
 /**
@@ -30,10 +36,12 @@ export default function ImageUploadField({
   name,
   hint = 'Upload from your device or paste an image URL.',
   accept = 'image/*',
+  allowPdf = false,
 }: ImageUploadFieldProps) {
   const fileInput = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const pdfValue = allowPdf && isPdfUrl(value)
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return
@@ -82,14 +90,30 @@ export default function ImageUploadField({
 
       {value ? (
         <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-2.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={value}
-            alt="Selected upload preview"
-            className="h-16 w-16 shrink-0 rounded-lg border border-slate-200 object-cover"
-          />
+          {pdfValue ? (
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500">
+              <FileText className="h-6 w-6" aria-hidden="true" />
+            </span>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={value}
+              alt="Selected upload preview"
+              className="h-16 w-16 shrink-0 rounded-lg border border-slate-200 object-cover"
+            />
+          )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-[11px] text-slate-600">{value}</p>
+            {pdfValue && (
+              <a
+                href={value}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1 inline-block text-[11px] font-medium text-teal-700 hover:underline"
+              >
+                Open PDF ↗
+              </a>
+            )}
             <button
               type="button"
               onClick={() => fileInput.current?.click()}
@@ -133,7 +157,7 @@ export default function ImageUploadField({
         inputMode="url"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="https://…"
+        placeholder={allowPdf ? 'Paste an image or PDF link' : 'https://…'}
         aria-label={`${label} URL`}
         className="w-full rounded-xl border border-line-subtle bg-surface px-3 py-2 text-sm text-ink focus:border-accent focus:outline-none"
       />

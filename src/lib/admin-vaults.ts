@@ -23,6 +23,7 @@ export type VaultFieldType =
   | 'textarea'
   | 'url'
   | 'image'
+  | 'document'
   | 'audio'
   | 'select'
   | 'tags'
@@ -222,6 +223,8 @@ const metaProfileFields: VaultField[] = [
   { key: 'summary', label: 'Short summary', type: 'textarea', span: 'full' },
   { key: 'bio', label: 'Long bio', type: 'markdown', span: 'full' },
   { key: 'location', label: 'Location', type: 'text' },
+  { key: 'availability', label: 'Availability', type: 'text' },
+  { key: 'focus', label: 'Current focus', type: 'text' },
   { key: 'email', label: 'Public email', type: 'text' },
   { key: 'github', label: 'GitHub URL', type: 'url' },
   { key: 'linkedin', label: 'LinkedIn URL', type: 'url' },
@@ -231,6 +234,7 @@ const metaProfileFields: VaultField[] = [
 const metaSocialFields: VaultField[] = [
   { key: 'label', label: 'Label', type: 'text', placeholder: 'GitHub' },
   { key: 'href', label: 'URL', type: 'url', placeholder: 'https://github.com/…' },
+  { key: 'handle', label: 'Handle shown publicly', type: 'text', placeholder: '@ashokrimal' },
   { key: 'kind', label: 'Icon key', type: 'text', placeholder: 'github' },
   { key: 'featured', label: 'Show in the footer / about page', type: 'boolean', span: 'full' },
 ]
@@ -403,6 +407,13 @@ export const VAULTS: Record<VaultId, VaultDefinition> = {
         fields: [
           { key: 'category', label: 'Skill group', type: 'text', placeholder: 'Engineering' },
           {
+            key: 'items',
+            label: 'Skills in this group',
+            type: 'tags',
+            span: 'full',
+            help: 'Each skill is a separate tag, shown in the skills section.',
+          },
+          {
             key: 'level',
             label: 'Level',
             type: 'select',
@@ -423,8 +434,16 @@ export const VAULTS: Record<VaultId, VaultDefinition> = {
         collections: [CMS_COLLECTIONS.certificates],
         fields: [
           { key: 'organization', label: 'Issuer', type: 'text' },
-          { key: 'period', label: 'Date', type: 'text', placeholder: '2025' },
-          { key: 'credentialUrl', label: 'Credential URL', type: 'url', span: 'full' },
+          { key: 'date', label: 'Date', type: 'text', placeholder: '2025' },
+          { key: 'credentialId', label: 'Credential ID', type: 'text', placeholder: 'Optional' },
+          { key: 'credentialUrl', label: 'Credential link', type: 'url', span: 'full' },
+          {
+            key: 'imageUrl',
+            label: 'Photo or certificate PDF',
+            type: 'document',
+            span: 'full',
+            help: 'Upload a photo or the certificate PDF from your device, or paste a link.',
+          },
           { key: 'description', label: 'Description', type: 'textarea', span: 'full' },
         ],
       },
@@ -437,6 +456,13 @@ export const VAULTS: Record<VaultId, VaultDefinition> = {
           { key: 'organization', label: 'Awarding body', type: 'text' },
           { key: 'period', label: 'Date', type: 'text', placeholder: '2025' },
           { key: 'location', label: 'Location', type: 'text' },
+          {
+            key: 'imageUrl',
+            label: 'Photo or award PDF',
+            type: 'document',
+            span: 'full',
+            help: 'Upload a photo or the award PDF from your device, or paste a link.',
+          },
           { key: 'description', label: 'Description', type: 'textarea', span: 'full' },
         ],
       },

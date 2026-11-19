@@ -11,7 +11,10 @@ import { ABOUT_SECTIONS, CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { uiStrings } from '@/lib/ui-strings'
 import { Compass, Globe, Heart, Sparkles } from 'lucide-react'
 import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
+import { TechDistributionChart } from '@/components/projects/TechDistributionChart'
+import { getPublicProfileSettingsResult } from '@/app/actions/media'
 import { getPageCopy } from '@/lib/site-content'
+import { getProjectsResult } from '@/lib/projects'
 
 function value(profile: Record<string, unknown>, key: string) {
   const raw = profile[key]
@@ -33,13 +36,15 @@ export default async function AboutContent() {
   const copy = copyResult.status === 'ok' ? copyResult.data.about : undefined
   const sections = copy?.sections
 
-  const [profileResult, experienceResult, educationResult, skillsResult, socialResult] =
+  const [profileResult, experienceResult, educationResult, skillsResult, socialResult, projectsResult, publicSettingsResult] =
     await Promise.all([
       getProfileContentResult(),
       getPublishedCmsContentResult(CMS_COLLECTIONS.experience),
       getPublishedCmsContentResult(CMS_COLLECTIONS.education),
       getPublishedCmsContentResult(CMS_COLLECTIONS.skills),
       getPublishedCmsContentResult(CMS_COLLECTIONS.socialLinks),
+      getProjectsResult(),
+      getPublicProfileSettingsResult(),
     ])
 
   const experienceRaw = experienceResult.status === 'ok' ? experienceResult.data : []
@@ -107,6 +112,13 @@ export default async function AboutContent() {
   ).filter((s) => s.href)
 
   const profile = profileResult.status === 'ok' ? profileResult.data : {}
+  const projects = projectsResult.status === 'ok' ? projectsResult.data : []
+  // The studio's Settings > Accounts page stores the GitHub username on the
+  // profile settings row, not on the CMS profile record.
+  const githubUsername =
+    publicSettingsResult.status === 'ok' && publicSettingsResult.data?.githubUsername
+      ? publicSettingsResult.data.githubUsername
+      : profile.github
   const profileData = profile as Record<string, unknown>
   const summary = value(profileData, 'summary')
   const bio = value(profileData, 'bio')
@@ -355,8 +367,8 @@ export default async function AboutContent() {
       >
         {profileResult.status === 'error' ? (
           <CmsErrorState message={profileResult.message} />
-        ) : profile.github ? (
-          <GitHubActivitySparkline username={profile.github} showRecentCommits={true} />
+        ) : githubUsername ? (
+          <GitHubActivitySparkline username={githubUsername} showRecentCommits={true} />
         ) : (
           <EmptyState
             icon={Globe}
@@ -367,6 +379,26 @@ export default async function AboutContent() {
           />
         )}
       </PageSection>
+
+      {/* 8. TECHNOLOGY DISTRIBUTION — the closing view of how the work is built */}
+      {projects.length > 0 && (
+        <PageSection
+          id="technology"
+          number={ABOUT_SECTIONS.length}
+          eyebrow={sections?.distribution?.eyebrow}
+          title={sections?.distribution?.title ?? 'Technology distribution'}
+          accent={sections?.distribution?.accent}
+          description={sections?.distribution?.description}
+          linkHref={"/projects"}
+          linkLabel={"All projects"}
+        >
+          {projectsResult.status === 'error' ? (
+            <CmsErrorState message={projectsResult.message} />
+          ) : (
+            <TechDistributionChart projects={projects} />
+          )}
+        </PageSection>
+      )}
 
       <PageNav />
     </PageShell>
