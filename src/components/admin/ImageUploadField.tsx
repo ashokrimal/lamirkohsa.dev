@@ -2,6 +2,11 @@
 
 import { useRef, useState } from 'react'
 import { Loader2, Upload, X } from 'lucide-react'
+import {
+  IMAGE_UPLOAD_MAX_BYTES,
+  prepareImageForUpload,
+  uploadErrorMessage,
+} from '@/lib/prepare-image'
 
 interface ImageUploadFieldProps {
   label: string
@@ -35,12 +40,20 @@ export default function ImageUploadField({
     setError(null)
     setIsUploading(true)
     try {
+      // Device photos are resized here so the request stays inside the platform
+      // body limit; large originals used to fail before reaching the route.
+      const prepared = await prepareImageForUpload(file)
+      if (prepared.size > IMAGE_UPLOAD_MAX_BYTES) {
+        throw new Error(
+          'That image is still larger than 4MB after compressing. Try a smaller image or paste a URL.',
+        )
+      }
       const body = new FormData()
-      body.set('file', file)
+      body.set('file', prepared)
       const response = await fetch('/api/admin/upload', { method: 'POST', body })
-      const result = await response.json().catch(() => ({}))
+      const result = await response.json().catch(() => ({}) as { url?: string; error?: string })
       if (!response.ok || !result.url) {
-        throw new Error(result.error || `Upload failed (${response.status}).`)
+        throw new Error(uploadErrorMessage(response, result))
       }
       onChange(result.url)
     } catch (uploadError) {

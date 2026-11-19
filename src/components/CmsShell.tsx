@@ -13,6 +13,7 @@ import {
   BookOpen,
   GraduationCap,
   Globe2,
+  Github,
   Inbox,
   Settings,
   HelpCircle,
@@ -69,10 +70,11 @@ const navGroups: NavGroup[] = [
     label: 'Studio',
     items: [
       { id: 'meta', label: 'About & meta', icon: Globe2, href: '/admin/meta' },
+      { id: 'github', label: 'GitHub activity', icon: Github, href: '/admin/github' },
       { id: 'appearance', label: 'Hero & footer', icon: Sparkles, href: '/admin?section=appearance' },
       { id: 'setup', label: 'Content setup', icon: CheckCircle2, href: '/admin?section=setup' },
       { id: 'content', label: 'All records', icon: FileText, href: '/admin?section=content' },
-      { id: 'settings', label: 'Settings', icon: Settings, href: '/admin?section=settings' },
+      { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
     ],
   },
 ]
@@ -127,6 +129,8 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
   function isActive(item: NavItem) {
     const [path, query] = hrefFor(item).split('?')
     if (query) return pathname === path && search === query
+    // Section pages such as /admin/media/anime keep their vault highlighted.
+    if (path !== '/admin') return pathname === path || pathname.startsWith(`${path}/`)
     return pathname === path
   }
 
@@ -275,14 +279,14 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
 
           <div className="space-y-1 border-t border-slate-100 bg-slate-50/50 p-2.5">
             <Link
-              href="/admin/account"
-              title={collapsed ? 'Account' : undefined}
+              href="/admin/settings"
+              title={collapsed ? 'Settings' : undefined}
               className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-white hover:text-slate-900 ${
                 collapsed ? 'lg:justify-center lg:px-0' : ''
               }`}
             >
-              <ShieldCheck className="h-4 w-4 shrink-0 text-slate-400" />
-              <span className={collapsed ? 'lg:hidden' : ''}>Owner account</span>
+              <Settings className="h-4 w-4 shrink-0 text-slate-400" />
+              <span className={collapsed ? 'lg:hidden' : ''}>Settings &amp; account</span>
             </Link>
 
             <button

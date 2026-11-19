@@ -751,7 +751,7 @@ export const CMS_SCHEMA: CmsSchema = {
           message: 'GitHub status is not connected yet.',
           hint: 'Set your GitHub username in admin settings to show activity here.',
           actionLabel: 'Connect GitHub in admin',
-          actionHref: '/admin?section=settings',
+          actionHref: '/admin/settings',
         },
       },
     },

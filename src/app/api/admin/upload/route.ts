@@ -2,11 +2,27 @@ import { put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
 import { getAdminActorId } from '@/lib/admin-auth'
 
-export async function POST(request: Request) {
+export const dynamic = 'force-dynamic'
 
+/**
+ * Vercel Blob accepts either the store integration name or the legacy name,
+ * depending on how the store was attached to the project.
+ */
+function blobToken() {
+  return (
+    process.env.BLOB_READ_WRITE_TOKEN ||
+    process.env.VERCEL_BLOB_READ_WRITE_TOKEN ||
+    process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN ||
+    ''
+  )
+}
+
+export async function POST(request: Request) {
   const ownerId = await getAdminActorId()
   if (!ownerId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+
+  const token = blobToken()
+  if (!token) {
     return NextResponse.json(
       {
         error:
@@ -15,7 +31,20 @@ export async function POST(request: Request) {
       { status: 503 },
     )
   }
-  const formData = await request.formData()
+
+  let formData: FormData
+  try {
+    formData = await request.formData()
+  } catch {
+    return NextResponse.json(
+      {
+        error:
+          'The upload could not be read. Very large files are rejected before they reach the studio — try a smaller image.',
+      },
+      { status: 413 },
+    )
+  }
+
   const file = formData.get('file')
   const isImage = file instanceof File && file.type.startsWith('image/')
   const isAudio =
@@ -23,21 +52,53 @@ export async function POST(request: Request) {
     (file.type.startsWith('audio/') || /\.(mp3|wav|m4a|ogg|flac|aac)$/i.test(file.name))
   const isPdf = file instanceof File && file.type === 'application/pdf'
   if (!(isImage || isAudio || isPdf)) {
-    return NextResponse.json({ error: 'Please upload an image, audio track or PDF file.' }, { status: 400 })
-  }
-  const sizeLimit = isAudio ? 30 : isPdf ? 20 : 8
-  if (file.size > sizeLimit * 1024 * 1024) {
     return NextResponse.json(
-      { error: isAudio ? 'Audio tracks must be smaller than 30MB.' : isPdf ? 'PDFs must be smaller than 20MB.' : 'Images must be smaller than 8MB.' },
+      { error: 'Please upload an image, audio track or PDF file.' },
       { status: 400 },
     )
   }
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/^-+|-+$/g, '') || 'upload-file'
+
+  // The deployment platform rejects request bodies above ~4.5 MB before this
+  // handler runs, so the image ceiling stays below it. The studio resizes
+  // device photos in the browser to fit.
+  const sizeLimit = isAudio ? 30 : isPdf ? 20 : 4
+  if (file.size > sizeLimit * 1024 * 1024) {
+    return NextResponse.json(
+      {
+        error: isAudio
+          ? 'Audio tracks must be smaller than 30MB.'
+          : isPdf
+            ? 'PDFs must be smaller than 20MB.'
+            : 'Images must be smaller than 4MB. The studio shrinks device photos automatically — try again, or paste an image URL.',
+      },
+      { status: 400 },
+    )
+  }
+
+  const safeName =
+    file.name.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/^-+|-+$/g, '') || 'upload-file'
+
   try {
-    const blob = await put(`site/${ownerId}/${Date.now()}-${safeName}`, file, { access: 'public', addRandomSuffix: false })
-    return NextResponse.json({ url: blob.url, kind: isAudio ? 'audio' : isPdf ? 'pdf' : 'image' })
+    const blob = await put(`site/${ownerId}/${Date.now()}-${safeName}`, file, {
+      access: 'public',
+      addRandomSuffix: false,
+      token,
+    })
+    return NextResponse.json({
+      url: blob.url,
+      kind: isAudio ? 'audio' : isPdf ? 'pdf' : 'image',
+    })
   } catch (error) {
-    console.error('[v0] File upload failed:', error)
-    return NextResponse.json({ error: 'File upload failed. Please try again.' }, { status: 502 })
+    const detail = error instanceof Error ? error.message : String(error)
+    console.error('[studio] File upload failed:', detail)
+    const unauthorized = /token|unauthorized|forbidden|access/i.test(detail)
+    return NextResponse.json(
+      {
+        error: unauthorized
+          ? 'Blob storage rejected the upload. Check that BLOB_READ_WRITE_TOKEN belongs to an active Vercel Blob store, or paste an image URL instead.'
+          : 'File upload failed. Please try again.',
+      },
+      { status: 502 },
+    )
   }
 }

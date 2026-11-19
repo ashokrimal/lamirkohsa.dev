@@ -66,7 +66,8 @@ export function CmsCommandPalette({
     { id: 'music', label: 'Music Library', icon: Music, category: 'Navigation', hint: `${musicCount} tracks` },
     { id: 'catalog', label: 'Media Catalog', icon: Film, category: 'Navigation', hint: 'MAL & IMDb sync' },
     { id: 'inbox', label: 'Messages & Inquiries', icon: Inbox, category: 'Navigation', hint: 'Contact responses' },
-    { id: 'settings', label: 'Profile & Integrations', icon: Settings, category: 'Settings', hint: 'API keys & usernames' },
+    { id: 'github', label: 'GitHub Activity', icon: FileText, category: 'Navigation', hint: 'Repos & commits', href: '/admin/github' },
+    { id: 'settings', label: 'Settings & Account', icon: Settings, category: 'Settings', hint: 'Integrations, password & session', href: '/admin/settings' },
   ]
 
   const quickActions = [
@@ -90,6 +91,11 @@ export function CmsCommandPalette({
   const handleSelect = (item: (typeof allItems)[0]) => {
     if ('externalUrl' in item && item.externalUrl) {
       window.open(item.externalUrl, '_blank')
+      onClose()
+      return
+    }
+    if ('href' in item && item.href) {
+      window.location.assign(item.href as string)
       onClose()
       return
     }

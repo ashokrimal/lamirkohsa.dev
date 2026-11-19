@@ -23,6 +23,7 @@ import {
   RotateCcw,
   Search,
   Trash2,
+  X,
 } from 'lucide-react'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
 import { CmsToastProvider, useCmsToast } from '@/components/admin/ui/CmsToast'
@@ -33,6 +34,7 @@ import {
   type BulkResetMode,
 } from '@/app/actions/content-cms'
 import {
+  VAULT_ROUTES,
   fieldsForTab,
   publicPathForCollection,
   tabForCollection,
@@ -284,11 +286,25 @@ function VaultCard({
   )
 }
 
-function VaultWorkspaceInner({ vault, records, storageReady }: { vault: VaultDefinition; records: VaultRecord[]; storageReady: boolean }) {
+function VaultWorkspaceInner({
+  vault,
+  records,
+  storageReady,
+  initialTabId,
+}: {
+  vault: VaultDefinition
+  records: VaultRecord[]
+  storageReady: boolean
+  initialTabId?: string
+}) {
   const router = useRouter()
   const { toast } = useCmsToast()
   const [items, setItems] = useState(records)
-  const [activeTabId, setActiveTabId] = useState(vault.tabs[0].id)
+  const [activeTabId, setActiveTabId] = useState(
+    initialTabId && vault.tabs.some((tab) => tab.id === initialTabId)
+      ? initialTabId
+      : vault.tabs[0].id,
+  )
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
   const [editor, setEditor] = useState<{ record?: VaultRecord; collection: string } | null>(null)
@@ -309,11 +325,22 @@ function VaultWorkspaceInner({ vault, records, storageReady }: { vault: VaultDef
     [items, activeTab],
   )
 
+  const filterKey = activeTab.filterKey ?? vault.filterKey
+  const categories = activeTab.categories ?? vault.categories ?? []
+  const filterLabel =
+    filterKey === 'playlist'
+      ? 'Playlist'
+      : vault.id === 'media'
+        ? 'Watch status'
+        : filterKey === 'category'
+          ? 'Category'
+          : 'Filter'
+
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return tabRecords.filter((record) => {
-      if (category !== 'all' && vault.filterKey) {
-        const value = text(record.payload[vault.filterKey])
+      if (category !== 'all' && filterKey) {
+        const value = text(record.payload[filterKey])
         if (value.toLowerCase() !== category.toLowerCase()) return false
       }
       if (!needle) return true
@@ -327,7 +354,7 @@ function VaultWorkspaceInner({ vault, records, storageReady }: { vault: VaultDef
         .toLowerCase()
       return haystack.includes(needle)
     })
-  }, [tabRecords, query, category, vault.filterKey])
+  }, [tabRecords, query, category, filterKey])
 
   const liveCount = items.filter((record) => record.status === 'published').length
   const defaultCollection = activeTab.collections[0]
@@ -446,7 +473,6 @@ function VaultWorkspaceInner({ vault, records, storageReady }: { vault: VaultDef
     }
   }
 
-  const categories = vault.categories ?? []
   const Icon = ICONS[vault.icon]
 
   return (
@@ -497,79 +523,99 @@ function VaultWorkspaceInner({ vault, records, storageReady }: { vault: VaultDef
       </section>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xs">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 gap-1 overflow-x-auto pb-1 lg:pb-0">
-            {vault.tabs.map((tab) => {
-              const count = items.filter((record) => tab.collections.includes(record.collection)).length
-              const active = tab.id === activeTab.id
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveTabId(tab.id)
-                    setCategory('all')
-                  }}
-                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
-                    active ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  {tab.label}
-                  <span className={`rounded-full px-1.5 text-[9px] ${active ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-500'}`}>{count}</span>
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <div className="relative min-w-0 flex-1 lg:w-60">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={`Search ${vault.itemNoun}…`}
-                aria-label={`Search ${vault.itemNoun}`}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50/70 py-2 pl-8 pr-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-teal-500 focus:bg-white"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setResetConfirm('')
-                setResetMode('draft')
-                setResetScope('tab')
-                setResetOpen(true)
-              }}
-              title="Bulk content reset"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-2 text-[11px] font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Bulk reset</span>
-            </button>
-          </div>
-        </div>
-
-        {categories.length > 0 && (
-          <div className="mt-2 flex gap-1 overflow-x-auto border-t border-slate-100 pt-2">
-            {['all', ...categories].map((option) => (
+        <div className="flex min-w-0 gap-1 overflow-x-auto pb-1">
+          {vault.tabs.map((tab) => {
+            const count = items.filter((record) => tab.collections.includes(record.collection)).length
+            const active = tab.id === activeTab.id
+            return (
               <button
-                key={option}
+                key={tab.id}
                 type="button"
-                onClick={() => setCategory(option)}
-                className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-colors ${
-                  category === option
-                    ? 'bg-teal-50 text-teal-800 ring-1 ring-teal-200'
-                    : 'text-slate-500 hover:bg-slate-100'
+                onClick={() => {
+                  setActiveTabId(tab.id)
+                  setCategory('all')
+                  // Keep the address bar on this section's URL without refetching.
+                  if (typeof window !== 'undefined') {
+                    window.history.replaceState(
+                      null,
+                      '',
+                      `${VAULT_ROUTES[vault.id]}/${tab.slug ?? tab.id}`,
+                    )
+                  }
+                }}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
+                  active ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
-                {option === 'all' ? 'All categories' : option}
+                {tab.label}
+                <span className={`rounded-full px-1.5 text-[9px] ${active ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-500'}`}>{count}</span>
               </button>
-            ))}
+            )
+          })}
+        </div>
+
+        {/* Search and category filter share one line, like the public projects page. */}
+        <div className="mt-2 flex flex-nowrap items-center gap-1.5 border-t border-slate-100 pt-2">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={`Search ${vault.itemNoun}…`}
+              aria-label={`Search ${vault.itemNoun}`}
+              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50/70 py-2 pl-8 pr-8 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-teal-500 focus:bg-white"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
           </div>
-        )}
+
+          {categories.length > 0 && (
+            <label className="flex shrink-0 items-center gap-1.5">
+              <span className="hidden text-[11px] font-medium text-slate-500 md:inline">
+                {filterLabel}
+              </span>
+              <select
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                aria-label={`Filter by ${filterLabel.toLowerCase()}`}
+                className="h-9 max-w-[9.5rem] rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none focus:border-teal-500"
+              >
+                <option value="all">All ({tabRecords.length})</option>
+                {categories.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setResetConfirm('')
+              setResetMode('draft')
+              setResetScope('tab')
+              setResetOpen(true)
+            }}
+            title="Bulk content reset"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-[11px] font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Bulk reset</span>
+          </button>
+        </div>
       </div>
 
-      {vault.allowBulkUpload && (
+      {vault.allowBulkUpload && activeTab.id !== 'music' && (
         <BulkDropzone
           domain={vault.id === 'gallery' ? 'gallery' : 'media'}
           collection={activeTab.collections[0]}
@@ -813,6 +859,7 @@ export default function VaultWorkspace(props: {
   vault: VaultDefinition
   records: VaultRecord[]
   storageReady: boolean
+  initialTabId?: string
 }) {
   return (
     <CmsToastProvider>

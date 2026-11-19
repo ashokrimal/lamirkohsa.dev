@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ImagePlus, Loader2, UploadCloud } from 'lucide-react'
 import { createCmsContent } from '@/app/actions/content-cms'
 import { useCmsToast } from '@/components/admin/ui/CmsToast'
+import { prepareImageForUpload, uploadErrorMessage } from '@/lib/prepare-image'
 import type { VaultRecord } from '@/lib/admin-vaults'
 
 interface UploadPreview {
@@ -45,13 +46,14 @@ export default function BulkDropzone({
     for (const file of files) {
       setProgress(`Uploading ${completed + 1} of ${files.length}…`)
       try {
+        const prepared = await prepareImageForUpload(file)
         const body = new FormData()
-        body.set('file', file)
+        body.set('file', prepared)
         const response = await fetch('/api/admin/upload', { method: 'POST', body })
-        const result = await response.json().catch(() => ({}))
-        if (!response.ok || !result.url) throw new Error(result.error || `Upload failed (${response.status}).`)
+        const result = await response.json().catch(() => ({}) as { url?: string; error?: string })
+        if (!response.ok || !result.url) throw new Error(uploadErrorMessage(response, result))
 
-        const title = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim() || 'Untitled frame'
+        const title = prepared.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim() || 'Untitled frame'
         const payload =
           domain === 'gallery'
             ? {

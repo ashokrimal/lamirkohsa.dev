@@ -50,6 +50,11 @@ export interface VaultTab {
   collections: string[]
   fields?: VaultField[]
   keyed?: boolean
+  /** Overrides the vault's category filter for this section only. */
+  filterKey?: string
+  categories?: string[]
+  /** Section pages that focus this tab, e.g. /admin/media/music. */
+  slug?: string
 }
 
 export interface VaultDefinition {
@@ -256,7 +261,17 @@ export const VAULTS: Record<VaultId, VaultDefinition> = {
     storageSensitive: true,
     filterKey: 'playlist',
     categories: ['Singles', 'Album', 'EP', 'Playlist', 'Live'],
-    tabs: [{ id: 'music', label: 'All tracks', collections: [CMS_COLLECTIONS.music], fields: musicFields }],
+    tabs: [
+      {
+        id: 'music',
+        label: 'All tracks',
+        collections: [CMS_COLLECTIONS.music],
+        fields: musicFields,
+        filterKey: 'playlist',
+        categories: ['Singles', 'Album', 'EP', 'Playlist', 'Live'],
+        slug: 'music',
+      },
+    ],
     fields: musicFields,
   },
   gallery: {
@@ -289,9 +304,36 @@ export const VAULTS: Record<VaultId, VaultDefinition> = {
     filterKey: 'category',
     categories: ['Watching', 'Watchlist', 'Completed', 'Dropped'],
     tabs: [
-      { id: 'movies', label: 'Movies', collections: [CMS_COLLECTIONS.movies], fields: mediaFields },
-      { id: 'anime', label: 'Anime', collections: [CMS_COLLECTIONS.anime], fields: mediaFields },
-      { id: 'manga', label: 'Manga', collections: [CMS_COLLECTIONS.manga], fields: mediaFields },
+      {
+        id: 'music',
+        label: 'Music',
+        collections: [CMS_COLLECTIONS.music],
+        fields: musicFields,
+        filterKey: 'playlist',
+        categories: ['Singles', 'Album', 'EP', 'Playlist', 'Live'],
+        slug: 'music',
+      },
+      {
+        id: 'movies',
+        label: 'Movies',
+        collections: [CMS_COLLECTIONS.movies],
+        fields: mediaFields,
+        slug: 'movies',
+      },
+      {
+        id: 'anime',
+        label: 'Anime',
+        collections: [CMS_COLLECTIONS.anime],
+        fields: mediaFields,
+        slug: 'anime',
+      },
+      {
+        id: 'manga',
+        label: 'Manga',
+        collections: [CMS_COLLECTIONS.manga],
+        fields: mediaFields,
+        slug: 'manga',
+      },
     ],
     fields: mediaFields,
   },
@@ -333,9 +375,16 @@ export const VAULTS: Record<VaultId, VaultDefinition> = {
     icon: 'graduation',
     syncLabel: 'Timeline data',
     tabs: [
-      { id: 'experience', label: 'Experience', collections: [CMS_COLLECTIONS.experience], fields: careerBaseFields },
+      {
+        id: 'experience',
+        label: 'Experience',
+        collections: [CMS_COLLECTIONS.experience],
+        fields: careerBaseFields,
+        slug: 'experience',
+      },
       {
         id: 'education',
+        slug: 'education',
         label: 'Education',
         collections: [CMS_COLLECTIONS.education],
         fields: [
@@ -349,6 +398,7 @@ export const VAULTS: Record<VaultId, VaultDefinition> = {
       {
         id: 'skills',
         label: 'Skills',
+        slug: 'skills',
         collections: [CMS_COLLECTIONS.skills],
         fields: [
           { key: 'category', label: 'Skill group', type: 'text', placeholder: 'Engineering' },
@@ -369,11 +419,24 @@ export const VAULTS: Record<VaultId, VaultDefinition> = {
       {
         id: 'certificates',
         label: 'Certificates',
+        slug: 'certificates',
         collections: [CMS_COLLECTIONS.certificates],
         fields: [
           { key: 'organization', label: 'Issuer', type: 'text' },
           { key: 'period', label: 'Date', type: 'text', placeholder: '2025' },
           { key: 'credentialUrl', label: 'Credential URL', type: 'url', span: 'full' },
+          { key: 'description', label: 'Description', type: 'textarea', span: 'full' },
+        ],
+      },
+      {
+        id: 'awards',
+        label: 'Awards',
+        slug: 'awards',
+        collections: ['Awards'],
+        fields: [
+          { key: 'organization', label: 'Awarding body', type: 'text' },
+          { key: 'period', label: 'Date', type: 'text', placeholder: '2025' },
+          { key: 'location', label: 'Location', type: 'text' },
           { key: 'description', label: 'Description', type: 'textarea', span: 'full' },
         ],
       },
@@ -425,6 +488,25 @@ export const VAULT_ROUTES: Record<VaultId, string> = {
   projects: '/admin/projects',
   career: '/admin/career',
   meta: '/admin/meta',
+}
+
+/** URL slugs for focused section pages, e.g. /admin/media/anime. */
+export const MEDIA_SECTION_TABS: Record<string, string> = {
+  music: 'music',
+  movie: 'movies',
+  movies: 'movies',
+  anime: 'anime',
+  manga: 'manga',
+}
+
+export const CAREER_SECTION_TABS: Record<string, string> = {
+  experience: 'experience',
+  education: 'education',
+  skills: 'skills',
+  certificate: 'certificates',
+  certificates: 'certificates',
+  award: 'awards',
+  awards: 'awards',
 }
 
 export function isVaultId(value: string): value is VaultId {

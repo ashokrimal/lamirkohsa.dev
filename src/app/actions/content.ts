@@ -22,6 +22,7 @@ export async function getAdminContent() {
           title: cmsContent.title,
           payload: cmsContent.payload,
           status: cmsContent.status,
+          createdAt: cmsContent.createdAt,
         })
         .from(cmsContent)
         .where(eq(cmsContent.userId, userId))

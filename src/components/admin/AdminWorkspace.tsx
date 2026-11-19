@@ -15,7 +15,6 @@ import {
   Music,
   Film,
   Inbox,
-  Settings,
   Sparkles,
   Trash2,
   Edit3,
@@ -39,14 +38,12 @@ import {
 import { CmsToastProvider, useCmsToast } from '@/components/admin/ui/CmsToast'
 import ImageUploadField from '@/components/admin/ImageUploadField'
 import ContentSetupGuide from '@/components/admin/ContentSetupGuide'
-import VaultCommandHub from '@/components/admin/vaults/VaultCommandHub'
 import SiteAppearanceEditor from '@/components/admin/SiteAppearanceEditor'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
 import { CmsStatCard, CmsSectionCard } from '@/components/admin/ui/CmsCard'
 import { CmsTable, type Column } from '@/components/admin/ui/CmsTable'
 import { CmsTabs } from '@/components/admin/ui/CmsTabs'
 import { CmsDistributionChart } from '@/components/admin/ui/CmsChart'
-import { CmsGitHubStats } from '@/components/admin/ui/CmsGitHubStats'
 import {
   CmsFormField,
   CmsInput,
@@ -105,6 +102,7 @@ interface CmsRecordItem {
   title: string
   payload?: any
   status: string
+  createdAt?: Date | string
 }
 
 // Records whose payload is a JSON object rather than a single description.
@@ -281,6 +279,43 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       { label: 'Skills & Journal', count: cmsRecords.filter((r) => r.collection === CMS_COLLECTIONS.skills || r.collection === CMS_COLLECTIONS.blogs).length, color: '#ec4899' },
     ],
     [cmsRecords, galleryItems, musicTracks]
+  )
+
+  // Dashboard activity: records created and messages received per day.
+  const activitySeries = useMemo(() => {
+    const days = 14
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const buckets = Array.from({ length: days }, (_, index) => {
+      const date = new Date(today)
+      date.setDate(today.getDate() - (days - 1 - index))
+      return {
+        key: date.toISOString().slice(0, 10),
+        label: date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        records: 0,
+        messages: 0,
+      }
+    })
+    const lookup = new Map(buckets.map((bucket, index) => [bucket.key, index]))
+    const dayKey = (value: unknown) => {
+      if (!value) return ''
+      const date = value instanceof Date ? value : new Date(String(value))
+      if (Number.isNaN(date.getTime())) return ''
+      return date.toISOString().slice(0, 10)
+    }
+    const bump = (value: unknown, field: 'records' | 'messages') => {
+      const index = lookup.get(dayKey(value))
+      if (index === undefined) return
+      buckets[index][field] += 1
+    }
+    cmsRecords.forEach((record) => bump(record.createdAt, 'records'))
+    inboxMessages.forEach((message) => bump(message.receivedAt, 'messages'))
+    return buckets
+  }, [cmsRecords, inboxMessages])
+
+  const activityMax = Math.max(
+    1,
+    ...activitySeries.map((day) => day.records + day.messages),
   )
 
   // The public projects page reads CMS records, so the admin showcase list does too.
@@ -801,12 +836,6 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
                 <Layers className="w-3.5 h-3.5" />
                 <span>Content setup</span>
               </Link>
-              <Link
-                href="/admin/account"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <span>Account</span>
-              </Link>
               <button
                 type="button"
                 onClick={() => openCreateRecord(CMS_COLLECTIONS.projects)}
@@ -826,8 +855,6 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
               </a>
             </div>
           </div>
-
-          <VaultCommandHub records={cmsRecords} />
 
           {/* 4 Metric KPI Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -895,63 +922,10 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             </div>
           </div>
 
-          {/* Quick Actions Shortcuts */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <button
-              type="button"
-              onClick={() => openCreateRecord(CMS_COLLECTIONS.projects)}
-              className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                <Plus className="w-4 h-4" />
-              </div>
-              <p className="text-xs font-semibold text-slate-800">Add CMS Record</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">Projects, Skills, Bio</p>
-            </button>
-
-            <button
-              type="button"
-              onClick={openGalleryUpload}
-              className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                <ImageIcon className="w-4 h-4" />
-              </div>
-              <p className="text-xs font-semibold text-slate-800">Publish Artwork</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">Add photo to gallery</p>
-            </button>
-
-            <button
-              type="button"
-              onClick={openMusicUpload}
-              className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                <Music className="w-4 h-4" />
-              </div>
-              <p className="text-xs font-semibold text-slate-800">Add Music Track</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">Share what you hear</p>
-            </button>
-
-            <Link
-              href="/admin?section=settings"
-              className="p-3 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500 hover:shadow-xs text-left transition-all group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                <Settings className="w-4 h-4" />
-              </div>
-              <p className="text-xs font-semibold text-slate-800">Edit Settings</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">Update API integrations</p>
-            </Link>
-          </div>
-
-          {/* Real-Time GitHub Activity Telemetry */}
-          <CmsGitHubStats initialUsername={profileSettingsState?.githubUsername || ''} />
-
-          {/* Recent Records Data Table */}
+          {/* Publishing activity graph */}
           <CmsSectionCard
-            title="Recent Content Records"
-            description="All active records currently rendered on the public website."
+            title="Activity"
+            description="Records created and messages received over the last 14 days."
             action={
               <Link
                 href="/admin?section=content"
@@ -960,16 +934,31 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
                 View all collections →
               </Link>
             }
-            noPadding
           >
-            <CmsTable
-              data={cmsRecords.slice(0, 8)}
-              columns={cmsColumns}
-              keyExtractor={(r) => r.id}
-              searchPlaceholder="Filter recent records..."
-              pageSize={5}
-              onRowClick={(row) => setEditingRecord(row)}
-            />
+            <div className="flex h-28 items-stretch gap-1">
+              {activitySeries.map((day) => {
+                const total = day.records + day.messages
+                return (
+                  <div
+                    key={day.key}
+                    className="flex h-full flex-1 flex-col justify-end"
+                    title={`${day.label}: ${day.records} record${day.records === 1 ? '' : 's'}, ${day.messages} message${day.messages === 1 ? '' : 's'}`}
+                  >
+                    <div
+                      className={`w-full rounded-t ${total > 0 ? 'bg-teal-500/80' : 'bg-slate-100'}`}
+                      style={{
+                        height: `${Math.max((total / activityMax) * 100, 4)}%`,
+                      }}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+            <div className="mt-2 flex justify-between text-[10px] text-slate-400">
+              <span>{activitySeries[0]?.label}</span>
+              <span>{activitySeries[Math.floor(activitySeries.length / 2)]?.label}</span>
+              <span>{activitySeries[activitySeries.length - 1]?.label}</span>
+            </div>
           </CmsSectionCard>
         </div>
       )}
