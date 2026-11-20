@@ -188,6 +188,23 @@ collection, title or slug changed. It locks `cmsContent`, verifies the draft
 records before changing them, and verifies every record is published before
 committing. It does not overwrite payloads or delete records.
 
+### Seeding the studio CMS in production
+
+`pnpm studio:seed` creates and fills the `pages`, `page_sections`, `projects`
+and `site_settings` tables from the legacy `cmsContent` collections, falling
+back to the fixtures in `src/lib/studio/fixtures.ts`. It is additive and
+idempotent: existing rows are never overwritten or deleted, and a page that
+exists without sections gets them.
+
+```bash
+DATABASE_URL=postgres://... pnpm studio:seed
+```
+
+[docs/studio-seed.md](docs/studio-seed.md) is the production runbook: where to
+copy `DATABASE_URL`, the backup command, the verification queries for section
+counts and ordering, cache behaviour after seeding, and troubleshooting for
+pooled Neon connections and legacy `cmsContent` tables.
+
 ### Backfilling the legacy media tables
 
 The old `galleryItem`, `portfolioProject`, `musicTrack` and `animeMangaItem`
@@ -316,6 +333,7 @@ the following in the CMS after deploying:
 | `pnpm lint` | ESLint. |
 | `pnpm cms:check` | Validate published CMS content against the schema. |
 | `pnpm cms:check:duplicates` | Fail on duplicate published keys in keyed collections. |
+| `pnpm studio:seed` | Create and fill the studio CMS tables (`pages`, `page_sections`, `projects`, `site_settings`). |
 | `pnpm cms:repair` | Dry-run repair for missing keys and blank seeded fields. |
 | `pnpm cms:dedupe` | Read-only plan for duplicate published CMS records. |
 | `pnpm cms:dedupe:apply` | Unpublish safe duplicate records with a backup and verification. |
