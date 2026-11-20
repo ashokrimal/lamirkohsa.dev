@@ -109,6 +109,35 @@ node --env-file=.env.local scripts/seed-studio-content.mjs
 
 ## 4. Verify
 
+The fastest check is the bundled verifier. It reads the database and the
+fixtures, writes nothing, and separates seed failures from normal owner edits:
+
+```bash
+DATABASE_URL='postgres://…' pnpm studio:verify
+DATABASE_URL='postgres://…' pnpm studio:verify -- --json
+```
+
+```text
+✓ [tables] All four studio tables exist.
+✓ [page] Page / exists.
+✓ [page] Page /about exists.
+✓ [projects] 2 legacy project records found.
+✓ [project] Project legacy-alpha exists.
+✓ [settings] Settings row exists with a contact email.
+
+24 passed, 0 warnings, 0 failures.
+Studio seed verification passed.
+```
+
+- **Failures** (exit code 1): missing tables, a missing seeded page or section,
+a seeded section with empty content, a legacy project that never landed, or a
+missing/empty settings row. Re-run `pnpm studio:seed`, then verify again.
+- **Warnings** (exit code 0): reordered or disabled sections, re-copied or
+extra sections, owner-added pages, unpublished projects, or missing availability
+and social links. These are expected after editing in the studio.
+
+The same checks by hand:
+
 ```sql
 -- Every page has its sections, in order
 select p.slug, count(s.id) as sections,

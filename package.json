@@ -20,7 +20,8 @@
     "cms:dedupe:restore": "node scripts/repair-cms-content.mjs --restore-dedupe",
     "cms:backfill": "node scripts/backfill-legacy-media.mjs",
     "studio:seed": "node scripts/seed-studio-content.mjs",
-    "studio:seed:preflight": "node scripts/seed-studio-content.mjs --preflight"
+    "studio:seed:preflight": "node scripts/seed-studio-content.mjs --preflight",
+    "studio:verify": "node scripts/verify-studio-seed.mjs"
   },
   "dependencies": {
     "@google/genai": "^3.3.0",
