@@ -38,11 +38,42 @@ pg_dump "$DATABASE_URL" \
 The seed never deletes or overwrites rows, so this backup is insurance, not a
 routine restore point. `backups/` is git-ignored.
 
-## 2. Dry run on a scratch database (recommended)
+## 2. Preflight the target (no writes)
 
-Run the seed once against a branch or local copy of production before touching
-production itself. The script prints counts only; it has no `--dry-run`, so a
-scratch database is the safe preview.
+Every run starts with a preflight report. Run it on its own first:
+
+```bash
+DATABASE_URL='postgres://…' pnpm studio:seed:preflight
+DATABASE_URL='postgres://…' pnpm studio:seed:preflight -- --json   # machine-readable
+```
+
+```text
+Studio seed preflight
+  Target:       ep-xxx.neon.tech:5432/neondb (TLS on)
+  Tables:       pages present, page_sections present, projects present, site_settings present, cmsContent present
+  Pages:        /, /about, /contact, /media, /projects
+  Sections:     / 4, /about 8, /contact 1, /media 1
+  Projects:     2 (2 published)
+  Settings:     1 row
+  Legacy CMS:   Page Copy 1, Projects 2, Site Settings 3
+  Planned inserts:
+    pages:      none
+    sections:   none
+    projects:   none
+    settings:   none
+Preflight only: no changes were written.
+```
+
+The report names the host and database, whether each table exists, the row and
+section counts per page, which sections are disabled, the legacy collections
+found, and every insert the seed would make. It is read-only — it does not even
+create missing tables — so it is safe on production at any time. If the planned
+inserts are `none`, the seed is a no-op and there is nothing to audit.
+
+`--json` prints the same information (without credentials) for logs or a
+release record.
+
+A scratch database is still the best place to see a first run end to end:
 
 ```bash
 DATABASE_URL=postgres://user:pass@host/scratch node scripts/seed-studio-content.mjs

@@ -197,8 +197,15 @@ idempotent: existing rows are never overwritten or deleted, and a page that
 exists without sections gets them.
 
 ```bash
-DATABASE_URL=postgres://... pnpm studio:seed
+DATABASE_URL=postgres://... pnpm studio:seed:preflight   # report only
+DATABASE_URL=postgres://... pnpm studio:seed             # report, then write
 ```
+
+Every run prints a preflight first: the target host and database, which tables
+are present, how many pages/sections/projects/settings rows exist, the legacy
+`cmsContent` collections found, and the exact inserts it is about to make.
+`--preflight` (or `--dry-run`) stops after that report, and `--json` prints it
+as JSON for logging.
 
 [docs/studio-seed.md](docs/studio-seed.md) is the production runbook: where to
 copy `DATABASE_URL`, the backup command, the verification queries for section
@@ -334,6 +341,7 @@ the following in the CMS after deploying:
 | `pnpm cms:check` | Validate published CMS content against the schema. |
 | `pnpm cms:check:duplicates` | Fail on duplicate published keys in keyed collections. |
 | `pnpm studio:seed` | Create and fill the studio CMS tables (`pages`, `page_sections`, `projects`, `site_settings`). |
+| `pnpm studio:seed:preflight` | Report the target, existing rows and planned inserts without writing. |
 | `pnpm cms:repair` | Dry-run repair for missing keys and blank seeded fields. |
 | `pnpm cms:dedupe` | Read-only plan for duplicate published CMS records. |
 | `pnpm cms:dedupe:apply` | Unpublish safe duplicate records with a backup and verification. |

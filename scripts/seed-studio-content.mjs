@@ -4,17 +4,29 @@
  *
  * Usage:
  *   DATABASE_URL=postgres://... node scripts/seed-studio-content.mjs
+ *   DATABASE_URL=postgres://... node scripts/seed-studio-content.mjs --preflight
+ *   DATABASE_URL=postgres://... node scripts/seed-studio-content.mjs --preflight --json
  *
  * The script reads the legacy `cmsContent` collections that hold today's page
  * copy, projects and navigation when they exist, and falls back to the
  * documented fixtures when they do not. It is idempotent: existing pages,
  * sections, projects and settings are never overwritten, so running it again
  * after the owner has edited content in the studio changes nothing.
+ *
+ * Every run starts with a preflight that reports the target database, which of
+ * the four tables already exist, how many rows they hold, which pages have no
+ * sections yet and which legacy collections were found. It then prints the
+ * exact inserts the seed is about to make. `--preflight` stops after that
+ * report without writing anything, which is the safe way to audit production.
  */
 import fs from 'node:fs'
 import { Client } from 'pg'
 import ts from 'typescript'
 import { createPgClientOptions, resolveDatabaseUrl } from './db-env.mjs'
+
+const args = process.argv.slice(2)
+const preflightOnly = args.includes('--preflight') || args.includes('--dry-run')
+const jsonOutput = args.includes('--json')
 
 const connectionString = resolveDatabaseUrl()
 if (!connectionString) {
@@ -129,6 +141,185 @@ async function legacyRecords() {
 
 const { DEFAULT_PAGES, DEFAULT_PAGE_SECTIONS, DEFAULT_SITE_SETTINGS } = await loadFixtures()
 const legacy = await legacyRecords()
+
+/**
+ * Read-only description of the target, used to audit what a run will change.
+ * It never creates tables, so it is safe against production at any time.
+ */
+async function collectState() {
+  const tables = {}
+  for (const name of ['pages', 'page_sections', 'projects', 'site_settings', 'cmsContent']) {
+    const { rows } = await client.query('SELECT to_regclass($1) AS regclass', [`public."${name}"`])
+    tables[name] = Boolean(rows[0].regclass)
+  }
+
+  const state = {
+    tables,
+    pages: [],
+    sectionsByPage: [],
+    projectCount: 0,
+    publishedProjectCount: 0,
+    projectSlugs: [],
+    settingsRows: 0,
+    legacyTotal: legacy.length,
+    legacyCollections: [],
+  }
+
+  if (tables.pages) {
+    const { rows } = await client.query('SELECT "slug" FROM "pages" ORDER BY "slug"')
+    state.pages = rows.map((row) => row.slug)
+  }
+  if (tables.page_sections) {
+    const { rows } = await client.query(`
+      SELECT p."slug", count(s."id")::int AS sections,
+             count(*) FILTER (WHERE s."is_enabled")::int AS enabled
+      FROM "page_sections" s
+      JOIN "pages" p ON p."id" = s."page_id"
+      GROUP BY p."slug"
+      ORDER BY p."slug"`)
+    state.sectionsByPage = rows
+  }
+  if (tables.projects) {
+    const { rows } = await client.query(
+      'SELECT count(*)::int AS total, count(*) FILTER (WHERE "is_published")::int AS published FROM "projects"',
+    )
+    state.projectCount = rows[0].total
+    state.publishedProjectCount = rows[0].published
+    const slugs = await client.query('SELECT "slug" FROM "projects" ORDER BY "slug"')
+    state.projectSlugs = slugs.rows.map((row) => row.slug)
+  }
+  if (tables.site_settings) {
+    const { rows } = await client.query('SELECT count(*)::int AS count FROM "site_settings"')
+    state.settingsRows = rows[0].count
+  }
+  if (tables.cmsContent) {
+    const { rows } = await client.query(
+      'SELECT "collection", count(*)::int AS count FROM "cmsContent" GROUP BY 1 ORDER BY 2 DESC, 1',
+    )
+    state.legacyCollections = rows
+  }
+
+  const sectionCounts = new Map(state.sectionsByPage.map((row) => [row.slug, row.sections]))
+  const existingPages = new Set(state.pages)
+  const sectionPages = new Set(Object.keys(DEFAULT_PAGE_SECTIONS))
+
+  state.plan = {
+    pagesToInsert: DEFAULT_PAGES.filter((page) => !existingPages.has(page.slug)).map((page) => page.slug),
+    sectionsToInsert: Object.entries(DEFAULT_PAGE_SECTIONS)
+      .filter(([slug, seeds]) => {
+        if (seeds.length === 0) return false
+        const willExist = existingPages.has(slug) || DEFAULT_PAGES.some((page) => page.slug === slug)
+        return willExist && (sectionCounts.get(slug) ?? 0) === 0
+      })
+      .map(([slug, seeds]) => ({ slug, count: seeds.length })),
+    projectsToInsert: [
+      ...new Set(
+        legacyProjects()
+          .map((record) => slugify(record.slug || record.title))
+          .filter((slug) => slug && !state.projectSlugs.includes(slug)),
+      ),
+    ],
+    settingsToInsert: state.settingsRows === 0,
+  }
+
+  return state
+}
+
+function legacyProjects() {
+  return legacy.filter((row) => row.collection === 'Projects')
+}
+
+function describeTarget(cs) {
+  try {
+    const url = new URL(cs)
+    const ssl = /sslmode=/i.test(cs) || !['localhost', '127.0.0.1', '::1'].includes(url.hostname)
+    return {
+      host: url.hostname,
+      port: url.port || '5432',
+      database: url.pathname.replace(/^\//, '') || '(default)',
+      ssl,
+    }
+  } catch {
+    return { host: 'unparseable connection string', port: '', database: '', ssl: false }
+  }
+}
+
+function printPreflight(state) {
+  const target = describeTarget(connectionString)
+  const tableLine = ['pages', 'page_sections', 'projects', 'site_settings', 'cmsContent']
+    .map((name) => `${name} ${state.tables[name] ? 'present' : 'missing'}`)
+    .join(', ')
+  const sectionsLine = state.sectionsByPage.length
+    ? state.sectionsByPage
+        .map((row) => `${row.slug} ${row.sections}${row.enabled === row.sections ? '' : ` (${row.enabled} enabled)`}`)
+        .join(', ')
+    : 'none'
+  const legacyLine = state.legacyCollections.length
+    ? state.legacyCollections.map((row) => `${row.collection} ${row.count}`).join(', ')
+    : state.tables.cmsContent
+      ? 'none'
+      : 'cmsContent missing'
+
+  console.log('Studio seed preflight')
+  console.log(`  Target:       ${target.host}:${target.port}/${target.database} (TLS ${target.ssl ? 'on' : 'off'})`)
+  console.log(`  Tables:       ${tableLine}`)
+  console.log(`  Pages:        ${state.pages.length ? state.pages.join(', ') : 'none'}`)
+  console.log(`  Sections:     ${sectionsLine}`)
+  console.log(
+    `  Projects:     ${state.projectCount} (${state.publishedProjectCount} published)`,
+  )
+  console.log(`  Settings:     ${state.settingsRows} row${state.settingsRows === 1 ? '' : 's'}`)
+  console.log(`  Legacy CMS:   ${legacyLine}`)
+  console.log('  Planned inserts:')
+  console.log(`    pages:      ${state.plan.pagesToInsert.join(', ') || 'none'}`)
+  console.log(
+    `    sections:   ${
+      state.plan.sectionsToInsert.map((entry) => `${entry.slug} +${entry.count}`).join(', ') || 'none'
+    }`,
+  )
+  console.log(
+    `    projects:   ${state.plan.projectsToInsert.join(', ') || 'none'}`,
+  )
+  console.log(`    settings:   ${state.plan.settingsToInsert ? 'yes (single row)' : 'none'}`)
+}
+
+const preflightState = await collectState()
+
+if (jsonOutput) {
+  const { tables, pages, sectionsByPage, projectCount, publishedProjectCount, settingsRows, legacyCollections, plan } =
+    preflightState
+  console.log(
+    JSON.stringify(
+      {
+        target: describeTarget(connectionString),
+        tables,
+        pages,
+        sectionsByPage,
+        projectCount,
+        publishedProjectCount,
+        projectSlugs: preflightState.projectSlugs,
+        settingsRows,
+        legacyCollections,
+        plan,
+      },
+      null,
+      2,
+    ),
+  )
+} else {
+  printPreflight(preflightState)
+}
+
+// Status lines go to stderr in JSON mode so stdout stays parseable.
+const status = jsonOutput ? console.error : console.log
+
+if (preflightOnly) {
+  status('Preflight only: no changes were written.')
+  await client.end()
+  process.exit(0)
+}
+
+status('Applying the seed…')
 const byCollection = (name) => legacy.filter((row) => row.collection === name)
 const pageCopy = byCollection('Page Copy')
 const navigation = byCollection('Site Settings').find((row) => row.payload?.key === 'navigation')
@@ -178,10 +369,10 @@ try {
   }
 
   // Legacy projects → the projects table, keeping featured order and publication.
-  const legacyProjects = byCollection('Projects')
+  const projectRecords = legacyProjects()
   let projectsInserted = 0
   let featuredOrder = 0
-  for (const record of legacyProjects) {
+  for (const record of projectRecords) {
     const payload = record.payload ?? {}
     const slug = slugify(record.slug || record.title)
     if (!slug) continue
@@ -248,7 +439,7 @@ try {
   await client.query('COMMIT')
   console.log(`Pages inserted: ${pagesInserted}`)
   console.log(`Homepage sections inserted: ${sectionsInserted}`)
-  console.log(`Projects inserted: ${projectsInserted} (from ${legacyProjects.length} legacy records)`)
+  console.log(`Projects inserted: ${projectsInserted} (from ${projectRecords.length} legacy records)`)
   console.log(`Site settings inserted: ${settingsInserted}`)
   console.log('Studio seed complete.')
 } catch (error) {
