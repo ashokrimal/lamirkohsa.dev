@@ -18,7 +18,7 @@ import {
   type HomepageSectionsConfig,
 } from '@/app/actions/content-cms'
 import { getPublicProfileSettingsResult } from '@/app/actions/media'
-import { EMPTY_SITE_CONFIG, getMediaCollections, getSiteConfig } from '@/lib/site-content'
+import { EMPTY_SITE_CONFIG, getMediaCollections, getPageCopy, getSiteConfig } from '@/lib/site-content'
 import { getProjectsResult } from '@/lib/projects'
 import { CMS_SETTINGS_RECORDS, SECTIONS, type SiteSectionDefinition } from '@/lib/cms-schema'
 import { getMediaSections } from '@/lib/media-content'
@@ -56,6 +56,7 @@ export default async function HomeContent() {
     siteResult,
     mediaCollectionsResult,
     publicSettingsResult,
+    copyResult,
   ] = await Promise.all([
     getHeroSectionConfigResult(),
     getHomepageSectionsConfigResult(),
@@ -64,6 +65,7 @@ export default async function HomeContent() {
     getSiteConfig(),
     getMediaCollections(),
     getPublicProfileSettingsResult(),
+    getPageCopy(),
   ])
 
   const heroData = heroResult.status === 'ok' ? heroResult.data : {}
@@ -76,6 +78,13 @@ export default async function HomeContent() {
   const projects = projectsResult.status === 'ok' ? projectsResult.data : []
   const profile = profileResult.status === 'ok' ? profileResult.data : {}
   const dataError = siteResult.status === 'error' ? siteResult : undefined
+
+  // The introduction mirrors the About page: its page copy supplies the lead
+  // paragraph and header, and the profile collection supplies the biography.
+  const pageCopy = copyResult.status === 'ok' ? copyResult.data : {}
+  const aboutCopy = pageCopy.about
+  const projectsCopy = pageCopy.projects
+  const aboutIntro = aboutCopy?.sections?.about?.description ?? aboutCopy?.description
 
   const mediaSections = await getMediaSections(mediaCollections)
 
@@ -152,7 +161,8 @@ export default async function HomeContent() {
       // 1. ABOUT / INTRODUCTION + TECHNOLOGY DISTRIBUTION
       case 'about': {
         const hasAbout = Boolean(
-          profileText('summary') ||
+          aboutIntro ||
+            profileText('summary') ||
             profileText('bio') ||
             portraitImage ||
             profileText('headline'),
@@ -193,6 +203,7 @@ export default async function HomeContent() {
                     {profileText('summary')}
                   </p>
                 )}
+                {aboutIntro && aboutIntro !== profileText('summary') && <p>{aboutIntro}</p>}
                 {profileText('bio') && <p>{profileText('bio')}</p>}
 
                 <div className="flex flex-wrap gap-2.5 pt-1">
@@ -285,6 +296,21 @@ export default async function HomeContent() {
     }
   }
 
+  // The CMS decides which registered sections appear and in what order; a
+  // section missing from the record is still shown, so an unpublished config
+  // never empties the homepage.
+  const enabledSections = sectionsConfig.enabled || {}
+  const configuredOrder = Array.isArray(sectionsConfig.order) ? sectionsConfig.order : []
+  const rank = (id: string) => {
+    const position = configuredOrder.indexOf(id)
+    return position === -1
+      ? configuredOrder.length + SECTIONS.findIndex((section) => section.id === id)
+      : position
+  }
+  const visibleSections = SECTIONS.filter(
+    (section) => enabledSections[section.id] !== false,
+  ).sort((a, b) => rank(a.id) - rank(b.id))
+
   return (
     <PageShell>
       {heroResult.status === 'error' ? (
@@ -335,20 +361,24 @@ export default async function HomeContent() {
       )}
 
       <div>
-        {SECTIONS.map((section, index) => {
+        {visibleSections.map((section, index) => {
           const sectionMeta = meta[section.id]
           const link = SECTION_LINKS[section.id]
+          // The About and Projects sections fall back to their own page copy, so
+          // editing those pages updates the homepage header too.
+          const pageSectionCopy =
+            section.id === 'about' ? aboutCopy : section.id === 'projects' ? projectsCopy : undefined
 
           return (
             <Reveal key={section.id}>
               <PageSection
                 id={section.id}
                 number={index}
-                eyebrow={sectionMeta?.eyebrow ?? section.label}
-                krEyebrow={sectionMeta?.kr}
-                title={sectionMeta?.title ?? section.label}
-                accent={sectionMeta?.accent}
-                description={sectionMeta?.description}
+                eyebrow={sectionMeta?.eyebrow ?? pageSectionCopy?.eyebrow ?? section.label}
+                krEyebrow={sectionMeta?.kr ?? pageSectionCopy?.krEyebrow}
+                title={sectionMeta?.title ?? pageSectionCopy?.title ?? section.label}
+                accent={sectionMeta?.accent ?? pageSectionCopy?.accent}
+                description={sectionMeta?.description ?? pageSectionCopy?.description}
                 linkHref={sectionMeta?.href || link?.href || section.route}
                 linkLabel={sectionMeta?.primaryLabel || link?.label || 'View all'}
               >

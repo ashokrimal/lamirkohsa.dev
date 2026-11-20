@@ -7,6 +7,8 @@
  * - creates keyed seed records whose key is completely missing,
  * - normalises the legacy timezone/image/challenge field names and the old
  *   films media key,
+ * - optionally removes navigation links that point at local routes the site no
+ *   longer owns, with --prune-navigation,
  * - reports duplicate keys, slug conflicts and records it cannot key.
  * - produces a read-only dedupe plan for duplicate published records with
  *   --dedupe-plan (also available as `pnpm cms:dedupe`),
@@ -21,7 +23,8 @@
  *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --dedupe-plan
  *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --apply-dedupe --plan plan.json
  *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --restore-dedupe backup.json
- *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --apply
+ *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --prune-navigation
+ *   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --prune-navigation --apply
  *
  * Apply safety:
  *   --backup <path>   choose the JSON backup file
@@ -48,6 +51,7 @@ const options = {
   noBackup: false,
   allowPartial: false,
   dedupePlan: false,
+  pruneNavigation: false,
   applyDedupe: false,
   restoreDedupe: false,
   restoreFile: null,
@@ -63,6 +67,7 @@ for (let index = 2; index < process.argv.length; index += 1) {
   else if (argument === '--no-backup') options.noBackup = true
   else if (argument === '--allow-partial') options.allowPartial = true
   else if (argument === '--dedupe-plan') options.dedupePlan = true
+  else if (argument === '--prune-navigation') options.pruneNavigation = true
   else if (argument === '--apply-dedupe') options.applyDedupe = true
   else if (argument === '--restore-dedupe') {
     options.restoreDedupe = true
@@ -108,7 +113,8 @@ if (options.help) {
   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --dedupe-plan
   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --apply-dedupe --plan plan.json
   DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --restore-dedupe backup.json
-  DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --apply
+  DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --prune-navigation
+  DATABASE_URL=postgres://... node scripts/repair-cms-content.mjs --prune-navigation --apply
 
 Options:
   --apply              Write the safe repairs. Default is a dry run.
@@ -117,6 +123,10 @@ Options:
   --no-backup          Skip the backup.
   --allow-partial      Apply safe repairs even when duplicate keys, slug
                        conflicts or unkeyable records remain.
+  --prune-navigation   Also remove navigation links whose href points at a
+                       local route the site does not own. Opt-in; still a dry
+                       run unless --apply is passed. External links, anchors
+                       and links with no href are kept.
   --dedupe-plan        Read-only plan for duplicate published records.
   --output <path>      Save the dedupe plan as JSON. Implies --dedupe-plan.
   --apply-dedupe       Unpublish only the safe duplicates from a fresh plan.
@@ -135,6 +145,12 @@ if (options.output) options.dedupePlan = true
 if (options.restoreDedupe && (options.apply || options.applyDedupe || options.dedupePlan || options.planFile)) {
   throw new Error('--restore-dedupe cannot be combined with repair or dedupe apply modes.')
 }
+if (
+  options.pruneNavigation &&
+  (options.restoreDedupe || options.applyDedupe || options.dedupePlan)
+) {
+  throw new Error('--prune-navigation can only be combined with the content repair (and --apply).')
+}
 if (options.applyDedupe && (options.apply || options.dedupePlan)) {
   throw new Error('--apply-dedupe cannot be combined with --apply, --dedupe-plan or --output.')
 }
@@ -149,7 +165,7 @@ if (options.restoreDedupe && !options.restoreFile) {
   throw new Error('--restore-dedupe needs a cms-dedupe backup file.')
 }
 
-const { CMS_COLLECTIONS, CMS_SCHEMA } = await loadCmsSchema()
+const { CMS_COLLECTIONS, CMS_SCHEMA, NAV_ROUTES } = await loadCmsSchema()
 const KEYED_COLLECTIONS = new Set(
   Object.values(CMS_SCHEMA.collections)
     .filter((definition) => definition.keyed)
@@ -208,6 +224,48 @@ function mergeMissing(current, defaults) {
     }
   }
   return { payload: next, filled }
+}
+
+const NAV_GROUPS = ['primary', 'footer', 'collections']
+
+/**
+ * A navigation href claims a site route only when it is an absolute local path
+ * (`/…`). External URLs, anchors and relative links are someone else's target,
+ * so the prune leaves them alone and the health check still reports them.
+ */
+function hrefOwnsSiteRoute(href) {
+  const value = clean(href)
+  if (!value.startsWith('/')) return true
+  if (NAV_ROUTES.has(value)) return true
+  const pathOnly = value.split(/[?#]/)[0]
+  const withoutTrailingSlash =
+    pathOnly.length > 1 ? pathOnly.replace(/\/+$/, '') || '/' : pathOnly
+  return NAV_ROUTES.has(withoutTrailingSlash)
+}
+
+/** Splits a navigation payload into the kept payload and the removed links. */
+function pruneNavigationPayload(payload) {
+  const next = { ...payload }
+  const removed = []
+  for (const group of NAV_GROUPS) {
+    if (!Array.isArray(payload?.[group])) continue
+    const kept = []
+    payload[group].forEach((link, index) => {
+      const href = link && typeof link === 'object' ? clean(link.href) : ''
+      if (href && !hrefOwnsSiteRoute(href)) {
+        removed.push({
+          group,
+          index,
+          href,
+          label: clean(link.label) || '(no label)',
+        })
+        return
+      }
+      kept.push(link)
+    })
+    if (kept.length !== payload[group].length) next[group] = kept
+  }
+  return { payload: next, removed }
 }
 
 function keyFromRow(row) {
@@ -1187,6 +1245,46 @@ async function main() {
       }
     }
 
+    // Stale navigation links are opt-in only: removing a link changes editorial
+    // navigation, so the editor must ask for it with --prune-navigation.
+    if (options.pruneNavigation) {
+      const pendingUpdates = new Map(
+        plans
+          .filter((plan) => plan.type === 'update')
+          .map((plan) => [actionIdKey(plan.id), plan]),
+      )
+      for (const row of rows) {
+        if (row.collection !== CMS_COLLECTIONS.siteSettings) continue
+        if (keyFromRow(row) !== CMS_SCHEMA.collections.siteSettings.records.navigation.key) {
+          continue
+        }
+
+        const pending = pendingUpdates.get(actionIdKey(row.id))
+        const base = pending?.after ?? normalizePayload(row, row.payload)
+        const pruned = pruneNavigationPayload(base)
+        if (pruned.removed.length === 0) continue
+
+        if (pending) {
+          pending.after = pruned.payload
+          pending.prunedNavigation = pruned.removed
+        } else {
+          plans.push({
+            type: 'update',
+            id: row.id,
+            collection: row.collection,
+            title: row.title,
+            slug: row.slug,
+            key: CMS_SCHEMA.collections.siteSettings.records.navigation.key,
+            before: row.payload,
+            after: pruned.payload,
+            fieldFills: [],
+            keyBackfilled: false,
+            prunedNavigation: pruned.removed,
+          })
+        }
+      }
+    }
+
     // Duplicate keys are not safe to rewrite automatically: the repair cannot
     // know which record the editor intended. Report them and let a human decide.
     const duplicateGroups = new Map()
@@ -1217,6 +1315,11 @@ async function main() {
     const updates = plans.length - inserts
     const keyBackfills = plans.filter((plan) => plan.keyBackfilled).length
     const fieldFills = plans.reduce((total, plan) => total + plan.fieldFills.length, 0)
+    const navigationPrunes = plans.filter((plan) => plan.prunedNavigation?.length)
+    const prunedLinks = navigationPrunes.reduce(
+      (total, plan) => total + plan.prunedNavigation.length,
+      0,
+    )
 
     let backupPath = null
     if (options.apply && plans.length > 0) {
@@ -1307,6 +1410,19 @@ async function main() {
       duplicates,
       conflicts,
       unkeyable,
+      navigationPruning: options.pruneNavigation
+        ? {
+            records: navigationPrunes.length,
+            links: prunedLinks,
+            removed: navigationPrunes.flatMap((plan) =>
+              plan.prunedNavigation.map((link) => ({
+                recordId: plan.id,
+                collection: plan.collection,
+                ...link,
+              })),
+            ),
+          }
+        : null,
       backupPath,
     }
 
@@ -1344,8 +1460,25 @@ async function main() {
         console.log(`  ! ${record.collection} / "${record.title}": ${record.reason}`)
       }
     }
+    if (navigationPrunes.length > 0) {
+      console.log(
+        `\nStale navigation links (${prunedLinks} in ${navigationPrunes.length} record(s)) pointing at routes the site does not own:`,
+      )
+      for (const plan of navigationPrunes) {
+        for (const link of plan.prunedNavigation) {
+          console.log(
+            `  - ${plan.collection} / "${plan.title}" ${link.group}[${link.index}] "${link.label}" -> ${link.href}`,
+          )
+        }
+      }
+      console.log(
+        options.apply
+          ? 'Removed by this repair; every other navigation link is unchanged.'
+          : 'Run again with --apply to remove them.',
+      )
+    }
 
-    if (!options.apply && plans.length > 0) {
+    if (!options.apply && plans.length - navigationPrunes.length > 0) {
       console.log('\nRun again with --apply to write these repairs.')
     }
     if (plans.length === 0 && !unsafe) console.log('No safe repairs needed.')

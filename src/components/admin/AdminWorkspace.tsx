@@ -39,6 +39,7 @@ import { CmsToastProvider, useCmsToast } from '@/components/admin/ui/CmsToast'
 import ImageUploadField from '@/components/admin/ImageUploadField'
 import ContentSetupGuide from '@/components/admin/ContentSetupGuide'
 import SiteAppearanceEditor from '@/components/admin/SiteAppearanceEditor'
+import HomepageSectionsEditor from '@/components/admin/HomepageSectionsEditor'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
 import { CmsStatCard, CmsSectionCard } from '@/components/admin/ui/CmsCard'
 import { CmsTable, type Column } from '@/components/admin/ui/CmsTable'
@@ -760,6 +761,15 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
         record.payload?.key === settingRecordKeys[title],
     )
 
+  const homepageSectionsRecord = cmsRecords.find(
+    (record) =>
+      record.collection === CMS_COLLECTIONS.siteSettings &&
+      record.payload?.key === CMS_KEYS.homepageSections,
+  )
+  const homepageSectionsConfig = homepageSectionsRecord?.payload as
+    | { order?: string[]; enabled?: Record<string, boolean> }
+    | undefined
+
   const openCreateRecord = (collection: string = CMS_COLLECTIONS.projects) => {
     setNewCollection(collection)
     setCreateRecordModalOpen(true)
@@ -798,6 +808,20 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             navigation={settingRecord('Navigation')?.payload}
             footer={settingRecord('Footer')?.payload}
           />
+        </div>
+      )}
+
+      {/* SECTION: HOMEPAGE SECTIONS */}
+      {section === 'homepage' && (
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">Homepage sections</h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Choose which sections the homepage shows and in what order. Each one reads its content
+              from the page it belongs to.
+            </p>
+          </div>
+          <HomepageSectionsEditor config={homepageSectionsConfig} />
         </div>
       )}
 

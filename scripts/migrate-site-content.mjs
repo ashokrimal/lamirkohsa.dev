@@ -44,7 +44,6 @@ const siteSettings = [
         { href: '/about/gallery', label: 'Gallery', kr: '사진' },
         { href: '/media/music', label: 'Music archive', kr: '음악' },
         { href: '/media/anime', label: 'Anime library', kr: '애니' },
-        { href: '/resume', label: 'Résumé', kr: '이력서' },
       ],
       socials: [
         { label: 'GitHub', href: 'https://github.com/ashokrimal', kind: 'github' },

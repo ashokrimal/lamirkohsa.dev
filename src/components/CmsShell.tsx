@@ -6,6 +6,7 @@ import Link from 'next/link'
 import {
   LayoutDashboard,
   Gauge,
+  Layers,
   FolderKanban,
   Image,
   Film,
@@ -72,6 +73,7 @@ const navGroups: NavGroup[] = [
     label: 'Studio',
     items: [
       { id: 'hero', label: 'Hero section', icon: Sparkles, href: '/admin?section=hero' },
+      { id: 'homepage', label: 'Homepage sections', icon: Layers, href: '/admin?section=homepage' },
       { id: 'footer', label: 'Footer & navigation', icon: Navigation, href: '/admin?section=footer' },
       { id: 'meta', label: 'Discovery', icon: Globe2, href: '/admin/meta' },
       { id: 'github', label: 'GitHub', icon: Github, href: '/admin/github' },
