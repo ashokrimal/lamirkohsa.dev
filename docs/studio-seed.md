@@ -184,6 +184,20 @@ Pages are cached (`revalidate = 300`) and tagged `page-<slug>`, `projects`,
 those tags: changes appear within the revalidation window, or immediately after
 any save in the admin studio (which calls `revalidateTag`/`revalidatePath`).
 
+## Deploy gate
+
+`pnpm build` runs the prebuild check, which runs this verifier in JSON mode. If
+the studio tables exist and the verifier reports failures, the build stops with
+the failed checks listed and nothing ships. The site runs on fixtures until the
+seed has been applied, so a database with **no** studio tables is only warned
+about rather than blocked.
+
+If a deploy fails on this gate, fix the listed checks and redeploy. A page with
+no sections at all is repaired by `pnpm studio:seed`; a single deleted or
+emptied section is not, because the seed never touches a page that already has
+sections — re-add it in Studio → Pages & Sections, then run `pnpm studio:verify`
+to confirm. Warnings from the verifier never block a deploy.
+
 ## What the seed does and does not do
 
 - **Creates** missing tables, pages, sections, projects and settings rows.

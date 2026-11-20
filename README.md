@@ -274,6 +274,11 @@ alt text, profile URLs used as project source links, and images hosted on known
 stock-photo services such as Unsplash, Pexels, Pixabay or placeholder hosts) fail
 only with `--strict`.
 
+The prebuild also runs `pnpm studio:verify`. A database whose studio tables
+exist but whose seeded pages, sections, projects or settings are missing or
+empty fails the build before it ships; an unseeded database only gets a
+warning, because the site falls back to fixtures until `pnpm studio:seed` runs.
+
 `pnpm cms:check:duplicates` is the deployment gate for duplicate published
 keys. It checks only keyed records and exits `1` with the conflicting records
 when two published records share a key. `pnpm build` runs this gate first and
@@ -342,7 +347,7 @@ the following in the CMS after deploying:
 | Command | Description |
 | --- | --- |
 | `pnpm dev` | Start Next.js on `0.0.0.0:3000`. |
-| `pnpm build` | Production build; runs the CMS prebuild check when configured. |
+| `pnpm build` | Production build; runs the CMS prebuild check and studio seed verification when configured. |
 | `pnpm start` | Start the production server on `0.0.0.0:3000`. |
 | `pnpm lint` | ESLint. |
 | `pnpm cms:check` | Validate published CMS content against the schema. |

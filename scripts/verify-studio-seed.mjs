@@ -237,7 +237,7 @@ try {
     console.log(
       counts.fail === 0
         ? 'Studio seed verification passed.'
-        : 'Studio seed verification failed: run pnpm studio:seed to add the missing rows.',
+        : 'Studio seed verification failed: re-add the listed rows in Pages & Sections, or run pnpm studio:seed for a page that has no sections at all.',
     )
   }
 } catch (error) {
