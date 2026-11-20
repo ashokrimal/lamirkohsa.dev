@@ -10,7 +10,19 @@ import { z } from 'zod'
  * payload degrades to defaults instead of crashing the page.
  */
 
-export const SECTION_KEYS = ['introduction', 'projects', 'media', 'github'] as const
+export const SECTION_KEYS = [
+  'introduction',
+  'projects',
+  'media',
+  'github',
+  'education',
+  'experience',
+  'skills',
+  'interests',
+  'socials',
+  'technology',
+  'contact',
+] as const
 export type SectionKey = (typeof SECTION_KEYS)[number]
 
 export const sectionAnimationSchema = z
@@ -34,6 +46,7 @@ const baseSectionSchema = z.object({
   imageUrl: optionalText(1000),
   imageAlt: optionalText(300),
   previewCount: z.number().int().min(1).max(24).optional(),
+  layout: z.enum(['shelf', 'index']).optional(),
   animation: sectionAnimationSchema.optional(),
 })
 
@@ -49,18 +62,26 @@ export const SECTION_CONTENT_SCHEMAS = {
   projects: projectsSchema,
   media: mediaSchema,
   github: githubSchema,
+  education: baseSectionSchema,
+  experience: baseSectionSchema,
+  skills: baseSectionSchema,
+  interests: baseSectionSchema,
+  socials: baseSectionSchema,
+  technology: baseSectionSchema,
+  contact: baseSectionSchema,
 } satisfies Record<SectionKey, z.ZodType>
 
 export type SectionContent = z.infer<typeof baseSectionSchema> & { username?: string }
 
-export type SectionFieldType = 'text' | 'textarea' | 'url' | 'number' | 'checkbox'
+export type SectionFieldType = 'text' | 'textarea' | 'url' | 'number' | 'checkbox' | 'select'
 
 export interface SectionFieldDefinition {
-  key: keyof SectionContent | `animation.${'enabled' | 'intensity'}`
+  key: keyof SectionContent | `animation.${'enabled' | 'intensity'}` | 'layout'
   label: string
   type: SectionFieldType
   hint?: string
   placeholder?: string
+  options?: readonly string[]
 }
 
 export interface SectionDefinition {
@@ -130,13 +151,23 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
     label: 'Media shelf',
     source: 'The media collections published in the studio.',
     schema: SECTION_CONTENT_SCHEMAS.media,
-    fields: baseFields.filter((field) => field.key !== 'body'),
+    fields: [
+      ...baseFields.filter((field) => field.key !== 'body'),
+      {
+        key: 'layout',
+        label: 'Layout',
+        type: 'select',
+        options: ['shelf', 'index'],
+        hint: 'shelf shows one horizontal row; index shows every collection with its own heading.',
+      },
+    ],
     defaults: {
       eyebrow: '03 / Media',
       title: 'What I am',
       accent: 'listening to.',
       ctaLabel: 'Open media',
       ctaHref: '/media',
+      layout: 'shelf',
       animation: { enabled: false, intensity: 0.3 },
     },
   },
@@ -155,6 +186,107 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
       accent: 'commits.',
       ctaLabel: 'GitHub activity',
       ctaHref: '/about/github',
+      animation: { enabled: false, intensity: 0.2 },
+    },
+  },
+  education: {
+    key: 'education',
+    label: 'Education',
+    source: 'Education records from the studio.',
+    schema: SECTION_CONTENT_SCHEMAS.education,
+    fields: baseFields.filter((field) => field.key !== 'body'),
+    defaults: {
+      eyebrow: '01 / Education',
+      title: 'Learning with',
+      accent: 'intention.',
+      description:
+        'Academic foundation in computer applications, distributed software, and algorithmic thinking.',
+      animation: { enabled: false, intensity: 0.2 },
+    },
+  },
+  experience: {
+    key: 'experience',
+    label: 'Experience',
+    source: 'Experience records from the studio.',
+    schema: SECTION_CONTENT_SCHEMAS.experience,
+    fields: baseFields.filter((field) => field.key !== 'body'),
+    defaults: {
+      eyebrow: '02 / Work Experience',
+      title: 'Work in',
+      accent: 'practice.',
+      description:
+        'Professional roles and teaching commitments where curiosity became practical impact.',
+      animation: { enabled: false, intensity: 0.2 },
+    },
+  },
+  skills: {
+    key: 'skills',
+    label: 'Skills',
+    source: 'Skill groups from the studio.',
+    schema: SECTION_CONTENT_SCHEMAS.skills,
+    fields: baseFields.filter((field) => field.key !== 'body'),
+    defaults: {
+      eyebrow: '03 / Engineering Stack',
+      title: 'Tools for turning',
+      accent: 'ideas real.',
+      description:
+        'A practical, modern stack spanning frontend systems, backend services, and embedded hardware.',
+      animation: { enabled: false, intensity: 0.2 },
+    },
+  },
+  interests: {
+    key: 'interests',
+    label: 'Interests',
+    source: 'The interests list on the profile record.',
+    schema: SECTION_CONTENT_SCHEMAS.interests,
+    fields: baseFields.filter((field) => field.key !== 'body'),
+    defaults: {
+      eyebrow: '04 / Interests',
+      title: 'Beyond the',
+      accent: 'editor.',
+      description: 'Creative pursuits and study areas outside the day job.',
+      animation: { enabled: false, intensity: 0.2 },
+    },
+  },
+  socials: {
+    key: 'socials',
+    label: 'Social links',
+    source: 'Social Links records from the studio.',
+    schema: SECTION_CONTENT_SCHEMAS.socials,
+    fields: baseFields.filter((field) => field.key !== 'body'),
+    defaults: {
+      eyebrow: '05 / Social Channels',
+      title: 'Elsewhere',
+      accent: 'online.',
+      animation: { enabled: false, intensity: 0.2 },
+    },
+  },
+  technology: {
+    key: 'technology',
+    label: 'Technology distribution',
+    source: 'Stack tags across published projects.',
+    schema: SECTION_CONTENT_SCHEMAS.technology,
+    fields: baseFields.filter((field) => field.key !== 'body'),
+    defaults: {
+      eyebrow: '07 / Telemetry',
+      title: 'Technology',
+      accent: 'distribution.',
+      ctaLabel: 'All projects',
+      ctaHref: '/projects',
+      animation: { enabled: true, intensity: 0.4 },
+    },
+  },
+  contact: {
+    key: 'contact',
+    label: 'Contact channels',
+    source: 'Contact details and social links from site settings.',
+    schema: SECTION_CONTENT_SCHEMAS.contact,
+    fields: baseFields.filter((field) => field.key !== 'body'),
+    defaults: {
+      eyebrow: '01 / Direct Dispatch',
+      title: "Let's build something",
+      accent: 'thoughtful.',
+      description: 'Open to software engineering roles, client contracts, and collaborative builds.',
       animation: { enabled: false, intensity: 0.2 },
     },
   },

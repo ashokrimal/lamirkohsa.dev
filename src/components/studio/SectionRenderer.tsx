@@ -17,6 +17,15 @@ import { MetaChip, PageSection } from '@/components/ui/PageChrome'
 import { Reveal } from '@/components/ui/Reveal'
 import type { SectionContent } from '@/lib/studio/sections'
 import type { StudioPageSection } from '@/lib/studio/data'
+import { MediaCollectionsBody } from '@/components/media/MediaHomeContent'
+import {
+  ContactSectionBody,
+  ExperienceSectionBody,
+  InterestsSectionBody,
+  SkillsSectionBody,
+  SocialsSectionBody,
+  TechnologySectionBody,
+} from '@/components/studio/SectionBodies'
 
 /**
  * Section bodies for studio-managed pages.
@@ -296,9 +305,23 @@ export async function SectionRenderer({ sections }: { sections: StudioPageSectio
                 />
               )
             case 'media':
-              return <MediaSectionBody />
+              return content.layout === 'index' ? <MediaCollectionsBody /> : <MediaSectionBody />
             case 'github':
               return <GithubSectionBody content={content} />
+            case 'education':
+              return <ExperienceSectionBody kind="education" />
+            case 'experience':
+              return <ExperienceSectionBody kind="experience" />
+            case 'skills':
+              return <SkillsSectionBody />
+            case 'interests':
+              return <InterestsSectionBody />
+            case 'socials':
+              return <SocialsSectionBody />
+            case 'technology':
+              return <TechnologySectionBody />
+            case 'contact':
+              return <ContactSectionBody />
             default:
               return null
           }

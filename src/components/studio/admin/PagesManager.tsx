@@ -93,6 +93,25 @@ function SectionFields({
             </label>
           )
         }
+        if (field.type === 'select') {
+          return (
+            <label key={field.key} className="block text-xs text-slate-700">
+              {field.label}
+              <select
+                value={typeof raw === 'string' ? raw : field.options?.[0] ?? ''}
+                onChange={(event) => onChange(writeField(content, field.key, event.target.value))}
+                className={inputClass}
+              >
+                {(field.options ?? []).map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              {field.hint && <span className="mt-0.5 block text-[10px] text-slate-400">{field.hint}</span>}
+            </label>
+          )
+        }
         if (field.type === 'number') {
           return (
             <label key={field.key} className="block text-xs text-slate-700">

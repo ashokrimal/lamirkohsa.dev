@@ -135,10 +135,146 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, DefaultSectionSeed[]> = {
       },
     },
   ],
-  '/about': [],
+  '/about': [
+    {
+      sectionKey: 'introduction',
+      sortOrder: 0,
+      isEnabled: true,
+      content: {
+        eyebrow: '01 / About Me',
+        krEyebrow: '소개 및 철학',
+        title: 'Making things',
+        accent: 'matter.',
+        description:
+          'A full-stack software developer focused on thoughtful interfaces, dependable backend systems, and the details that make software feel human.',
+        animation: { enabled: false, intensity: 0.2 },
+      },
+    },
+    {
+      sectionKey: 'education',
+      sortOrder: 1,
+      isEnabled: true,
+      content: {
+        eyebrow: '01 / Education',
+        krEyebrow: '학력 사항',
+        title: 'Learning with',
+        accent: 'intention.',
+        description:
+          'Academic foundation in computer applications, distributed software, and algorithmic thinking.',
+      },
+    },
+    {
+      sectionKey: 'experience',
+      sortOrder: 2,
+      isEnabled: true,
+      content: {
+        eyebrow: '02 / Work Experience',
+        krEyebrow: '경력 사항',
+        title: 'Work in',
+        accent: 'practice.',
+        description:
+          'Professional roles and teaching commitments where curiosity became practical impact.',
+      },
+    },
+    {
+      sectionKey: 'skills',
+      sortOrder: 3,
+      isEnabled: true,
+      content: {
+        eyebrow: '03 / Engineering Stack',
+        krEyebrow: '기술 스택',
+        title: 'Tools for turning',
+        accent: 'ideas real.',
+        description:
+          'A practical, modern stack spanning frontend systems, backend services, and embedded hardware.',
+      },
+    },
+    {
+      sectionKey: 'interests',
+      sortOrder: 4,
+      isEnabled: true,
+      content: {
+        eyebrow: '04 / Interests',
+        title: 'Beyond the',
+        accent: 'editor.',
+        description: 'Creative pursuits and study areas outside the day job.',
+      },
+    },
+    {
+      sectionKey: 'socials',
+      sortOrder: 5,
+      isEnabled: true,
+      content: {
+        eyebrow: '05 / Social Channels',
+        title: 'Elsewhere',
+        accent: 'online.',
+      },
+    },
+    {
+      sectionKey: 'github',
+      sortOrder: 6,
+      isEnabled: true,
+      content: {
+        eyebrow: '06 / Activity',
+        krEyebrow: '깃허브',
+        title: 'Recent',
+        accent: 'commits.',
+        ctaLabel: 'GitHub activity',
+        ctaHref: '/about/github',
+      },
+    },
+    {
+      sectionKey: 'technology',
+      sortOrder: 7,
+      isEnabled: true,
+      content: {
+        eyebrow: '07 / Telemetry',
+        title: 'Technology',
+        accent: 'distribution.',
+        description:
+          'How the published work is built, weighted by the stack declared on each project.',
+        ctaLabel: 'All projects',
+        ctaHref: '/projects',
+        animation: { enabled: true, intensity: 0.4 },
+      },
+    },
+  ],
   '/projects': [],
-  '/contact': [],
-  '/media': [],
+  '/media': [
+    {
+      sectionKey: 'media',
+      sortOrder: 0,
+      isEnabled: true,
+      content: {
+        eyebrow: '01 / Cultural Library',
+        krEyebrow: '미디어 기록',
+        title: "What I'm",
+        accent: 'into.',
+        description:
+          'Curated listening rotation, anime, manga, and films that inspire focus and visual storytelling.',
+        ctaLabel: 'Open music archive',
+        ctaHref: '/media/music',
+        layout: 'index',
+        animation: { enabled: false, intensity: 0.2 },
+      },
+    },
+  ],
+  '/contact': [
+    {
+      sectionKey: 'contact',
+      sortOrder: 0,
+      isEnabled: true,
+      content: {
+        eyebrow: '01 / Direct Dispatch',
+        krEyebrow: '직접 연락',
+        title: "Let's build something",
+        accent: 'thoughtful.',
+        description:
+          'Open to software engineering roles, client contracts, and collaborative builds.',
+        animation: { enabled: false, intensity: 0.2 },
+      },
+    },
+  ],
 }
 
 export const DEFAULT_SITE_SETTINGS = {

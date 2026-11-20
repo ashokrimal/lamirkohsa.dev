@@ -8,6 +8,8 @@ import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_MEDIA_RECORDS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSections } from '@/lib/media-content'
+import { getPageWithSections } from '@/lib/studio/data'
+import { SectionRenderer } from '@/components/studio/SectionRenderer'
 import { uiStrings } from '@/lib/ui-strings'
 
 const PREVIEW_COUNT = 5
@@ -20,39 +22,27 @@ const MEDIA_ICONS: Record<MediaKind, LucideIcon> = {
 }
 
 /**
- * The media page: Music, Movies, Anime and Manga in that order. Each section is
- * one horizontal collection of CMS records followed by a View all card. Every
- * category keeps its place; one with no published records shows its own individual
- * empty state instead of samples.
+ * The media page's section-driven body also exposes a collections variant: one
+ * numbered block per collection with its own heading, used when a `media`
+ * section is configured with `layout: index`.
  */
-export default async function MediaHomeContent() {
+export async function MediaCollectionsBody() {
   const [copyResult, collectionsResult] = await Promise.all([
     getPageCopy(),
     getMediaCollections(),
   ])
-  const pageCopy = copyResult.status === 'ok' ? copyResult.data.media : undefined
   const collections = collectionsResult.status === 'ok' ? collectionsResult.data : []
   const sections = await getMediaSections(collections)
 
   return (
-    <PageShell>
-      <PageHero
-        eyebrow={pageCopy?.eyebrow ?? ''}
-        krEyebrow={pageCopy?.krEyebrow}
-        title={pageCopy?.title ?? CMS_SCHEMA.sections.pages.media.label}
-        accent={pageCopy?.accent}
-        description={pageCopy?.description}
-      />
-
+    <>
       {copyResult.status === 'error' && (
         <CmsErrorState message={copyResult.message} className="mt-10" />
       )}
 
       {sections.map((section, index) => {
         const config = collections.find(
-          (collection) =>
-            collection.key ===
-            CMS_MEDIA_RECORDS[section.kind].key,
+          (collection) => collection.key === CMS_MEDIA_RECORDS[section.kind].key,
         )
         const emptyState = CMS_MEDIA_RECORDS[section.kind].emptyState
         const EmptyIcon = MEDIA_ICONS[section.kind]
@@ -60,7 +50,7 @@ export default async function MediaHomeContent() {
         return (
           <section
             key={section.kind}
-            className="mt-12 md:mt-16 pt-10 md:pt-12 border-t border-line"
+            className="mt-12 border-t border-line pt-10 md:mt-16 md:pt-12"
             aria-labelledby={`media-${section.kind}-heading`}
           >
             <SectionHeader
@@ -96,6 +86,37 @@ export default async function MediaHomeContent() {
           </section>
         )
       })}
+    </>
+  )
+}
+
+/**
+ * The media page: its hero copy comes from Page Copy, and the collections below
+ * it are the studio's `page_sections` rows for `/media`, so the page can be
+ * reordered, hidden or emptied from Pages & Sections.
+ */
+export default async function MediaHomeContent() {
+  const [copyResult, pageResult] = await Promise.all([
+    getPageCopy(),
+    getPageWithSections('/media'),
+  ])
+  const pageCopy = copyResult.status === 'ok' ? copyResult.data.media : undefined
+
+  return (
+    <PageShell>
+      <PageHero
+        eyebrow={pageCopy?.eyebrow ?? ''}
+        krEyebrow={pageCopy?.krEyebrow}
+        title={pageCopy?.title ?? CMS_SCHEMA.sections.pages.media.label}
+        accent={pageCopy?.accent}
+        description={pageCopy?.description}
+      />
+
+      {copyResult.status === 'error' && (
+        <CmsErrorState message={copyResult.message} className="mt-10" />
+      )}
+
+      <SectionRenderer sections={pageResult.sections} />
 
       <PageNav />
     </PageShell>
