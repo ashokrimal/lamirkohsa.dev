@@ -12,6 +12,58 @@ export const inboxMessage = pgTable('inboxMessage', { id: text('id').primaryKey(
 export const animeMangaItem = pgTable('animeMangaItem', { id: serial('id').primaryKey(), userId: text('userId').notNull(), kind: text('kind').notNull(), externalId: text('externalId'), title: text('title').notNull(), status: text('status'), score: text('score'), progress: text('progress'), imageUrl: text('imageUrl'), synopsis: text('synopsis'), source: text('source').notNull().default('import'), rawData: jsonb('rawData').$type<Record<string, unknown>>().notNull().default({}), createdAt: timestamp('createdAt').notNull().defaultNow(), updatedAt: timestamp('updatedAt').notNull().defaultNow() })
 export const cmsContent = pgTable('cmsContent', { id: serial('id').primaryKey(), userId: text('userId').notNull(), collection: text('collection').notNull(), title: text('title').notNull(), slug: text('slug').notNull(), payload: jsonb('payload').$type<Record<string, unknown>>().notNull().default({}), status: text('status').notNull().default('draft'), sortOrder: integer('sortOrder').notNull().default(0), createdAt: timestamp('createdAt').notNull().defaultNow(), updatedAt: timestamp('updatedAt').notNull().defaultNow() })
 
+/*
+ * Studio CMS: pages, their ordered sections, case-study projects and the
+ * single-row site settings. These tables are additive — the older cmsContent
+ * collections still back the features that have not moved yet.
+ */
+export const sitePage = pgTable('pages', {
+  id: serial('id').primaryKey(),
+  slug: text('slug').notNull().unique(),
+  title: text('title').notNull(),
+  metaDescription: text('meta_description'),
+  isPublished: boolean('is_published').notNull().default(true),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const sitePageSection = pgTable('page_sections', {
+  id: serial('id').primaryKey(),
+  pageId: integer('page_id').notNull(),
+  sectionKey: text('section_key').notNull(),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isEnabled: boolean('is_enabled').notNull().default(true),
+  content: jsonb('content_json').$type<Record<string, unknown>>().notNull().default({}),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const studioProject = pgTable('projects', {
+  id: serial('id').primaryKey(),
+  slug: text('slug').notNull().unique(),
+  title: text('title').notNull(),
+  category: text('category'),
+  summary: text('summary'),
+  problem: text('problem'),
+  solution: text('solution'),
+  techStack: jsonb('tech_stack').$type<string[]>().notNull().default([]),
+  coverMediaUrl: text('cover_media_url'),
+  liveUrl: text('live_url'),
+  repoUrl: text('repo_url'),
+  featuredOrder: integer('featured_order'),
+  isPublished: boolean('is_published').notNull().default(true),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const siteSetting = pgTable('site_settings', {
+  id: integer('id').primaryKey().default(1),
+  contactEmail: text('contact_email'),
+  availabilityStatus: text('availability_status'),
+  socialLinks: jsonb('social_links')
+    .$type<Array<{ id: string; platform: string; label: string; url: string; is_visible: boolean; sort_order: number }>>()
+    .notNull()
+    .default([]),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 /**
  * The single owner account for the admin studio. Kept in the database so the
  * owner can be created on first run and can change their own password without

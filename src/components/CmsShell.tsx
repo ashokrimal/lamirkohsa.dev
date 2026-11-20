@@ -72,6 +72,9 @@ const navGroups: NavGroup[] = [
   {
     label: 'Studio',
     items: [
+      { id: 'pages', label: 'Pages & sections', icon: Layers, href: '/admin/pages' },
+      { id: 'work', label: 'Case studies', icon: FolderKanban, href: '/admin/work' },
+      { id: 'site-settings', label: 'Site settings', icon: Globe2, href: '/admin/site-settings' },
       { id: 'hero', label: 'Hero section', icon: Sparkles, href: '/admin?section=hero' },
       { id: 'homepage', label: 'Homepage sections', icon: Layers, href: '/admin?section=homepage' },
       { id: 'footer', label: 'Footer & navigation', icon: Navigation, href: '/admin?section=footer' },

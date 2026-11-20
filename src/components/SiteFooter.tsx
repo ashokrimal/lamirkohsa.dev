@@ -24,19 +24,46 @@ function iconFor(kind?: string, label?: string) {
   return match ? icons[match as keyof typeof icons] : Globe
 }
 
+export interface FooterSocialLink {
+  id: string
+  platform: string
+  label: string
+  url: string
+  is_visible: boolean
+  sort_order: number
+}
+
 export default function SiteFooter({
   brand,
   navigation,
   footer,
   contact,
+  socialLinks,
+  contactEmail,
+  availabilityStatus,
 }: {
   brand: SiteBrand
   navigation: SiteNavigation
   footer: SiteFooterConfig
   contact: ContactDetails
+  /** Studio-managed social links; visible ones replace the legacy list. */
+  socialLinks?: FooterSocialLink[]
+  /** Studio-managed contact email, overriding the legacy contact record. */
+  contactEmail?: string
+  /** Studio-managed availability badge. */
+  availabilityStatus?: string
 }) {
   const year = new Date().getFullYear()
-  const hasContactCard = Boolean(footer.availabilityText || footer.ctaLabel)
+  const studioSocials = (socialLinks ?? [])
+    .filter((link) => link.is_visible && link.url.trim().length > 0)
+    .sort((a, b) => a.sort_order - b.sort_order)
+  const resolvedSocials: Array<{ label: string; href: string; kind?: string }> =
+    studioSocials.length > 0
+      ? studioSocials.map((link) => ({ label: link.label, href: link.url, kind: link.platform }))
+      : navigation.socials
+  const resolvedEmail = contactEmail || contact.email
+  const resolvedAvailability = availabilityStatus || footer.availabilityText
+  const hasContactCard = Boolean(resolvedAvailability || footer.ctaLabel)
 
   return (
     <footer className="mt-20 md:mt-28 border-t border-line bg-surface">
@@ -60,9 +87,9 @@ export default function SiteFooter({
               <p className="mt-3 text-sm text-muted leading-relaxed">{footer.tagline}</p>
             )}
 
-            {navigation.socials.length > 0 && (
+            {resolvedSocials.length > 0 && (
               <div className="mt-5 flex items-center gap-2">
-                {navigation.socials.map((social) => {
+                {resolvedSocials.map((social) => {
                   const Icon = iconFor(social.kind, social.label)
                   return (
                     <a
@@ -142,8 +169,8 @@ export default function SiteFooter({
                     {footer.availabilityLabel}
                   </p>
                 )}
-                {footer.availabilityText && (
-                  <p className="mt-2 text-sm text-ink leading-relaxed">{footer.availabilityText}</p>
+                {resolvedAvailability && (
+                  <p className="mt-2 text-sm text-ink leading-relaxed">{resolvedAvailability}</p>
                 )}
                 {footer.ctaLabel && footer.ctaHref && (
                   <Link
@@ -166,9 +193,9 @@ export default function SiteFooter({
             &copy; {year} {footer.copyrightName || brand.name || SITE_NAME}
           </p>
           {footer.canonical && <p className="text-center">{footer.canonical}</p>}
-          {contact.email && (
-            <a href={`mailto:${contact.email}`} className="hover:text-accent transition-colors">
-              {contact.email}
+          {resolvedEmail && (
+            <a href={`mailto:${resolvedEmail}`} className="hover:text-accent transition-colors">
+              {resolvedEmail}
             </a>
           )}
         </div>

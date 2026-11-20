@@ -2,13 +2,21 @@ import type { Metadata } from 'next'
 import ProjectsContent from '@/components/pages/ProjectsContent'
 import { extractProjectTechTags, getProjectsResult } from '@/lib/projects'
 import { getPageCopy } from '@/lib/site-content'
+import { getPageMetadata } from '@/lib/studio/data'
 import { pageMetadata } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.projects : undefined, undefined, '/projects')
+  const [copyResult, studio] = await Promise.all([getPageCopy(), getPageMetadata('/projects')])
+  const base = pageMetadata(
+    copyResult.status === 'ok' ? copyResult.data.projects : undefined,
+    undefined,
+    '/projects',
+  )
+  return studio
+    ? { ...base, title: studio.title, description: studio.description || base.description }
+    : base
 }
 
 export default async function ProjectsPage() {

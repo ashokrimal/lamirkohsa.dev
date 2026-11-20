@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { PageLayout } from '@/components/layouts/PageLayout';
 import HomeContent from '@/components/pages/HomeContent';
-import { HomeEntranceGate } from '@/components/ui/HomeLoadingSequence';
+import { getPageMetadata } from '@/lib/studio/data';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,22 @@ const PAGE_DESCRIPTION =
   "Explore Ashok Rimal's portfolio featuring shipped full-stack systems, case studies, interactive data visualizations, and creative engineering experiments.";
 const OG_IMAGE_URL = `${SITE_URL}/opengraph-image`;
 
-export const metadata: Metadata = {
+export async function generateMetadata(): Promise<Metadata> {
+  // The page row owns the public title and description; the block below is the
+  // structural default used before the studio has a record for `/`.
+  const studio = await getPageMetadata('/')
+  const title = studio?.title ? { absolute: studio.title } : { absolute: PAGE_TITLE }
+  const description = studio?.description || PAGE_DESCRIPTION
+  return {
+    ...BASE_METADATA,
+    title,
+    description,
+    openGraph: { ...BASE_METADATA.openGraph, title: studio?.title || PAGE_TITLE, description },
+    twitter: { ...BASE_METADATA.twitter, title: studio?.title || PAGE_TITLE, description },
+  }
+}
+
+const BASE_METADATA: Metadata = {
   title: { absolute: PAGE_TITLE },
   description: PAGE_DESCRIPTION,
   alternates: { canonical: '/' },
@@ -111,9 +126,7 @@ export default function HomePage() {
         errorTitle="Error loading page"
         errorMessage="We're having trouble loading the page. Please try again later."
       >
-        <HomeEntranceGate>
-          <HomeContent />
-        </HomeEntranceGate>
+        <HomeContent />
       </PageLayout>
     </>
   );

@@ -1,0 +1,40 @@
+import { redirect } from 'next/navigation'
+import WorkManager from '@/components/studio/admin/WorkManager'
+import { getAllProjectsForAdmin } from '@/lib/studio/data'
+import { hasOwnerAccess } from '@/lib/admin-auth'
+
+export const dynamic = 'force-dynamic'
+
+export default async function AdminWorkPage() {
+  if (!(await hasOwnerAccess())) {
+    redirect('/admin/sign-in?returnTo=/admin/work')
+  }
+
+  let projects: Awaited<ReturnType<typeof getAllProjectsForAdmin>> = []
+  let error: string | null = null
+  try {
+    projects = await getAllProjectsForAdmin()
+  } catch (readError) {
+    error = readError instanceof Error ? readError.message : 'Could not read the projects table.'
+  }
+
+  return (
+    <div className="space-y-5">
+      <header>
+        <h1 className="text-xl font-bold tracking-tight text-slate-900">Case studies</h1>
+        <p className="mt-0.5 text-xs text-slate-500">
+          Full CRUD for the projects table, including featured ordering. Saved projects publish to
+          <code className="mx-1 rounded bg-slate-100 px-1">/work</code> and their case study route.
+        </p>
+      </header>
+
+      {error ? (
+        <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-700">
+          {error}
+        </p>
+      ) : (
+        <WorkManager projects={projects} />
+      )}
+    </div>
+  )
+}

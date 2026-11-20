@@ -6,6 +6,7 @@ import LayoutShell from '@/components/LayoutShell';
 import { ScrollProgress } from '@/components/ui/ScrollProgress';
 import { SmoothScroll } from '@/components/SmoothScroll';
 import { EMPTY_SITE_CONFIG, getSiteConfig } from '@/lib/site-content';
+import { getSiteSettings } from '@/lib/studio/data';
 import {
   DEFAULT_OG_IMAGE,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -95,12 +96,15 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   // is detected in the client shell instead.
   const siteResult = await getSiteConfig()
   const site = siteResult.status === 'ok' ? siteResult.data : EMPTY_SITE_CONFIG
+  // Footer socials, email and availability come from the studio's single-row
+  // settings table; the fallback keeps the configured CMS values until seeded.
+  const studioSettings = await getSiteSettings()
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('portfolio_theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var setting=(t==='light'||t==='dark'||t==='system')?t:'system';var dark=(setting==='dark'||(setting==='system'&&d));var root=document.documentElement;if(dark){root.classList.add('dark');root.classList.remove('light');root.setAttribute('data-theme','dark');root.style.colorScheme='dark';}else{root.classList.remove('dark');root.classList.add('light');root.setAttribute('data-theme','light');root.style.colorScheme='light';}root.setAttribute('data-theme-setting',setting);}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('portfolio_theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var setting=(t==='light'||t==='dark'||t==='system')?t:'system';var dark=(setting==='dark'||(setting==='system'&&d));var root=document.documentElement;if(dark){root.classList.add('dark');root.classList.remove('light');root.setAttribute('data-theme','dark');root.style.colorScheme='dark';}else{root.classList.remove('dark');root.classList.add('light');root.setAttribute('data-theme','light');root.style.colorScheme='light';}root.setAttribute('data-theme-setting',setting);try{if(sessionStorage.getItem('ar_preloader_seen')==='1'){root.setAttribute('data-preloader-seen','1');}else if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){root.setAttribute('data-preloader-reduced','');}}catch(e){}}catch(e){}})();`,
           }}
         />
       </head>
@@ -108,7 +112,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <ThemeProvider>
           <ScrollProgress />
           <SmoothScroll />
-          <LayoutShell site={site}>{children}</LayoutShell>
+          <LayoutShell
+            site={site}
+            footerSocialLinks={studioSettings.socialLinks}
+            footerContactEmail={studioSettings.contactEmail}
+            footerAvailability={studioSettings.availabilityStatus}
+          >
+            {children}
+          </LayoutShell>
         </ThemeProvider>
       </body>
     </html>

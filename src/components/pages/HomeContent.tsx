@@ -1,147 +1,39 @@
-import Image from 'next/image'
 import Link from 'next/link'
-import {
-  ArrowUpRight,
-  Code2,
-  Compass,
-  Film,
-  FolderGit2,
-  Github,
-  PieChart,
-  Sparkles,
-  User,
-} from 'lucide-react'
-import {
-  getHeroSectionConfigResult,
-  getHomepageSectionsConfigResult,
-  getProfileContentResult,
-  type HomepageSectionsConfig,
-} from '@/app/actions/content-cms'
-import { getPublicProfileSettingsResult } from '@/app/actions/media'
-import { EMPTY_SITE_CONFIG, getMediaCollections, getPageCopy, getSiteConfig } from '@/lib/site-content'
-import { getProjectsResult } from '@/lib/projects'
-import { CMS_SETTINGS_RECORDS, SECTIONS, type SiteSectionDefinition } from '@/lib/cms-schema'
-import { getMediaSections } from '@/lib/media-content'
-import { uiStrings } from '@/lib/ui-strings'
-import { type ProjectData } from '@/components/ui/ProjectCard'
-import { FeaturedProjectsCollection } from '@/components/projects/FeaturedProjectsCollection'
-import { HomeTechDistribution } from '@/components/projects/HomeTechDistribution'
-import { MediaShelf } from '@/components/ui/MediaShelf'
-import { Reveal } from '@/components/ui/Reveal'
+import { ArrowUpRight, Compass, Sparkles } from 'lucide-react'
+import { getHeroSectionConfigResult, getProfileContentResult } from '@/app/actions/content-cms'
+import { getPageWithSections, getSiteSettings } from '@/lib/studio/data'
+import { SectionRenderer } from '@/components/studio/SectionRenderer'
+import { EMPTY_SITE_CONFIG, getSiteConfig } from '@/lib/site-content'
+import { CMS_SETTINGS_RECORDS } from '@/lib/cms-schema'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
-import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
-import { MetaChip, PageHero, PageSection, PageShell } from '@/components/ui/PageChrome'
-
-const PREVIEW_COUNT = 5
-
-/** The link each home section offers beside its heading. */
-const SECTION_LINKS: Record<string, { href: string; label: string }> = {
-  about: { href: '/about', label: 'Read more' },
-  projects: { href: '/projects', label: 'All projects' },
-  media: { href: '/media', label: 'Open media' },
-  github: { href: '/about/github', label: 'GitHub activity' },
-}
+import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 
 /**
- * The homepage: hero, introduction + compact technology distribution,
- * featured projects, media shelf and GitHub status, in the fixed order from `SECTIONS`.
+ * The homepage.
+ *
+ * The hero is chrome-like and reads the Hero Section record; the body is a list
+ * of studio-managed `page_sections` for the `/` page, rendered by
+ * `SectionRenderer` in the owner's order. Copy, CTAs, ordering and visibility
+ * all come from the database — nothing below the hero is hardcoded.
  */
 export default async function HomeContent() {
-  const [
-    heroResult,
-    sectionsResult,
-    profileResult,
-    projectsResult,
-    siteResult,
-    mediaCollectionsResult,
-    publicSettingsResult,
-    copyResult,
-  ] = await Promise.all([
+  const [pageResult, heroResult, profileResult, siteResult, settings] = await Promise.all([
+    getPageWithSections('/'),
     getHeroSectionConfigResult(),
-    getHomepageSectionsConfigResult(),
     getProfileContentResult(),
-    getProjectsResult({ fresh: true }),
     getSiteConfig(),
-    getMediaCollections(),
-    getPublicProfileSettingsResult(),
-    getPageCopy(),
+    getSiteSettings(),
   ])
 
   const heroData = heroResult.status === 'ok' ? heroResult.data : {}
-  const sectionsConfig: HomepageSectionsConfig =
-    sectionsResult.status === 'ok'
-      ? sectionsResult.data
-      : { order: [], enabled: {}, sectionMeta: {} }
   const site = siteResult.status === 'ok' ? siteResult.data : EMPTY_SITE_CONFIG
-  const mediaCollections = mediaCollectionsResult.status === 'ok' ? mediaCollectionsResult.data : []
-  const projects = projectsResult.status === 'ok' ? projectsResult.data : []
-  const profile = profileResult.status === 'ok' ? profileResult.data : {}
-  const dataError = siteResult.status === 'error' ? siteResult : undefined
-
-  // The introduction mirrors the About page: its page copy supplies the lead
-  // paragraph and header, and the profile collection supplies the biography.
-  const pageCopy = copyResult.status === 'ok' ? copyResult.data : {}
-  const aboutCopy = pageCopy.about
-  const projectsCopy = pageCopy.projects
-  const aboutIntro = aboutCopy?.sections?.about?.description ?? aboutCopy?.description
-
-  const mediaSections = await getMediaSections(mediaCollections)
-
-  const heroImageUrl = typeof heroData.imageUrl === 'string' ? heroData.imageUrl : undefined
-  const heroImageAlt =
-    typeof heroData.imageAlt === 'string' && heroData.imageAlt.trim()
-      ? heroData.imageAlt
-      : undefined
-
-  // Featured projects lead the row; if nothing is featured yet, published
-  // projects fill it so the section never claims there is no work.
-  const projectCandidates = projects.some((project) => project.featured)
-    ? projects.filter((project) => project.featured)
-    : projects
-
-  const featuredProjects: ProjectData[] = projectCandidates
-    .slice(0, PREVIEW_COUNT)
-    .map((project) => ({
-      id: project.id,
-      title: project.title,
-      slug: project.slug,
-      category: project.category,
-      summary: project.summary,
-      description: project.description,
-      challenge: project.challenge,
-      solution: project.solution,
-      duration: project.duration,
-      cost: project.cost,
-      model: project.model,
-      features: project.features,
-      techStack: project.techStack,
-      techDefinitions: project.techDefinitions,
-      image: project.image,
-      altText: project.altText,
-      live: project.live,
-      github: project.github,
-      status: project.status,
-      featured: project.featured,
-      completionDate: project.completionDate,
-      phases: project.phases,
-    }))
-
-  const mediaPreview = mediaSections.flatMap((section) =>
-    section.items.map((item) => ({ kind: section.kind, item, href: section.href })),
-  )
-
-  const meta = sectionsConfig.sectionMeta || {}
-  const githubUsername =
-    publicSettingsResult.status === 'ok' ? publicSettingsResult.data?.githubUsername || '' : ''
-
-  const profileData = profile as Record<string, unknown>
+  const profile = (profileResult.status === 'ok' ? profileResult.data : {}) as Record<string, unknown>
   const profileText = (key: string) => {
-    const raw = profileData[key]
-    return typeof raw === 'string' && raw.trim() ? (raw as string) : undefined
+    const raw = profile[key]
+    return typeof raw === 'string' && raw.trim() ? raw : undefined
   }
-  const profileImage = profileText('avatarUrl') || profileText('imageUrl')
-  const portraitImage = heroImageUrl || profileImage
+
   const displayName = profileText('fullName') || site.brand.name || ''
   const heroHeading = heroData.heading?.trim() || displayName
   const heroSubtitle = heroData.subtitle?.trim() || profileText('summary')
@@ -149,167 +41,10 @@ export default async function HomeContent() {
   const heroLocation =
     heroData.location?.trim() || profileText('location') || site.contact.location || ''
   const availability =
+    settings.availabilityStatus ||
     profileText('availability') ||
-    profileText('status') ||
     site.contact.availability ||
     site.footer.availabilityText
-
-  const renderSectionBody = (section: SiteSectionDefinition) => {
-    const sectionMeta = meta[section.id]
-
-    switch (section.id) {
-      // 1. ABOUT / INTRODUCTION + TECHNOLOGY DISTRIBUTION
-      case 'about': {
-        const hasAbout = Boolean(
-          aboutIntro ||
-            profileText('summary') ||
-            profileText('bio') ||
-            portraitImage ||
-            profileText('headline'),
-        )
-        if (profileResult.status === 'error') {
-          return <CmsErrorState message={profileResult.message} />
-        }
-        if (!hasAbout) {
-          return (
-            <EmptyState
-              eyebrow="Introduction"
-              icon={User}
-              message={section.emptyState.message}
-              hint={section.emptyState.hint}
-            />
-          )
-        }
-
-        return (
-          <div className="space-y-10 md:space-y-12">
-            <div className="grid grid-cols-1 items-start gap-8 md:gap-10 lg:grid-cols-[0.8fr_1.2fr]">
-              {portraitImage && (
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[24px] border border-line-subtle bg-overlay-faint">
-                  <Image
-                    src={portraitImage}
-                    alt={heroImageAlt || displayName}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 40vw"
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              )}
-
-              <div className="space-y-5 text-sm leading-relaxed text-muted md:text-base">
-                {profileText('summary') && (
-                  <p className="text-lg leading-relaxed tracking-tight text-ink md:text-2xl">
-                    {profileText('summary')}
-                  </p>
-                )}
-                {aboutIntro && aboutIntro !== profileText('summary') && <p>{aboutIntro}</p>}
-                {profileText('bio') && <p>{profileText('bio')}</p>}
-
-                <div className="flex flex-wrap gap-2.5 pt-1">
-                  {profileText('headline') && (
-                    <MetaChip icon={Code2}>{profileText('headline')}</MetaChip>
-                  )}
-                  {heroLocation && <MetaChip icon={Compass}>{heroLocation}</MetaChip>}
-                  {availability && <MetaChip icon={Sparkles}>{availability}</MetaChip>}
-                </div>
-              </div>
-            </div>
-
-            {projects.length > 0 ? (
-              <HomeTechDistribution projects={projects} />
-            ) : projectsResult.status !== 'error' ? (
-              <EmptyState
-                eyebrow="Stack Telemetry"
-                icon={PieChart}
-                message="No technology distribution data yet."
-                hint="Technology weights and category filters will populate once published projects include stack tags."
-              />
-            ) : null}
-          </div>
-        )
-      }
-
-      // 2. FEATURED PROJECTS (Fetched directly from CMS)
-      case 'projects': {
-        if (projectsResult.status === 'error') {
-          return <CmsErrorState message={projectsResult.message} />
-        }
-        if (featuredProjects.length === 0) {
-          return (
-            <EmptyState
-              eyebrow="Selected Works"
-              icon={FolderGit2}
-              message={section.emptyState.message}
-              hint={section.emptyState.hint}
-            />
-          )
-        }
-        return (
-          <FeaturedProjectsCollection
-            projects={featuredProjects}
-            previewCount={sectionMeta?.previewCount ?? PREVIEW_COUNT}
-            viewAllHref={sectionMeta?.href || section.route}
-            viewAllLabel={sectionMeta?.primaryLabel || uiStrings.projects.viewAll.en}
-            ariaLabel={uiStrings.projects.featuredAria.en}
-          />
-        )
-      }
-
-      // 3. MEDIA PREVIEW
-      case 'media': {
-        const mediaError = mediaSections.find((entry) => entry.error)?.error
-        if (mediaError) return <CmsErrorState message={mediaError} />
-        if (mediaPreview.length === 0) {
-          return (
-            <EmptyState
-              eyebrow="Media Archive"
-              icon={Film}
-              message={section.emptyState.message}
-              hint={section.emptyState.hint}
-            />
-          )
-        }
-        return <MediaShelf items={mediaPreview} />
-      }
-
-      // 4. GITHUB STATUS
-      case 'github': {
-        if (publicSettingsResult.status === 'error') {
-          return <CmsErrorState message={publicSettingsResult.message} />
-        }
-        if (!githubUsername) {
-          return (
-            <EmptyState
-              eyebrow="GitHub Activity"
-              icon={Github}
-              message={section.emptyState.message}
-              hint={section.emptyState.hint}
-            />
-          )
-        }
-        return <GitHubActivitySparkline username={githubUsername} showRecentCommits={false} />
-      }
-
-      default:
-        return null
-    }
-  }
-
-  // The CMS decides which registered sections appear and in what order; a
-  // section missing from the record is still shown, so an unpublished config
-  // never empties the homepage.
-  const enabledSections = sectionsConfig.enabled || {}
-  const configuredOrder = Array.isArray(sectionsConfig.order) ? sectionsConfig.order : []
-  const rank = (id: string) => {
-    const position = configuredOrder.indexOf(id)
-    return position === -1
-      ? configuredOrder.length + SECTIONS.findIndex((section) => section.id === id)
-      : position
-  }
-  const visibleSections = SECTIONS.filter(
-    (section) => enabledSections[section.id] !== false,
-  ).sort((a, b) => rank(a.id) - rank(b.id))
 
   return (
     <PageShell>
@@ -351,43 +86,7 @@ export default async function HomeContent() {
         />
       )}
 
-      {(sectionsResult.status === 'error' || dataError) && (
-        <CmsErrorState
-          message={
-            sectionsResult.status === 'error' ? sectionsResult.message : dataError?.message
-          }
-          className="mt-10"
-        />
-      )}
-
-      <div>
-        {visibleSections.map((section, index) => {
-          const sectionMeta = meta[section.id]
-          const link = SECTION_LINKS[section.id]
-          // The About and Projects sections fall back to their own page copy, so
-          // editing those pages updates the homepage header too.
-          const pageSectionCopy =
-            section.id === 'about' ? aboutCopy : section.id === 'projects' ? projectsCopy : undefined
-
-          return (
-            <Reveal key={section.id}>
-              <PageSection
-                id={section.id}
-                number={index}
-                eyebrow={sectionMeta?.eyebrow ?? pageSectionCopy?.eyebrow ?? section.label}
-                krEyebrow={sectionMeta?.kr ?? pageSectionCopy?.krEyebrow}
-                title={sectionMeta?.title ?? pageSectionCopy?.title ?? section.label}
-                accent={sectionMeta?.accent ?? pageSectionCopy?.accent}
-                description={sectionMeta?.description ?? pageSectionCopy?.description}
-                linkHref={sectionMeta?.href || link?.href || section.route}
-                linkLabel={sectionMeta?.primaryLabel || link?.label || 'View all'}
-              >
-                {renderSectionBody(section)}
-              </PageSection>
-            </Reveal>
-          )
-        })}
-      </div>
+      <SectionRenderer sections={pageResult.sections} />
     </PageShell>
   )
 }

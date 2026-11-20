@@ -11,15 +11,34 @@ import DevConsoleHUD from '@/components/devmode/DevConsoleHUD';
 import DevModeTrigger from '@/components/devmode/DevModeTrigger';
 import OfflineFlappy from '@/components/OfflineFlappy';
 import CmsShell from '@/components/CmsShell';
+import Preloader from '@/components/ui/Preloader';
 import type { SiteConfig } from '@/lib/site-content';
 
 interface LayoutShellProps {
   children: ReactNode;
   site: SiteConfig;
   isCmsHost?: boolean;
+  /** Studio-managed footer socials; empty falls back to the CMS navigation. */
+  footerSocialLinks?: Array<{
+    id: string;
+    platform: string;
+    label: string;
+    url: string;
+    is_visible: boolean;
+    sort_order: number;
+  }>;
+  footerContactEmail?: string;
+  footerAvailability?: string;
 }
 
-export default function LayoutShell({ children, site, isCmsHost = false }: LayoutShellProps) {
+export default function LayoutShell({
+  children,
+  site,
+  isCmsHost = false,
+  footerSocialLinks,
+  footerContactEmail,
+  footerAvailability,
+}: LayoutShellProps) {
   const pathname = usePathname()
   const isCmsRoute = pathname.startsWith('/admin')
   const isAdminSignIn = pathname.startsWith('/admin/sign-in')
@@ -40,6 +59,13 @@ export default function LayoutShell({ children, site, isCmsHost = false }: Layou
             <div className="min-h-screen">{children}</div>
           ) : (
             <>
+              {/* One first-visit curtain per session, public routes only. The
+                  preloader records the visit, so client-side navigations do not
+                  replay it and the admin studio never shows it. */}
+              <Preloader
+                brandName={site.brand.name || 'lamirkohsa'}
+                studioLabel={site.brand.domain || 'ashokrimal.com.np'}
+              />
               <SiteHeader brand={site.brand} navigation={site.navigation} contact={site.contact} />
               {/* Pages own their own <main> landmark; wrapping them in another nested one. */}
               <div className="min-h-screen">{children}</div>
@@ -48,6 +74,9 @@ export default function LayoutShell({ children, site, isCmsHost = false }: Layou
                 navigation={site.navigation}
                 footer={site.footer}
                 contact={site.contact}
+                socialLinks={footerSocialLinks}
+                contactEmail={footerContactEmail}
+                availabilityStatus={footerAvailability}
               />
             </>
           )}

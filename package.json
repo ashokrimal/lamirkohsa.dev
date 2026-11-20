@@ -18,7 +18,8 @@
     "cms:dedupe": "node scripts/repair-cms-content.mjs --dedupe-plan",
     "cms:dedupe:apply": "node scripts/repair-cms-content.mjs --apply-dedupe",
     "cms:dedupe:restore": "node scripts/repair-cms-content.mjs --restore-dedupe",
-    "cms:backfill": "node scripts/backfill-legacy-media.mjs"
+    "cms:backfill": "node scripts/backfill-legacy-media.mjs",
+    "studio:seed": "node scripts/seed-studio-content.mjs"
   },
   "dependencies": {
     "@google/genai": "^3.3.0",
@@ -50,7 +51,8 @@
     "resend": "^6.37.0",
     "sharp": "^0.34.5",
     "tailwind-merge": "^3.4.0",
-    "three": "^0.164.1"
+    "three": "^0.164.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "20.14.10",

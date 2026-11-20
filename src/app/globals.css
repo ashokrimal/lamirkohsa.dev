@@ -2159,3 +2159,10 @@ html.theme-transitioning *::after {
   font-size: 15px;
   letter-spacing: -0.01em;
 }
+
+/* Returning visitors in the same session never see the preloader, even before
+   hydration runs: the head script marks the document from sessionStorage. */
+html[data-preloader-seen='1'] #site-preloader,
+html[data-preloader-reduced] #site-preloader {
+  display: none;
+}
