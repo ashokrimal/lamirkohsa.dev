@@ -5,6 +5,7 @@
  * Usage:
  *   DATABASE_URL=postgres://... node scripts/verify-studio-seed.mjs
  *   DATABASE_URL=postgres://... node scripts/verify-studio-seed.mjs --json
+ *   DATABASE_URL=postgres://... node scripts/verify-studio-seed.mjs --gate
  *
  * Read-only: it never writes, creates or repairs anything.
  *
@@ -15,6 +16,10 @@
  * Owner edits are expected after seeding. Missing pages, missing seeded
  * sections, empty section content and a missing settings row are failures;
  * reordering, disabling, re-copying or adding sections are warnings.
+ *
+ * `--gate` marks the run as a deploy/CI gate: an unseeded database (no studio
+ * tables) is reported but tolerated, because the site falls back to fixtures
+ * until `studio:seed` runs. Any other failure still exits 1.
  */
 import fs from 'node:fs'
 import { Client } from 'pg'
@@ -22,6 +27,7 @@ import ts from 'typescript'
 import { createPgClientOptions, resolveDatabaseUrl } from './db-env.mjs'
 
 const jsonOutput = process.argv.includes('--json')
+const gateMode = process.argv.includes('--gate')
 const connectionString = resolveDatabaseUrl()
 if (!connectionString) {
   console.error('No database URL found. Set DATABASE_URL (or POSTGRES_URL) and run again.')
@@ -205,13 +211,20 @@ try {
     (acc, result) => ({ ...acc, [result.level]: acc[result.level] + 1 }),
     { pass: 0, warn: 0, fail: 0 },
   )
-  exitCode = counts.fail > 0 ? 1 : 0
+  // A gate tolerates an unseeded database: the seed itself has not run yet, so
+  // the missing pages and settings are consequences, not broken output.
+  const unseeded = results.some(
+    (result) => result.level === 'fail' && result.code === 'tables.missing',
+  )
+  const tolerated = gateMode && unseeded
+  exitCode = counts.fail > 0 && !tolerated ? 1 : 0
 
   if (jsonOutput) {
     process.stdout.write(
       `${JSON.stringify(
         {
-          ok: counts.fail === 0,
+          ok: counts.fail === 0 || tolerated,
+          unseeded,
           counts,
           results,
           fixtures: {
@@ -232,10 +245,17 @@ try {
       console.log(`${mark[result.level]} [${result.code}] ${result.message}`)
     }
     console.log(
-      `\n${counts.pass} passed, ${counts.warn} warning${counts.warn === 1 ? '' : 's'}, ${counts.fail} failure${counts.fail === 1 ? '' : 's'}.`,
+      tolerated
+        ? `\n${counts.pass} passed, ${counts.warn} warning${counts.warn === 1 ? '' : 's'}; ${counts.fail} check${counts.fail === 1 ? '' : 's'} skipped because the database is not seeded.`
+        : `\n${counts.pass} passed, ${counts.warn} warning${counts.warn === 1 ? '' : 's'}, ${counts.fail} failure${counts.fail === 1 ? '' : 's'}.`,
     )
+    if (tolerated) {
+      console.warn(
+        'Studio tables are not seeded yet; skipping the seed gate. Run pnpm studio:seed, then retry.',
+      )
+    }
     console.log(
-      counts.fail === 0
+      tolerated || counts.fail === 0
         ? 'Studio seed verification passed.'
         : 'Studio seed verification failed: re-add the listed rows in Pages & Sections, or run pnpm studio:seed for a page that has no sections at all.',
     )

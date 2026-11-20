@@ -28,49 +28,18 @@ const childEnv = {
 
 // Studio seed gate first: it must run even when the legacy cmsContent check
 // cannot (for example a database bootstrapped by the studio seed alone).
+// --gate tolerates an unseeded database and fails on broken seed output.
 const studioVerify = spawnSync(
   process.execPath,
-  ['scripts/verify-studio-seed.mjs', '--json'],
+  ['scripts/verify-studio-seed.mjs', '--gate'],
   {
+    stdio: 'inherit',
     env: childEnv,
-    encoding: 'utf8',
   },
 )
-
-let studioReport
-if (studioVerify.stdout) {
-  try {
-    studioReport = JSON.parse(studioVerify.stdout)
-  } catch {
-    studioReport = undefined
-  }
-}
-
-if (studioVerify.status === 0 && studioReport?.ok) {
-  console.log('[studio:verify] Seeded studio content verified.')
-} else if (!studioReport) {
-  console.warn(
-    `[studio:verify] Verification did not produce a report (exit ${studioVerify.status ?? 'unknown'}); database may be unreachable. Proceeding with build using ISR and fallbacks.`,
-  )
-} else {
-  const failures = studioReport.results.filter((entry) => entry.level === 'fail')
-  // When the studio tables themselves are absent the dependent page, section
-  // and settings failures are consequences of that, not a broken seed.
-  const unseeded = failures.some((entry) => entry.code === 'tables.missing')
-  if (unseeded) {
-    console.warn(
-      '[studio:verify] Studio tables are not seeded yet; skipping the seed gate. Run pnpm studio:seed, then redeploy.',
-    )
-  } else {
-    console.error('[studio:verify] Seeded studio content failed verification:')
-    for (const failure of failures) {
-      console.error(`  - ${failure.message}`)
-    }
-    console.error(
-      '[studio:verify] Failing the prebuild before deployment. Run pnpm studio:seed:preflight, then pnpm studio:seed.',
-    )
-    process.exit(1)
-  }
+if (studioVerify.status !== 0) {
+  console.error('[studio:verify] Failing the prebuild before deployment.')
+  process.exit(1)
 }
 
 const duplicateResult = spawnSync(

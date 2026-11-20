@@ -278,6 +278,9 @@ The prebuild also runs `pnpm studio:verify`. A database whose studio tables
 exist but whose seeded pages, sections, projects or settings are missing or
 empty fails the build before it ships; an unseeded database only gets a
 warning, because the site falls back to fixtures until `pnpm studio:seed` runs.
+The same gate runs in CI (`.github/workflows/studio-verify.yml`) on pushes and
+pull requests when the `DATABASE_URL` secret is configured, so drift is caught
+before a Vercel deploy starts.
 
 `pnpm cms:check:duplicates` is the deployment gate for duplicate published
 keys. It checks only keyed records and exits `1` with the conflicting records
