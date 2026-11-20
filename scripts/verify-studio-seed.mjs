@@ -213,9 +213,9 @@ try {
   )
   // A gate tolerates an unseeded database: the seed itself has not run yet, so
   // the missing pages and settings are consequences, not broken output.
-  const unseeded = results.some(
-    (result) => result.level === 'fail' && result.code === 'tables.missing',
-  )
+  const unseeded =
+    results.some((result) => result.level === 'fail' && result.code === 'tables.missing') ||
+    pageRows.length === 0
   const tolerated = gateMode && unseeded
   exitCode = counts.fail > 0 && !tolerated ? 1 : 0
 

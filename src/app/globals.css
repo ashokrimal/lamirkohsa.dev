@@ -2087,11 +2087,17 @@ html.theme-transitioning *::after {
 
 .media-shelf-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+@media (max-width: 640px) {
+  .media-shelf-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
 }
 .media-shelf-grid > li { display: flex; min-width: 0; }
 .media-shelf-grid > li > * { width: 100%; }

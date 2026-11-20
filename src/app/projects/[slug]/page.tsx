@@ -1,8 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import {
-  CheckCircle2,
-  Circle,
   Clock,
   FolderTree,
   GitBranch,
@@ -23,13 +21,16 @@ import {
 } from '@/components/ui/PageChrome'
 import { ProjectDocumentation } from '@/components/projects/ProjectDocumentation'
 import { ProjectGanttChart } from '@/components/projects/ProjectGanttChart'
+import { ProjectPhaseRoadmap } from '@/components/projects/ProjectPhaseRoadmap'
 import { CaseStudyHeroImage } from '@/components/projects/CaseStudyHeroImage'
 import { CaseStudyLayerTooltip } from '@/components/projects/CaseStudyLayerTooltip'
 import { ShareProjectButton } from '@/components/projects/ShareProjectButton'
+import { DownloadCaseStudyPdfButton } from '@/components/projects/DownloadCaseStudyPdfButton'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import type { CmsResult } from '@/lib/cms-schema'
 import { articleMetadata } from '@/lib/seo'
 import { isRepositoryUrl } from '@/lib/urls'
+import { getProjectStatusVisual } from '@/lib/project-status'
 
 export const dynamic = 'force-dynamic'
 
@@ -109,10 +110,17 @@ export default async function ProjectCaseStudyPage(
     context: tech.name,
   }))
 
+  const statusVisual = getProjectStatusVisual(project.status)
+  const secondaryStageLabel =
+    project.status &&
+    project.status.trim().toLowerCase() !== statusVisual.lifecycle.toLowerCase()
+      ? project.status.trim()
+      : undefined
+
   const headerMetaParts = [
     project.category,
     project.period || project.completionDate,
-    project.status,
+    secondaryStageLabel,
   ].filter(Boolean)
 
   return (
@@ -124,18 +132,27 @@ export default async function ProjectCaseStudyPage(
         accent={pageCopy?.accent}
         description={project.summary || project.description || pageCopy?.description}
         meta={
-          headerMetaParts.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted">
-              {headerMetaParts.map((part, idx) => (
-                <span key={`${part}-${idx}`} className="inline-flex items-center gap-2.5">
-                  {idx > 0 && <span aria-hidden="true">·</span>}
-                  <span>{part}</span>
-                </span>
-              ))}
-            </div>
-          ) : undefined
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-muted">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${statusVisual.badgeClass}`}
+            >
+              <span className={`h-2 w-2 rounded-full ${statusVisual.dotClass}`} aria-hidden="true" />
+              <span>{statusVisual.lifecycle}</span>
+            </span>
+            {headerMetaParts.map((part, idx) => (
+              <span key={`${part}-${idx}`} className="inline-flex items-center gap-2.5">
+                <span aria-hidden="true">·</span>
+                <span>{part}</span>
+              </span>
+            ))}
+          </div>
         }
-        actions={<ShareProjectButton projectTitle={project.title} slug={project.slug} />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2.5">
+            <DownloadCaseStudyPdfButton project={project} dossier={dossier} />
+            <ShareProjectButton projectTitle={project.title} slug={project.slug} />
+          </div>
+        }
       />
 
       {/* Project Specification Summary Strip: Model, Duration, Cost & Stack */}
@@ -255,60 +272,15 @@ export default async function ProjectCaseStudyPage(
 
           <ProjectGanttChart gantt={dossier.gantt} projectTitle={project.title} />
 
-          {project.phases.length > 0 && (
-            <div className="mt-8">
-              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
-                <h3 className="text-base font-semibold text-ink tracking-tight">
-                  {sections?.phases?.title
-                    ? `${sections.phases.title} ${sections.phases.accent ?? ''}`.trim()
-                    : 'Phase-by-phase execution roadmap'}
-                </h3>
-                <span className="text-xs text-muted tabular-nums">
-                  {project.phases.length} sequential phases
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {project.phases.map((phase, index) => (
-                  <article
-                    key={`${phase.name}-${index}`}
-                    className="apple-card p-5 flex flex-col justify-between gap-3"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-mono text-muted tabular-nums">
-                          {phase.phase || `Phase ${index + 1}`}
-                        </span>
-                        {phase.completed ? (
-                          <CheckCircle2
-                            className="w-3.5 h-3.5 text-accent shrink-0"
-                            aria-label="Completed"
-                          />
-                        ) : (
-                          <Circle
-                            className="w-3.5 h-3.5 text-muted shrink-0"
-                            aria-label="Planned"
-                          />
-                        )}
-                      </div>
-                      <h4 className="text-sm font-semibold text-ink tracking-tight leading-snug">
-                        {phase.name}
-                      </h4>
-                      {phase.description && (
-                        <p className="text-xs text-muted leading-relaxed">{phase.description}</p>
-                      )}
-                    </div>
-
-                    {phase.period && (
-                      <div className="pt-2.5 border-t border-line-hairline text-[11px] font-mono text-muted tabular-nums">
-                        {phase.period}
-                      </div>
-                    )}
-                  </article>
-                ))}
-              </div>
-            </div>
-          )}
+          <ProjectPhaseRoadmap
+            phases={project.phases}
+            projectTitle={project.title}
+            headingTitle={
+              sections?.phases?.title
+                ? `${sections.phases.title} ${sections.phases.accent ?? ''}`.trim()
+                : undefined
+            }
+          />
         </PageSection>
       )}
 
@@ -366,12 +338,19 @@ export default async function ProjectCaseStudyPage(
                   </dd>
                 </div>
               )}
-              {project.status && (
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-muted">Release state</dt>
-                  <dd className="font-medium text-ink">{project.status}</dd>
-                </div>
-              )}
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted">Release state</dt>
+                <dd
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusVisual.badgeClass}`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${statusVisual.dotClass}`} aria-hidden="true" />
+                  <span>
+                    {secondaryStageLabel
+                      ? `${statusVisual.lifecycle} · ${secondaryStageLabel}`
+                      : statusVisual.lifecycle}
+                  </span>
+                </dd>
+              </div>
             </dl>
           </article>
 

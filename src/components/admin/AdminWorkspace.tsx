@@ -88,6 +88,7 @@ interface ProjectItem {
   id: number
   title: string
   category?: string | null
+  status?: string | null
   summary?: string | null
   description?: string | null
   tech?: string[] | null
@@ -330,6 +331,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             id: record.id,
             title: record.title,
             category: typeof payload.category === 'string' ? payload.category : null,
+            status: typeof payload.status === 'string' ? payload.status : null,
             summary: typeof payload.summary === 'string' ? payload.summary : null,
             description: typeof payload.description === 'string' ? payload.description : null,
             tech: Array.isArray(payload.techStack) ? (payload.techStack as string[]) : null,
@@ -1161,7 +1163,9 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-slate-400">Status: Active</span>
+                  <span className="text-[11px] text-slate-400">
+                    Status: {project.status || 'Active'}
+                  </span>
                   <div className="flex items-center gap-2">
                     {project.liveUrl && (
                       <a

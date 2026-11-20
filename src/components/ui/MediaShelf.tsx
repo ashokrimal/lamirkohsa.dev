@@ -21,8 +21,9 @@ interface MediaShelfProps {
  * horizontal row so the chapter reads as one quick overview of what is on the
  * shelf rather than a second copy of the media page.
  */
-export function MediaShelf({ items, viewAllHref, viewAllLabel, limit = 8 }: MediaShelfProps) {
-  const visible = items.slice(0, Math.max(1, limit))
+export function MediaShelf({ items, viewAllHref, viewAllLabel, limit = 4 }: MediaShelfProps) {
+  const clampedLimit = Math.min(4, Math.max(3, limit))
+  const visible = items.slice(0, clampedLimit)
   if (visible.length === 0) return null
 
   return (

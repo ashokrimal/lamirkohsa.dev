@@ -1,9 +1,9 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight, Calendar, Eye, Github, Layers } from 'lucide-react'
 import { Card3D } from '@/components/ui/Card3D'
+import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
 import { uiStrings } from '@/lib/ui-strings'
@@ -67,13 +67,13 @@ export function ProjectCard({
         <div className="relative overflow-hidden aspect-[16/10] max-h-[300px] bg-overlay-faint">
           {project.image ? (
             <>
-              <Image
+              <ProgressiveImage
                 src={project.image}
                 alt={project.altText || uiStrings.project.previewAlt(project.title)}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 referrerPolicy="no-referrer"
-                className="object-cover transition-[transform,filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045] group-hover:contrast-[1.04] group-hover:saturate-[1.08] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                className="object-cover transition-[transform,filter,opacity] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045] group-hover:contrast-[1.04] group-hover:saturate-[1.08] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
               />
               <div
                 className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
@@ -90,20 +90,20 @@ export function ProjectCard({
           {(project.category || project.status) && (
             <div className="absolute top-3.5 left-3.5 right-32 flex flex-wrap items-center gap-2 pointer-events-none">
               {project.category && (
-                <div className="px-3 py-1 rounded-full bg-surface/85 dark:bg-scrim/80 backdrop-blur-xl border border-line-subtle text-[11px] font-medium tracking-tight text-ink shadow-xs flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                <div className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md border border-black/15 text-[11px] font-medium tracking-tight text-[#1d1d1f] shadow-[0_4px_14px_rgba(0,0,0,0.16)] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3f5d49]" />
                   <span>{project.category}</span>
                 </div>
               )}
               {project.status && (
-                <div className="px-3 py-1 rounded-full bg-surface/85 dark:bg-scrim/80 backdrop-blur-xl border border-line-subtle text-[11px] font-medium text-emerald-600 dark:text-emerald-400 shadow-xs">
+                <div className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md border border-black/15 text-[11px] font-medium text-emerald-700 shadow-[0_4px_14px_rgba(0,0,0,0.16)]">
                   {project.status}
                 </div>
               )}
             </div>
           )}
 
-          {/* Right-most Floating Quick Look Chip */}
+          {/* Right-most Floating Quick Look Chip — always light frosted pill for dark-text visibility */}
           {onQuickView && (
             <button
               type="button"
@@ -114,13 +114,9 @@ export function ProjectCard({
                 onQuickView()
               }}
               aria-label={uiStrings.project.quickViewAria(project.title)}
-              className={`absolute top-3.5 right-3.5 z-20 inline-flex items-center gap-1.5 rounded-full backdrop-blur-md px-3 py-1.5 text-[11px] font-medium shadow-sm transition-all duration-200 cursor-pointer ${
-                project.image
-                  ? 'border border-white/25 bg-black/55 text-white hover:bg-black/75 hover:border-white/45'
-                  : 'border border-line-subtle bg-surface/90 text-ink hover:border-accent hover:text-accent'
-              }`}
+              className="absolute top-3.5 right-3.5 z-20 inline-flex items-center gap-1.5 rounded-full border border-black/15 bg-white/95 px-3 py-1.5 text-[11px] font-medium text-[#1d1d1f] shadow-[0_4px_14px_rgba(0,0,0,0.18)] backdrop-blur-md transition-all duration-200 hover:border-black/25 hover:bg-white hover:text-[#3f5d49] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent cursor-pointer"
             >
-              <Eye className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
+              <Eye className="w-3.5 h-3.5 text-[#3f5d49]" aria-hidden="true" />
               <span>{uiStrings.project.quickView.en}</span>
             </button>
           )}

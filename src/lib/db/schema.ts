@@ -49,6 +49,7 @@ export const studioProject = pgTable('projects', {
   liveUrl: text('live_url'),
   repoUrl: text('repo_url'),
   featuredOrder: integer('featured_order'),
+  status: text('status').notNull().default('Active'),
   isPublished: boolean('is_published').notNull().default(true),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })

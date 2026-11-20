@@ -5,6 +5,10 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ChevronDown, ListFilter, RotateCcw, Search, X } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
+import {
+  PROJECT_LIFECYCLE_STATUSES,
+  resolveProjectLifecycleStatus,
+} from '@/lib/project-status'
 import type { ProjectEntry, ProjectFilterTag } from '@/lib/projects'
 import {
   resolveTechUsageMetadata,
@@ -29,12 +33,28 @@ export function filterProjects(
   selectedCategory: string | null,
   selectedTechs: string[],
   searchQuery: string = '',
+  selectedStatus: string | null = null,
 ): ProjectEntry[] {
   const normalizedCategory = selectedCategory ? normalizeFilterToken(selectedCategory) : null
+  const normalizedStatus = selectedStatus ? normalizeFilterToken(selectedStatus) : null
+  const matchedLifecycle = normalizedStatus
+    ? PROJECT_LIFECYCLE_STATUSES.find(
+        (status) => normalizeFilterToken(status) === normalizedStatus,
+      )
+    : undefined
   const normalizedTechs = selectedTechs.map(normalizeFilterToken).filter(Boolean)
   const normalizedQuery = normalizeFilterToken(searchQuery)
 
   return projects.filter((project) => {
+    if (normalizedStatus) {
+      if (matchedLifecycle) {
+        if (resolveProjectLifecycleStatus(project.status) !== matchedLifecycle) return false
+      } else {
+        const projectStatus = project.status ? normalizeFilterToken(project.status) : ''
+        if (projectStatus !== normalizedStatus) return false
+      }
+    }
+
     if (normalizedCategory) {
       const projectCat = project.category ? normalizeFilterToken(project.category) : ''
       if (projectCat !== normalizedCategory) return false
@@ -50,6 +70,7 @@ export function filterProjects(
       const searchable = [
         project.title,
         project.category,
+        project.status,
         project.summary,
         project.description,
         project.techStack.join(' '),

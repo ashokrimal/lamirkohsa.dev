@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowUpRight, FolderGit2 } from 'lucide-react'
 import { getPageMetadata, getPublishedProjects } from '@/lib/studio/data'
 import { getProjectsResult } from '@/lib/projects'
+import { getProjectStatusVisual } from '@/lib/project-status'
 import { pageMetadata } from '@/lib/seo'
 import { PageHero, PageShell } from '@/components/ui/PageChrome'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -39,6 +40,7 @@ export default async function WorkIndexPage() {
           href: `/work/${project.slug}`,
           title: project.title,
           category: project.category,
+          status: project.status,
           summary: project.summary,
           image: project.coverMediaUrl,
           tech: project.techStack,
@@ -48,6 +50,7 @@ export default async function WorkIndexPage() {
           href: `/projects/${project.slug}`,
           title: project.title,
           category: project.category,
+          status: project.status,
           summary: project.summary ?? project.description,
           image: project.image,
           tech: project.techStack,
@@ -73,41 +76,55 @@ export default async function WorkIndexPage() {
         </div>
       ) : (
         <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
-          {cards.map((project) => (
-            <Link
-              key={project.key}
-              href={project.href}
-              className="group apple-card flex flex-col gap-4 p-5 transition-colors hover:border-line-medium md:p-6"
-            >
-              {project.image && (
-                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-line-hairline bg-overlay-faint">
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                    referrerPolicy="no-referrer"
-                  />
+          {cards.map((project) => {
+            const statusVisual = getProjectStatusVisual(project.status)
+            return (
+              <Link
+                key={project.key}
+                href={project.href}
+                className="group apple-card flex flex-col gap-4 p-5 transition-colors hover:border-line-medium md:p-6"
+              >
+                {project.image && (
+                  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-line-hairline bg-overlay-faint">
+                    <Image
+                      src={project.image}
+                      alt={project.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                )}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  {project.category && (
+                    <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted">
+                      {project.category}
+                    </p>
+                  )}
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusVisual.badgeClass}`}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${statusVisual.dotClass}`}
+                      aria-hidden="true"
+                    />
+                    <span>{statusVisual.lifecycle}</span>
+                  </span>
                 </div>
-              )}
-              {project.category && (
-                <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted">
-                  {project.category}
-                </p>
-              )}
-              <h2 className="text-lg font-semibold tracking-tight text-ink group-hover:text-accent md:text-xl">
-                {project.title}
-              </h2>
-              {project.summary && (
-                <p className="line-clamp-3 text-sm leading-relaxed text-muted">{project.summary}</p>
-              )}
-              <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-semibold text-accent">
-                Read the case study
-                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-              </span>
-            </Link>
-          ))}
+                <h2 className="text-lg font-semibold tracking-tight text-ink group-hover:text-accent md:text-xl">
+                  {project.title}
+                </h2>
+                {project.summary && (
+                  <p className="line-clamp-3 text-sm leading-relaxed text-muted">{project.summary}</p>
+                )}
+                <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-semibold text-accent">
+                  Read the case study
+                  <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+              </Link>
+            )
+          })}
         </div>
       )}
     </PageShell>

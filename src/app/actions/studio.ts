@@ -1,10 +1,18 @@
 'use server'
 
 import { revalidatePath, revalidateTag } from 'next/cache'
-import { asc, eq } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 import { db } from '@/lib/db'
-import { sitePage, sitePageSection, siteSetting, studioProject } from '@/lib/db/schema'
+import {
+  cmsContent,
+  sitePage,
+  sitePageSection,
+  siteSetting,
+  studioProject,
+} from '@/lib/db/schema'
 import { getAdminActorId } from '@/lib/admin-auth'
+import { CMS_COLLECTIONS } from '@/lib/cms-schema'
+import { revalidateCmsCache } from '@/lib/cms-revalidation'
 import { normalizePageSlug } from '@/lib/studio/data'
 import {
   isSectionKey,
@@ -12,6 +20,7 @@ import {
   validateSectionContent,
   type SocialLink,
 } from '@/lib/studio/sections'
+import { resolveProjectLifecycleStatus, type ProjectLifecycleStatus } from '@/lib/project-status'
 
 /**
  * Admin Studio mutations for the studio CMS.
@@ -146,6 +155,7 @@ export interface ProjectInput {
   liveUrl?: string
   repoUrl?: string
   featuredOrder?: number | null
+  status?: string
   isPublished?: boolean
 }
 
@@ -170,6 +180,7 @@ export async function saveProject(input: ProjectInput) {
       typeof input.featuredOrder === 'number' && Number.isFinite(input.featuredOrder)
         ? input.featuredOrder
         : null,
+    status: resolveProjectLifecycleStatus(input.status),
     isPublished: input.isPublished ?? true,
     updatedAt: new Date(),
   }
@@ -183,13 +194,61 @@ export async function saveProject(input: ProjectInput) {
     })
   }
 
+  await syncCmsProjectStatusBySlug(slug, values.status)
+
   revalidateTag('projects', { expire: 0 })
   revalidateTag(`project-${slug}`, { expire: 0 })
+  revalidateCmsCache(CMS_COLLECTIONS.projects)
   revalidatePath('/')
   revalidatePath('/projects')
+  revalidatePath(`/projects/${slug}`)
   revalidatePath('/work')
   revalidatePath(`/work/${slug}`)
   return { ok: true as const }
+}
+
+async function syncCmsProjectStatusBySlug(slug: string, status: ProjectLifecycleStatus) {
+  try {
+    const rows = await db
+      .select({ id: cmsContent.id, payload: cmsContent.payload })
+      .from(cmsContent)
+      .where(and(eq(cmsContent.collection, CMS_COLLECTIONS.projects), eq(cmsContent.slug, slug)))
+      .limit(1)
+    const row = rows[0]
+    if (!row) return
+    await db
+      .update(cmsContent)
+      .set({
+        payload: { ...(row.payload ?? {}), status },
+        updatedAt: new Date(),
+      })
+      .where(eq(cmsContent.id, row.id))
+  } catch (err) {
+    console.warn('[studio] could not mirror status to cmsContent:', err)
+  }
+}
+
+export async function updateStudioProjectStatus(id: number, status: ProjectLifecycleStatus) {
+  await requireOwner()
+  const normalizedStatus = resolveProjectLifecycleStatus(status)
+  const [updated] = await db
+    .update(studioProject)
+    .set({ status: normalizedStatus, updatedAt: new Date() })
+    .where(eq(studioProject.id, id))
+    .returning({ slug: studioProject.slug })
+
+  revalidateTag('projects', { expire: 0 })
+  if (updated?.slug) {
+    await syncCmsProjectStatusBySlug(updated.slug, normalizedStatus)
+    revalidateTag(`project-${updated.slug}`, { expire: 0 })
+    revalidatePath(`/work/${updated.slug}`)
+    revalidatePath(`/projects/${updated.slug}`)
+  }
+  revalidateCmsCache(CMS_COLLECTIONS.projects)
+  revalidatePath('/')
+  revalidatePath('/projects')
+  revalidatePath('/work')
+  return { ok: true as const, status: normalizedStatus }
 }
 
 export async function deleteProject(id: number) {

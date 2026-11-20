@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
+import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion'
 import {
   GitBranch,
   Star,
@@ -17,6 +18,8 @@ import {
   AlertCircle,
   FolderGit2,
   TrendingUp,
+  Search,
+  X,
 } from 'lucide-react'
 import { CmsSectionCard } from '@/components/admin/ui/CmsCard'
 import { CmsTabs } from '@/components/admin/ui/CmsTabs'
@@ -87,6 +90,31 @@ const languageColors: Record<string, string> = {
   'C++': '#f34b7d',
   Rust: '#dea584',
   Go: '#00ADD8',
+}
+
+const REPO_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
+
+const repoCardVariants: Variants = {
+  hidden: (reduced: boolean) =>
+    reduced ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98 },
+  visible: ({ index, reduced }: { index: number; reduced: boolean }) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: reduced ? 0.1 : 0.26,
+      delay: reduced ? 0 : Math.min(index * 0.04, 0.28),
+      ease: REPO_EASE,
+    },
+  }),
+  exit: (reduced: boolean) => ({
+    opacity: 0,
+    ...(reduced ? {} : { y: -6, scale: 0.97 }),
+    transition: {
+      duration: reduced ? 0.08 : 0.16,
+      ease: REPO_EASE,
+    },
+  }),
 }
 
 function CommitSparklineChart({
@@ -164,12 +192,25 @@ function CommitSparklineChart({
 
 export function CmsGitHubStats({ initialUsername = '', className = '' }: GitHubStatsProps) {
   const { toast } = useCmsToast()
+  const prefersReducedMotion = useReducedMotion()
   const [username, setUsername] = useState(initialUsername)
   const [data, setData] = useState<GitHubData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'events' | 'repos'>('events')
+  const [repoQuery, setRepoQuery] = useState('')
   const [lastRefreshed, setLastRefreshed] = useState<string>('Never')
+
+  const filteredRepos = useMemo(() => {
+    const repos = data?.repos ?? []
+    const q = repoQuery.trim().toLowerCase()
+    if (!q) return repos
+    return repos.filter(
+      (repo) =>
+        repo.name.toLowerCase().includes(q) ||
+        (repo.description || '').toLowerCase().includes(q),
+    )
+  }, [data?.repos, repoQuery])
 
   const fetchStats = useCallback(
     async (userToFetch: string, showToastNotice = false) => {
@@ -466,47 +507,131 @@ export function CmsGitHubStats({ initialUsername = '', className = '' }: GitHubS
 
             {/* Tab 2: Top Repositories */}
             {activeTab === 'repos' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {data.repos.map((repo) => (
-                  <div
-                    key={repo.id}
-                    className="p-3.5 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500/50 hover:shadow-2xs transition-all flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <a
-                          href={repo.html_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-bold text-xs text-slate-900 hover:text-teal-700 hover:underline flex items-center gap-1"
-                        >
-                          {repo.name}
-                          <ExternalLink className="w-3 h-3 text-slate-400" />
-                        </a>
-                        {repo.language && (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-medium">
-                            {repo.language}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
-                        {repo.description || 'No description provided.'}
-                      </p>
-                    </div>
-
-                    <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1 text-slate-600">
-                          <Star className="w-3 h-3 text-amber-500" /> {repo.stargazers_count}
-                        </span>
-                        <span className="flex items-center gap-1 text-slate-600">
-                          <GitFork className="w-3 h-3 text-slate-400" /> {repo.forks_count}
-                        </span>
-                      </div>
-                      <span>Updated {new Date(repo.updated_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
-                    </div>
+              <div className="space-y-3">
+                {/* Repository Search Toolbar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="relative flex-1">
+                    <Search
+                      className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"
+                      aria-hidden="true"
+                    />
+                    <input
+                      type="search"
+                      value={repoQuery}
+                      onChange={(e) => setRepoQuery(e.target.value)}
+                      placeholder="Filter repositories by name or description..."
+                      aria-label="Filter repositories by name or description"
+                      className="w-full text-xs pl-8 pr-8 py-2 rounded-lg border border-slate-200 bg-surface text-slate-800 placeholder:text-slate-400 transition-colors focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                    />
+                    {repoQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setRepoQuery('')}
+                        aria-label="Clear repository search"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" aria-hidden="true" />
+                      </button>
+                    )}
                   </div>
-                ))}
+
+                  <span className="text-[11px] text-slate-500 font-medium tabular-nums whitespace-nowrap self-end sm:self-center">
+                    {repoQuery.trim()
+                      ? `Showing ${filteredRepos.length} of ${data.repos.length}`
+                      : `${data.repos.length} repositories`}
+                  </span>
+                </div>
+
+                {filteredRepos.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-8 text-center space-y-2">
+                    <p className="text-xs font-semibold text-slate-700">
+                      {repoQuery.trim()
+                        ? `No repositories matching "${repoQuery.trim()}"`
+                        : 'No public repositories found.'}
+                    </p>
+                    {repoQuery.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => setRepoQuery('')}
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-surface px-2.5 py-1 text-[11px] font-semibold text-teal-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                      >
+                        <X className="w-3 h-3" aria-hidden="true" />
+                        <span>Clear search</span>
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <motion.div
+                    layout={!prefersReducedMotion}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                  >
+                    <AnimatePresence mode="popLayout">
+                      {filteredRepos.map((repo, idx) => (
+                        <motion.div
+                          key={repo.id}
+                          layout={!prefersReducedMotion}
+                          custom={{ index: idx, reduced: Boolean(prefersReducedMotion) }}
+                          variants={repoCardVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          whileHover={
+                            prefersReducedMotion
+                              ? undefined
+                              : {
+                                  y: -3,
+                                  scale: 1.015,
+                                  transition: { type: 'spring', stiffness: 380, damping: 28, mass: 0.7 },
+                                }
+                          }
+                          whileTap={
+                            prefersReducedMotion
+                              ? undefined
+                              : {
+                                  scale: 0.995,
+                                  transition: { type: 'spring', stiffness: 450, damping: 30 },
+                                }
+                          }
+                          className="p-3.5 rounded-xl border border-slate-200/80 bg-surface hover:border-teal-500/50 hover:shadow-[0_10px_28px_-10px_rgba(15,23,42,0.16)] transition-[border-color,box-shadow] duration-300 flex flex-col justify-between will-change-transform"
+                        >
+                          <div>
+                            <div className="flex items-start justify-between gap-2">
+                              <a
+                                href={repo.html_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="font-bold text-xs text-slate-900 hover:text-teal-700 hover:underline flex items-center gap-1"
+                              >
+                                {repo.name}
+                                <ExternalLink className="w-3 h-3 text-slate-400" />
+                              </a>
+                              {repo.language && (
+                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-medium">
+                                  {repo.language}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                              {repo.description || 'No description provided.'}
+                            </p>
+                          </div>
+
+                          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                            <div className="flex items-center gap-3">
+                              <span className="flex items-center gap-1 text-slate-600">
+                                <Star className="w-3 h-3 text-amber-500" /> {repo.stargazers_count}
+                              </span>
+                              <span className="flex items-center gap-1 text-slate-600">
+                                <GitFork className="w-3 h-3 text-slate-400" /> {repo.forks_count}
+                              </span>
+                            </div>
+                            <span>Updated {new Date(repo.updated_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                )}
               </div>
             )}
           </div>

@@ -6,6 +6,7 @@ import { ArrowUpRight, Github, Globe, Target, Wrench } from 'lucide-react'
 import { getProjectBySlug, getPublishedProjects } from '@/lib/studio/data'
 import { articleMetadata } from '@/lib/seo'
 import { isRepositoryUrl } from '@/lib/urls'
+import { getProjectStatusVisual } from '@/lib/project-status'
 import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
 
 export const dynamic = 'force-dynamic'
@@ -40,6 +41,7 @@ export default async function WorkCaseStudyPage(
   const index = all.findIndex((entry) => entry.slug === project.slug)
   const nextProject = all.length > 1 ? all[(index + 1) % all.length] : undefined
   const repoUrl = isRepositoryUrl(project.repoUrl) ? project.repoUrl : undefined
+  const statusVisual = getProjectStatusVisual(project.status)
 
   const metaParts = [project.category, project.featuredOrder !== undefined ? 'Featured' : undefined].filter(
     Boolean,
@@ -52,16 +54,20 @@ export default async function WorkCaseStudyPage(
         title={project.title}
         description={project.summary}
         meta={
-          metaParts.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-2.5 text-xs text-muted">
-              {metaParts.map((part, idx) => (
-                <span key={`${part}-${idx}`} className="inline-flex items-center gap-2.5">
-                  {idx > 0 && <span aria-hidden="true">·</span>}
-                  <span>{part}</span>
-                </span>
-              ))}
-            </div>
-          ) : undefined
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-muted">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${statusVisual.badgeClass}`}
+            >
+              <span className={`h-2 w-2 rounded-full ${statusVisual.dotClass}`} aria-hidden="true" />
+              <span>{statusVisual.lifecycle}</span>
+            </span>
+            {metaParts.map((part, idx) => (
+              <span key={`${part}-${idx}`} className="inline-flex items-center gap-2.5">
+                <span aria-hidden="true">·</span>
+                <span>{part}</span>
+              </span>
+            ))}
+          </div>
         }
         actions={
           <div className="flex flex-wrap items-center gap-2.5">

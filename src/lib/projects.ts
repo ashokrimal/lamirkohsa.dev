@@ -246,6 +246,13 @@ function optionalString(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
 
+export function normalizeProjectStatus(value: unknown): string | undefined {
+  const raw = optionalString(value)
+  if (!raw) return undefined
+  if (/^production\s+prototype$/i.test(raw)) return 'Prototype'
+  return raw
+}
+
 /**
  * Maps a CMS project record to the view model. Missing fields stay missing —
  * the UI omits or enriches them cleanly rather than inventing placeholder copy.
@@ -272,7 +279,7 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
     altText: optionalString(payload.altText),
     completionDate: optionalString(payload.completionDate) ?? optionalString(payload.date),
     period: optionalString(payload.period),
-    status: optionalString(payload.status),
+    status: normalizeProjectStatus(payload.status),
     summary: optionalString(payload.summary),
     description: optionalString(payload.description),
     challenge:

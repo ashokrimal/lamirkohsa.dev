@@ -1,8 +1,9 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { Calendar, Eye, Layers } from 'lucide-react'
+import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
+import { getProjectStatusVisual } from '@/lib/project-status'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
 import { uiStrings } from '@/lib/ui-strings'
@@ -26,6 +27,7 @@ export function ProjectRow({
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
   const summary = project.summary || project.description
   const reversed = index % 2 === 1
+  const statusVisual = getProjectStatusVisual(project.status)
 
   return (
     <article className="project-row group relative cursor-pointer border-t border-line-hairline pt-8 md:pt-10">
@@ -40,13 +42,13 @@ export function ProjectRow({
           <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-line-hairline bg-overlay-faint transition-[border-color,box-shadow] duration-500 ease-out group-hover:border-line-medium group-hover:shadow-md">
             {project.image ? (
               <>
-                <Image
+                <ProgressiveImage
                   src={project.image}
                   alt={project.altText || uiStrings.project.previewAlt(project.title)}
                   fill
                   sizes="(max-width: 768px) 100vw, 58vw"
                   referrerPolicy="no-referrer"
-                  className="object-cover transition-[transform,filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045] group-hover:contrast-[1.04] group-hover:saturate-[1.08] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                  className="object-cover transition-[transform,filter,opacity] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045] group-hover:contrast-[1.04] group-hover:saturate-[1.08] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                 />
                 <div
                   className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
@@ -59,7 +61,7 @@ export function ProjectRow({
               </div>
             )}
 
-            {/* Floating Quick Look Chip — right-most corner of the project banner */}
+            {/* Floating Quick Look Chip — high-contrast light frosted surface visible over any backdrop */}
             {onQuickView && (
               <button
                 type="button"
@@ -70,13 +72,9 @@ export function ProjectRow({
                   onQuickView()
                 }}
                 aria-label={uiStrings.project.quickViewAria(project.title)}
-                className={`absolute top-3.5 right-3.5 z-20 inline-flex items-center gap-1.5 rounded-full backdrop-blur-md px-3 py-1.5 text-xs font-medium shadow-sm transition-all duration-200 cursor-pointer ${
-                  project.image
-                    ? 'border border-white/25 bg-black/55 text-white hover:bg-black/75 hover:border-white/45'
-                    : 'border border-line-subtle bg-surface/90 text-ink hover:border-accent hover:text-accent'
-                }`}
+                className="absolute top-3.5 right-3.5 z-20 inline-flex items-center gap-1.5 rounded-full border border-black/15 bg-white/95 px-3 py-1.5 text-xs font-medium text-[#1d1d1f] shadow-[0_4px_14px_rgba(0,0,0,0.18)] backdrop-blur-md transition-all duration-200 hover:border-black/25 hover:bg-white hover:text-[#3f5d49] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent cursor-pointer"
               >
-                <Eye className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+                <Eye className="h-3.5 w-3.5 text-[#3f5d49]" aria-hidden="true" />
                 <span>{uiStrings.project.quickView.en}</span>
               </button>
             )}
@@ -123,12 +121,13 @@ export function ProjectRow({
                 </span>
               </>
             )}
-            {project.status && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span className="text-emerald-600 dark:text-emerald-400">{project.status}</span>
-              </>
-            )}
+            <span aria-hidden="true">·</span>
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusVisual.badgeClass}`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${statusVisual.dotClass}`} aria-hidden="true" />
+              <span>{statusVisual.label}</span>
+            </span>
           </div>
 
           <h3 className="mt-3 text-2xl font-semibold leading-snug tracking-tight text-ink transition-colors duration-200 group-hover:text-accent md:text-3xl">

@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef } from 'react'
-import Image from 'next/image'
 import {
   motion,
   useReducedMotion,
@@ -9,6 +8,7 @@ import {
   useSpring,
   useTransform,
 } from 'framer-motion'
+import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
 
 interface CaseStudyHeroImageProps {
   src: string
@@ -18,7 +18,7 @@ interface CaseStudyHeroImageProps {
 /**
  * Scroll-linked parallax frame for the primary Case Study hero visual.
  * Uses compositor-only transforms inside an overscanned 16:9 viewport
- * so vertical travel never exposes container edges, and falls back cleanly
+ * with progressive blurred LQIP loading, and falls back cleanly
  * to a static frame when prefers-reduced-motion is active.
  */
 export function CaseStudyHeroImage({ src, alt }: CaseStudyHeroImageProps) {
@@ -43,7 +43,7 @@ export function CaseStudyHeroImage({ src, alt }: CaseStudyHeroImageProps) {
     <div ref={containerRef} className="mt-10 md:mt-12 apple-card overflow-hidden">
       <div className="relative aspect-[16/9] overflow-hidden bg-overlay-faint">
         {reduceMotion ? (
-          <Image
+          <ProgressiveImage
             src={src}
             alt={alt}
             fill
@@ -57,7 +57,7 @@ export function CaseStudyHeroImage({ src, alt }: CaseStudyHeroImageProps) {
             style={{ y, scale }}
             className="absolute inset-x-0 -inset-y-[8%] will-change-transform"
           >
-            <Image
+            <ProgressiveImage
               src={src}
               alt={alt}
               fill

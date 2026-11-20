@@ -2,7 +2,6 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import Image from 'next/image'
 import Link from 'next/link'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
@@ -15,6 +14,7 @@ import {
   X,
 } from 'lucide-react'
 import type { ProjectData } from '@/components/ui/ProjectCard'
+import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
 import { TechStack } from '@/components/ui/TechStack'
 import type { ProjectEntry } from '@/lib/projects'
 import type { CmsTechDefinition } from '@/lib/tech-metadata'
@@ -163,7 +163,7 @@ export function ProjectQuickViewDrawer({
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
               {project.image && (
                 <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-line-subtle bg-overlay-faint">
-                  <Image
+                  <ProgressiveImage
                     src={project.image}
                     alt={project.altText || uiStrings.project.previewAlt(project.title)}
                     fill

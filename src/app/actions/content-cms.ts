@@ -1,11 +1,11 @@
 'use server'
 
 import { auth } from '@/lib/auth'
-import { db, hasDatabaseConfig } from '@/lib/db'
-import { cmsContent } from '@/lib/db/schema'
+import { db, hasDatabaseConfig, withDbRetry } from '@/lib/db'
+import { cmsContent, studioProject } from '@/lib/db/schema'
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
-import { unstable_cache } from 'next/cache'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { getAdminActorId } from '@/lib/admin-auth'
 import { CMS_CACHE_TAG, CMS_REVALIDATE_SECONDS, cmsCollectionTag } from '@/lib/cms-cache'
 import { revalidateCmsCache } from '@/lib/cms-revalidation'
@@ -16,6 +16,7 @@ import {
   indexCmsRecordsByKey,
   type CmsResult,
 } from '@/lib/cms-schema'
+import { resolveProjectLifecycleStatus, type ProjectLifecycleStatus } from '@/lib/project-status'
 import { toSlug } from '@/lib/slug'
 
 export interface CmsRecord {
@@ -154,6 +155,7 @@ function errorCode(error: unknown) {
 // Global singleton instance
 declare global {
   var __cmsMemoryRepo: MemoryCmsRepository | undefined
+  var __cmsLastKnownPublished: Map<string, CmsRecord[]> | undefined
 }
 
 function getMemoryRepo(): MemoryCmsRepository {
@@ -163,52 +165,92 @@ function getMemoryRepo(): MemoryCmsRepository {
   return globalThis.__cmsMemoryRepo
 }
 
+function getLastKnownPublishedMap(): Map<string, CmsRecord[]> {
+  if (!globalThis.__cmsLastKnownPublished) {
+    globalThis.__cmsLastKnownPublished = new Map()
+  }
+  return globalThis.__cmsLastKnownPublished
+}
+
 // --- CMS QUERY FUNCTIONS FOR FRONTEND & ADMIN ---
+
+function normalizeCmsProjectPayload(
+  collection: string,
+  payload: Record<string, unknown> | undefined,
+): Record<string, unknown> {
+  const safe = payload ?? {}
+  if (collection.trim().toLowerCase() !== 'projects') return safe
+  if (typeof safe.status === 'string' && /^production\s+prototype$/i.test(safe.status.trim())) {
+    return { ...safe, status: 'Prototype' }
+  }
+  return safe
+}
 
 async function fetchPublishedCollection(collection: string): Promise<CmsRecord[]> {
   const normalizedCollection = collection.trim().toLowerCase()
-  const rows = await db
-    .select({
-      id: cmsContent.id,
-      collection: cmsContent.collection,
-      title: cmsContent.title,
-      slug: cmsContent.slug,
-      payload: cmsContent.payload,
-      status: cmsContent.status,
-      sortOrder: cmsContent.sortOrder,
-      createdAt: cmsContent.createdAt,
-      updatedAt: cmsContent.updatedAt,
-    })
-    .from(cmsContent)
-    .where(
-      and(
-        sql`lower(trim(${cmsContent.collection})) = ${normalizedCollection}`,
-        sql`lower(trim(${cmsContent.status})) = 'published'`,
-      )
+  try {
+    const rows = await withDbRetry(() =>
+      db
+        .select({
+          id: cmsContent.id,
+          collection: cmsContent.collection,
+          title: cmsContent.title,
+          slug: cmsContent.slug,
+          payload: cmsContent.payload,
+          status: cmsContent.status,
+          sortOrder: cmsContent.sortOrder,
+          createdAt: cmsContent.createdAt,
+          updatedAt: cmsContent.updatedAt,
+        })
+        .from(cmsContent)
+        .where(
+          and(
+            sql`lower(trim(${cmsContent.collection})) = ${normalizedCollection}`,
+            sql`lower(trim(${cmsContent.status})) = 'published'`,
+          )
+        )
+        .orderBy(asc(cmsContent.sortOrder), desc(cmsContent.createdAt)),
     )
-    .orderBy(asc(cmsContent.sortOrder), desc(cmsContent.createdAt))
 
-  // Deduplicate by locked key or slug. Titles are editable in the CMS and are
-  // never used as identity.
-  const seen = new Set<string>()
-  return (rows as CmsRecord[]).filter((r) => {
-    const payloadKey = typeof r.payload?.key === 'string' ? r.payload.key.trim().toLowerCase() : ''
-    const key = payloadKey
-      ? `${r.collection}::key:${payloadKey}`
-      : `${r.collection}::slug:${r.slug || r.id}`.toLowerCase().trim()
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
+    // Deduplicate by locked key or slug. Titles are editable in the CMS and are
+    // never used as identity.
+    const seen = new Set<string>()
+    const normalized = (rows as CmsRecord[])
+      .filter((r) => {
+        const payloadKey = typeof r.payload?.key === 'string' ? r.payload.key.trim().toLowerCase() : ''
+        const key = payloadKey
+          ? `${r.collection}::key:${payloadKey}`
+          : `${r.collection}::slug:${r.slug || r.id}`.toLowerCase().trim()
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+      .map((r) => ({
+        ...r,
+        payload: normalizeCmsProjectPayload(r.collection, r.payload),
+      }))
+
+    getLastKnownPublishedMap().set(normalizedCollection, normalized)
+    return normalized
+  } catch (error) {
+    const stale = getLastKnownPublishedMap().get(normalizedCollection)
+    if (stale !== undefined) {
+      console.warn(
+        `[CMS] Preserving cached "${collection}" snapshot after transient DB error${errorCode(error)}.`,
+      )
+      return stale
+    }
+    throw error
+  }
 }
 
-const cachedCollectionReaders = new Map<string, () => Promise<CmsRecord[]>>()
+const cachedCollectionReaders = new Map<string, (collection: string) => Promise<CmsRecord[]>>()
 
 function getCachedCollectionReader(collection: string): () => Promise<CmsRecord[]> {
   let reader = cachedCollectionReaders.get(collection)
   if (!reader) {
     reader = unstable_cache(
-      () => fetchPublishedCollection(collection),
+      fetchPublishedCollection,
       ['cms-published', collection],
       {
         tags: [CMS_CACHE_TAG, cmsCollectionTag(collection)],
@@ -217,7 +259,7 @@ function getCachedCollectionReader(collection: string): () => Promise<CmsRecord[
     )
     cachedCollectionReaders.set(collection, reader)
   }
-  return reader
+  return () => reader!(collection)
 }
 
 /**
@@ -542,10 +584,13 @@ export async function createCmsContent(formData: FormData) {
     'testPlanDoc',
     'runbookDoc',
     'userManualDoc',
-    'status',
   ]) {
     const value = formData.get(field)
     if (typeof value === 'string' && value.trim()) payload[field] = value.trim()
+  }
+  const projectStatusField = formData.get('projectStatus')
+  if (typeof projectStatusField === 'string' && projectStatusField.trim()) {
+    payload.status = projectStatusField.trim()
   }
   const techStack = formData.get('techStack')
   if (typeof techStack === 'string' && techStack.trim()) {
@@ -554,10 +599,11 @@ export async function createCmsContent(formData: FormData) {
       .map((item) => item.trim())
       .filter(Boolean)
   }
+  const normalizedPayload = normalizeCmsProjectPayload(collection, payload)
   const status = String(formData.get('status') || 'published')
 
   const repo = getMemoryRepo()
-  const created = repo.create(collection, title, payload, status)
+  const created = repo.create(collection, title, normalizedPayload, status)
 
   try {
     const userId = await requireUser()
@@ -566,7 +612,7 @@ export async function createCmsContent(formData: FormData) {
       collection,
       title,
       slug: created.slug,
-      payload,
+      payload: normalizedPayload,
       status,
       sortOrder: created.sortOrder,
     })
@@ -612,6 +658,9 @@ export async function updateCmsContent(id: number, formData: FormData) {
   if (description !== undefined) payloadUpdates = { ...payloadUpdates, description }
   if (imageUrl) payloadUpdates = { ...payloadUpdates, imageUrl }
 
+  const resolvedCollection = collection || previous?.collection || ''
+  payloadUpdates = normalizeCmsProjectPayload(resolvedCollection, payloadUpdates)
+
   const repo = getMemoryRepo()
   const updates: Partial<CmsRecord> = { payload: payloadUpdates }
   if (collection) updates.collection = collection
@@ -638,6 +687,10 @@ export async function updateCmsContent(id: number, formData: FormData) {
     if (storedKey && !storedPayload.key) storedPayload = { ...storedPayload, key: storedKey }
     if (description !== undefined) storedPayload = { ...storedPayload, description }
     if (imageUrl) storedPayload = { ...storedPayload, imageUrl }
+    storedPayload = normalizeCmsProjectPayload(
+      collection || current?.collection || previous?.collection || '',
+      storedPayload,
+    )
 
     await db
       .update(cmsContent)
@@ -780,6 +833,52 @@ export async function toggleCmsFeatured(id: number) {
   revalidateCms(collection)
 }
 
+export async function updateCmsProjectStatus(id: number, projectStatus: ProjectLifecycleStatus) {
+  const nextProjectStatus = resolveProjectLifecycleStatus(projectStatus)
+  const userId = await requireUser()
+  const rows = await db
+    .select({ payload: cmsContent.payload, collection: cmsContent.collection, slug: cmsContent.slug })
+    .from(cmsContent)
+    .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
+    .limit(1)
+  const current = rows[0]
+  if (!current) return { ok: false as const }
+
+  const nextPayload = {
+    ...(current.payload ?? {}),
+    status: nextProjectStatus,
+  }
+  await db
+    .update(cmsContent)
+    .set({ payload: nextPayload, updatedAt: new Date() })
+    .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
+
+  const previous = getMemoryRepo().getById(id)
+  if (previous) {
+    getMemoryRepo().update(id, { payload: nextPayload })
+  }
+
+  if (current.slug) {
+    try {
+      await db
+        .update(studioProject)
+        .set({ status: nextProjectStatus, updatedAt: new Date() })
+        .where(eq(studioProject.slug, current.slug))
+      revalidateTag('projects', { expire: 0 })
+      revalidateTag(`project-${current.slug}`, { expire: 0 })
+      revalidatePath('/work')
+      revalidatePath(`/work/${current.slug}`)
+    } catch (err) {
+      console.warn('[CMS] Could not mirror status to studioProject:', err)
+    }
+  }
+
+  revalidateCms(current.collection)
+  revalidatePath('/projects')
+  if (current.slug) revalidatePath(`/projects/${current.slug}`)
+  return { ok: true as const, status: nextProjectStatus }
+}
+
 async function updateKeyedSetting(key: string, merge: Record<string, unknown>) {
   try {
     const userId = await requireUser()
@@ -829,5 +928,11 @@ export async function saveCmsImage(url: string) {
 }
 
 function revalidateCms(collection?: string) {
+  const snapshots = getLastKnownPublishedMap()
+  if (collection) {
+    snapshots.delete(collection.trim().toLowerCase())
+  } else {
+    snapshots.clear()
+  }
   revalidateCmsCache(collection)
 }

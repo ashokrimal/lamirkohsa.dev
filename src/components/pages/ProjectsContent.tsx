@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useCallback, useEffect, useMemo, useState, type JSX } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion'
 import { FolderGit2, Layers, RotateCcw, SearchX } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
@@ -19,6 +19,11 @@ import {
   normalizeFilterToken,
 } from '@/components/ui/ProjectFilter'
 import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import {
+  PROJECT_LIFECYCLE_STATUSES,
+  getProjectStatusVisual,
+  resolveProjectLifecycleStatus,
+} from '@/lib/project-status'
 import type { ProjectEntry, ProjectFilterTag } from '@/lib/projects'
 import { mergeCmsTechDefinitions } from '@/lib/tech-metadata'
 import type { PageCopy } from '@/lib/site-content'
@@ -49,16 +54,35 @@ export default function ProjectsContent({
   const reduceMotion = useReducedMotion()
 
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedTechs, setSelectedTechs] = useState<string[]>([])
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [quickViewProject, setQuickViewProject] = useState<ProjectEntry | null>(null)
 
-  // Restore any deep-linked filters (?q=...&category=...&tech=...) on mount without CSR bailouts
+  const statusSummary = useMemo(() => {
+    const counts: Record<(typeof PROJECT_LIFECYCLE_STATUSES)[number], number> = {
+      Active: 0,
+      Planning: 0,
+      Archived: 0,
+    }
+    for (const project of projects) {
+      counts[resolveProjectLifecycleStatus(project.status)] += 1
+    }
+    return PROJECT_LIFECYCLE_STATUSES.map((status) => ({
+      status,
+      normalized: normalizeFilterToken(status),
+      count: counts[status],
+      visual: getProjectStatusVisual(status),
+    }))
+  }, [projects])
+
+  // Restore any deep-linked filters (?q=...&status=...&category=...&tech=...) on mount without CSR bailouts
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search)
       const q = params.get('q')?.trim() || ''
+      const status = params.get('status')?.trim() || null
       const cat = params.get('category')?.trim() || null
       const techParam = params.get('tech')?.trim()
       const techs = techParam
@@ -68,6 +92,7 @@ export default function ProjectsContent({
             .filter(Boolean)
         : []
       if (q) setSearchQuery(q)
+      if (status) setSelectedStatus(status)
       if (cat) setSelectedCategory(cat)
       if (techs.length) setSelectedTechs(techs)
       if (cat || techs.length) setIsFiltersOpen(true)
@@ -75,13 +100,23 @@ export default function ProjectsContent({
   }, [])
 
   const syncUrlParams = useCallback(
-    (nextQuery: string, nextCategory: string | null, nextTechs: string[]) => {
+    (
+      nextQuery: string,
+      nextStatus: string | null,
+      nextCategory: string | null,
+      nextTechs: string[],
+    ) => {
       try {
         const url = new URL(window.location.href)
         if (nextQuery.trim()) {
           url.searchParams.set('q', nextQuery.trim())
         } else {
           url.searchParams.delete('q')
+        }
+        if (nextStatus) {
+          url.searchParams.set('status', nextStatus)
+        } else {
+          url.searchParams.delete('status')
         }
         if (nextCategory) {
           url.searchParams.set('category', nextCategory)
@@ -102,17 +137,25 @@ export default function ProjectsContent({
   const handleSearchChange = useCallback(
     (query: string) => {
       setSearchQuery(query)
-      syncUrlParams(query, selectedCategory, selectedTechs)
+      syncUrlParams(query, selectedStatus, selectedCategory, selectedTechs)
     },
-    [selectedCategory, selectedTechs, syncUrlParams],
+    [selectedCategory, selectedStatus, selectedTechs, syncUrlParams],
+  )
+
+  const handleSelectStatus = useCallback(
+    (status: string | null) => {
+      setSelectedStatus(status)
+      syncUrlParams(searchQuery, status, selectedCategory, selectedTechs)
+    },
+    [searchQuery, selectedCategory, selectedTechs, syncUrlParams],
   )
 
   const handleSelectCategory = useCallback(
     (category: string | null) => {
       setSelectedCategory(category)
-      syncUrlParams(searchQuery, category, selectedTechs)
+      syncUrlParams(searchQuery, selectedStatus, category, selectedTechs)
     },
-    [searchQuery, selectedTechs, syncUrlParams],
+    [searchQuery, selectedStatus, selectedTechs, syncUrlParams],
   )
 
   const handleToggleTech = useCallback(
@@ -123,33 +166,25 @@ export default function ProjectsContent({
         const next = exists
           ? prev.filter((item) => normalizeFilterToken(item) !== normalizedTarget)
           : [...prev, tech]
-        syncUrlParams(searchQuery, selectedCategory, next)
+        syncUrlParams(searchQuery, selectedStatus, selectedCategory, next)
         return next
       })
     },
-    [searchQuery, selectedCategory, syncUrlParams],
+    [searchQuery, selectedCategory, selectedStatus, syncUrlParams],
   )
 
   const handleClearFilters = useCallback(() => {
     setSearchQuery('')
+    setSelectedStatus(null)
     setSelectedCategory(null)
     setSelectedTechs([])
-    syncUrlParams('', null, [])
+    syncUrlParams('', null, null, [])
   }, [syncUrlParams])
 
   const filteredProjects = useMemo(
-    () => filterProjects(projects, selectedCategory, selectedTechs, searchQuery),
-    [projects, selectedCategory, selectedTechs, searchQuery],
-  )
-
-  const filterTransitionKey = useMemo(
     () =>
-      `${selectedCategory ? normalizeFilterToken(selectedCategory) : 'all'}::${[...selectedTechs]
-        .map(normalizeFilterToken)
-        .filter(Boolean)
-        .sort()
-        .join('|')}`,
-    [selectedCategory, selectedTechs],
+      filterProjects(projects, selectedCategory, selectedTechs, searchQuery, selectedStatus),
+    [projects, selectedCategory, selectedTechs, searchQuery, selectedStatus],
   )
 
   const cmsTechDefinitions = useMemo(
@@ -165,7 +200,8 @@ export default function ProjectsContent({
   )
 
   const activeFilterCount = (selectedCategory ? 1 : 0) + selectedTechs.length
-  const hasAnyActiveState = activeFilterCount > 0 || searchQuery.trim().length > 0
+  const hasAnyActiveState =
+    activeFilterCount > 0 || Boolean(selectedStatus) || searchQuery.trim().length > 0
 
   useEffect(() => {
     registerPageSections(PAGE_KEY, DEFAULT_SECTIONS as unknown as string[])
@@ -233,6 +269,93 @@ export default function ProjectsContent({
         <CmsErrorState message={error} />
       ) : projects.length ? (
         <div>
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div
+              role="group"
+              aria-label="Project status summary and quick filter"
+              className="inline-flex flex-wrap items-center gap-1 rounded-2xl border border-line-subtle bg-overlay-faint px-2 py-1.5"
+            >
+              <button
+                type="button"
+                aria-pressed={!selectedStatus}
+                onClick={() => {
+                  if (!selectedStatus) return
+                  sensoryAudio.playToggle()
+                  handleSelectStatus(null)
+                }}
+                className={`relative inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                  !selectedStatus ? 'text-ink' : 'text-muted hover:text-ink'
+                }`}
+              >
+                {!selectedStatus && (
+                  <motion.span
+                    layoutId="projects-status-pill"
+                    transition={
+                      reduceMotion
+                        ? { duration: 0.08 }
+                        : { type: 'spring', stiffness: 420, damping: 32 }
+                    }
+                    className="absolute inset-0 rounded-xl border border-line-subtle bg-surface shadow-xs"
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="relative z-10">
+                  All{' '}
+                  <span className="font-mono text-[11px] text-muted tabular-nums">
+                    ({projects.length})
+                  </span>
+                </span>
+              </button>
+
+              {statusSummary.map((entry) => {
+                const isActive =
+                  selectedStatus !== null &&
+                  normalizeFilterToken(selectedStatus) === entry.normalized
+                return (
+                  <span key={entry.status} className="inline-flex items-center">
+                    <span className="mx-0.5 text-xs text-line-medium select-none" aria-hidden="true">
+                      |
+                    </span>
+                    <button
+                      type="button"
+                      aria-pressed={isActive}
+                      onClick={() => {
+                        sensoryAudio.playToggle()
+                        handleSelectStatus(isActive ? null : entry.status)
+                      }}
+                      className={`relative inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                        isActive ? 'text-ink' : 'text-muted hover:text-ink'
+                      }`}
+                    >
+                      {isActive && (
+                        <motion.span
+                          layoutId="projects-status-pill"
+                          transition={
+                            reduceMotion
+                              ? { duration: 0.08 }
+                              : { type: 'spring', stiffness: 420, damping: 32 }
+                          }
+                          className="absolute inset-0 rounded-xl border border-line-subtle bg-surface shadow-xs"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span
+                        className={`relative z-10 h-2 w-2 rounded-full ${entry.visual.dotClass}`}
+                        aria-hidden="true"
+                      />
+                      <span className="relative z-10">
+                        {entry.status}{' '}
+                        <span className="font-mono text-[11px] text-muted tabular-nums">
+                          ({entry.count})
+                        </span>
+                      </span>
+                    </button>
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+
           <ProjectFilterPanel
             projects={projects}
             cmsTechTags={techTags}
@@ -246,78 +369,76 @@ export default function ProjectsContent({
             onClear={handleClearFilters}
           />
 
-          <div className="min-w-0">
-            <AnimatePresence mode="wait" initial={false}>
-              {filteredProjects.length > 0 ? (
-                <motion.div
-                  key={filterTransitionKey}
-                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
-                  transition={{ duration: reduceMotion ? 0.1 : 0.2, ease: EASE_SETTLE }}
-                  className="space-y-10 md:space-y-12"
-                >
-                  <AnimatePresence mode="popLayout" initial={false}>
-                    {filteredProjects.map((project, index) => (
-                      <motion.div
-                        key={project.slug || project.id || project.title}
-                        layout={!reduceMotion}
-                        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
-                        transition={{
-                          opacity: {
-                            duration: reduceMotion ? 0.1 : 0.26,
-                            delay: reduceMotion ? 0 : Math.min(index * 0.04, 0.18),
-                            ease: EASE_SETTLE,
-                          },
-                          y: {
-                            duration: reduceMotion ? 0.1 : 0.28,
-                            delay: reduceMotion ? 0 : Math.min(index * 0.04, 0.18),
-                            ease: EASE_SETTLE,
-                          },
-                          layout: { duration: 0.28, ease: EASE_SETTLE },
-                        }}
-                      >
-                        <ProjectRow
-                          project={project}
-                          index={index}
-                          onQuickView={() => setQuickViewProject(project)}
-                        />
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key={`empty-${filterTransitionKey}`}
-                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
-                  transition={{ duration: reduceMotion ? 0.1 : 0.22, ease: EASE_SETTLE }}
-                  className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line-medium bg-transparent px-6 py-12 text-center"
-                  role="status"
-                >
-                  <SearchX className="h-5 w-5 text-muted" aria-hidden="true" />
-                  <div className="space-y-1">
-                    <p className="text-sm text-ink">{uiStrings.projects.noMatchesTitle.en}</p>
-                    <p className="text-xs text-muted">{uiStrings.projects.noMatchesHint.en}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sensoryAudio.playClick()
-                      handleClearFilters()
-                    }}
-                    className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface/80 px-4 py-2 text-xs font-medium text-ink shadow-xs transition-colors hover:border-line-medium hover:text-accent cursor-pointer"
+          <LayoutGroup id="projects-grid">
+            <div className="min-w-0">
+              <motion.div
+                layout={!reduceMotion}
+                className="space-y-10 md:space-y-12"
+                transition={{
+                  layout: reduceMotion
+                    ? { duration: 0.05 }
+                    : { type: 'spring', stiffness: 360, damping: 32 },
+                }}
+              >
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {filteredProjects.map((project, index) => (
+                    <motion.div
+                      key={project.slug || project.id || project.title}
+                      layout={!reduceMotion}
+                      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: -6 }}
+                      transition={{
+                        opacity: { duration: reduceMotion ? 0.1 : 0.22, ease: EASE_SETTLE },
+                        scale: { duration: reduceMotion ? 0.1 : 0.22, ease: EASE_SETTLE },
+                        y: { duration: reduceMotion ? 0.1 : 0.24, ease: EASE_SETTLE },
+                        layout: reduceMotion
+                          ? { duration: 0.05 }
+                          : { type: 'spring', stiffness: 360, damping: 32 },
+                      }}
+                    >
+                      <ProjectRow
+                        project={project}
+                        index={index}
+                        onQuickView={() => setQuickViewProject(project)}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+
+              <AnimatePresence initial={false}>
+                {filteredProjects.length === 0 && (
+                  <motion.div
+                    key="projects-empty-state"
+                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
+                    transition={{ duration: reduceMotion ? 0.1 : 0.2, ease: EASE_SETTLE }}
+                    className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line-medium bg-transparent px-6 py-12 text-center"
+                    role="status"
                   >
-                    <RotateCcw className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
-                    <span>{uiStrings.projects.clearFilters.en}</span>
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                    <SearchX className="h-5 w-5 text-muted" aria-hidden="true" />
+                    <div className="space-y-1">
+                      <p className="text-sm text-ink">{uiStrings.projects.noMatchesTitle.en}</p>
+                      <p className="text-xs text-muted">{uiStrings.projects.noMatchesHint.en}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sensoryAudio.playClick()
+                        handleClearFilters()
+                      }}
+                      className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface/80 px-4 py-2 text-xs font-medium text-ink shadow-xs transition-colors hover:border-line-medium hover:text-accent cursor-pointer"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+                      <span>{uiStrings.projects.clearFilters.en}</span>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </LayoutGroup>
         </div>
       ) : (
         <EmptyState

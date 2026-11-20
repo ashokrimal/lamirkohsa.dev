@@ -200,6 +200,18 @@ const projectFields: VaultField[] = [
       value,
     })),
   },
+  {
+    key: 'status',
+    label: 'Project status',
+    type: 'select',
+    options: [
+      { label: 'Active', value: 'Active' },
+      { label: 'Planning', value: 'Planning' },
+      { label: 'Archived', value: 'Archived' },
+      { label: 'Prototype', value: 'Prototype' },
+      { label: 'Completed', value: 'Completed' },
+    ],
+  },
   { key: 'summary', label: 'Short summary', type: 'text', span: 'full' },
   { key: 'techStack', label: 'Tech stack', type: 'tags', span: 'full' },
   { key: 'liveUrl', label: 'Live URL', type: 'url' },

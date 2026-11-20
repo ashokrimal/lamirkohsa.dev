@@ -9,6 +9,7 @@ import {
   DEFAULT_SITE_SETTINGS,
 } from '@/lib/studio/fixtures'
 import { parseSectionContent, parseSocialLinks, type SectionKey, type SocialLink } from '@/lib/studio/sections'
+import { resolveProjectLifecycleStatus, type ProjectLifecycleStatus } from '@/lib/project-status'
 
 /**
  * The studio data layer.
@@ -57,6 +58,7 @@ export interface StudioProject {
   liveUrl?: string
   repoUrl?: string
   featuredOrder?: number
+  status: ProjectLifecycleStatus
   isPublished: boolean
 }
 
@@ -74,6 +76,7 @@ export function normalizePageSlug(slug: string) {
 }
 
 let tablesReady = false
+let tablesReadyPromise: Promise<void> | null = null
 
 /**
  * The project has no committed migration runner; each studio read ensures its
@@ -81,52 +84,63 @@ let tablesReady = false
  */
 export async function ensureStudioTables() {
   if (tablesReady) return
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS "pages" (
-      "id" serial PRIMARY KEY,
-      "slug" text NOT NULL UNIQUE,
-      "title" text NOT NULL,
-      "meta_description" text,
-      "is_published" boolean NOT NULL DEFAULT true,
-      "updated_at" timestamptz NOT NULL DEFAULT now()
-    );
-    CREATE TABLE IF NOT EXISTS "page_sections" (
-      "id" serial PRIMARY KEY,
-      "page_id" integer NOT NULL,
-      "section_key" text NOT NULL,
-      "sort_order" integer NOT NULL DEFAULT 0,
-      "is_enabled" boolean NOT NULL DEFAULT true,
-      "content_json" jsonb NOT NULL DEFAULT '{}'::jsonb,
-      "updated_at" timestamptz NOT NULL DEFAULT now(),
-      CONSTRAINT "page_sections_page_id_fk" FOREIGN KEY ("page_id")
-        REFERENCES "pages" ("id") ON DELETE CASCADE
-    );
-    CREATE INDEX IF NOT EXISTS "page_sections_page_idx" ON "page_sections" ("page_id", "sort_order");
-    CREATE TABLE IF NOT EXISTS "projects" (
-      "id" serial PRIMARY KEY,
-      "slug" text NOT NULL UNIQUE,
-      "title" text NOT NULL,
-      "category" text,
-      "summary" text,
-      "problem" text,
-      "solution" text,
-      "tech_stack" jsonb NOT NULL DEFAULT '[]'::jsonb,
-      "cover_media_url" text,
-      "live_url" text,
-      "repo_url" text,
-      "featured_order" integer,
-      "is_published" boolean NOT NULL DEFAULT true,
-      "updated_at" timestamptz NOT NULL DEFAULT now()
-    );
-    CREATE TABLE IF NOT EXISTS "site_settings" (
-      "id" integer PRIMARY KEY DEFAULT 1,
-      "contact_email" text,
-      "availability_status" text,
-      "social_links" jsonb NOT NULL DEFAULT '[]'::jsonb,
-      "updated_at" timestamptz NOT NULL DEFAULT now()
-    );
-  `)
-  tablesReady = true
+  if (tablesReadyPromise) return tablesReadyPromise
+  tablesReadyPromise = pool
+    .query(`
+      CREATE TABLE IF NOT EXISTS "pages" (
+        "id" serial PRIMARY KEY,
+        "slug" text NOT NULL UNIQUE,
+        "title" text NOT NULL,
+        "meta_description" text,
+        "is_published" boolean NOT NULL DEFAULT true,
+        "updated_at" timestamptz NOT NULL DEFAULT now()
+      );
+      CREATE TABLE IF NOT EXISTS "page_sections" (
+        "id" serial PRIMARY KEY,
+        "page_id" integer NOT NULL,
+        "section_key" text NOT NULL,
+        "sort_order" integer NOT NULL DEFAULT 0,
+        "is_enabled" boolean NOT NULL DEFAULT true,
+        "content_json" jsonb NOT NULL DEFAULT '{}'::jsonb,
+        "updated_at" timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT "page_sections_page_id_fk" FOREIGN KEY ("page_id")
+          REFERENCES "pages" ("id") ON DELETE CASCADE
+      );
+      CREATE INDEX IF NOT EXISTS "page_sections_page_idx" ON "page_sections" ("page_id", "sort_order");
+      CREATE TABLE IF NOT EXISTS "projects" (
+        "id" serial PRIMARY KEY,
+        "slug" text NOT NULL UNIQUE,
+        "title" text NOT NULL,
+        "category" text,
+        "summary" text,
+        "problem" text,
+        "solution" text,
+        "tech_stack" jsonb NOT NULL DEFAULT '[]'::jsonb,
+        "cover_media_url" text,
+        "live_url" text,
+        "repo_url" text,
+        "featured_order" integer,
+        "status" text NOT NULL DEFAULT 'Active',
+        "is_published" boolean NOT NULL DEFAULT true,
+        "updated_at" timestamptz NOT NULL DEFAULT now()
+      );
+      ALTER TABLE "projects" ADD COLUMN IF NOT EXISTS "status" text NOT NULL DEFAULT 'Active';
+      CREATE TABLE IF NOT EXISTS "site_settings" (
+        "id" integer PRIMARY KEY DEFAULT 1,
+        "contact_email" text,
+        "availability_status" text,
+        "social_links" jsonb NOT NULL DEFAULT '[]'::jsonb,
+        "updated_at" timestamptz NOT NULL DEFAULT now()
+      );
+    `)
+    .then(() => {
+      tablesReady = true
+    })
+    .catch((err) => {
+      tablesReadyPromise = null
+      throw err
+    })
+  return tablesReadyPromise
 }
 
 function defaultPage(slug: string): StudioPage {
@@ -252,6 +266,7 @@ async function readPublishedProjects(): Promise<StudioProject[]> {
       liveUrl: row.liveUrl ?? undefined,
       repoUrl: row.repoUrl ?? undefined,
       featuredOrder: row.featuredOrder ?? undefined,
+      status: resolveProjectLifecycleStatus(row.status),
       isPublished: row.isPublished,
     }))
   } catch (error) {
@@ -287,6 +302,7 @@ async function readProjectBySlug(slug: string): Promise<StudioProject | null> {
       liveUrl: row.liveUrl ?? undefined,
       repoUrl: row.repoUrl ?? undefined,
       featuredOrder: row.featuredOrder ?? undefined,
+      status: resolveProjectLifecycleStatus(row.status),
       isPublished: row.isPublished,
     }
   } catch (error) {
@@ -395,6 +411,7 @@ export async function getAllProjectsForAdmin(): Promise<StudioProject[]> {
     liveUrl: row.liveUrl ?? undefined,
     repoUrl: row.repoUrl ?? undefined,
     featuredOrder: row.featuredOrder ?? undefined,
+    status: resolveProjectLifecycleStatus(row.status),
     isPublished: row.isPublished,
   }))
 }

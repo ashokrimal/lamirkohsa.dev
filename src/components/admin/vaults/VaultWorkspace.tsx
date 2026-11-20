@@ -31,6 +31,7 @@ import {
   deleteCmsContent,
   resetCmsContent,
   toggleCmsStatus,
+  updateCmsProjectStatus,
   type BulkResetMode,
 } from '@/app/actions/content-cms'
 import {
@@ -42,6 +43,12 @@ import {
   type VaultIconName,
   type VaultRecord,
 } from '@/lib/admin-vaults'
+import {
+  PROJECT_LIFECYCLE_STATUSES,
+  getProjectStatusVisual,
+  resolveProjectLifecycleStatus,
+  type ProjectLifecycleStatus,
+} from '@/lib/project-status'
 import AudioPreview from '@/components/admin/vaults/AudioPreview'
 import BulkDropzone from '@/components/admin/vaults/BulkDropzone'
 import VaultEditor from '@/components/admin/vaults/VaultEditor'
@@ -154,6 +161,7 @@ function VaultCard({
   pending,
   onEdit,
   onToggle,
+  onProjectStatusChange,
   onDelete,
 }: {
   record: VaultRecord
@@ -162,6 +170,7 @@ function VaultCard({
   pending: boolean
   onEdit: () => void
   onToggle: () => void
+  onProjectStatusChange?: (nextStatus: ProjectLifecycleStatus) => void
   onDelete: () => void
 }) {
   const Icon = ICONS[vault.icon]
@@ -256,6 +265,42 @@ function VaultCard({
               )}
             </div>
           </>
+        )}
+
+        {vault.id === 'projects' && onProjectStatusChange && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-slate-400">
+              Lifecycle
+            </span>
+            <div
+              role="group"
+              aria-label={`Set lifecycle status for ${record.title}`}
+              className="inline-flex items-center gap-0.5 rounded-lg border border-slate-200 bg-slate-50 p-0.5"
+            >
+              {PROJECT_LIFECYCLE_STATUSES.map((option) => {
+                const activeLifecycle = resolveProjectLifecycleStatus(text(record.payload.status))
+                const isActive = activeLifecycle === option
+                const visual = getProjectStatusVisual(option)
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    disabled={pending}
+                    aria-pressed={isActive}
+                    onClick={() => onProjectStatusChange(option)}
+                    className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors cursor-pointer disabled:opacity-50 ${
+                      isActive
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'text-slate-600 hover:bg-white'
+                    }`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${visual.dotClass}`} aria-hidden="true" />
+                    <span>{option}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         )}
 
         <div className="mt-auto flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
@@ -409,6 +454,43 @@ function VaultWorkspaceInner({
     } catch (error) {
       setItems((current) =>
         current.map((item) => (item.id === record.id ? { ...item, status: record.status } : item)),
+      )
+      toast({
+        title: 'Status update failed',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'error',
+      })
+    } finally {
+      clearPending(record.id)
+    }
+  }
+
+  const handleProjectStatusChange = async (
+    record: VaultRecord,
+    nextProjectStatus: ProjectLifecycleStatus,
+  ) => {
+    const previousPayload = record.payload
+    markPending(record.id)
+    setItems((current) =>
+      current.map((item) =>
+        item.id === record.id
+          ? { ...item, payload: { ...item.payload, status: nextProjectStatus } }
+          : item,
+      ),
+    )
+    try {
+      await updateCmsProjectStatus(record.id, nextProjectStatus)
+      toast({
+        title: `Marked as ${nextProjectStatus}`,
+        description: `${record.title} status updated.`,
+        variant: 'success',
+      })
+      router.refresh()
+    } catch (error) {
+      setItems((current) =>
+        current.map((item) =>
+          item.id === record.id ? { ...item, payload: previousPayload } : item,
+        ),
       )
       toast({
         title: 'Status update failed',
@@ -635,6 +717,11 @@ function VaultWorkspaceInner({
               pending={pending.has(record.id)}
               onEdit={() => setEditor({ record, collection: record.collection })}
               onToggle={() => void handleToggle(record)}
+              onProjectStatusChange={
+                vault.id === 'projects'
+                  ? (nextStatus) => void handleProjectStatusChange(record, nextStatus)
+                  : undefined
+              }
               onDelete={() => setDeleting(record)}
             />
           ))}

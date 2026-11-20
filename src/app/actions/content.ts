@@ -41,7 +41,19 @@ export async function getAdminContent() {
         .limit(100),
     ])
 
-    return { cms, messages }
+    const normalizedCms = cms.map((row) => {
+      const payload = (row.payload ?? {}) as Record<string, unknown>
+      if (
+        row.collection.trim().toLowerCase() === 'projects' &&
+        typeof payload.status === 'string' &&
+        /^production\s+prototype$/i.test(payload.status.trim())
+      ) {
+        return { ...row, payload: { ...payload, status: 'Prototype' } }
+      }
+      return row
+    })
+
+    return { cms: normalizedCms, messages }
   } catch (error) {
     console.warn('[Admin Content] Database unavailable:', error)
   }

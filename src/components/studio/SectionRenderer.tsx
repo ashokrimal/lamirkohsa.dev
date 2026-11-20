@@ -8,7 +8,8 @@ import { getMediaSections } from '@/lib/media-content'
 import { getProjectsResult } from '@/lib/projects'
 import { getPublishedProjects, type StudioProject } from '@/lib/studio/data'
 import { uiStrings } from '@/lib/ui-strings'
-import { MediaShelf } from '@/components/ui/MediaShelf'
+import { MediaShelf, type MediaShelfEntry } from '@/components/ui/MediaShelf'
+import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
@@ -129,19 +130,25 @@ function studioToCard(project: StudioProject) {
   }
 }
 
+function clampHomeCardCount(raw?: number, fallback = 4): number {
+  const value = typeof raw === 'number' && Number.isFinite(raw) ? Math.round(raw) : fallback
+  return Math.min(4, Math.max(3, value))
+}
+
 export async function ProjectsSectionBody({
   content,
-  previewCount = 3,
+  previewCount,
 }: {
   content: SectionContent
   previewCount?: number
 }) {
+  const targetCount = clampHomeCardCount(previewCount ?? content.previewCount, 4)
   const studioProjects = await getPublishedProjects()
   // Before the seed has run, keep showing the case studies the site already has.
   const legacyResult = studioProjects.length === 0 ? await getProjectsResult() : null
-  const fallback = legacyResult?.status === 'ok' ? legacyResult.data.slice(0, previewCount) : []
+  const legacyList = legacyResult?.status === 'ok' ? legacyResult.data : []
 
-  if (studioProjects.length === 0 && fallback.length === 0) {
+  if (studioProjects.length === 0 && legacyList.length === 0) {
     return (
       <EmptyState
         eyebrow="Selected Works"
@@ -152,10 +159,26 @@ export async function ProjectsSectionBody({
     )
   }
 
-  const cards =
+  const orderedStudio =
     studioProjects.length > 0
-      ? studioProjects.slice(0, previewCount).map(studioToCard)
-      : fallback.map((project) => ({
+      ? [
+          ...studioProjects.filter((project) => project.featuredOrder !== undefined),
+          ...studioProjects.filter((project) => project.featuredOrder === undefined),
+        ]
+      : []
+
+  const orderedLegacy =
+    legacyList.length > 0
+      ? [
+          ...legacyList.filter((project) => project.featured),
+          ...legacyList.filter((project) => !project.featured),
+        ]
+      : []
+
+  const cards =
+    orderedStudio.length > 0
+      ? orderedStudio.slice(0, targetCount).map(studioToCard)
+      : orderedLegacy.slice(0, targetCount).map((project) => ({
           id: project.id,
           title: project.title,
           slug: project.slug,
@@ -167,9 +190,10 @@ export async function ProjectsSectionBody({
         }))
 
   const hrefFor = (slug: string) => (studioProjects.length > 0 ? `/work/${slug}` : `/projects/${slug}`)
+  const gridColsClass = cards.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'
 
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+    <div className={`grid grid-cols-1 gap-5 ${gridColsClass}`}>
       {cards.map((project) => (
         <Link
           key={`${project.slug}-${project.id}`}
@@ -178,7 +202,7 @@ export async function ProjectsSectionBody({
         >
           {project.image && (
             <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-line-hairline bg-overlay-faint">
-              <Image
+              <ProgressiveImage
                 src={project.image}
                 alt={project.title}
                 fill
@@ -224,7 +248,7 @@ export async function ProjectsSectionBody({
   )
 }
 
-export async function MediaSectionBody() {
+export async function MediaSectionBody({ content }: { content?: SectionContent }) {
   const collectionsResult = await getMediaCollections()
   if (collectionsResult.status === 'error') {
     return <CmsErrorState message={collectionsResult.message} />
@@ -234,9 +258,25 @@ export async function MediaSectionBody() {
   const error = sections.find((entry) => entry.error)?.error
   if (error) return <CmsErrorState message={error} />
 
-  const items = sections.flatMap((section) =>
-    section.items.map((item) => ({ kind: section.kind, item, href: section.href })),
-  )
+  const targetCount = clampHomeCardCount(content?.previewCount, 4)
+
+  // Interleave items round-robin across non-empty categories so 3–4 shelf cards represent varied media
+  const activeSections = sections.filter((section) => section.items.length > 0)
+  const items: MediaShelfEntry[] = []
+  let round = 0
+  while (items.length < targetCount) {
+    let addedInRound = false
+    for (const section of activeSections) {
+      const candidate = section.items[round]
+      if (candidate) {
+        items.push({ kind: section.kind, item: candidate })
+        addedInRound = true
+        if (items.length >= targetCount) break
+      }
+    }
+    if (!addedInRound) break
+    round += 1
+  }
 
   if (items.length === 0) {
     return (
@@ -249,7 +289,7 @@ export async function MediaSectionBody() {
     )
   }
 
-  return <MediaShelf items={items} />
+  return <MediaShelf items={items} limit={targetCount} />
 }
 
 export async function GithubSectionBody({ content }: { content: SectionContent }) {
@@ -301,11 +341,15 @@ export async function SectionRenderer({ sections }: { sections: StudioPageSectio
               return (
                 <ProjectsSectionBody
                   content={content}
-                  previewCount={content.previewCount ?? 3}
+                  previewCount={content.previewCount ?? 4}
                 />
               )
             case 'media':
-              return content.layout === 'index' ? <MediaCollectionsBody /> : <MediaSectionBody />
+              return content.layout === 'index' ? (
+                <MediaCollectionsBody />
+              ) : (
+                <MediaSectionBody content={content} />
+              )
             case 'github':
               return <GithubSectionBody content={content} />
             case 'education':

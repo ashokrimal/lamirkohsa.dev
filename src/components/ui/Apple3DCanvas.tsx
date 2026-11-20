@@ -121,7 +121,7 @@ export function Apple3DCanvas({ className = '' }: Apple3DCanvasProps) {
     resizeObserver.observe(container)
 
     // Render loop
-    let clock = new THREE.Clock()
+    const clock = new THREE.Clock()
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate)
 

@@ -1,5 +1,5 @@
 import { unstable_cache } from 'next/cache'
-import { db, hasDatabaseConfig } from '@/lib/db'
+import { db, hasDatabaseConfig, withDbRetry } from '@/lib/db'
 import { profileSettings } from '@/lib/db/schema'
 import {
   CMS_CACHE_TAG,
@@ -56,11 +56,27 @@ export interface GitHubProfileData {
   following?: number
 }
 
+declare global {
+  var __lastKnownProfileSettings: PublicProfileSettings | null | undefined
+}
+
+async function fetchPublicProfileSettings(): Promise<PublicProfileSettings | null> {
+  try {
+    const rows = await withDbRetry(() => db.select().from(profileSettings).limit(1))
+    const latest = rows[0] ?? null
+    globalThis.__lastKnownProfileSettings = latest
+    return latest
+  } catch (error) {
+    if (globalThis.__lastKnownProfileSettings !== undefined) {
+      console.warn('[Profile] Preserving cached profile settings after transient DB error.')
+      return globalThis.__lastKnownProfileSettings
+    }
+    throw error
+  }
+}
+
 const getCachedPublicProfileSettings = unstable_cache(
-  async (): Promise<PublicProfileSettings | null> => {
-    const rows = await db.select().from(profileSettings).limit(1)
-    return rows[0] ?? null
-  },
+  fetchPublicProfileSettings,
   ['cms-profile-settings'],
   {
     tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)],
