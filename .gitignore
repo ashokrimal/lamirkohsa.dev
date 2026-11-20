@@ -33,3 +33,6 @@ public/locales
 !.yarn/sdks     
 .next-dev
 /backups/
+/freebuff-sites-build/
+/.open-next/
+/.wrangler/

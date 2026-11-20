@@ -9,10 +9,12 @@ import {
  * Invalidates Next.js Data Cache tags and ISR routes after any CMS mutation.
  */
 export function revalidateCmsCache(...collections: Array<string | undefined>) {
-  revalidateTag(CMS_CACHE_TAG)
+  // Next.js 16 requires the cache life profile; expire immediately so the next
+  // request refetches instead of serving the entry that was just changed.
+  revalidateTag(CMS_CACHE_TAG, { expire: 0 })
   for (const collection of collections) {
     if (collection) {
-      revalidateTag(cmsCollectionTag(collection))
+      revalidateTag(cmsCollectionTag(collection), { expire: 0 })
     }
   }
 

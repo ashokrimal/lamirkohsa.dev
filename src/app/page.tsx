@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 const PAGE_TITLE = `${SITE_NAME} — Product Engineer & Creative Technologist`;
 const PAGE_DESCRIPTION =
   "Explore Ashok Rimal's portfolio featuring shipped full-stack systems, case studies, interactive data visualizations, and creative engineering experiments.";
-const OG_IMAGE_URL = `${SITE_URL}/opengraph-image`;
+const OG_IMAGE_URL = `${SITE_URL}/og.png`;
 
 export async function generateMetadata(): Promise<Metadata> {
   // The page row owns the public title and description; the block below is the
@@ -38,7 +38,7 @@ const BASE_METADATA: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: '/opengraph-image',
+        url: '/og.png',
         width: 1200,
         height: 630,
         alt: PAGE_TITLE,
@@ -50,7 +50,7 @@ const BASE_METADATA: Metadata = {
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     creator: '@lamirkohsa',
-    images: ['/opengraph-image'],
+    images: ['/og.png'],
   },
 };
 

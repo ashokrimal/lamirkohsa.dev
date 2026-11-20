@@ -168,6 +168,9 @@ export default function SettingsWorkspace({
           <p className="text-[11px] text-slate-500">
             Other active sessions stay signed in until their cookie expires (up to 8 hours).
           </p>
+          {/* Sign-out is a route handler that clears the cookie and redirects, so
+              it needs a full page navigation rather than client-side routing. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/admin/sign-out"
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"

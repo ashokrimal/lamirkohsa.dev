@@ -52,11 +52,12 @@ async function findProjectWithNeighbors(slug: string): Promise<
   return { status: 'ok', data: { project, nextProject } }
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string }
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const result = await findProjectWithNeighbors(params.slug)
   if (result.status === 'error') return {}
   if (result.status !== 'ok' || !result.data.project) notFound()
@@ -71,11 +72,12 @@ export async function generateMetadata({
   })
 }
 
-export default async function ProjectCaseStudyPage({
-  params,
-}: {
-  params: { slug: string }
-}) {
+export default async function ProjectCaseStudyPage(
+  props: {
+    params: Promise<{ slug: string }>
+  }
+) {
+  const params = await props.params;
   const [lookupResult, copyResult] = await Promise.all([
     findProjectWithNeighbors(params.slug),
     getPageCopy(),

@@ -4,6 +4,15 @@ const isDev = process.env.NODE_ENV === 'development' && !isVercel
 
 const nextConfig = {
   ...(isVercel ? {} : { output: 'standalone' }),
+  // node-postgres loads pg-cloudflare lazily for Workers TCP sockets. Next's
+  // output tracing only keeps the `default` export (dist/empty.js) because the
+  // dependency is optional, so the workerd build needs these files explicitly.
+  outputFileTracingIncludes: {
+    '/**/*': [
+      './node_modules/pg-cloudflare/dist/**',
+      './node_modules/.pnpm/pg-cloudflare@*/node_modules/pg-cloudflare/dist/**',
+    ],
+  },
   ...(isDev ? { distDir: '.next-dev' } : {}),
   async redirects() {
     return [

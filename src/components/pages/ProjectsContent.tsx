@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useState, type JSX } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { FolderGit2, Layers, RotateCcw, SearchX } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'

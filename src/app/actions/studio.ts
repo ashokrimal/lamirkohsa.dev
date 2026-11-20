@@ -56,7 +56,7 @@ export async function savePageMeta(input: {
     })
     .where(eq(sitePage.id, input.id))
 
-  revalidateTag(`page-${slug}`)
+  revalidateTag(`page-${slug}`, { expire: 0 })
   revalidatePath(slug)
   return { ok: true as const }
 }
@@ -80,7 +80,7 @@ export async function createPage(input: {
     })
     .returning()
 
-  revalidateTag(`page-${slug}`)
+  revalidateTag(`page-${slug}`, { expire: 0 })
   revalidatePath(slug)
   return { ok: true as const, id: row.id, slug }
 }
@@ -128,7 +128,7 @@ export async function savePageSections(input: {
     )
   }
 
-  revalidateTag(`page-${slug}`)
+  revalidateTag(`page-${slug}`, { expire: 0 })
   revalidatePath(slug)
   return { ok: true as const }
 }
@@ -183,8 +183,8 @@ export async function saveProject(input: ProjectInput) {
     })
   }
 
-  revalidateTag('projects')
-  revalidateTag(`project-${slug}`)
+  revalidateTag('projects', { expire: 0 })
+  revalidateTag(`project-${slug}`, { expire: 0 })
   revalidatePath('/')
   revalidatePath('/projects')
   revalidatePath('/work')
@@ -201,8 +201,8 @@ export async function deleteProject(id: number) {
     .limit(1)
   await db.delete(studioProject).where(eq(studioProject.id, id))
 
-  revalidateTag('projects')
-  if (row?.slug) revalidateTag(`project-${row.slug}`)
+  revalidateTag('projects', { expire: 0 })
+  if (row?.slug) revalidateTag(`project-${row.slug}`, { expire: 0 })
   revalidatePath('/')
   revalidatePath('/projects')
   revalidatePath('/work')
@@ -233,7 +233,7 @@ export async function moveProject(id: number, direction: -1 | 1) {
       .where(eq(studioProject.id, project.id))
   }
 
-  revalidateTag('projects')
+  revalidateTag('projects', { expire: 0 })
   revalidatePath('/')
   revalidatePath('/projects')
   revalidatePath('/work')
@@ -275,7 +275,7 @@ export async function saveSiteSettings(input: {
       },
     })
 
-  revalidateTag('site-settings')
+  revalidateTag('site-settings', { expire: 0 })
   revalidatePath('/', 'layout')
   return { ok: true as const }
 }

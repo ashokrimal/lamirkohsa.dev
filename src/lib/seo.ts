@@ -30,7 +30,7 @@ export const SEO_TITLE_TEMPLATE = `%s · ${SITE_NAME}`
 export const SITE_URL = resolveSiteUrl()
 
 /** The branch's generated social card, used when a CMS record has no image. */
-export const DEFAULT_OG_IMAGE = '/opengraph-image'
+export const DEFAULT_OG_IMAGE = '/og.png'
 export const DEFAULT_OG_IMAGE_WIDTH = 1200
 export const DEFAULT_OG_IMAGE_HEIGHT = 630
 

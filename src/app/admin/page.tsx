@@ -8,11 +8,12 @@ import { getAdminIdentity, hasAdminSession } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminPage({
-  searchParams,
-}: {
-  searchParams?: { section?: string; collection?: string }
-}) {
+export default async function AdminPage(
+  props: {
+    searchParams?: Promise<{ section?: string; collection?: string }>
+  }
+) {
+  const searchParams = await props.searchParams;
   const requestHeaders = await headers()
   let session = null
   try {

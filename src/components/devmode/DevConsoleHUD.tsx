@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  type JSX,
   useState,
   type ChangeEvent,
   type KeyboardEvent as ReactKeyboardEvent,

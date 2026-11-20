@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getSettingsForAdmin } from '@/app/actions/settings'
 import { hasOwnerAccess } from '@/lib/admin-auth'
@@ -32,12 +33,12 @@ export default async function AdminGitHubPage() {
             <p className="mx-auto mt-1 max-w-sm text-xs text-slate-500">
               Add your GitHub username in Settings and this page will show live activity.
             </p>
-            <a
+            <Link
               href="/admin/settings"
               className="mt-3 inline-flex items-center rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700"
             >
               Open settings
-            </a>
+            </Link>
           </div>
         )}
       </div>

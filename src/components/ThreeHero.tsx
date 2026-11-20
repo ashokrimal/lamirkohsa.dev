@@ -5,11 +5,11 @@ import * as THREE from 'three';
 
 export default function ThreeHero() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const frameRef = useRef<number>();
-  const rendererRef = useRef<THREE.WebGLRenderer>();
-  const sceneRef = useRef<THREE.Scene>();
-  const cameraRef = useRef<THREE.PerspectiveCamera>();
-  const shapeRef = useRef<THREE.Mesh>();
+  const frameRef = useRef<number | undefined>(undefined);
+  const rendererRef = useRef<THREE.WebGLRenderer | undefined>(undefined);
+  const sceneRef = useRef<THREE.Scene | undefined>(undefined);
+  const cameraRef = useRef<THREE.PerspectiveCamera | undefined>(undefined);
+  const shapeRef = useRef<THREE.Mesh | undefined>(undefined);
 
   useEffect(() => {
     const canvas = canvasRef.current;

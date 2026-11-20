@@ -15,8 +15,10 @@ export type AdminAuthActionState = { ok: true } | { ok: false; error: string }
 
 async function startSession() {
   const token = await createAdminSessionToken()
-  if (!token) throw new Error('The owner account could not start a session.')
-  cookies().set({
+  if (!token) {
+    throw new Error('The owner account could not start a session.')
+  }
+  (await cookies()).set({
     name: ADMIN_SESSION_COOKIE,
     value: token,
     httpOnly: true,

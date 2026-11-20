@@ -15,11 +15,12 @@ export const dynamic = 'force-dynamic'
  * precedence over this segment, so `/about`, `/projects` and the rest keep their
  * dedicated implementations and metadata.
  */
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string }
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const slug = `/${params.slug}`
   const studio = await getPageMetadata(slug)
   // Resolving the 404 in metadata keeps the response status correct before any
@@ -32,7 +33,8 @@ export async function generateMetadata({
   )
 }
 
-export default async function StudioManagedPage({ params }: { params: { slug: string } }) {
+export default async function StudioManagedPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const slug = `/${params.slug}`
   const result = await getPageWithSections(slug)
 

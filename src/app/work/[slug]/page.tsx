@@ -10,11 +10,12 @@ import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageC
 
 export const dynamic = 'force-dynamic'
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string }
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const project = await getProjectBySlug(params.slug)
   if (!project) notFound()
   return articleMetadata({
@@ -26,11 +27,12 @@ export async function generateMetadata({
 }
 
 /** Case study detail, fed entirely by the studio `projects` table. */
-export default async function WorkCaseStudyPage({
-  params,
-}: {
-  params: { slug: string }
-}) {
+export default async function WorkCaseStudyPage(
+  props: {
+    params: Promise<{ slug: string }>
+  }
+) {
+  const params = await props.params;
   const project = await getProjectBySlug(params.slug)
   if (!project) notFound()
 

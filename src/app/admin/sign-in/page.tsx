@@ -4,11 +4,12 @@ import { hasAdminSession, isAdminAuthConfigured } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminSignInPage({
-  searchParams,
-}: {
-  searchParams?: { returnTo?: string }
-}) {
+export default async function AdminSignInPage(
+  props: {
+    searchParams?: Promise<{ returnTo?: string }>
+  }
+) {
+  const searchParams = await props.searchParams;
   const requested = searchParams?.returnTo
   const returnTo = requested && requested.startsWith('/admin') && !requested.startsWith('//') ? requested : '/admin'
 
