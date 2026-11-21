@@ -214,6 +214,9 @@ exits non-zero only for missing or unusable seed output; reordering, disabled
 sections, re-copied content and owner-added sections are reported as warnings,
 because those are normal edits.
 
+[docs/](docs/README.md) indexes the runbooks — seeding, BugSmash, CMS sections
+on pages that predate the studio, and which checks need a database.
+
 [docs/studio-seed.md](docs/studio-seed.md) is the production runbook: where to
 copy `DATABASE_URL`, the backup command, the verification queries for section
 counts and ordering, cache behaviour after seeding, and troubleshooting for
