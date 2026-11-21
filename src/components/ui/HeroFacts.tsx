@@ -1,4 +1,6 @@
-import { uiStrings } from '@/lib/ui-strings'
+'use client'
+
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 
 export interface HeroStat {
   label: string
@@ -18,6 +20,7 @@ export function HeroFacts({
   location?: string
   embedded?: boolean
 }) {
+  const uiStrings = useUiStrings()
   const lines = (location || '')
     .split('\n')
     .map((line) => line.trim())

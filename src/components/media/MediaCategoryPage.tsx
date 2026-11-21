@@ -6,7 +6,7 @@ import { BookOpen, Disc3, Film, Tv, type LucideIcon } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_MEDIA_RECORDS } from '@/lib/cms-schema'
-import { uiStrings } from '@/lib/ui-strings'
+import { getUiCopy } from '@/lib/ui-copy'
 
 
 const COPY_KEY: Record<MediaKind, string> = {
@@ -25,6 +25,7 @@ const MEDIA_ICONS: Record<MediaKind, LucideIcon> = {
 
 /** The complete listing for one media category. All records come from the CMS. */
 export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
+  const uiStrings = await getUiCopy()
   const [copyResult, collectionsResult] = await Promise.all([
     getPageCopy(),
     getMediaCollections(),

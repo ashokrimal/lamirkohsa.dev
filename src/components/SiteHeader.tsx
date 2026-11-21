@@ -7,7 +7,7 @@ import { Menu, X } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import type { ContactDetails, SiteBrand, SiteNavigation } from '@/lib/site-content'
 import { SITE_NAME } from '@/lib/seo'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 export default function SiteHeader({
@@ -19,6 +19,7 @@ export default function SiteHeader({
   navigation: SiteNavigation
   contact: ContactDetails
 }) {
+  const uiStrings = useUiStrings()
   const [isOpen, setIsOpen] = useState(false)
   const [localTime, setLocalTime] = useState<string>('')
   const pathname = usePathname()

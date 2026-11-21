@@ -4,7 +4,7 @@ import { getGalleryResult } from '@/lib/gallery'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_SCHEMA } from '@/lib/cms-schema'
-import { uiStrings } from '@/lib/ui-strings'
+import { getUiCopy } from '@/lib/ui-copy'
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
 import { getPageCopy } from '@/lib/site-content'
@@ -18,6 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function GalleryPage() {
+  const uiStrings = await getUiCopy()
   const [galleryResult, copyResult] = await Promise.all([getGalleryResult(), getPageCopy()])
   const pageCopy = copyResult.status === 'ok' ? copyResult.data.gallery : undefined
   const photos = galleryResult.status === 'ok' ? galleryResult.data : []

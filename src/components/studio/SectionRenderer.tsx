@@ -7,7 +7,7 @@ import { getMediaCollections } from '@/lib/site-content'
 import { getMediaSections } from '@/lib/media-content'
 import { getProjectsResult } from '@/lib/projects'
 import { getPublishedProjects, type StudioProject } from '@/lib/studio/data'
-import { uiStrings } from '@/lib/ui-strings'
+import { getUiCopy } from '@/lib/ui-copy'
 import { MediaShelf, type MediaShelfEntry } from '@/components/ui/MediaShelf'
 import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -344,6 +344,7 @@ export async function GithubSectionBody({ content }: { content: SectionContent }
  * chrome always carries a CTA, so every section has a working next step.
  */
 export async function SectionRenderer({ sections }: { sections: StudioPageSection[] }) {
+  const uiStrings = await getUiCopy()
   const visible = sections
     .filter((section) => section.isEnabled)
     .slice()

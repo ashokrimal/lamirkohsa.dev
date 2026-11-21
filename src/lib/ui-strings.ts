@@ -192,6 +192,74 @@ export const uiStrings = {
   },
 } as const
 
+/** One label the CMS can override. Generated strings (counts, interpolations) are not listed. */
+export interface UiCopyEntry {
+  key: string
+  en: string
+  kr?: string
+}
+
+/** CMS overrides, keyed by the dotted path of the label (`nav.openMenu`). */
+export type UiCopyOverrides = Record<string, { en?: string; kr?: string }>
+
+function walkCopy(
+  node: unknown,
+  prefix: string,
+  visit: (entry: UiCopyEntry) => void,
+): void {
+  if (!node || typeof node !== 'object') return
+  const candidate = node as UiText
+  if (typeof candidate.en === 'string') {
+    visit({
+      key: prefix,
+      en: candidate.en,
+      ...(candidate.kr ? { kr: candidate.kr } : {}),
+    })
+    return
+  }
+  for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+    walkCopy(value, prefix ? `${prefix}.${key}` : key, visit)
+  }
+}
+
+function mergeCopy(
+  node: unknown,
+  prefix: string,
+  overrides: UiCopyOverrides,
+): unknown {
+  if (!node || typeof node !== 'object') return node
+  const candidate = node as UiText
+  if (typeof candidate.en === 'string') {
+    const override = overrides[prefix]
+    if (!override) return node
+    const en = override.en?.trim() || candidate.en
+    const kr = override.kr?.trim() || candidate.kr
+    return kr ? { en, kr } : { en }
+  }
+  const merged: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+    merged[key] = mergeCopy(value, prefix ? `${prefix}.${key}` : key, overrides)
+  }
+  return merged
+}
+
+/** Every editable label with its built-in fallback, for the admin editor. */
+export function flattenUiStrings(): UiCopyEntry[] {
+  const entries: UiCopyEntry[] = []
+  walkCopy(uiStrings, '', (entry) => entries.push(entry))
+  return entries
+}
+
+/**
+ * Applies CMS overrides on top of the built-in labels. A missing or empty
+ * override keeps the literal from this file, so the interface never shows a
+ * blank label.
+ */
+export function resolveUiStrings(overrides: UiCopyOverrides): typeof uiStrings {
+  if (Object.keys(overrides).length === 0) return uiStrings
+  return mergeCopy(uiStrings, '', overrides) as unknown as typeof uiStrings
+}
+
 /** The filename-safe Korean/English pair, for content rendered in a `<span lang="ko">`. */
 export function korean(value: UiText): string | undefined {
   return value.kr

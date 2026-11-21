@@ -8,7 +8,7 @@ import { CMS_SETTINGS_RECORDS } from '@/lib/cms-schema'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
-import { uiStrings } from '@/lib/ui-strings'
+import { getUiCopy } from '@/lib/ui-copy'
 
 /**
  * The homepage.
@@ -34,6 +34,8 @@ export default async function HomeContent() {
     const raw = profile[key]
     return typeof raw === 'string' && raw.trim() ? raw : undefined
   }
+
+  const uiStrings = await getUiCopy()
 
   const displayName = profileText('fullName') || site.brand.name || ''
   const heroHeading = heroData.heading?.trim() || displayName

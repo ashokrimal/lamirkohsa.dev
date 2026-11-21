@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { ArrowUpRight, Github, Globe, Linkedin, Mail, Twitter } from 'lucide-react'
 import type {
@@ -7,7 +9,7 @@ import type {
   SiteNavigation,
 } from '@/lib/site-content'
 import { SITE_NAME } from '@/lib/seo'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 
 const icons = {
   github: Github,
@@ -53,6 +55,7 @@ export default function SiteFooter({
   /** Studio-managed availability badge. */
   availabilityStatus?: string
 }) {
+  const uiStrings = useUiStrings()
   const year = new Date().getFullYear()
   const studioSocials = (socialLinks ?? [])
     .filter((link) => link.is_visible && link.url.trim().length > 0)

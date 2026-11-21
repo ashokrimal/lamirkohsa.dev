@@ -116,6 +116,7 @@ const object = (key: string, label: string): CmsFieldDefinition => ({
 export const CMS_COLLECTIONS = {
   siteSettings: 'Site Settings',
   pageCopy: 'Page Copy',
+  uiCopy: 'UI Copy',
   mediaCollections: 'Media Collections',
   profile: 'Profile',
   projects: 'Projects',
@@ -340,6 +341,19 @@ export const CMS_SCHEMA: CmsSchema = {
       emptyState: {
         message: 'Page headings are not published yet.',
         hint: 'Custom section introductions and descriptions will appear here once published.',
+      },
+    },
+
+    uiCopy: {
+      name: CMS_COLLECTIONS.uiCopy,
+      label: 'UI Copy',
+      keyed: true,
+      required: false,
+      requiredFields: [text('value', 'Text', true)],
+      optionalFields: [text('korean', 'Korean text')],
+      emptyState: {
+        message: 'Interface labels still use the built-in text.',
+        hint: 'Override any label in the UI Copy editor; untouched labels keep their default wording.',
       },
     },
 

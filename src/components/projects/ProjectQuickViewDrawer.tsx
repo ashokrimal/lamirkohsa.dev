@@ -20,7 +20,7 @@ import type { ProjectEntry } from '@/lib/projects'
 import type { CmsTechDefinition } from '@/lib/tech-metadata'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 import { isRepositoryUrl } from '@/lib/urls'
 
 export type QuickViewProject = ProjectData & Partial<Omit<ProjectEntry, 'id' | 'phases'>>
@@ -38,6 +38,7 @@ export function ProjectQuickViewDrawer({
   globalTechDefinitions,
   onClose,
 }: ProjectQuickViewDrawerProps) {
+  const uiStrings = useUiStrings()
   const reduceMotion = useReducedMotion()
   const titleId = useId()
   const closeButtonRef = useRef<HTMLButtonElement>(null)

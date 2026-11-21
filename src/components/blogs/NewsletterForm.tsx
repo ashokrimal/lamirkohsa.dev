@@ -4,12 +4,17 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight, CheckCircle2, Loader2, Mail, X } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 
 const EASE_SETTLE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 export default function NewsletterForm() {
+  const uiStrings = useUiStrings()
+  const failedMessage = uiStrings.journal.newsletterFailed.en
+  const alreadySubscribedMessage = uiStrings.journal.newsletterAlreadySubscribed.en
+  const successMessageText = uiStrings.journal.newsletterSuccess.en
+  const invalidEmailMessage = uiStrings.journal.newsletterInvalidEmail.en
   const reduceMotion = useReducedMotion()
   const emailInputId = useId()
   const [email, setEmail] = useState('')
@@ -38,7 +43,7 @@ export default function NewsletterForm() {
       const normalizedEmail = email.trim().toLowerCase()
       if (!normalizedEmail || !EMAIL_PATTERN.test(normalizedEmail)) {
         setSuccessMessage(null)
-        setError(uiStrings.journal.newsletterInvalidEmail.en)
+        setError(invalidEmailMessage)
         return
       }
 
@@ -65,15 +70,15 @@ export default function NewsletterForm() {
         }
 
         if (!response.ok) {
-          throw new Error(payload.error ?? uiStrings.journal.newsletterFailed.en)
+          throw new Error(payload.error ?? failedMessage)
         }
 
         setEmail('')
         setSuccessMessage(
           payload.message ??
             (payload.alreadySubscribed
-              ? uiStrings.journal.newsletterAlreadySubscribed.en
-              : uiStrings.journal.newsletterSuccess.en),
+              ? alreadySubscribedMessage
+              : successMessageText),
         )
         sensoryAudio.playChime()
 
@@ -82,12 +87,21 @@ export default function NewsletterForm() {
           timerRef.current = null
         }, 7000)
       } catch (err) {
-        setError(err instanceof Error ? err.message : uiStrings.journal.newsletterFailed.en)
+        setError(err instanceof Error ? err.message : failedMessage)
       } finally {
         setIsSubmitting(false)
       }
     },
-    [clearTimer, email, honeypot, isSubmitting],
+    [
+      alreadySubscribedMessage,
+      clearTimer,
+      email,
+      failedMessage,
+      honeypot,
+      invalidEmailMessage,
+      isSubmitting,
+      successMessageText,
+    ],
   )
 
   return (

@@ -8,7 +8,7 @@ import { normalizeFilterToken } from '@/components/ui/ProjectFilter'
 import { extractProjectTechTags, type ProjectEntry } from '@/lib/projects'
 import { mergeCmsTechDefinitions, resolveTechUsageMetadata } from '@/lib/tech-metadata'
 import { sensoryAudio } from '@/lib/sensory-audio'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 
 interface TechDistributionChartProps {
   projects: ProjectEntry[]
@@ -52,6 +52,7 @@ export function TechDistributionChart({
   onToggleTech,
   compact = false,
 }: TechDistributionChartProps) {
+  const uiStrings = useUiStrings()
   const reduceMotion = useReducedMotion()
   const [hoveredNormalized, setHoveredNormalized] = useState<string | null>(null)
 
@@ -112,7 +113,7 @@ export function TechDistributionChart({
       totalUsages: usageSum,
       uniqueTechCount: tags.length,
     }
-  }, [projects, globalTechDefinitions])
+  }, [projects, globalTechDefinitions, uiStrings])
 
   const arcs = useMemo(() => {
     if (slices.length === 0) return []

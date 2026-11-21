@@ -7,7 +7,7 @@ import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChro
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_COLLECTIONS, CMS_SCHEMA, type CmsResult } from '@/lib/cms-schema'
-import { uiStrings } from '@/lib/ui-strings'
+import { getUiCopy } from '@/lib/ui-copy'
 import { articleMetadata } from '@/lib/seo'
 import { NotebookPen } from 'lucide-react'
 
@@ -56,6 +56,7 @@ export async function generateMetadata(
     params: Promise<{ slug: string }>
   }
 ): Promise<Metadata> {
+  const uiStrings = await getUiCopy()
   const params = await props.params;
   const result = await findBlog(params.slug)
   if (result.status === 'error') return { title: uiStrings.journal.label.en }
@@ -85,6 +86,7 @@ export async function generateMetadata(
 }
 
 export default async function BlogArticlePage(props: { params: Promise<{ slug: string }> }) {
+  const uiStrings = await getUiCopy()
   const params = await props.params;
   const result = await findBlog(params.slug)
   if (result.status === 'error') {

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Check, CheckCircle2, Share2, X } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 
 interface ShareProjectButtonProps {
   projectTitle: string
@@ -42,6 +42,7 @@ async function copyTextToClipboard(text: string): Promise<boolean> {
 }
 
 export function ShareProjectButton({ projectTitle, slug }: ShareProjectButtonProps) {
+  const uiStrings = useUiStrings()
   const reduceMotion = useReducedMotion()
   const [mounted, setMounted] = useState(false)
   const [copied, setCopied] = useState(false)

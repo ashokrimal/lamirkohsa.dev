@@ -14,7 +14,7 @@ import {
   resolveTechUsageMetadata,
   type CmsTechDefinition,
 } from '@/lib/tech-metadata'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 
 export interface FilterOption {
   value: string
@@ -110,6 +110,7 @@ export function ProjectFilterControls({
   onToggleFilters,
   onClearAll,
 }: ProjectFilterControlsProps) {
+  const uiStrings = useUiStrings()
   return (
     <>
       <div className="relative flex-1 min-w-[120px] max-w-[240px] sm:max-w-xs">
@@ -221,6 +222,7 @@ export function ProjectFilterPanel({
   onToggleTech,
   onClear,
 }: ProjectFilterPanelProps) {
+  const uiStrings = useUiStrings()
   const [showAllTechs, setShowAllTechs] = useState(false)
   const reduceMotion = useReducedMotion()
 

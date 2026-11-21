@@ -7,6 +7,8 @@ import { ScrollProgress } from '@/components/ui/ScrollProgress';
 import { SmoothScroll } from '@/components/SmoothScroll';
 import { EMPTY_SITE_CONFIG, getSiteConfig } from '@/lib/site-content';
 import { getSiteSettings } from '@/lib/studio/data';
+import { getUiCopyOverrides } from '@/lib/ui-copy';
+import { UiCopyProvider } from '@/components/ui/UiCopyProvider';
 import {
   DEFAULT_OG_IMAGE,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -99,6 +101,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   // Footer socials, email and availability come from the studio's single-row
   // settings table; the fallback keeps the configured CMS values until seeded.
   const studioSettings = await getSiteSettings()
+  // Interface labels are CMS copy too; missing records keep the built-in text.
+  const uiCopyOverrides = await getUiCopyOverrides()
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
@@ -110,6 +114,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body className="leading-relaxed tracking-wide">
         <ThemeProvider>
+          <UiCopyProvider overrides={uiCopyOverrides}>
           <ScrollProgress />
           <SmoothScroll />
           <LayoutShell
@@ -120,6 +125,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           >
             {children}
           </LayoutShell>
+          </UiCopyProvider>
         </ThemeProvider>
       </body>
     </html>

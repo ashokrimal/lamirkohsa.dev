@@ -1,10 +1,12 @@
+'use client'
+
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PageHeroMotion } from '@/components/ui/PageHeroMotion'
 import { SectionHeader } from '@/components/ui/SectionHeader'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 
 /**
  * The shared page frame. Every public page renders through these primitives so
@@ -108,7 +110,7 @@ export function PageSection({
 
 export function PageNav({
   backHref,
-  backLabel = uiStrings.pageNav.back.en,
+  backLabel,
   nextHref,
   nextLabel,
 }: {
@@ -118,6 +120,8 @@ export function PageNav({
   nextHref?: string
   nextLabel?: string
 }) {
+  const uiStrings = useUiStrings()
+  const resolvedBackLabel = backLabel ?? uiStrings.pageNav.back.en
   if (!backHref && !(nextHref && nextLabel)) return null
 
   return (
@@ -127,7 +131,7 @@ export function PageNav({
           href={backHref}
           className="inline-flex items-center gap-1.5 text-muted hover:text-ink transition-colors"
         >
-          ← {backLabel}
+          ← {resolvedBackLabel}
         </Link>
       ) : (
         <span />

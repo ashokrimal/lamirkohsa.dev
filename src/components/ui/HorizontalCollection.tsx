@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 
 export interface HorizontalCollectionProps {
   /** Cards in display order. Only the first `previewCount` are rendered. */
@@ -36,6 +36,7 @@ export function HorizontalCollection({
   ariaLabel,
   className = '',
 }: HorizontalCollectionProps) {
+  const uiStrings = useUiStrings()
   const limit = Math.max(1, previewCount)
   const visible = items.slice(0, limit)
   // Only offer "View all" when there is actually more to see.

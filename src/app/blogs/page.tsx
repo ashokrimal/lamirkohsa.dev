@@ -8,7 +8,7 @@ import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChro
 import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
 import { toSlug } from '@/lib/slug'
 import { getPageCopy } from '@/lib/site-content'
-import { uiStrings } from '@/lib/ui-strings'
+import { getUiCopy } from '@/lib/ui-copy'
 import { pageMetadata } from '@/lib/seo'
 import NewsletterForm from '@/components/blogs/NewsletterForm'
 
@@ -46,10 +46,11 @@ type Blog = {
  */
 function calculateReadingTime(
   content: string,
+  minRead: (minutes: number) => string,
   wordsPerMinute: number = 200,
 ): { minutes: number; text: string; words: number } {
   if (!content || typeof content !== 'string') {
-    return { minutes: 1, text: uiStrings.journal.minRead(1), words: 0 }
+    return { minutes: 1, text: minRead(1), words: 0 }
   }
 
   // Strip HTML tags and markdown formatting to count real words
@@ -64,7 +65,7 @@ function calculateReadingTime(
 
   return {
     minutes,
-    text: uiStrings.journal.minRead(minutes),
+    text: minRead(minutes),
     words,
   }
 }
@@ -99,6 +100,7 @@ function getBlogDate(blog: Blog): string | undefined {
 }
 
 export default async function BlogsPage() {
+  const uiStrings = await getUiCopy()
   const [blogsResult, copyResult] = await Promise.all([
     getPublishedCmsContentResult(CMS_COLLECTIONS.blogs),
     getPageCopy(),
@@ -130,7 +132,10 @@ export default async function BlogsPage() {
           {blogs.map((blog, index) => {
             const body = getBlogText(blog)
             // Reading time is based on post title + body content
-            const readingTime = calculateReadingTime(`${blog.title}. ${body}`)
+            const readingTime = calculateReadingTime(
+              `${blog.title}. ${body}`,
+              uiStrings.journal.minRead,
+            )
             const category = getBlogCategory(blog)
             const date = getBlogDate(blog)
             const href = `/blogs/${blog.slug || toSlug(blog.title)}`

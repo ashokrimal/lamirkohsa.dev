@@ -6,7 +6,7 @@ import { Card3D } from '@/components/ui/Card3D'
 import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 import { isRepositoryUrl } from '@/lib/urls'
 import type { CmsTechDefinition } from '@/lib/tech-metadata'
 
@@ -49,6 +49,7 @@ export function ProjectCard({
   index,
   onQuickView,
 }: ProjectCardProps) {
+  const uiStrings = useUiStrings()
   const isFeatured = variant === 'featured' || project.featured
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
   const sourceUrl = isRepositoryUrl(project.github) ? project.github : undefined

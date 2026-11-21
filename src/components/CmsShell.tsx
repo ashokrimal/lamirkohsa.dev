@@ -30,6 +30,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   MoreHorizontal,
+  Type,
 } from 'lucide-react'
 import { CmsCommandPalette } from '@/components/admin/ui/CmsCommandPalette'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
@@ -73,6 +74,7 @@ const navGroups: NavGroup[] = [
     label: 'Studio',
     items: [
       { id: 'pages', label: 'Pages & sections', icon: Layers, href: '/admin/pages' },
+      { id: 'ui-copy', label: 'UI copy', icon: Type, href: '/admin/ui-copy' },
       { id: 'work', label: 'Case studies', icon: FolderKanban, href: '/admin/work' },
       { id: 'site-settings', label: 'Site settings', icon: Globe2, href: '/admin/site-settings' },
       { id: 'hero', label: 'Hero section', icon: Sparkles, href: '/admin?section=hero' },

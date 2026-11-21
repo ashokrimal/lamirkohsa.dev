@@ -10,7 +10,7 @@ import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSections } from '@/lib/media-content'
 import { getPageWithSections } from '@/lib/studio/data'
 import { SectionRenderer } from '@/components/studio/SectionRenderer'
-import { uiStrings } from '@/lib/ui-strings'
+import { getUiCopy } from '@/lib/ui-copy'
 
 const PREVIEW_COUNT = 5
 
@@ -27,6 +27,7 @@ const MEDIA_ICONS: Record<MediaKind, LucideIcon> = {
  * section is configured with `layout: index`.
  */
 export async function MediaCollectionsBody() {
+  const uiStrings = await getUiCopy()
   const [copyResult, collectionsResult] = await Promise.all([
     getPageCopy(),
     getMediaCollections(),

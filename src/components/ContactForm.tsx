@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { CheckCircle2, Send, X } from 'lucide-react';
 import { sensoryAudio } from '@/lib/sensory-audio';
-import { uiStrings } from '@/lib/ui-strings';
+import { useUiStrings } from '@/components/ui/UiCopyProvider';
 
 type ContactFormProps = {
   /** Reply-time promise from Site Settings; hidden when not configured. */
@@ -38,8 +38,12 @@ const fieldItemVariants = {
 
 export default function ContactForm({
   responseTime,
-  onSuccessMessage = uiStrings.contact.success.en,
+  onSuccessMessage,
 }: ContactFormProps) {
+  const uiStrings = useUiStrings();
+  const successMessage = onSuccessMessage ?? uiStrings.contact.success.en;
+  const genericErrorMessage = uiStrings.contact.genericError.en;
+  const sendFailedMessage = uiStrings.contact.sendFailed.en;
   const reduceMotion = useReducedMotion();
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,7 +91,7 @@ export default function ContactForm({
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data.error ?? uiStrings.contact.genericError.en);
+          throw new Error(data.error ?? genericErrorMessage);
         }
 
         form.reset();
@@ -98,14 +102,13 @@ export default function ContactForm({
           successTimerRef.current = null;
         }, 6500);
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : uiStrings.contact.sendFailed.en;
+        const message = err instanceof Error ? err.message : sendFailedMessage;
         setError(message);
       } finally {
         setIsSubmitting(false);
       }
     },
-    [clearSuccessTimer, isSubmitting]
+    [clearSuccessTimer, genericErrorMessage, isSubmitting, sendFailedMessage]
   );
 
   return (
@@ -259,7 +262,7 @@ export default function ContactForm({
               </motion.span>
               <div className="space-y-0.5">
                 <p className="font-semibold text-xs">Message received</p>
-                <p className="leading-relaxed opacity-90">{onSuccessMessage}</p>
+                <p className="leading-relaxed opacity-90">{successMessage}</p>
               </div>
             </div>
             <button

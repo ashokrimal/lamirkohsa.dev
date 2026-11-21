@@ -6,7 +6,7 @@ import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
 import { getProjectStatusVisual } from '@/lib/project-status'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { toSlug } from '@/lib/slug'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 import type { ProjectData } from '@/components/ui/ProjectCard'
 
 interface ProjectRowProps {
@@ -24,6 +24,7 @@ export function ProjectRow({
   index,
   onQuickView,
 }: ProjectRowProps) {
+  const uiStrings = useUiStrings()
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
   const summary = project.summary || project.description
   const reversed = index % 2 === 1

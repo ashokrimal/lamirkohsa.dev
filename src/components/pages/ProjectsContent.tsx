@@ -27,7 +27,7 @@ import {
 import type { ProjectEntry, ProjectFilterTag } from '@/lib/projects'
 import { mergeCmsTechDefinitions } from '@/lib/tech-metadata'
 import type { PageCopy } from '@/lib/site-content'
-import { uiStrings } from '@/lib/ui-strings'
+import { useUiStrings } from '@/components/ui/UiCopyProvider'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import { ProjectQuickViewDrawer } from '@/components/projects/ProjectQuickViewDrawer'
 
@@ -50,6 +50,7 @@ export default function ProjectsContent({
   copy,
   error,
 }: ProjectsContentProps) {
+  const uiStrings = useUiStrings()
   const { mode, registerPageSections, getSectionOrder } = useDevMode()
   const reduceMotion = useReducedMotion()
 
