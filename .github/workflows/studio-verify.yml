@@ -19,17 +19,18 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: pnpm/action-setup@v4
         with:
-          bun-version: 1.4.4
+          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: '20.18.1'
-      - run: bun install --frozen-lockfile
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Verify seeded studio content
         run: |
           if [ -z "$DATABASE_URL" ]; then
             echo "::warning::DATABASE_URL is not configured; skipping the studio seed verification."
             exit 0
           fi
-          bun run studio:verify -- --gate
+          pnpm run studio:verify -- --gate
