@@ -266,6 +266,10 @@ export const uiStrings = {
   },
   gallery: {
     photographs: generated('gallery.photographs'),
+    /** SnapWidget id; clear it to hide the Instagram feed entirely. */
+    instagramWidgetId: text('af4c3d7e-f2b1-4586-9195-259b504fef68'),
+    instagramTitle: text('Latest from Instagram'),
+    instagramDescription: text('New frames and outtakes, posted between gallery updates.'),
     collectionAria: text('Photography collection'),
   },
   media: {

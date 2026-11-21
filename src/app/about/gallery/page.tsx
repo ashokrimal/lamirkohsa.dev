@@ -6,6 +6,7 @@ import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_SCHEMA } from '@/lib/cms-schema'
 import { getUiCopy } from '@/lib/ui-copy'
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
+import { InstagramFeed } from '@/components/ui/InstagramFeed'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
 import { getPageCopy } from '@/lib/site-content'
@@ -53,6 +54,12 @@ export default async function GalleryPage() {
           />
         )}
       </div>
+
+      <InstagramFeed
+        widgetId={uiStrings.gallery.instagramWidgetId.en}
+        title={uiStrings.gallery.instagramTitle.en}
+        description={uiStrings.gallery.instagramDescription.en}
+      />
 
       <PageNav />
     </PageShell>
