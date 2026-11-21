@@ -7,6 +7,9 @@ node_modules
 dist
 .env
 coverage
+# Screenshots and visual-pass output from local checks.
+artifacts/
+
 npm-debug.log
 yarn-error.log
 .idea
