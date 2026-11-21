@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowUpRight, Code2, Compass, Film, FolderGit2, Github, PieChart, Sparkles, TrendingUp, User } from 'lucide-react'
 import { getProfileContentResult } from '@/app/actions/content-cms'
 import { getPublicProfileSettingsResult } from '@/app/actions/media'
-import { getMediaCollections } from '@/lib/site-content'
+import { getMediaCollections, getSiteConfig, instagramProfileHref } from '@/lib/site-content'
 import { getMediaSections } from '@/lib/media-content'
 import { getProjectsResult } from '@/lib/projects'
 import { getPublishedProjects, type StudioProject } from '@/lib/studio/data'
@@ -361,6 +361,19 @@ export async function SectionRenderer({ sections }: { sections: StudioPageSectio
     .slice()
     .sort((a, b) => a.sortOrder - b.sortOrder)
 
+  // An Instagram section without its own CTA still needs somewhere to point,
+  // so it borrows the profile link saved in the site's social links.
+  const instagramNeedsHref = visible.some(
+    (section) =>
+      section.sectionKey === 'instagram' &&
+      !(section.content as SectionContent).ctaHref?.trim(),
+  )
+  const siteResult = instagramNeedsHref ? await getSiteConfig() : null
+  const instagramHref =
+    siteResult && siteResult.status === 'ok'
+      ? instagramProfileHref(siteResult.data.navigation.socials)
+      : undefined
+
   if (visible.length === 0) {
     return (
       <p className="mt-12 rounded-xl border border-dashed border-line-subtle px-5 py-6 text-sm text-muted">
@@ -415,6 +428,7 @@ export async function SectionRenderer({ sections }: { sections: StudioPageSectio
 
         if (!body) return null
 
+        const isInstagram = section.sectionKey === 'instagram'
         const sectionNode = (
           <PageSection
             key={section.sectionKey}
@@ -425,8 +439,13 @@ export async function SectionRenderer({ sections }: { sections: StudioPageSectio
             title={content.title ?? section.sectionKey}
             accent={content.accent}
             description={content.description}
-            linkHref={content.ctaHref}
-            linkLabel={content.ctaLabel || uiStrings.projects.viewAll.en}
+            linkHref={content.ctaHref?.trim() || (isInstagram ? instagramHref : undefined)}
+            linkLabel={
+              content.ctaLabel ||
+              (isInstagram
+                ? uiStrings.gallery.instagramFollowLabel.en
+                : uiStrings.projects.viewAll.en)
+            }
           >
             {body}
           </PageSection>

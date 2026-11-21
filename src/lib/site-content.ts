@@ -103,6 +103,17 @@ export interface SiteConfig {
   contact: ContactDetails
 }
 
+/**
+ * The Instagram profile URL from the site's social links, used as the gallery
+ * feed's follow target. Matches on platform, label or href so any of the three
+ * naming styles the CMS allows still resolves.
+ */
+export function instagramProfileHref(socials: SiteSocial[]): string | undefined {
+  return socials.find((social) =>
+    /instagram/i.test(`${social.kind ?? ''} ${social.label} ${social.href}`),
+  )?.href
+}
+
 function text(payload: Record<string, unknown> | undefined, key: string): string | undefined {
   const value = payload?.[key]
   return typeof value === 'string' && value.trim() ? value : undefined

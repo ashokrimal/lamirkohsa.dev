@@ -9,7 +9,7 @@ import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import { InstagramFeed } from '@/components/ui/InstagramFeed'
 import { SectionRenderer } from '@/components/studio/SectionRenderer'
 import { getPageWithSections } from '@/lib/studio/data'
-import { getSiteConfig } from '@/lib/site-content'
+import { getSiteConfig, instagramProfileHref } from '@/lib/site-content'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
 import { getPageCopy } from '@/lib/site-content'
@@ -38,9 +38,7 @@ export default async function GalleryPage() {
     (section) => section.sectionKey === 'instagram' && section.isEnabled,
   )
   const socials = siteResult.status === 'ok' ? siteResult.data.navigation.socials : []
-  const instagramHref = socials.find((social) =>
-    /instagram/i.test(`${social.kind ?? ''} ${social.label} ${social.href}`),
-  )?.href
+  const instagramHref = instagramProfileHref(socials)
 
   return (
     <PageShell>
