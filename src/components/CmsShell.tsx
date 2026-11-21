@@ -91,9 +91,9 @@ const navGroups: NavGroup[] = [
   },
 ]
 
-// The compact bar carries the three places the owner checks daily; everything
-// else stays one tap away behind More.
-const mobileNavItems: NavItem[] = [
+// The three places the owner checks daily. Mobile keeps them in the bottom bar
+// and desktop in the top navigation, so the sidebar never repeats them.
+const primaryNavItems: NavItem[] = [
   { id: 'home', label: 'Home', icon: LayoutDashboard, href: '/admin' },
   { id: 'dashboard', label: 'Dashboard', icon: Gauge, href: '/admin?section=content' },
   { id: 'inbox', label: 'Inbox', icon: Inbox, href: '/admin/inbox' },
@@ -146,6 +146,14 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
     if (path !== '/admin') return pathname === path || pathname.startsWith(`${path}/`)
     return pathname === path
   }
+
+  const primaryHrefs = new Set(primaryNavItems.map(hrefFor))
+  const sidebarGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !primaryHrefs.has(hrefFor(item))),
+    }))
+    .filter((group) => group.items.length > 0)
 
   const activeItem = navGroups.flatMap((group) => group.items).find(isActive)
   const currentLabel = activeItem?.label ?? pathname.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') ?? 'Studio'
@@ -252,7 +260,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <nav className="flex-1 space-y-5 overflow-y-auto px-2.5 py-3" aria-label="Main sidebar navigation">
-            {navGroups.map((group) => (
+            {sidebarGroups.map((group) => (
               <div key={group.label} className="space-y-1">
                 <h3 className={`px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 ${collapsed ? 'lg:hidden' : ''}`}>
                   {group.label}
@@ -341,48 +349,87 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
         )}
 
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
-          <header className="sticky top-0 z-30 hidden items-center justify-between border-b border-slate-200/80 bg-white/95 px-8 py-3.5 backdrop-blur-md lg:flex">
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <Link href="/admin" className="font-medium hover:text-slate-800">
-                Studio &amp; Vault
-              </Link>
-              <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
-              <span className="font-semibold capitalize text-slate-800">{currentLabel}</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setNotificationsOpen(!notificationsOpen)}
-                  className="relative rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
-                  aria-label="View notifications"
-                >
-                  <Bell className="h-4 w-4" />
-                </button>
-
-                {notificationsOpen && (
-                  <div className="absolute right-0 z-50 mt-2 w-80 animate-in rounded-xl border border-slate-200 bg-white p-3 shadow-xl fade-in-0 zoom-in-95">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-2 text-xs">
-                      <span className="font-semibold text-slate-800">Activity &amp; notifications</span>
-                      <button type="button" onClick={() => setNotificationsOpen(false)} className="text-[11px] text-teal-700 hover:underline">
-                        Close
-                      </button>
-                    </div>
-                    <p className="px-4 py-6 text-center text-[11px] text-slate-500">No new activity.</p>
-                  </div>
-                )}
+          <header className="sticky top-0 z-30 hidden border-b border-slate-200/80 bg-white/95 backdrop-blur-md lg:block">
+            <div className="flex items-center justify-between gap-4 px-6 py-2.5">
+              <div className="flex min-w-0 items-center gap-2 text-xs text-slate-500">
+                <Link href="/admin" className="font-medium hover:text-slate-800">
+                  Studio &amp; Vault
+                </Link>
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                <span className="truncate font-semibold capitalize text-slate-800">{currentLabel}</span>
               </div>
 
-              <a
-                href="https://ashokrimal.com.np"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
+              <nav
+                aria-label="Primary studio navigation"
+                className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50/80 p-0.5"
               >
-                <span>Preview site</span>
-                <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
-              </a>
+                {primaryNavItems.map((item) => {
+                  const Icon = item.icon
+                  const active = isActive(item)
+                  return (
+                    <Link
+                      key={item.id}
+                      href={hrefFor(item)}
+                      aria-current={active ? 'page' : undefined}
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                        active
+                          ? 'bg-white font-semibold text-teal-800 shadow-xs'
+                          : 'text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      <Icon className={`h-3.5 w-3.5 ${active ? 'text-teal-600' : 'text-slate-400'}`} />
+                      <span>{item.label}</span>
+                    </Link>
+                  )
+                })}
+              </nav>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCommandPaletteOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-800"
+                  aria-label="Search dashboard"
+                >
+                  <Search className="h-3.5 w-3.5" />
+                  <kbd className="rounded border border-slate-200 bg-slate-50 px-1 font-mono text-[10px] text-slate-400">
+                    ⌘K
+                  </kbd>
+                </button>
+
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setNotificationsOpen(!notificationsOpen)}
+                    className="relative rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+                    aria-label="View notifications"
+                  >
+                    <Bell className="h-4 w-4" />
+                  </button>
+
+                  {notificationsOpen && (
+                    <div className="absolute right-0 z-50 mt-2 w-80 animate-in rounded-xl border border-slate-200 bg-white p-3 shadow-xl fade-in-0 zoom-in-95">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2 text-xs">
+                        <span className="font-semibold text-slate-800">Activity &amp; notifications</span>
+                        <button type="button" onClick={() => setNotificationsOpen(false)} className="text-[11px] text-teal-700 hover:underline">
+                          Close
+                        </button>
+                      </div>
+                      <p className="px-4 py-6 text-center text-[11px] text-slate-500">No new activity.</p>
+                    </div>
+                  )}
+                </div>
+
+                <a
+                  href="https://ashokrimal.com.np"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                >
+                  <span>Preview site</span>
+                  <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+                </a>
+              </div>
             </div>
           </header>
 
@@ -395,7 +442,7 @@ export default function CmsShell({ children }: { children: React.ReactNode }) {
         aria-label="Mobile vault navigation"
       >
         <div className="mx-auto flex max-w-lg items-stretch justify-around">
-          {mobileNavItems.map((item) => {
+          {primaryNavItems.map((item) => {
             const Icon = item.icon
             const active = isActive(item)
             return (
