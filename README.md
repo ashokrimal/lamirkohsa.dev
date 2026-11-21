@@ -227,8 +227,9 @@ The BugSmash MCP server is registered for Claude Code (`.mcp.json`), Cursor
 until you approve access once; see [docs/bugsmash-mcp.md](docs/bugsmash-mcp.md).
 
 No CI job talks to BugSmash: its REST API needs an API key that BugSmash only
-issues on a paid plan, while the MCP server works on the free plan. Add a
-workflow only if that changes.
+issues on a paid plan, while the MCP server works on the free plan. Reviews are
+created by hand from a Vercel deployment instead — that doc covers the
+Deployment Protection redirect that otherwise captures a login page.
 
 ### Backfilling the legacy media tables
 

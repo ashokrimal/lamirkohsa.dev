@@ -42,6 +42,29 @@ token immediately.
 | Server missing from the list | Wrong config file for that client | Claude Code reads `.mcp.json`, Cursor reads `.cursor/mcp.json`, VS Code reads `.vscode/mcp.json` (`servers` key) |
 | `invalid_scope` | Client requested scopes beyond `mcp:use` | Request only `mcp:use` |
 
+## Reviewing a preview by hand (free, no API key)
+
+BugSmash's free plan still covers visual review; it just means creating the
+version yourself instead of from CI.
+
+1. Push the branch and open the deployment in Vercel → **Deployments**, or use
+the preview URL Vercel comments on the pull request.
+2. Open the gallery's review project in BugSmash → **New version** → **Website**
+   → paste the URL → capture.
+3. Share the review link BugSmash returns, and read the comments back through
+the MCP connection above (for example, ask the agent to list open comments).
+
+**Deployment protection is the catch.** This project's `*.vercel.app` URLs are
+behind Vercel Authentication: an unauthenticated request gets `302` to
+`vercel.com/sso-api`. BugSmash's capture has no session, so pasting a plain
+preview URL captures the login page instead of the site. Use one of these:
+
+| Option | How | Trade-off |
+| --- | --- | --- |
+| Shareable link | Vercel deployment → ⋯ → **Share** → copy the link | Bypasses protection with a token; anyone holding it can view that deployment |
+| Production site | Review `https://www.ashokrimal.com.np` after merge (apex redirects to `www`) | Public URL, no token, but not the exact pre-merge build |
+| Disable protection | Vercel project → Settings → Deployment Protection | Not recommended: previews become public |
+
 ## Why there is no BugSmash CI job
 
 The MCP server above is free-plan friendly: it is interactive and OAuth-only,
