@@ -29,8 +29,9 @@ function readKey(formData: FormData) {
 export async function saveUiCopyValue(formData: FormData) {
   const userId = await requireAdmin()
   const key = readKey(formData)
-  const value = String(formData.get('value') || '').trim()
-  const korean = String(formData.get('korean') || '').trim()
+  const reset = formData.get('reset') === '1'
+  const value = reset ? '' : String(formData.get('value') || '').trim()
+  const korean = reset ? '' : String(formData.get('korean') || '').trim()
 
   const [existing] = await db
     .select({ id: cmsContent.id })

@@ -119,8 +119,8 @@ export function UiCopyEditor({
                       {override && (
                         <button
                           type="submit"
-                          name="value"
-                          value=""
+                          name="reset"
+                          value="1"
                           title="Reset to the built-in text"
                           className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-50"
                         >
