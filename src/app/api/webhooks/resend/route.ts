@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { inboxMessage } from '@/lib/db/schema'
+import { verifyWebhookSecret } from '@/lib/webhook-auth'
 
 export async function POST(request: NextRequest) {
-  const secret = process.env.RESEND_WEBHOOK_SECRET
-  if (secret && request.headers.get('x-resend-webhook-secret') !== secret) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = verifyWebhookSecret(
+    request.headers.get('x-resend-webhook-secret'),
+    process.env.RESEND_WEBHOOK_SECRET,
+  )
+  if (auth === 'missing-config') {
+    console.error('[webhooks/resend] RESEND_WEBHOOK_SECRET is not configured; rejecting the event.')
+    return NextResponse.json({ error: 'Webhook is not configured' }, { status: 503 })
+  }
+  if (auth === 'unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const payload = await request.json()
   if (payload.type !== 'email.received') return NextResponse.json({ received: true })
   const data = payload.data ?? payload
