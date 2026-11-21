@@ -8,12 +8,14 @@ import { revalidateCmsCache } from '@/lib/cms-revalidation'
 import { db } from '@/lib/db'
 import { cmsContent } from '@/lib/db/schema'
 import { toSlug } from '@/lib/slug'
-import { getTemplateArgs, validateTemplate } from '@/lib/ui-strings'
+import { planUiCopyWrite } from '@/lib/ui-copy-write'
 
 /**
  * Writes interface labels into the `UI Copy` collection. One published record
  * per key keeps the public site's override map small, and clearing both fields
- * removes the record so the built-in label in `ui-strings.ts` returns.
+ * removes the record so the built-in label in `ui-strings.ts` returns. The
+ * decision itself lives in `planUiCopyWrite` so it can be tested without a
+ * database.
  */
 async function requireAdmin() {
   const actorId = await getAdminActorId()
@@ -21,25 +23,15 @@ async function requireAdmin() {
   return actorId
 }
 
-function readKey(formData: FormData) {
-  const key = String(formData.get('key') || '').trim()
-  if (!key) throw new Error('A copy key is required.')
-  return key
-}
-
 export async function saveUiCopyValue(formData: FormData) {
   const userId = await requireAdmin()
-  const key = readKey(formData)
-  const reset = formData.get('reset') === '1'
-  const value = reset ? '' : String(formData.get('value') || '').trim()
-  // Generated sentences render English templates only, so they store no Korean.
-  const isTemplate = getTemplateArgs(key) !== null
-  const korean = reset || isTemplate ? '' : String(formData.get('korean') || '').trim()
-
-  if (!reset) {
-    const problem = validateTemplate(key, value)
-    if (problem) throw new Error(problem)
-  }
+  const plan = planUiCopyWrite({
+    key: String(formData.get('key') || ''),
+    value: String(formData.get('value') || ''),
+    korean: String(formData.get('korean') || ''),
+    reset: formData.get('reset') === '1',
+  })
+  const key = plan.action === 'upsert' ? plan.payload.key : String(formData.get('key') || '').trim()
 
   const [existing] = await db
     .select({ id: cmsContent.id })
@@ -52,26 +44,23 @@ export async function saveUiCopyValue(formData: FormData) {
     )
     .limit(1)
 
-  if (!value && !korean) {
+  if (plan.action === 'delete') {
     if (existing) await db.delete(cmsContent).where(eq(cmsContent.id, existing.id))
+  } else if (existing) {
+    await db
+      .update(cmsContent)
+      .set({ payload: plan.payload, status: 'published', updatedAt: new Date() })
+      .where(eq(cmsContent.id, existing.id))
   } else {
-    const payload = { key, value, ...(korean ? { korean } : {}) }
-    if (existing) {
-      await db
-        .update(cmsContent)
-        .set({ payload, status: 'published', updatedAt: new Date() })
-        .where(eq(cmsContent.id, existing.id))
-    } else {
-      await db.insert(cmsContent).values({
-        userId,
-        collection: CMS_COLLECTIONS.uiCopy,
-        title: key,
-        slug: toSlug(key) || key,
-        payload,
-        status: 'published',
-        sortOrder: 0,
-      })
-    }
+    await db.insert(cmsContent).values({
+      userId,
+      collection: CMS_COLLECTIONS.uiCopy,
+      title: plan.payload.key,
+      slug: toSlug(plan.payload.key) || plan.payload.key,
+      payload: plan.payload,
+      status: 'published',
+      sortOrder: 0,
+    })
   }
 
   revalidateCmsCache(CMS_COLLECTIONS.uiCopy)
