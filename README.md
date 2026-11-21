@@ -219,6 +219,18 @@ copy `DATABASE_URL`, the backup command, the verification queries for section
 counts and ordering, cache behaviour after seeding, and troubleshooting for
 pooled Neon connections and legacy `cmsContent` tables.
 
+### BugSmash reviews
+
+The BugSmash MCP server is registered for Claude Code (`.mcp.json`), Cursor
+(`.cursor/mcp.json`) and VS Code (`.vscode/mcp.json`). It signs in with OAuth
+(scope `mcp:use`) rather than an API key, so a plain config entry returns 401
+until you approve access once; see [docs/bugsmash-mcp.md](docs/bugsmash-mcp.md).
+
+`.github/workflows/bugsmash-review.yml` posts every successful non-production
+Vercel deployment to a BugSmash review project as a new version, using the REST
+API. It needs the `BUGSMASH_API_KEY` and `BUGSMASH_PROJECT_ID` repository
+secrets and skips with a warning until they exist.
+
 ### Backfilling the legacy media tables
 
 The old `galleryItem`, `portfolioProject`, `musicTrack` and `animeMangaItem`

@@ -1,6 +1,8 @@
 
 node_modules
-.vscode
+.vscode/*
+# Shared MCP server config; it holds no secrets (BugSmash auth is OAuth).
+!.vscode/mcp.json
 .DS_Store
 dist
 .env

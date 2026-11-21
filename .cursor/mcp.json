@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "bugsmash": {
+      "url": "https://api.bugsmash.io/mcp"
+    }
+  }
+}
