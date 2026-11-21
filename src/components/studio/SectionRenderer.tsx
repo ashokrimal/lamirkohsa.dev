@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, Code2, Compass, Film, FolderGit2, Github, PieChart, Sparkles, User } from 'lucide-react'
+import { ArrowUpRight, Code2, Compass, Film, FolderGit2, Github, PieChart, Sparkles, TrendingUp, User } from 'lucide-react'
 import { getProfileContentResult } from '@/app/actions/content-cms'
 import { getPublicProfileSettingsResult } from '@/app/actions/media'
 import { getMediaCollections } from '@/lib/site-content'
@@ -126,8 +126,19 @@ function studioToCard(project: StudioProject) {
     techStack: project.techStack,
     image: project.coverMediaUrl,
     featured: project.featuredOrder !== undefined,
-    description: project.summary,
   }
+}
+
+interface ProjectCardEntry {
+  id: number
+  title: string
+  slug: string
+  category?: string
+  summary?: string
+  techStack: string[]
+  image?: string
+  featured: boolean
+  metrics?: string[]
 }
 
 function clampHomeCardCount(raw?: number, fallback = 4): number {
@@ -175,7 +186,7 @@ export async function ProjectsSectionBody({
         ]
       : []
 
-  const cards =
+  const cards: ProjectCardEntry[] =
     orderedStudio.length > 0
       ? orderedStudio.slice(0, targetCount).map(studioToCard)
       : orderedLegacy.slice(0, targetCount).map((project) => ({
@@ -187,6 +198,7 @@ export async function ProjectsSectionBody({
           techStack: project.techStack,
           image: project.image,
           featured: project.featured,
+          metrics: project.metrics,
         }))
 
   const hrefFor = (slug: string) => (studioProjects.length > 0 ? `/work/${slug}` : `/projects/${slug}`)
@@ -194,7 +206,9 @@ export async function ProjectsSectionBody({
 
   return (
     <div className={`grid grid-cols-1 gap-5 ${gridColsClass}`}>
-      {cards.map((project) => (
+      {cards.map((project) => {
+        const metrics = project.metrics ?? []
+        return (
         <Link
           key={`${project.slug}-${project.id}`}
           href={hrefFor(project.slug)}
@@ -210,6 +224,19 @@ export async function ProjectsSectionBody({
                 className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                 referrerPolicy="no-referrer"
               />
+              {metrics.length > 0 && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap gap-1.5 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-3 pt-10">
+                  {metrics.map((metric) => (
+                    <span
+                      key={metric}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/95 px-2.5 py-1 text-[10.5px] font-medium tracking-tight text-[#1d1d1f] shadow-[0_2px_10px_rgba(0,0,0,0.18)] backdrop-blur-md"
+                    >
+                      <TrendingUp className="h-3 w-3 shrink-0 text-[#3f5d49]" aria-hidden="true" />
+                      {metric}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono uppercase tracking-[0.16em] text-muted">
@@ -243,7 +270,8 @@ export async function ProjectsSectionBody({
             <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
           </span>
         </Link>
-      ))}
+        )
+      })}
     </div>
   )
 }

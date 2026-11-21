@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowUpRight, Calendar, Eye, Github, Layers } from 'lucide-react'
+import { ArrowUpRight, Calendar, Eye, Github, Layers, TrendingUp } from 'lucide-react'
 import { Card3D } from '@/components/ui/Card3D'
 import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
 import { sensoryAudio } from '@/lib/sensory-audio'
@@ -27,6 +27,7 @@ export interface ProjectData {
   github?: string
   status?: string
   featured?: boolean
+  metrics?: string[]
   completionDate?: string
   duration?: string
   cost?: string
@@ -52,6 +53,7 @@ export function ProjectCard({
   const detailHref = `/projects/${project.slug || toSlug(project.title)}`
   const sourceUrl = isRepositoryUrl(project.github) ? project.github : undefined
   const hasFooterActions = Boolean((project.live && project.live !== '#') || sourceUrl)
+  const metrics = project.metrics ?? []
 
   return (
     <Card3D maxTilt={6} className={isFeatured ? 'md:col-span-2' : ''}>
@@ -119,6 +121,21 @@ export function ProjectCard({
               <Eye className="w-3.5 h-3.5 text-[#3f5d49]" aria-hidden="true" />
               <span>{uiStrings.project.quickView.en}</span>
             </button>
+          )}
+
+          {/* Impact statistics overlaid on the thumbnail */}
+          {metrics.length > 0 && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap gap-1.5 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-3.5 pt-12">
+              {metrics.map((metric) => (
+                <span
+                  key={metric}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/95 px-2.5 py-1 text-[10.5px] font-medium tracking-tight text-[#1d1d1f] shadow-[0_2px_10px_rgba(0,0,0,0.18)] backdrop-blur-md"
+                >
+                  <TrendingUp className="h-3 w-3 shrink-0 text-[#3f5d49]" aria-hidden="true" />
+                  {metric}
+                </span>
+              ))}
+            </div>
           )}
         </div>
 

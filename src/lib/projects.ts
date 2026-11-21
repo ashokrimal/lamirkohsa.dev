@@ -50,6 +50,7 @@ export interface ProjectEntry {
   toolsList?: string[]
   phases: ProjectPhase[]
   features: string[]
+  metrics?: string[]
   techStack: string[]
   techDefinitions?: Record<string, CmsTechDefinition>
   featured: boolean
@@ -316,6 +317,7 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
       ? (payload.phases as ProjectPhase[]).filter((phase) => Boolean(phase?.name))
       : [],
     features: stringArray(payload.features),
+    metrics: dedupeTags([...stringArray(payload.metrics), ...stringArray(payload.impactMetrics)]),
     techStack,
     ...(techDefinitions ? { techDefinitions } : {}),
     featured: payload.featured === true || payload.featured === 'true',

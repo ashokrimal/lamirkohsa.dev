@@ -8,6 +8,7 @@ import { CMS_SETTINGS_RECORDS } from '@/lib/cms-schema'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
+import { uiStrings } from '@/lib/ui-strings'
 
 /**
  * The homepage.
@@ -36,7 +37,14 @@ export default async function HomeContent() {
 
   const displayName = profileText('fullName') || site.brand.name || ''
   const heroHeading = heroData.heading?.trim() || displayName
-  const heroSubtitle = heroData.subtitle?.trim() || profileText('summary')
+  const heroSummary = heroData.subtitle?.trim()
+  const heroSpecialization = uiStrings.hero.specialization.en
+  // The hero always states the specialization; existing CMS copy follows it.
+  const heroSubtitle = !heroSummary
+    ? heroSpecialization
+    : heroSummary.includes(heroSpecialization)
+      ? heroSummary
+      : `${heroSpecialization} — ${heroSummary}`
   const heroEyebrow = profileText('headline') || site.brand.role || 'Portfolio'
   const heroLocation =
     heroData.location?.trim() || profileText('location') || site.contact.location || ''

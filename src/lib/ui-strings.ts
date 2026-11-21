@@ -42,6 +42,7 @@ export const uiStrings = {
   },
   hero: {
     ariaLabel: text('At a glance'),
+    specialization: text('Full-Stack Software Engineer & Product Designer'),
     basedIn: text('Based in'),
     scrollHint: text('Scroll to explore ↓'),
     metaRight: (current: number, total: number) =>

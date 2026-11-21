@@ -486,6 +486,7 @@ export const CMS_SCHEMA: CmsSchema = {
         text('runbookDoc', 'Operations — Deployment & Runbook (Markdown)'),
         text('userManualDoc', 'End-User — Manual & Release Notes (Markdown)'),
         array('features', 'Features'),
+        array('metrics', 'Impact metrics'),
         array('techStack', 'Tech stack'),
         object('techDefinitions', 'Tech stack definitions'),
         array('phases', 'Phases'),

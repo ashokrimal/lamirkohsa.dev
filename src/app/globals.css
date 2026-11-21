@@ -26,7 +26,7 @@
   --surface-rgb: 251 250 247;          /* #fbfaf7 — warm off-white */
   --ink-rgb: 29 29 31;                 /* #1d1d1f */
   --ink-secondary-rgb: 66 66 69;       /* #424245 */
-  --muted-rgb: 100 110 108;            /* #646e6c — warm neutral */
+  --muted-rgb: 85 85 85;               /* #555555 — secondary text, WCAG AA */
   --accent-rgb: 82 114 93;             /* #52725d — sage green */
   --accent-secondary-rgb: 82 114 93;   /* #52725d */
   --inverse-rgb: 255 255 255;          /* #ffffff */
@@ -36,7 +36,7 @@
   --surface: rgb(var(--surface-rgb));                   /* #ffffff */
   --ink: rgb(var(--ink-rgb));                           /* #1d1d1f */
   --ink-secondary: rgb(var(--ink-secondary-rgb));       /* #424245 */
-  --muted: rgb(var(--muted-rgb));                       /* #646e6c */
+  --muted: rgb(var(--muted-rgb));                       /* #555555 */
   --accent: rgb(var(--accent-rgb));                     /* #0071e3 */
   --accent-blue: var(--accent);                         /* legacy alias */
   --accent-secondary: rgb(var(--accent-secondary-rgb)); /* #52725d */

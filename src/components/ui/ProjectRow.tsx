@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Calendar, Eye, Layers } from 'lucide-react'
+import { Calendar, Eye, Layers, TrendingUp } from 'lucide-react'
 import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
 import { getProjectStatusVisual } from '@/lib/project-status'
 import { sensoryAudio } from '@/lib/sensory-audio'
@@ -28,6 +28,7 @@ export function ProjectRow({
   const summary = project.summary || project.description
   const reversed = index % 2 === 1
   const statusVisual = getProjectStatusVisual(project.status)
+  const metrics = project.metrics ?? []
 
   return (
     <article className="project-row group relative cursor-pointer border-t border-line-hairline pt-8 md:pt-10">
@@ -79,27 +80,42 @@ export function ProjectRow({
               </button>
             )}
 
-            <div
-              className={`pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 sm:p-5 opacity-0 translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-y-0 motion-reduce:transition-none motion-reduce:translate-y-0 ${
-                project.image ? 'text-white' : 'bg-gradient-to-t from-surface/95 via-surface/75 to-transparent text-ink'
-              }`}
-              aria-hidden="true"
-            >
-              <div className="min-w-0 space-y-0.5">
-                {project.category && (
-                  <p
-                    className={`font-mono text-[10px] uppercase tracking-[0.16em] truncate ${
-                      project.image ? 'text-white/75' : 'text-muted'
-                    }`}
+            {/* Impact statistics overlaid on the thumbnail */}
+            {metrics.length > 0 && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap gap-1.5 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-4 pt-12 sm:p-5">
+                {metrics.map((metric) => (
+                  <span
+                    key={metric}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/95 px-2.5 py-1 text-[10.5px] font-medium tracking-tight text-[#1d1d1f] shadow-[0_2px_10px_rgba(0,0,0,0.18)] backdrop-blur-md"
                   >
-                    {project.category}
-                  </p>
-                )}
-                <p className="text-xs sm:text-sm font-medium truncate">
-                  {project.title}
-                </p>
+                    <TrendingUp className="h-3 w-3 shrink-0 text-[#3f5d49]" aria-hidden="true" />
+                    {metric}
+                  </span>
+                ))}
               </div>
-            </div>
+            )}
+
+            {metrics.length === 0 && (
+              <div
+                className={`pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 sm:p-5 opacity-0 translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-y-0 motion-reduce:transition-none motion-reduce:translate-y-0 ${
+                  project.image ? 'text-white' : 'bg-gradient-to-t from-surface/95 via-surface/75 to-transparent text-ink'
+                }`}
+                aria-hidden="true"
+              >
+                <div className="min-w-0 space-y-0.5">
+                  {project.category && (
+                    <p
+                      className={`font-mono text-[10px] uppercase tracking-[0.16em] truncate ${
+                        project.image ? 'text-white/75' : 'text-muted'
+                      }`}
+                    >
+                      {project.category}
+                    </p>
+                  )}
+                  <p className="text-xs sm:text-sm font-medium truncate">{project.title}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

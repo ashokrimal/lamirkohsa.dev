@@ -103,7 +103,8 @@ const siteSettings = [
     sortOrder: 0,
     payload: {
       heading: 'Hello.',
-      subtitle: "I'm Ashok, a developer building calm, useful digital experiences.",
+      subtitle:
+        'Full-Stack Software Engineer & Product Designer building calm, useful digital experiences.',
       location: 'Butwal, Nepal\nAvailable for thoughtful collaborations',
       initials: 'AR',
       imageUrl: '/images/hero-ashok.png',
