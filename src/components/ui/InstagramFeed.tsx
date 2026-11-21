@@ -14,24 +14,39 @@ function isWidgetId(value: string) {
 /** The feed itself, without any heading chrome. */
 export function InstagramEmbed({
   widgetId,
+  fallbackHref,
+  fallbackLabel,
   className = '',
 }: {
   widgetId?: string
+  /** Shown under the frame for people whose browser blocks the third party. */
+  fallbackHref?: string
+  fallbackLabel?: string
   className?: string
 }) {
   const id = (widgetId ?? '').trim()
   if (!isWidgetId(id)) return null
 
   return (
-    <div className={`overflow-hidden rounded-xl border border-line bg-surface ${className}`}>
-      <iframe
-        src={`${EMBED_BASE}${encodeURIComponent(id)}`}
-        title="Posts from Instagram"
-        allow="autoplay; fullscreen"
-        loading="lazy"
-        className="block w-full"
-        style={{ border: 'none', aspectRatio: '765 / 510', overflow: 'hidden' }}
-      />
+    <div className={className}>
+      <div className="overflow-hidden rounded-xl border border-line bg-surface">
+        <iframe
+          src={`${EMBED_BASE}${encodeURIComponent(id)}`}
+          title="Posts from Instagram"
+          allow="autoplay; fullscreen"
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+          className="block w-full"
+          style={{ border: 'none', aspectRatio: '765 / 510', overflow: 'hidden' }}
+        />
+      </div>
+      {fallbackHref && fallbackLabel && (
+        <p className="mt-3 text-xs text-muted">
+          <a href={fallbackHref} className="underline underline-offset-4 hover:text-ink">
+            {fallbackLabel}
+          </a>
+        </p>
+      )}
     </div>
   )
 }
@@ -47,6 +62,7 @@ export function InstagramFeed({
   description,
   followHref,
   followLabel,
+  fallbackLabel,
   className = '',
 }: {
   widgetId?: string
@@ -54,6 +70,7 @@ export function InstagramFeed({
   description?: string
   followHref?: string
   followLabel?: string
+  fallbackLabel?: string
   className?: string
 }) {
   if (!isWidgetId((widgetId ?? '').trim())) return null
@@ -68,7 +85,12 @@ export function InstagramFeed({
         linkHref={followHref}
         linkLabel={followLabel}
       />
-      <InstagramEmbed widgetId={widgetId} className="mt-8" />
+      <InstagramEmbed
+        widgetId={widgetId}
+        fallbackHref={followHref}
+        fallbackLabel={fallbackLabel}
+        className="mt-8"
+      />
     </section>
   )
 }

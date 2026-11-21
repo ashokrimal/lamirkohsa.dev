@@ -79,10 +79,11 @@ export default async function GalleryPage() {
           description={uiStrings.gallery.instagramDescription.en}
           followHref={instagramHref}
           followLabel={uiStrings.gallery.instagramFollowLabel.en}
+          fallbackLabel={uiStrings.gallery.instagramFallback.en}
         />
       )}
 
-      <PageNav />
+      <PageNav backHref="/about" />
     </PageShell>
   )
 }

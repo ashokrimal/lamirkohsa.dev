@@ -271,6 +271,7 @@ export const uiStrings = {
     instagramTitle: text('Latest from Instagram'),
     instagramDescription: text('New frames and outtakes, posted between gallery updates.'),
     instagramFollowLabel: text('Follow on Instagram'),
+    instagramFallback: text('Feed not loading? See these posts on Instagram.'),
     collectionAria: text('Photography collection'),
   },
   media: {

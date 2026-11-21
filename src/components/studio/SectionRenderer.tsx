@@ -43,11 +43,19 @@ function profileValue(profile: Record<string, unknown>, key: string) {
 }
 
 /** The Instagram feed: its own embed only, since the section chrome supplies the heading. */
-export async function InstagramSectionBody({ content }: { content: SectionContent }) {
+export async function InstagramSectionBody({
+  content,
+  fallbackHref,
+}: {
+  content: SectionContent
+  fallbackHref?: string
+}) {
   const uiStrings = await getUiCopy()
   return (
     <InstagramEmbed
       widgetId={content.widgetId?.trim() || uiStrings.gallery.instagramWidgetId.en}
+      fallbackHref={fallbackHref}
+      fallbackLabel={uiStrings.gallery.instagramFallback.en}
     />
   )
 }
@@ -420,7 +428,9 @@ export async function SectionRenderer({ sections }: { sections: StudioPageSectio
             case 'contact':
               return <ContactSectionBody />
             case 'instagram':
-              return <InstagramSectionBody content={content} />
+              return (
+                <InstagramSectionBody content={content} fallbackHref={instagramHref} />
+              )
             default:
               return null
           }
