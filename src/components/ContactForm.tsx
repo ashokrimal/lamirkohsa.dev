@@ -75,6 +75,8 @@ export default function ContactForm({
         email: formData.get('email')?.toString().trim(),
         subject: formData.get('subject')?.toString().trim(),
         message: formData.get('message')?.toString().trim(),
+        // Honeypot: invisible to people, often filled by bots.
+        website: formData.get('website')?.toString().trim(),
       };
 
       setIsSubmitting(true);
@@ -196,6 +198,11 @@ export default function ContactForm({
             required
           />
         </motion.div>
+
+        <div className="hidden" aria-hidden="true">
+          <label htmlFor="website">Website</label>
+          <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+        </div>
 
         <motion.div variants={reduceMotion ? undefined : fieldItemVariants}>
           <motion.button

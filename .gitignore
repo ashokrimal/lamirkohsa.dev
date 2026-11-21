@@ -41,3 +41,6 @@ public/locales
 /freebuff-sites-build/
 /.open-next/
 /.wrangler/
+
+# Contact inbox fallback file (held real submissions; never commit)
+/data/messages.json

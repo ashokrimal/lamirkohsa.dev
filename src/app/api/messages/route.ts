@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import path from 'path'
-import os from 'os'
-import { promises as fs } from 'fs'
-import { desc } from 'drizzle-orm'
+import { and, count, desc, gt, like } from 'drizzle-orm'
 import { Resend } from 'resend'
 import { db } from '@/lib/db'
 import { inboxMessage } from '@/lib/db/schema'
@@ -12,16 +9,21 @@ import {
   verifyAdminBasicAuthHeader,
   verifyAdminSessionToken,
 } from '@/lib/admin-auth'
+import { planContactSubmission, type ContactSubmission } from '@/lib/contact-submission'
+import { createSlidingWindowLimiter } from '@/lib/rate-limit'
 
 /**
  * Contact messages.
  *
- * Delivery is attempted on three channels so no single failure loses a message:
- *  1. the `inboxMessage` table (durable),
- *  2. Resend email to the owner (RESEND_API_KEY),
- *  3. a JSON file — the repo copy in development, /tmp on serverless runtimes
- *     where the project directory is read-only.
+ * Anonymous submissions are rate-limited, length-capped and honeypot-filtered
+ * before any work happens. Accepted messages go to the `inboxMessage` table
+ * (durable) and, when configured, to Resend so the owner is emailed.
+ *
+ * There is deliberately no file channel: on serverless runtimes a JSON file is
+ * per-instance and lost on the next cold start, so it promised durability it
+ * could not provide.
  */
+
 type Message = {
   id: string
   name: string
@@ -31,8 +33,45 @@ type Message = {
   createdAt: string
 }
 
-const REPO_FILE = path.join(process.cwd(), 'data', 'messages.json')
-const TMP_FILE = path.join(os.tmpdir(), 'portfolio-messages.json')
+const MAX_BODY_BYTES = 32_000
+const WINDOW_MS = 10 * 60 * 1000
+const PER_IP_LIMIT = 5
+const PER_SENDER_LIMIT = 3
+const PER_SENDER_WINDOW_MS = 60 * 60 * 1000
+
+const ipLimiter = createSlidingWindowLimiter({ limit: PER_IP_LIMIT, windowMs: WINDOW_MS })
+
+function senderKey(request: NextRequest, submission: ContactSubmission): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  const ip = forwarded?.split(',')[0]?.trim() || request.headers.get('x-real-ip')?.trim()
+  return ip ? `ip:${ip}` : `email:${submission.email.toLowerCase()}`
+}
+
+/** Escapes LIKE wildcards so a sender cannot widen the pattern with `%`/`_`. */
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (match) => `\\${match}`)
+}
+
+async function senderAlreadyBusy(submission: ContactSubmission): Promise<boolean> {
+  try {
+    const since = new Date(Date.now() - PER_SENDER_WINDOW_MS)
+    const [row] = await db
+      .select({ total: count() })
+      .from(inboxMessage)
+      .where(
+        and(
+          like(inboxMessage.fromEmail, `%<${escapeLike(submission.email)}>`),
+          gt(inboxMessage.receivedAt, since),
+        ),
+      )
+    return Number(row?.total ?? 0) >= PER_SENDER_LIMIT
+  } catch (error) {
+    // The inbox table is a belt-and-braces throttle; the in-memory limiter and
+    // field caps still apply when it cannot be read.
+    console.warn('[messages] Could not check recent sender activity:', (error as Error).message)
+    return false
+  }
+}
 
 function recipient() {
   return process.env.CONTACT_TO_EMAIL || process.env.ADMIN_EMAIL || ''
@@ -44,34 +83,6 @@ function escapeHtml(value: string) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-}
-
-async function readFile(pathname: string): Promise<Message[]> {
-  try {
-    const data = await fs.readFile(pathname, 'utf8')
-    const parsed = JSON.parse(data)
-    return Array.isArray(parsed) ? (parsed as Message[]) : []
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.warn(`[messages] Could not read ${pathname}:`, (error as Error).message)
-    }
-    return []
-  }
-}
-
-/** Stores the message in the first writable location; returns the path used. */
-async function persist(message: Message): Promise<string | null> {
-  for (const pathname of [REPO_FILE, TMP_FILE]) {
-    try {
-      const existing = await readFile(pathname)
-      await fs.writeFile(pathname, JSON.stringify([message, ...existing].slice(0, 500), null, 2), 'utf8')
-      return pathname
-    } catch (error) {
-      const code = (error as NodeJS.ErrnoException).code ?? (error as Error).message
-      console.warn(`[messages] ${pathname} is not writable: ${code}`)
-    }
-  }
-  return null
 }
 
 async function storeInDatabase(message: Message): Promise<boolean> {
@@ -157,42 +168,59 @@ async function readDatabaseMessages(): Promise<Message[]> {
 }
 
 export async function POST(request: NextRequest) {
-  let body: { name?: string; email?: string; subject?: string; message?: string }
+  const declaredLength = Number(request.headers.get('content-length') ?? 0)
+  if (declaredLength > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'That message is too large.' }, { status: 413 })
+  }
+
+  let body: unknown
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
 
-  const name = body.name?.trim()
-  const email = body.email?.trim()
-  const subject = body.subject?.trim()
-  const text = body.message?.trim()
+  const decision = planContactSubmission(body)
+  if (decision.kind === 'reject') {
+    return NextResponse.json({ error: decision.error }, { status: decision.status })
+  }
+  if (decision.kind === 'drop') {
+    // Same response as a delivered message: a bot learns nothing about the trap.
+    return NextResponse.json({ success: true })
+  }
 
-  if (!name || !email || !subject || !text) {
-    return NextResponse.json({ error: 'All fields are required.' }, { status: 400 })
+  const submission = decision.submission
+
+  const limit = ipLimiter.check(senderKey(request, submission))
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many messages were sent from this connection. Please try again shortly.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
+    )
+  }
+
+  if (await senderAlreadyBusy(submission)) {
+    return NextResponse.json(
+      { error: 'You have already sent several messages recently. Please wait before sending another.' },
+      { status: 429, headers: { 'Retry-After': String(PER_SENDER_WINDOW_MS / 1000) } },
+    )
   }
 
   const message: Message = {
     id: crypto.randomUUID(),
-    name,
-    email,
-    subject,
-    message: text,
+    ...submission,
     createdAt: new Date().toISOString(),
   }
 
-  const [stored, delivered, persistedAt] = await Promise.all([
+  const [stored, delivered] = await Promise.all([
     storeInDatabase(message),
     deliverByEmail(message),
-    persist(message),
   ])
 
-  if (!stored && !delivered && !persistedAt) {
+  if (!stored && !delivered) {
     return NextResponse.json(
       {
-        error:
-          'The message could not be delivered. Email delivery and message storage are both unavailable.',
+        error: 'The message could not be delivered. Email delivery and message storage are both unavailable.',
       },
       { status: 503 },
     )
@@ -215,18 +243,7 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const [dbMessages, repoMessages, tmpMessages] = await Promise.all([
-    readDatabaseMessages(),
-    readFile(REPO_FILE),
-    readFile(TMP_FILE),
-  ])
-
-  const byId = new Map<string, Message>()
-  for (const entry of [...dbMessages, ...repoMessages, ...tmpMessages]) {
-    if (entry?.id) byId.set(entry.id, entry)
-  }
-
-  const messages = [...byId.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const messages = await readDatabaseMessages()
 
   return NextResponse.json(messages, {
     headers: { 'Cache-Control': 'no-store, must-revalidate' },
