@@ -78,11 +78,16 @@ export function UiCopyEditor({
             <div className="divide-y divide-slate-100">
               {items.map((entry) => {
                 const override = overrides[entry.key]
+                const isTemplate = entry.template === true
                 return (
                   <form
                     key={entry.key}
                     action={saveUiCopyValue}
-                    className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.6fr)_auto] sm:items-center"
+                    className={`grid gap-2 px-4 py-3 sm:items-center ${
+                      isTemplate
+                        ? 'sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]'
+                        : 'sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.6fr)_auto]'
+                    }`}
                   >
                     <input type="hidden" name="key" value={entry.key} />
                     <div className="min-w-0">
@@ -103,15 +108,17 @@ export function UiCopyEditor({
                         className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-teal-500"
                       />
                     </label>
-                    <label className="min-w-0 text-[11px] font-medium text-slate-500">
-                      <span className="sr-only">Korean text for {entry.key}</span>
-                      <input
-                        name="korean"
-                        defaultValue={override?.kr ?? entry.kr ?? ''}
-                        placeholder="Korean (optional)"
-                        className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-teal-500 placeholder:text-slate-400"
-                      />
-                    </label>
+                    {!isTemplate && (
+                      <label className="min-w-0 text-[11px] font-medium text-slate-500">
+                        <span className="sr-only">Korean text for {entry.key}</span>
+                        <input
+                          name="korean"
+                          defaultValue={override?.kr ?? entry.kr ?? ''}
+                          placeholder="Korean (optional)"
+                          className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-teal-500 placeholder:text-slate-400"
+                        />
+                      </label>
+                    )}
                     <div className="flex items-center gap-1.5">
                       <button
                         type="submit"

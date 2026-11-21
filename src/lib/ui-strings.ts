@@ -1,10 +1,13 @@
 /**
  * Interface strings.
  *
- * These are part of the page structure, not CMS content: field labels, button
- * labels, aria labels and system messages. Each string carries an English and,
- * where the interface already shows one, a Korean variant. Render both when the
- * design shows a Korean pair; otherwise use `.en`.
+ * Field labels, button labels, aria labels and system messages, plus the
+ * sentence templates behind counts and interpolated headings. Everything here
+ * is a built-in default: each entry can be overridden from the `UI Copy` CMS
+ * collection (see `ui-copy.ts`), and an entry without an override renders the
+ * literal below. Static entries carry an English text and, where the interface
+ * already shows one, a Korean variant; templates use `{name}` and
+ * `{name:one|many}` placeholders and always render English.
  */
 
 export interface UiText {
@@ -346,15 +349,45 @@ export const uiStrings = {
   },
 } as const
 
-/** One label the CMS can override. Generated strings (counts, interpolations) are not listed. */
+/** One label the CMS can override: a static text, or a sentence template. */
 export interface UiCopyEntry {
   key: string
   en: string
   kr?: string
+  /** True for generated sentences; `en` is then the placeholder template. */
+  template?: boolean
 }
 
 /** CMS overrides, keyed by the dotted path of the label (`nav.openMenu`). */
 export type UiCopyOverrides = Record<string, { en?: string; kr?: string }>
+
+/** Placeholders a template may use, or null when the key is a plain label. */
+export function getTemplateArgs(key: string): string[] | null {
+  const spec = GENERATED_COPY[key]
+  return spec ? [...spec.args] : null
+}
+
+/** Every placeholder a template text references, including plural forms. */
+export function readTemplatePlaceholders(value: string): string[] {
+  const names: string[] = []
+  for (const match of value.matchAll(/\{(\w+)(?::[^{}]*)?\}/g)) {
+    if (!names.includes(match[1])) names.push(match[1])
+  }
+  return names
+}
+
+/**
+ * Rejects a template that references placeholders its sentence builder never
+ * passes, which would otherwise render literally on the public site.
+ */
+export function validateTemplate(key: string, value: string): string | null {
+  const args = getTemplateArgs(key)
+  if (!args || !value) return null
+  const unknown = readTemplatePlaceholders(value).filter((name) => !args.includes(name))
+  if (unknown.length === 0) return null
+  const available = args.map((name) => `{${name}}`).join(', ')
+  return `Unknown placeholder ${unknown.map((name) => `{${name}}`).join(', ')} in "${key}". Use ${available}.`
+}
 
 function walkCopy(
   node: unknown,
@@ -412,7 +445,7 @@ export function flattenUiStrings(): UiCopyEntry[] {
   // Generated sentences are editable too, as placeholder templates.
   for (const spec of Object.values(GENERATED_COPY)) {
     for (const variant of spec.variants) {
-      entries.push({ key: variant.key, en: variant.template })
+      entries.push({ key: variant.key, en: variant.template, template: true })
     }
   }
   return entries

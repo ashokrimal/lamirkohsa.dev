@@ -8,6 +8,7 @@ import { revalidateCmsCache } from '@/lib/cms-revalidation'
 import { db } from '@/lib/db'
 import { cmsContent } from '@/lib/db/schema'
 import { toSlug } from '@/lib/slug'
+import { getTemplateArgs, validateTemplate } from '@/lib/ui-strings'
 
 /**
  * Writes interface labels into the `UI Copy` collection. One published record
@@ -31,7 +32,14 @@ export async function saveUiCopyValue(formData: FormData) {
   const key = readKey(formData)
   const reset = formData.get('reset') === '1'
   const value = reset ? '' : String(formData.get('value') || '').trim()
-  const korean = reset ? '' : String(formData.get('korean') || '').trim()
+  // Generated sentences render English templates only, so they store no Korean.
+  const isTemplate = getTemplateArgs(key) !== null
+  const korean = reset || isTemplate ? '' : String(formData.get('korean') || '').trim()
+
+  if (!reset) {
+    const problem = validateTemplate(key, value)
+    if (problem) throw new Error(problem)
+  }
 
   const [existing] = await db
     .select({ id: cmsContent.id })
