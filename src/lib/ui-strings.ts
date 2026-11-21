@@ -270,6 +270,7 @@ export const uiStrings = {
     instagramWidgetId: text('af4c3d7e-f2b1-4586-9195-259b504fef68'),
     instagramTitle: text('Latest from Instagram'),
     instagramDescription: text('New frames and outtakes, posted between gallery updates.'),
+    instagramFollowLabel: text('Follow on Instagram'),
     collectionAria: text('Photography collection'),
   },
   media: {

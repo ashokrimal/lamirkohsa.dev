@@ -7,6 +7,9 @@ import { CMS_SCHEMA } from '@/lib/cms-schema'
 import { getUiCopy } from '@/lib/ui-copy'
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import { InstagramFeed } from '@/components/ui/InstagramFeed'
+import { SectionRenderer } from '@/components/studio/SectionRenderer'
+import { getPageWithSections } from '@/lib/studio/data'
+import { getSiteConfig } from '@/lib/site-content'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
 import { getPageCopy } from '@/lib/site-content'
@@ -21,9 +24,23 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function GalleryPage() {
   const uiStrings = await getUiCopy()
-  const [galleryResult, copyResult] = await Promise.all([getGalleryResult(), getPageCopy()])
+  const [galleryResult, copyResult, pageResult, siteResult] = await Promise.all([
+    getGalleryResult(),
+    getPageCopy(),
+    getPageWithSections('/about/gallery'),
+    getSiteConfig(),
+  ])
   const pageCopy = copyResult.status === 'ok' ? copyResult.data.gallery : undefined
   const photos = galleryResult.status === 'ok' ? galleryResult.data : []
+  // Studio → Pages owns the feed once an `instagram` section exists for this
+  // page; until then the built-in block below renders the same embed.
+  const instagramSection = pageResult.sections.find(
+    (section) => section.sectionKey === 'instagram' && section.isEnabled,
+  )
+  const socials = siteResult.status === 'ok' ? siteResult.data.navigation.socials : []
+  const instagramHref = socials.find((social) =>
+    /instagram/i.test(`${social.kind ?? ''} ${social.label} ${social.href}`),
+  )?.href
 
   return (
     <PageShell>
@@ -55,11 +72,17 @@ export default async function GalleryPage() {
         )}
       </div>
 
-      <InstagramFeed
-        widgetId={uiStrings.gallery.instagramWidgetId.en}
-        title={uiStrings.gallery.instagramTitle.en}
-        description={uiStrings.gallery.instagramDescription.en}
-      />
+      {instagramSection ? (
+        <SectionRenderer sections={[instagramSection]} />
+      ) : (
+        <InstagramFeed
+          widgetId={uiStrings.gallery.instagramWidgetId.en}
+          title={uiStrings.gallery.instagramTitle.en}
+          description={uiStrings.gallery.instagramDescription.en}
+          followHref={instagramHref}
+          followLabel={uiStrings.gallery.instagramFollowLabel.en}
+        />
+      )}
 
       <PageNav />
     </PageShell>

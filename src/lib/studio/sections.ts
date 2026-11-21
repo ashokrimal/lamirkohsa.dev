@@ -22,6 +22,7 @@ export const SECTION_KEYS = [
   'socials',
   'technology',
   'contact',
+  'instagram',
 ] as const
 export type SectionKey = (typeof SECTION_KEYS)[number]
 
@@ -56,6 +57,9 @@ const mediaSchema = baseSectionSchema
 const githubSchema = baseSectionSchema.extend({
   username: optionalText(100),
 })
+const instagramSchema = baseSectionSchema.extend({
+  widgetId: optionalText(200),
+})
 
 export const SECTION_CONTENT_SCHEMAS = {
   introduction: introductionSchema,
@@ -69,9 +73,13 @@ export const SECTION_CONTENT_SCHEMAS = {
   socials: baseSectionSchema,
   technology: baseSectionSchema,
   contact: baseSectionSchema,
+  instagram: instagramSchema,
 } satisfies Record<SectionKey, z.ZodType>
 
-export type SectionContent = z.infer<typeof baseSectionSchema> & { username?: string }
+export type SectionContent = z.infer<typeof baseSectionSchema> & {
+  username?: string
+  widgetId?: string
+}
 
 export type SectionFieldType = 'text' | 'textarea' | 'url' | 'number' | 'checkbox' | 'select'
 
@@ -274,6 +282,30 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
       ctaLabel: 'All projects',
       ctaHref: '/projects',
       animation: { enabled: true, intensity: 0.4 },
+    },
+  },
+  instagram: {
+    key: 'instagram',
+    label: 'Instagram feed',
+    source: 'The SnapWidget id written here; posts come from the linked Instagram account.',
+    schema: SECTION_CONTENT_SCHEMAS.instagram,
+    fields: [
+      ...baseFields.filter(
+        (field) => field.key !== 'body' && field.key !== 'imageUrl' && field.key !== 'imageAlt',
+      ),
+      {
+        key: 'widgetId',
+        label: 'SnapWidget id',
+        type: 'text',
+        hint: 'Leave empty to use the default feed id from UI copy.',
+      },
+    ],
+    defaults: {
+      eyebrow: 'Social',
+      title: 'Latest from Instagram',
+      description: 'New frames and outtakes, posted between gallery updates.',
+      ctaLabel: 'Follow on Instagram',
+      animation: { enabled: false, intensity: 0.2 },
     },
   },
   contact: {

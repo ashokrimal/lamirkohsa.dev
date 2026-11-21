@@ -19,6 +19,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import type { SectionContent } from '@/lib/studio/sections'
 import type { StudioPageSection } from '@/lib/studio/data'
 import { MediaCollectionsBody } from '@/components/media/MediaHomeContent'
+import { InstagramEmbed } from '@/components/ui/InstagramFeed'
 import {
   ContactSectionBody,
   ExperienceSectionBody,
@@ -39,6 +40,16 @@ import {
 function profileValue(profile: Record<string, unknown>, key: string) {
   const raw = profile[key]
   return typeof raw === 'string' && raw.trim() ? raw : undefined
+}
+
+/** The Instagram feed: its own embed only, since the section chrome supplies the heading. */
+export async function InstagramSectionBody({ content }: { content: SectionContent }) {
+  const uiStrings = await getUiCopy()
+  return (
+    <InstagramEmbed
+      widgetId={content.widgetId?.trim() || uiStrings.gallery.instagramWidgetId.en}
+    />
+  )
 }
 
 export async function IntroductionSectionBody({ content }: { content: SectionContent }) {
@@ -395,6 +406,8 @@ export async function SectionRenderer({ sections }: { sections: StudioPageSectio
               return <TechnologySectionBody />
             case 'contact':
               return <ContactSectionBody />
+            case 'instagram':
+              return <InstagramSectionBody content={content} />
             default:
               return null
           }
