@@ -1,23 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { inboxMessage } from '@/lib/db/schema'
-import { verifyWebhookSecret } from '@/lib/webhook-auth'
+import { planResendWebhook } from '@/lib/resend-webhook'
 
+/**
+ * Resend inbound email. Resend signs deliveries through Svix, so the raw body
+ * is verified against `svix-id`/`svix-timestamp`/`svix-signature`.
+ *
+ * Fails closed when `RESEND_WEBHOOK_SECRET` is missing: without it there is no
+ * way to tell a real event from anyone else's POST.
+ */
 export async function POST(request: NextRequest) {
-  const auth = verifyWebhookSecret(
-    request.headers.get('x-resend-webhook-secret'),
-    process.env.RESEND_WEBHOOK_SECRET,
-  )
-  if (auth === 'missing-config') {
-    console.error('[webhooks/resend] RESEND_WEBHOOK_SECRET is not configured; rejecting the event.')
-    return NextResponse.json({ error: 'Webhook is not configured' }, { status: 503 })
+  const rawBody = await request.text()
+
+  let payload: unknown
+  try {
+    payload = JSON.parse(rawBody)
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
-  if (auth === 'unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const payload = await request.json()
-  if (payload.type !== 'email.received') return NextResponse.json({ received: true })
-  const data = payload.data ?? payload
-  const email = data.email ?? data
-  if (!email.id || !email.from || !email.to) return NextResponse.json({ error: 'Invalid email event' }, { status: 400 })
-  await db.insert(inboxMessage).values({ id: email.id, fromEmail: email.from, toEmail: Array.isArray(email.to) ? email.to.join(', ') : email.to, subject: email.subject || '(no subject)', textBody: email.text || null, htmlBody: email.html || null }).onConflictDoNothing()
-  return NextResponse.json({ received: true })
+
+  const result = planResendWebhook({
+    headers: {
+      id: request.headers.get('svix-id'),
+      timestamp: request.headers.get('svix-timestamp'),
+      signature: request.headers.get('svix-signature'),
+    },
+    rawBody,
+    secret: process.env.RESEND_WEBHOOK_SECRET,
+    payload,
+  })
+
+  if (result.status === 503) {
+    console.error('[webhooks/resend] RESEND_WEBHOOK_SECRET is not configured; rejecting the event.')
+  }
+
+  if (result.insert) {
+    await db.insert(inboxMessage).values(result.insert).onConflictDoNothing()
+  }
+
+  return NextResponse.json(result.body, { status: result.status })
 }

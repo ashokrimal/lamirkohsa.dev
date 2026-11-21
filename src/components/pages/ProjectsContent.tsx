@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/ProjectFilter'
 import { PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
+import { nextPageNav } from '@/lib/page-nav'
 import {
   PROJECT_LIFECYCLE_STATUSES,
   getProjectStatusVisual,
@@ -475,7 +476,7 @@ export default function ProjectsContent({
             globalTechDefinitions={cmsTechDefinitions}
             onClose={() => setQuickViewProject(null)}
           />
-          <PageNav />
+          <PageNav {...nextPageNav('/projects')} />
         </PageShell>
       </Suspense>
     </ErrorBoundary>

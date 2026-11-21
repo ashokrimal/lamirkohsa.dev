@@ -6,6 +6,7 @@ import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
+import { nextPageNav } from '@/lib/page-nav'
 import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
 import { toSlug } from '@/lib/slug'
 import { getPageCopy } from '@/lib/site-content'
@@ -209,7 +210,7 @@ export default async function BlogsPage() {
         <NewsletterForm />
       </div>
 
-      <PageNav />
+      <PageNav {...nextPageNav('/blogs')} />
     </PageShell>
   )
 }

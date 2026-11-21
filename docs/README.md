@@ -22,6 +22,23 @@ can only carry sections once it has a row there. Pages that predate the studio
 The gallery page reads only its `instagram` section; other keys added to that
 page are ignored, because the rest of the page is not section-driven yet.
 
+## Inbound email webhook
+
+`POST /api/webhooks/resend` stores messages Resend forwards to the site. Resend
+delivers webhooks through Svix and signs them; there is no separate shared
+header to configure.
+
+1. Resend → **Webhooks** → add `https://www.ashokrimal.com.np/api/webhooks/resend`
+   with the `email.received` event.
+2. Copy that webhook's signing secret (`whsec_…`) into the Vercel environment as
+   `RESEND_WEBHOOK_SECRET` for Production and Preview, then redeploy.
+3. Send a test event and confirm `200 {"received":true}`; the row appears in the
+   studio inbox, and a redelivery of the same email is ignored.
+
+The endpoint verifies `svix-id`/`svix-timestamp`/`svix-signature` against the raw
+body with a five minute replay window. It returns `503` when the secret is
+missing rather than accepting unsigned writes, and `401` for a bad signature.
+
 ## Checks
 
 | Command | What it needs |

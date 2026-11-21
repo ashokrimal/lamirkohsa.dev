@@ -80,7 +80,7 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
         </div>
       )}
 
-      <PageNav />
+      <PageNav backHref="/media" backLabel="Back to media" />
     </PageShell>
   )
 }

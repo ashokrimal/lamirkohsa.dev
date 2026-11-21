@@ -156,7 +156,7 @@ export default async function CollectionPage({
           ))}
       </div>
 
-      <PageNav />
+      <PageNav backHref="/about" backLabel="Back to about" />
     </PageShell>
   )
 }
