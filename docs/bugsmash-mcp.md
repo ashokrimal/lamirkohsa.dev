@@ -54,10 +54,11 @@ the preview URL Vercel comments on the pull request.
 3. Share the review link BugSmash returns, and read the comments back through
 the MCP connection above (for example, ask the agent to list open comments).
 
-**Deployment protection is the catch.** This project runs Vercel's **Standard
-Protection** (Vercel Authentication): every deployment URL — previews *and*
-production deployment URLs — requires a Vercel session, while the custom domain
-stays public. Measured unauthenticated responses:
+**Deployment protection is the catch.** Unauthenticated requests to this
+project's deployment URLs are redirected to Vercel's sign-in page. These are
+responses observed on 2026-11-21, not a reading of the project's protection
+settings — Vercel's own project settings page (Settings → Deployment
+Protection) names the configured mode and is the source of truth:
 
 | URL | Response |
 | --- | --- |
@@ -66,16 +67,15 @@ stays public. Measured unauthenticated responses:
 | `https://www.ashokrimal.com.np/` (custom domain) | `200` |
 | `https://ashokrimal.com.np/` (apex) | `307` → `www`, not the SSO page |
 
-That last row is why the mode is Standard rather than All Deployments: "All"
-would put the custom domain behind SSO too. BugSmash's capture has no Vercel
-session, so pasting a plain deployment URL captures the login page instead of
-the site. Use one of these:
+In short: the deployment URLs answered with an SSO redirect, the custom domain
+answered with the site. BugSmash's capture has no Vercel session, so pasting a
+deployment URL captures the login page instead of the site. Use one of these:
 
 | Option | How | Trade-off |
 | --- | --- | --- |
 | Shareable link | Vercel deployment → ⋯ → **Share** → copy the link | Bypasses protection with a token; anyone holding it can view that deployment |
 | Production site | Review `https://www.ashokrimal.com.np` after merge — the custom domain, never the `*.vercel.app` deployment URL | Public, no token, but not the exact pre-merge build |
-| Narrow the protection | Vercel project → Settings → Deployment Protection → apply Vercel Authentication to previews only | Keeps production deployment URLs reachable by tools; previews stay protected |
+| Narrow the protection | Vercel project → Settings → Deployment Protection | Whether a preview-only setting is available depends on the mode shown there; changing it affects every deployment URL of this project |
 
 ## Why there is no BugSmash CI job
 
