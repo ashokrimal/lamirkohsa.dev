@@ -18,7 +18,8 @@ import {
   filterProjects,
   normalizeFilterToken,
 } from '@/components/ui/ProjectFilter'
-import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { PageHero, PageShell } from '@/components/ui/PageChrome'
+import { PageNav } from '@/components/ui/PageNav'
 import {
   PROJECT_LIFECYCLE_STATUSES,
   getProjectStatusVisual,

@@ -1,4 +1,5 @@
-import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { PageHero, PageShell } from '@/components/ui/PageChrome'
+import { PageNav } from '@/components/ui/PageNav'
 import { getPageCopy } from '@/lib/site-content'
 import { getPageWithSections } from '@/lib/studio/data'
 import { SectionRenderer } from '@/components/studio/SectionRenderer'

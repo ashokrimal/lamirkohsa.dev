@@ -20,7 +20,8 @@ import {
   GitHubActivitySparkline,
   type GitHubActivityData,
 } from '@/components/ui/GitHubActivitySparkline'
-import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
+import { PageHero, PageSection, PageShell } from '@/components/ui/PageChrome'
+import { PageNav } from '@/components/ui/PageNav'
 import { CMS_SCHEMA } from '@/lib/cms-schema'
 import { getPageCopy, type PageCopy } from '@/lib/site-content'
 

@@ -1,12 +1,7 @@
-'use client'
-
-import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { ArrowUpRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PageHeroMotion } from '@/components/ui/PageHeroMotion'
 import { SectionHeader } from '@/components/ui/SectionHeader'
-import { useUiStrings } from '@/components/ui/UiCopyProvider'
 
 /**
  * The shared page frame. Every public page renders through these primitives so
@@ -108,43 +103,3 @@ export function PageSection({
   )
 }
 
-export function PageNav({
-  backHref,
-  backLabel,
-  nextHref,
-  nextLabel,
-}: {
-  /** Pass a parent route to show a back link; pages never link back home. */
-  backHref?: string
-  backLabel?: string
-  nextHref?: string
-  nextLabel?: string
-}) {
-  const uiStrings = useUiStrings()
-  const resolvedBackLabel = backLabel ?? uiStrings.pageNav.back.en
-  if (!backHref && !(nextHref && nextLabel)) return null
-
-  return (
-    <nav className="mt-14 md:mt-20 pt-6 border-t border-line flex flex-wrap items-center justify-between gap-4 text-xs">
-      {backHref ? (
-        <Link
-          href={backHref}
-          className="inline-flex items-center gap-1.5 text-muted hover:text-ink transition-colors"
-        >
-          ← {resolvedBackLabel}
-        </Link>
-      ) : (
-        <span />
-      )}
-      {nextHref && nextLabel && (
-        <Link
-          href={nextHref}
-          className="inline-flex items-center gap-1.5 font-semibold text-accent hover:underline"
-        >
-          {nextLabel}
-          <ArrowUpRight className="w-3.5 h-3.5" />
-        </Link>
-      )}
-    </nav>
-  )
-}

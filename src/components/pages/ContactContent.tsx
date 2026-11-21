@@ -1,6 +1,7 @@
 import { Clock, MapPin } from 'lucide-react'
 import ScrollObserver from '@/components/ScrollObserver'
-import { MetaChip, PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
+import { PageNav } from '@/components/ui/PageNav'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { getPageCopy, getSiteConfig } from '@/lib/site-content'
 import { getPageWithSections } from '@/lib/studio/data'

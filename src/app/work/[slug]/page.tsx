@@ -7,7 +7,8 @@ import { getProjectBySlug, getPublishedProjects } from '@/lib/studio/data'
 import { articleMetadata } from '@/lib/seo'
 import { isRepositoryUrl } from '@/lib/urls'
 import { getProjectStatusVisual } from '@/lib/project-status'
-import { PageHero, PageNav, PageSection, PageShell } from '@/components/ui/PageChrome'
+import { PageHero, PageSection, PageShell } from '@/components/ui/PageChrome'
+import { PageNav } from '@/components/ui/PageNav'
 
 export const dynamic = 'force-dynamic'
 

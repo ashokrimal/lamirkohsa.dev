@@ -13,12 +13,8 @@ import {
   type ProjectEntry,
 } from '@/lib/projects'
 import { getPageCopy } from '@/lib/site-content'
-import {
-  PageHero,
-  PageNav,
-  PageSection,
-  PageShell,
-} from '@/components/ui/PageChrome'
+import { PageHero, PageSection, PageShell } from '@/components/ui/PageChrome'
+import { PageNav } from '@/components/ui/PageNav'
 import { ProjectDocumentation } from '@/components/projects/ProjectDocumentation'
 import { ProjectGanttChart } from '@/components/projects/ProjectGanttChart'
 import { ProjectPhaseRoadmap } from '@/components/projects/ProjectPhaseRoadmap'

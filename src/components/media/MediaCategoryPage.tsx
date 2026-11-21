@@ -1,4 +1,5 @@
-import { PageHero, PageNav, PageShell } from '@/components/ui/PageChrome'
+import { PageHero, PageShell } from '@/components/ui/PageChrome'
+import { PageNav } from '@/components/ui/PageNav'
 import { MediaPoster, type MediaKind } from '@/components/ui/MediaPoster'
 import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSection } from '@/lib/media-content'
