@@ -44,7 +44,11 @@ export function UiCopyEditor({
         <h2 className="text-xl font-semibold tracking-tight text-slate-900">UI copy</h2>
         <p className="max-w-2xl text-sm leading-relaxed text-slate-500">
           Every button, label and system message the site renders. Leave a field empty to keep
-          the built-in text, or clear both fields to reset a label.
+          the built-in text, or clear both fields to reset a label. Templates use{' '}
+          <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[11px]">{'{name}'}</code>{' '}
+          for values and{' '}
+          <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[11px]">{'{name:one|many}'}</code>{' '}
+          to pick a singular or plural form.
         </p>
       </header>
 
