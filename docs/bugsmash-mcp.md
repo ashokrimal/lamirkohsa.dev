@@ -42,16 +42,19 @@ token immediately.
 | Server missing from the list | Wrong config file for that client | Claude Code reads `.mcp.json`, Cursor reads `.cursor/mcp.json`, VS Code reads `.vscode/mcp.json` (`servers` key) |
 | `invalid_scope` | Client requested scopes beyond `mcp:use` | Request only `mcp:use` |
 
-## MCP versus the REST API
+## Why there is no BugSmash CI job
 
-The MCP server is interactive and OAuth-only. CI cannot complete a browser
-consent flow, so `.github/workflows/bugsmash-review.yml` uses the separate
-REST API instead:
+The MCP server above is free-plan friendly: it is interactive and OAuth-only,
+so it costs nothing beyond signing in once.
 
-- Base URL `https://api.bugsmash.io/api/v2`
-- Header `X-API-Key: <key>` from `tools.bugsmash.io` → Settings → API Key
-- Stored as the `BUGSMASH_API_KEY` GitHub secret, plus `BUGSMASH_PROJECT_ID`
-  for the review project that receives each preview version
+Automation is different. The REST API (`https://api.bugsmash.io/api/v2`, header
+`X-API-Key`) is the only thing a build can call, because CI cannot complete a
+browser consent flow, and BugSmash issues API keys on paid plans only. This
+repository therefore ships no BugSmash workflow; the earlier preview-review job
+that used `BUGSMASH_API_KEY` and `BUGSMASH_PROJECT_ID` was removed.
 
-Never place that key in `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json` or
-any tracked file.
+If the plan changes, the call a workflow would need is
+`POST /api/v2/version` with `{ "websiteUrl": <preview url>, "projectId": <uuid> }`,
+expecting `{ status: true, version: { review_link } }`. Keep that key in a
+GitHub secret — never in `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`
+or any tracked file.

@@ -226,10 +226,9 @@ The BugSmash MCP server is registered for Claude Code (`.mcp.json`), Cursor
 (scope `mcp:use`) rather than an API key, so a plain config entry returns 401
 until you approve access once; see [docs/bugsmash-mcp.md](docs/bugsmash-mcp.md).
 
-`.github/workflows/bugsmash-review.yml` posts every successful non-production
-Vercel deployment to a BugSmash review project as a new version, using the REST
-API. It needs the `BUGSMASH_API_KEY` and `BUGSMASH_PROJECT_ID` repository
-secrets and skips with a warning until they exist.
+No CI job talks to BugSmash: its REST API needs an API key that BugSmash only
+issues on a paid plan, while the MCP server works on the free plan. Add a
+workflow only if that changes.
 
 ### Backfilling the legacy media tables
 
