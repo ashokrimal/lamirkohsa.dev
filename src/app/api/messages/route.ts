@@ -10,7 +10,10 @@ import {
   verifyAdminSessionToken,
 } from '@/lib/admin-auth'
 import { planContactSubmission, type ContactSubmission } from '@/lib/contact-submission'
+import { contactAcknowledgement } from '@/lib/email-templates'
+import { noReplyAddress, readMailConfig, sendMail } from '@/lib/mailer'
 import { createSlidingWindowLimiter } from '@/lib/rate-limit'
+import { SITE_URL } from '@/lib/seo'
 
 /**
  * Contact messages.
@@ -224,6 +227,27 @@ export async function POST(request: NextRequest) {
       },
       { status: 503 },
     )
+  }
+
+  // Acknowledge the sender from the domain address; their reply goes to the
+  // owner because Reply-To is the contact inbox, not no-reply@.
+  const config = readMailConfig()
+  if (config) {
+    const acknowledgement = contactAcknowledgement({
+      name: message.name,
+      subject: message.subject,
+      message: message.message,
+      siteUrl: SITE_URL,
+    })
+    const acknowledged = await sendMail({
+      ...acknowledgement,
+      to: message.email,
+      from: noReplyAddress(config.domain),
+      replyTo: config.ownerEmail || undefined,
+    })
+    if (!acknowledged.ok) {
+      console.warn('[messages] Acknowledgement not delivered:', acknowledged.error)
+    }
   }
 
   return NextResponse.json({ success: true })

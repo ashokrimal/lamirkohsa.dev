@@ -1,155 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
-import path from 'path'
-import os from 'os'
-import { promises as fs } from 'fs'
-import { Resend } from 'resend'
+import { newsletterWelcome } from '@/lib/email-templates'
+import { journalAddress, readMailConfig, sendMail } from '@/lib/mailer'
+import { subscribeToNewsletter, unsubscribeUrlFor } from '@/lib/newsletter-store'
+import { createSlidingWindowLimiter } from '@/lib/rate-limit'
+import { SITE_URL } from '@/lib/seo'
 
-type Subscriber = {
-  id: string
-  email: string
-  subscribedAt: string
-  source: string
-}
-
-const REPO_FILE = path.join(process.cwd(), 'data', 'newsletter-subscribers.json')
-const TMP_FILE = path.join(os.tmpdir(), 'portfolio-newsletter-subscribers.json')
+/**
+ * Journal newsletter subscriptions.
+ *
+ * Subscribers are stored in Postgres (`newsletterSubscriber`) so a later blog
+ * publish can reach them; the previous JSON-file store lived in /tmp on
+ * serverless and disappeared with the instance. A new subscriber gets one
+ * welcome email from the journal address, with a personal unsubscribe link.
+ */
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+const MAX_BODY_BYTES = 4_000
 
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
+const limiter = createSlidingWindowLimiter({ limit: 5, windowMs: 10 * 60 * 1000 })
 
-async function readSubscribers(pathname: string): Promise<Subscriber[]> {
-  try {
-    const raw = await fs.readFile(pathname, 'utf8')
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? (parsed as Subscriber[]) : []
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.warn(`[newsletter] Could not read ${pathname}:`, (error as Error).message)
-    }
-    return []
-  }
-}
-
-async function persistSubscriber(
-  subscriber: Subscriber,
-): Promise<{ ok: boolean; alreadySubscribed: boolean }> {
-  for (const pathname of [REPO_FILE, TMP_FILE]) {
-    try {
-      await fs.mkdir(path.dirname(pathname), { recursive: true })
-      const existing = await readSubscribers(pathname)
-      const duplicate = existing.some((item) => item.email === subscriber.email)
-      if (duplicate) {
-        return { ok: true, alreadySubscribed: true }
-      }
-      await fs.writeFile(
-        pathname,
-        JSON.stringify([subscriber, ...existing].slice(0, 2000), null, 2),
-        'utf8',
-      )
-      return { ok: true, alreadySubscribed: false }
-    } catch (error) {
-      const code = (error as NodeJS.ErrnoException).code ?? (error as Error).message
-      console.warn(`[newsletter] ${pathname} is not writable: ${code}`)
-    }
-  }
-  return { ok: false, alreadySubscribed: false }
-}
-
-function isDuplicateResendError(message: string): boolean {
-  const normalized = message.toLowerCase()
-  return (
-    normalized.includes('already exists') ||
-    normalized.includes('duplicate') ||
-    normalized.includes('conflict')
-  )
-}
-
-async function registerWithResend(email: string): Promise<{
-  configured: boolean
-  ok: boolean
-  alreadySubscribed: boolean
-  validationError?: string
-}> {
-  const apiKey = process.env.RESEND_API_KEY?.trim()
-  if (!apiKey) {
-    return { configured: false, ok: false, alreadySubscribed: false }
-  }
-
-  const resend = new Resend(apiKey)
-  const audienceId = process.env.RESEND_AUDIENCE_ID?.trim()
-  const domain = process.env.RESEND_EMAIL_DOMAIN?.trim() || 'ashokrimal.com.np'
-  const ownerEmail = process.env.CONTACT_TO_EMAIL?.trim() || process.env.ADMIN_EMAIL?.trim()
-
-  try {
-    const contactResult = audienceId
-      ? await resend.contacts.create({
-          audienceId,
-          email,
-          unsubscribed: false,
-        })
-      : await resend.contacts.create({
-          email,
-          unsubscribed: false,
-        })
-
-    let alreadySubscribed = false
-
-    if (contactResult.error) {
-      const errMsg = contactResult.error.message || ''
-      if (isDuplicateResendError(errMsg)) {
-        alreadySubscribed = true
-        // Ensure a previously unsubscribed contact is marked subscribed again.
-        await resend.contacts
-          .update(
-            audienceId
-              ? { audienceId, email, unsubscribed: false }
-              : { email, unsubscribed: false },
-          )
-          .catch(() => undefined)
-      } else {
-        if (contactResult.error.name === 'validation_error') {
-          return {
-            configured: true,
-            ok: false,
-            alreadySubscribed: false,
-            validationError: errMsg,
-          }
-        }
-        console.error('[newsletter] Resend contact registration error:', errMsg)
-        return { configured: true, ok: false, alreadySubscribed: false }
-      }
-    }
-
-    // Best-effort owner notification when configured (never blocks subscription success).
-    if (!alreadySubscribed && ownerEmail) {
-      await resend.emails
-        .send({
-          from: `Journal Dispatch <journal@${domain}>`,
-          to: ownerEmail,
-          subject: `New journal subscriber: ${email}`,
-          text: `A reader subscribed to your journal newsletter.\n\nEmail: ${email}\nSubscribed at: ${new Date().toISOString()}`,
-          html: `<p>A reader subscribed to your journal newsletter.</p><p><strong>Email:</strong> ${escapeHtml(email)}</p>`,
-        })
-        .catch((err) => {
-          console.warn('[newsletter] Owner notification skipped:', (err as Error).message)
-        })
-    }
-
-    return { configured: true, ok: true, alreadySubscribed }
-  } catch (error) {
-    console.error('[newsletter] Resend request failed:', (error as Error).message)
-    return { configured: true, ok: false, alreadySubscribed: false }
-  }
+function clientKey(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  const ip = forwarded?.split(',')[0]?.trim() || request.headers.get('x-real-ip')?.trim()
+  return ip ? `ip:${ip}` : 'anonymous'
 }
 
 export async function POST(request: NextRequest) {
+  const declaredLength = Number(request.headers.get('content-length') ?? 0)
+  if (declaredLength > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'Invalid request payload.' }, { status: 413 })
+  }
+
   let body: { email?: unknown; website?: unknown }
   try {
     body = await request.json()
@@ -175,41 +56,49 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const subscriber: Subscriber = {
-    id: crypto.randomUUID(),
-    email: rawEmail,
-    subscribedAt: new Date().toISOString(),
-    source: 'journal',
-  }
-
-  const [resendResult, localResult] = await Promise.all([
-    registerWithResend(rawEmail),
-    persistSubscriber(subscriber),
-  ])
-
-  if (resendResult.validationError) {
-    return NextResponse.json({ error: resendResult.validationError }, { status: 400 })
-  }
-
-  if (!resendResult.ok && !localResult.ok) {
+  const limit = limiter.check(clientKey(request))
+  if (!limit.allowed) {
     return NextResponse.json(
-      {
-        error: 'The subscription service is temporarily unavailable. Please try again later.',
-      },
+      { error: 'Too many subscription attempts. Please try again shortly.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
+    )
+  }
+
+  const result = await subscribeToNewsletter(rawEmail, 'journal')
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: 'The subscription service is temporarily unavailable. Please try again later.' },
       { status: 503 },
     )
   }
 
-  const alreadySubscribed = resendResult.alreadySubscribed || localResult.alreadySubscribed
+  if (!result.alreadySubscribed) {
+    const config = readMailConfig()
+    if (config) {
+      const welcome = newsletterWelcome({
+        siteUrl: SITE_URL,
+        unsubscribeUrl: unsubscribeUrlFor(result.token),
+      })
+      const sent = await sendMail({
+        ...welcome,
+        to: rawEmail,
+        from: journalAddress(config.domain),
+        replyTo: config.ownerEmail || undefined,
+      })
+      if (!sent.ok) {
+        console.warn('[newsletter] Welcome email not delivered:', sent.error)
+      }
+    }
+  }
 
   return NextResponse.json(
     {
       success: true,
-      alreadySubscribed,
-      message: alreadySubscribed
+      alreadySubscribed: result.alreadySubscribed,
+      message: result.alreadySubscribed
         ? "You're already subscribed—good to have you here."
         : "You're on the list. Thanks for reading along.",
     },
-    { status: alreadySubscribed ? 200 : 201 },
+    { status: result.alreadySubscribed ? 200 : 201 },
   )
 }

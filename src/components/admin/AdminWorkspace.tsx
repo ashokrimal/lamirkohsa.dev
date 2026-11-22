@@ -61,6 +61,7 @@ import {
   deleteCmsContent,
   saveCmsImage,
 } from '@/app/actions/content-cms'
+import { replyToInboxMessage } from '@/app/actions/content'
 import { saveProfileSettings } from '@/app/actions/settings'
 
 interface GalleryItem {
@@ -270,6 +271,47 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
 
   // Real messages only; an empty inbox stays empty.
   const [inboxMessages] = useState<InboxItem[]>(content.messages ?? [])
+
+  const closeInboxMessage = () => {
+    setInboxMessageModal(null)
+    setReplyBody('')
+    setReplyNotice(null)
+  }
+
+  const handleSendReply = async () => {
+    if (!inboxMessageModal || replySending) return
+    setReplySending(true)
+    setReplyNotice(null)
+    try {
+      const result = await replyToInboxMessage({
+        id: String(inboxMessageModal.id),
+        body: replyBody,
+      })
+      if (!result.ok) {
+        setReplyNotice({ tone: 'error', text: result.error })
+        return
+      }
+      setReplyBody('')
+      setReplyNotice({
+        tone: 'ok',
+        text: `Reply sent to ${inboxMessageModal.fromEmail}.`,
+      })
+    } catch (error) {
+      setReplyNotice({
+        tone: 'error',
+        text: error instanceof Error ? error.message : 'The reply could not be sent.',
+      })
+    } finally {
+      setReplySending(false)
+    }
+  }
+
+  // Inbox reply composer. Replies leave from no-reply@ on the verified domain.
+  const [replyBody, setReplyBody] = useState('')
+  const [replySending, setReplySending] = useState(false)
+  const [replyNotice, setReplyNotice] = useState<{ tone: 'ok' | 'error'; text: string } | null>(
+    null,
+  )
 
   // Content distribution metrics
   const distributionItems = useMemo(
@@ -1982,7 +2024,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       {/* MODAL: INBOX MESSAGE DETAIL */}
       <CmsModal
         isOpen={Boolean(inboxMessageModal)}
-        onClose={() => setInboxMessageModal(null)}
+        onClose={closeInboxMessage}
         title={inboxMessageModal?.subject || 'Message'}
         description={`From: ${inboxMessageModal?.fromEmail ?? ''}`}
       >
@@ -1991,6 +2033,47 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
             <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-xl leading-relaxed text-slate-700 whitespace-pre-wrap">
               {inboxMessageModal.textBody}
             </div>
+            <div className="space-y-2 border-t border-slate-200/80 pt-4">
+              <label
+                htmlFor="inbox-reply"
+                className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500"
+              >
+                Reply from no-reply@
+              </label>
+              <textarea
+                id="inbox-reply"
+                rows={5}
+                value={replyBody}
+                onChange={(event) => setReplyBody(event.target.value)}
+                placeholder={`Write your reply to ${inboxMessageModal.fromEmail}…`}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs leading-relaxed text-slate-800 focus:border-teal-500 focus:outline-none"
+              />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="text-[11px] text-slate-400">
+                  Subject: Re: {inboxMessageModal.subject}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleSendReply}
+                  disabled={replySending || !replyBody.trim()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse font-semibold hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>{replySending ? 'Sending…' : 'Send reply'}</span>
+                </button>
+              </div>
+              {replyNotice && (
+                <p
+                  role="status"
+                  className={`text-[11px] ${
+                    replyNotice.tone === 'ok' ? 'text-emerald-700' : 'text-red-600'
+                  }`}
+                >
+                  {replyNotice.text}
+                </p>
+              )}
+            </div>
+
             <div className="flex items-center justify-between pt-2">
               <span className="text-slate-400 text-[11px]">
                 Received {new Date(inboxMessageModal.receivedAt).toLocaleString()}
@@ -1999,10 +2082,10 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
                 href={`mailto:${inboxMessageModal.fromEmail}?subject=${encodeURIComponent(
                   `Re: ${inboxMessageModal.subject}`
                 )}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-inverse font-semibold hover:bg-teal-700 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
               >
                 <Mail className="w-3.5 h-3.5" />
-                <span>Reply via Email ↗</span>
+                <span>Open in mail app ↗</span>
               </a>
             </div>
           </div>

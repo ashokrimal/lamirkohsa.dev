@@ -17,6 +17,7 @@ import {
   type CmsResult,
 } from '@/lib/cms-schema'
 import { resolveProjectLifecycleStatus, type ProjectLifecycleStatus } from '@/lib/project-status'
+import { notifySubscribersOfPost } from '@/lib/blog-notifications'
 import { toSlug } from '@/lib/slug'
 
 export interface CmsRecord {
@@ -184,6 +185,44 @@ function normalizeCmsProjectPayload(
     return { ...safe, status: 'Prototype' }
   }
   return safe
+}
+
+/** Best-effort plain-text summary of a blog payload for the announcement email. */
+function blogExcerpt(payload: Record<string, unknown>): string | undefined {
+  for (const key of ['description', 'summary', 'content', 'body']) {
+    const value = payload[key]
+    if (typeof value === 'string' && value.trim()) {
+      return value
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 400)
+    }
+  }
+  return undefined
+}
+
+/**
+ * Emails the journal newsletter when a blog post becomes published. Never
+ * throws: a mail outage must not undo the save that triggered it.
+ */
+async function announceBlogPost(
+  collection: string,
+  status: string,
+  post: { title: string; slug: string; payload: Record<string, unknown> },
+) {
+  if (collection.trim().toLowerCase() !== CMS_COLLECTIONS.blogs.trim().toLowerCase()) return
+  if (status.trim().toLowerCase() !== 'published') return
+  if (!post.title || !post.slug) return
+  try {
+    await notifySubscribersOfPost({
+      title: post.title,
+      slug: post.slug,
+      excerpt: blogExcerpt(post.payload),
+    })
+  } catch (error) {
+    console.warn('[CMS] Newsletter announcement failed:', (error as Error).message)
+  }
 }
 
 async function fetchPublishedCollection(collection: string): Promise<CmsRecord[]> {
@@ -604,6 +643,7 @@ export async function createCmsContent(formData: FormData) {
 
   const repo = getMemoryRepo()
   const created = repo.create(collection, title, normalizedPayload, status)
+  let stored = false
 
   try {
     const userId = await requireUser()
@@ -616,11 +656,20 @@ export async function createCmsContent(formData: FormData) {
       status,
       sortOrder: created.sortOrder,
     })
+    stored = true
   } catch (err) {
     console.warn('[CMS] Database insert fallback to memory repo:', err)
   }
 
   revalidateCms(collection)
+
+  if (stored) {
+    await announceBlogPost(collection, status, {
+      title,
+      slug: created.slug,
+      payload: normalizedPayload,
+    })
+  }
 }
 
 export async function updateCmsContent(id: number, formData: FormData) {
@@ -675,7 +724,13 @@ export async function updateCmsContent(id: number, formData: FormData) {
     // The memory repo is never seeded, so the stored payload has to come from the
     // database when the form only supplied a description.
     const [current] = await db
-      .select({ payload: cmsContent.payload, collection: cmsContent.collection })
+      .select({
+        payload: cmsContent.payload,
+        collection: cmsContent.collection,
+        status: cmsContent.status,
+        slug: cmsContent.slug,
+        title: cmsContent.title,
+      })
       .from(cmsContent)
       .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
       .limit(1)
@@ -702,6 +757,17 @@ export async function updateCmsContent(id: number, formData: FormData) {
         updatedAt: new Date(),
       })
       .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
+
+    const publishCollection = collection || current?.collection || previous?.collection || ''
+    const wasPublished = (current?.status ?? '').trim().toLowerCase() === 'published'
+    if (!wasPublished && status.trim().toLowerCase() === 'published') {
+      const publishedTitle = title || current?.title || ''
+      await announceBlogPost(publishCollection, status, {
+        title: publishedTitle,
+        slug: current?.slug || toSlug(publishedTitle),
+        payload: storedPayload,
+      })
+    }
 
     revalidateCms(collection || current?.collection || previous?.collection)
   } catch (err) {
