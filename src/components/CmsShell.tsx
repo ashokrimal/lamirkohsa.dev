@@ -31,6 +31,7 @@ import {
   PanelLeftOpen,
   MoreHorizontal,
   Type,
+  Archive,
 } from 'lucide-react'
 import { CmsCommandPalette } from '@/components/admin/ui/CmsCommandPalette'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
@@ -88,6 +89,7 @@ const navGroups: NavGroup[] = [
     label: 'Settings',
     items: [
       { id: 'accounts', label: 'Accounts', icon: UserCog, href: '/admin/settings' },
+      { id: 'backup', label: 'Backup & restore', icon: Archive, href: '/admin/backup' },
       { id: 'support', label: 'Support & docs', icon: HelpCircle, action: 'support' },
     ],
   },

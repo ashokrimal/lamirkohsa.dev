@@ -15,6 +15,7 @@ import {
   ExternalLink,
   X,
   ArrowRight,
+  Archive,
 } from 'lucide-react'
 
 interface CommandPaletteProps {
@@ -68,6 +69,7 @@ export function CmsCommandPalette({
     { id: 'inbox', label: 'Messages & Inquiries', icon: Inbox, category: 'Navigation', hint: 'Contact responses' },
     { id: 'github', label: 'GitHub Activity', icon: FileText, category: 'Navigation', hint: 'Repos & commits', href: '/admin/github' },
     { id: 'settings', label: 'Settings & Account', icon: Settings, category: 'Settings', hint: 'Integrations, password & session', href: '/admin/settings' },
+    { id: 'backup', label: 'Backup & Restore', icon: Archive, category: 'Settings', hint: 'Download or restore CMS content', href: '/admin/backup' },
   ]
 
   const quickActions = [

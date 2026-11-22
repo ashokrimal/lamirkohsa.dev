@@ -1,0 +1,196 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import { CMS_COLLECTIONS } from '../src/lib/cms-schema'
+import {
+  CMS_BACKUP_COLLECTIONS,
+  CMS_BACKUP_FORMAT,
+  CMS_BACKUP_VERSION,
+  cmsBackupFileName,
+  cmsRecordIdentity,
+  countCmsBackup,
+  parseCmsBackup,
+  planCmsRestore,
+  type CmsBackupRecord,
+  type CmsExistingRecord,
+} from '../src/lib/cms-backup'
+
+function record(overrides: Partial<CmsBackupRecord> = {}): CmsBackupRecord {
+  return {
+    collection: 'Projects',
+    title: 'Harbour terminal',
+    slug: 'harbour-terminal',
+    payload: { summary: 'A build' },
+    status: 'published',
+    sortOrder: 1,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-02T00:00:00.000Z',
+    ...overrides,
+  }
+}
+
+function backupFile(overrides: Record<string, unknown> = {}) {
+  return {
+    format: CMS_BACKUP_FORMAT,
+    version: CMS_BACKUP_VERSION,
+    createdAt: '2026-11-22T07:30:00.000Z',
+    source: 'test',
+    cmsContent: [record()],
+    studio: { pages: [], projects: [], siteSettings: null },
+    ...overrides,
+  }
+}
+
+test('the backup collection list matches the CMS schema', () => {
+  assert.deepEqual(
+    new Set(CMS_BACKUP_COLLECTIONS),
+    new Set(Object.values(CMS_COLLECTIONS)),
+  )
+})
+
+test('a valid backup parses with normalised counts', () => {
+  const result = parseCmsBackup(
+    backupFile({
+      cmsContent: [record(), record({ collection: 'blogs', title: ' Notes ', slug: 'notes' })],
+      studio: {
+        pages: [
+          {
+            slug: '/about',
+            title: 'About',
+            sections: [
+              { sectionKey: 'hero', sortOrder: 0, content: { heading: 'Hi' } },
+              { sectionKey: 'bio', sortOrder: 1, content: {} },
+            ],
+          },
+        ],
+        projects: [{ slug: 'harbour', title: 'Harbour', techStack: ['Go'] }],
+        siteSettings: { contactEmail: 'a@b.com', socialLinks: [] },
+      },
+    }),
+  )
+
+  assert.equal(result.ok, true)
+  if (!result.ok) return
+  assert.equal(result.backup.cmsContent[1].collection, 'Blogs', 'collection names are canonicalised')
+  assert.equal(result.backup.cmsContent[1].title, 'Notes')
+  assert.equal(result.backup.studio.pages[0].sections.length, 2)
+  assert.equal(result.backup.studio.projects[0].status, 'Active', 'project defaults are applied')
+  assert.deepEqual(result.backup.counts, {
+    cmsContent: 2,
+    pages: 1,
+    pageSections: 2,
+    projects: 1,
+    siteSettings: 1,
+    total: 7,
+  })
+})
+
+test('files that are not this backup are rejected with a readable message', () => {
+  const cases: Array<[unknown, RegExp]> = [
+    [null, /not a CMS backup/],
+    ['{"cmsContent":[]}', /not a CMS backup/],
+    [backupFile({ format: 'something-else' }), /not a portfolio CMS backup/],
+    [backupFile({ version: 99 }), /version 1/],
+    [backupFile({ cmsContent: 'nope' }), /missing its cmsContent list/],
+    [backupFile({ cmsContent: [record({ collection: 'Secrets' })] }), /not a CMS collection/],
+    [backupFile({ cmsContent: [record({ title: '' })] }), /title is empty/],
+    [backupFile({ cmsContent: [record({ status: 'live' })] }), /published.*draft/],
+    [
+      backupFile({ cmsContent: [record({ payload: [] as unknown as Record<string, unknown> })] }),
+      /must be a JSON object/,
+    ],
+    [backupFile({ cmsContent: [record({ slug: '' , payload: {} })] }), /neither a slug nor a payload key/],
+  ]
+
+  for (const [input, expected] of cases) {
+    const result = parseCmsBackup(input)
+    assert.equal(result.ok, false, `expected a rejection for ${JSON.stringify(input)?.slice(0, 60)}`)
+    if (result.ok) continue
+    assert.match(result.error, expected)
+  }
+})
+
+test('duplicate identities are rejected instead of silently collapsing', () => {
+  const result = parseCmsBackup(
+    backupFile({
+      cmsContent: [
+        record({ collection: 'Site Settings', slug: 'brand', payload: { key: 'brand' } }),
+        record({ collection: 'site settings', slug: 'brand-two', payload: { key: 'Brand' } }),
+      ],
+    }),
+  )
+  assert.equal(result.ok, false)
+  if (result.ok) return
+  assert.match(result.error, /two records for Site Settings "brand"/i)
+})
+
+test('identity prefers the locked key over the slug', () => {
+  assert.equal(
+    cmsRecordIdentity('Page Copy', 'old-slug', { key: ' About ' }),
+    'page copy::key:about',
+  )
+  assert.equal(cmsRecordIdentity('Projects', 'Harbour', null), 'projects::slug:harbour')
+})
+
+test('merge only adds and updates, never removes', () => {
+  const existing: CmsExistingRecord[] = [
+    { id: 1, collection: 'Projects', slug: 'harbour-terminal', payload: {} },
+    { id: 2, collection: 'Projects', slug: 'retired-build', payload: {} },
+    { id: 3, collection: 'Blogs', slug: 'notes', payload: {} },
+  ]
+  const plan = planCmsRestore(
+    existing,
+    [record({ title: 'Renamed' }), record({ collection: 'Blogs', slug: 'fresh', title: 'Fresh' })],
+    'merge',
+  )
+
+  assert.equal(plan.update.length, 1)
+  assert.equal(plan.update[0].existing.id, 1)
+  assert.equal(plan.insert.length, 1)
+  assert.equal(plan.insert[0].slug, 'fresh')
+  assert.deepEqual(plan.remove, [])
+})
+
+test('declared coverage lets replace clear a collection with no records in the file', () => {
+  const existing: CmsExistingRecord[] = [
+    { id: 1, collection: 'Projects', slug: 'retired-build', payload: {} },
+    { id: 2, collection: 'Blogs', slug: 'notes', payload: {} },
+  ]
+  const plan = planCmsRestore(existing, [], 'replace', ['Projects'])
+  assert.deepEqual(
+    plan.remove.map((entry) => entry.id),
+    [1],
+    'projects are covered and empty, so the stray project goes; blogs are not covered',
+  )
+})
+
+test('replace removes unmatched records only inside the collections the file covers', () => {
+  const existing: CmsExistingRecord[] = [
+    { id: 1, collection: 'Projects', slug: 'harbour-terminal', payload: {} },
+    { id: 2, collection: 'Projects', slug: 'retired-build', payload: {} },
+    { id: 3, collection: 'Blogs', slug: 'notes', payload: {} },
+  ]
+  const plan = planCmsRestore(existing, [record()], 'replace')
+
+  assert.deepEqual(
+    plan.remove.map((entry) => entry.id),
+    [2],
+    'the retired project goes; the blog the file never mentions stays',
+  )
+})
+
+test('an empty backup is valid and covers nothing', () => {
+  const result = parseCmsBackup(backupFile({ cmsContent: [], studio: {} }))
+  assert.equal(result.ok, true)
+  if (!result.ok) return
+  assert.equal(result.backup.counts.total, 0)
+  assert.deepEqual(result.backup.studio, { pages: [], projects: [], siteSettings: null })
+  assert.deepEqual(planCmsRestore([], [], 'replace'), { insert: [], update: [], remove: [] })
+  assert.equal(countCmsBackup(result.backup).total, 0)
+})
+
+test('backup filenames sort chronologically and avoid filesystem punctuation', () => {
+  assert.equal(
+    cmsBackupFileName(new Date('2026-11-22T07:30:45.000Z')),
+    'cms-backup-2026-11-22-07-30.json',
+  )
+})
