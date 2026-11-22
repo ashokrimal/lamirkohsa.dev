@@ -34,6 +34,12 @@ export const CMS_BACKUP_MAX_BYTES = 4 * 1024 * 1024
 /** How many daily snapshots the scheduled job keeps before deleting the oldest. */
 export const CMS_BACKUP_KEEP = 14
 
+/**
+ * How old the newest snapshot may be before health calls the schedule broken.
+ * The job runs daily, so two missed days mean it is no longer running silently.
+ */
+export const CMS_BACKUP_STALE_AFTER_MS = 2 * 24 * 60 * 60 * 1000
+
 /** Blob path prefix the scheduled job writes under. */
 export const CMS_BACKUP_PREFIX = 'backups/'
 
@@ -47,6 +53,43 @@ export function isCmsBackupPathname(value: unknown): value is string {
     typeof value === 'string' &&
     /^backups\/cms-backup-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}[A-Za-z0-9._-]*\.json$/.test(value)
   )
+}
+
+/**
+ * How fresh the snapshot set is, from the timestamps of the files the download
+ * and restore routes accept. `missing` covers a store with nothing in it yet —
+ * which is also what a cron that never ran looks like; `stale` means the newest
+ * snapshot is older than `CMS_BACKUP_STALE_AFTER_MS`.
+ */
+export type CmsBackupAgeState = 'fresh' | 'stale' | 'missing'
+
+export interface CmsBackupAge {
+  state: CmsBackupAgeState
+  /** ISO timestamp of the newest snapshot, or null when there is none. */
+  newest: string | null
+  ageMs: number | null
+}
+
+export function cmsBackupAge(
+  uploadedAt: readonly (string | Date)[],
+  now: number | Date = Date.now(),
+): CmsBackupAge {
+  const nowMs = now instanceof Date ? now.getTime() : now
+  let newestMs: number | null = null
+  for (const value of uploadedAt) {
+    const ms = value instanceof Date ? value.getTime() : Date.parse(value)
+    if (!Number.isFinite(ms)) continue
+    if (newestMs === null || ms > newestMs) newestMs = ms
+  }
+  if (newestMs === null) return { state: 'missing', newest: null, ageMs: null }
+
+  // A store clock slightly ahead of this function is fresh, never negative.
+  const ageMs = Math.max(0, nowMs - newestMs)
+  return {
+    state: ageMs > CMS_BACKUP_STALE_AFTER_MS ? 'stale' : 'fresh',
+    newest: new Date(newestMs).toISOString(),
+    ageMs,
+  }
 }
 
 /** Human-readable byte size, used in the messages the owner actually reads. */

@@ -255,7 +255,18 @@ timestamp, newest first, each with **Download** and **Restore**. Restoring one
 replaces the CMS with that snapshot (the same key-or-slug matching as an uploaded
 file, pages and case studies never deleted) and needs `RESTORE` typed first. The
 list is served by `/api/admin/cms-backup/snapshots`, which only accepts the exact
-file names the job writes, so it can never read another blob from the store.
+file names the job writes, so it can never read another blob from the store. The
+listing applies the same whitelist, so every row shown can be downloaded and
+restored — a stray file under `backups/` is ignored rather than offered and then
+rejected.
+
+`GET /api/health` also reports `scheduledBackups` — the newest snapshot's
+timestamp and age in hours — and names `scheduledBackupsStale` in `warnings` once
+that snapshot is more than two days old, or `scheduledBackupsMissing` when the
+store holds none at all. That is how a cron which quietly stopped running
+becomes visible without opening the Vercel dashboard. `ok` and the status code
+still describe whether the site can serve requests, so a stale backup warns
+rather than marking the deployment down.
 
 [docs/](docs/README.md) indexes the runbooks — seeding, BugSmash, CMS sections
 on pages that predate the studio, and which checks need a database.

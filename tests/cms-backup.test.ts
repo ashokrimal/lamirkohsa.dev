@@ -7,7 +7,9 @@ import {
   CMS_BACKUP_KEEP,
   CMS_BACKUP_MAX_BYTES,
   CMS_BACKUP_PLATFORM_LIMIT_BYTES,
+  CMS_BACKUP_STALE_AFTER_MS,
   CMS_BACKUP_VERSION,
+  cmsBackupAge,
   formatCmsBackupBytes,
   cmsBackupFileName,
   cmsRecordIdentity,
@@ -229,6 +231,57 @@ test('only the scheduled snapshot names can be read back', () => {
   assert.equal(isCmsBackupPathname('backups/cms-backup-latest.json'), false)
   assert.equal(isCmsBackupPathname(undefined), false)
   assert.equal(isCmsBackupPathname(null), false)
+})
+
+test('every listed snapshot name can be downloaded and restored', () => {
+  const names = [
+    'backups/cms-backup-2026-11-22-03-00.json',
+    'backups/cms-backup-2026-11-22-03-00-k3j9x2.json',
+    'backups/cms-backup-2026-11-21-03-00.json',
+  ]
+  assert.equal(
+    names.filter((name) => isCmsBackupPathname(name)).length,
+    names.length,
+    'the list filter and the download/restore whitelist must agree',
+  )
+  assert.equal(
+    ['backups/notes.json', 'backups/cms-backup-latest.json', 'cms-backup-2026-11-22.json'].filter(
+      (name) => isCmsBackupPathname(name),
+    ).length,
+    0,
+    'anything outside the whitelist is never listed',
+  )
+})
+
+test('the newest snapshot is fresh until it is more than two days old', () => {
+  const now = new Date('2026-11-22T12:00:00.000Z')
+
+  assert.deepEqual(cmsBackupAge([], now), { state: 'missing', newest: null, ageMs: null })
+  assert.deepEqual(cmsBackupAge(['not a date'], now), { state: 'missing', newest: null, ageMs: null })
+
+  const fresh = cmsBackupAge(
+    ['2026-11-21T03:00:00.000Z', '2026-11-22T03:00:00.000Z', '2026-11-19T03:00:00.000Z'],
+    now,
+  )
+  assert.equal(fresh.state, 'fresh')
+  assert.equal(fresh.newest, '2026-11-22T03:00:00.000Z')
+  assert.equal(fresh.ageMs, 9 * 60 * 60 * 1000)
+
+  // Exactly two days is still fresh; a minute more is a silently failing cron.
+  assert.equal(
+    cmsBackupAge([new Date('2026-11-20T12:00:00.000Z')], now).state,
+    'fresh',
+    'two whole days is the boundary, not a miss',
+  )
+  assert.equal(
+    cmsBackupAge([new Date(now.getTime() - CMS_BACKUP_STALE_AFTER_MS - 60_000)], now).state,
+    'stale',
+  )
+  assert.equal(
+    cmsBackupAge(['2026-11-25T12:00:00.000Z'], now).state,
+    'fresh',
+    'a store clock ahead of this one is never a negative age',
+  )
 })
 
 test('backup filenames sort chronologically and avoid filesystem punctuation', () => {

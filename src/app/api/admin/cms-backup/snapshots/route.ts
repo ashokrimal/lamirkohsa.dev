@@ -45,7 +45,11 @@ function missingStorageMessage() {
   )
 }
 
-/** Reads every page of the backup prefix; the list is small but never guessed. */
+/**
+ * Reads every page of the backup prefix; the list is small but never guessed.
+ * Only the names the download and restore routes accept are listed, so every row
+ * the studio offers can actually be opened.
+ */
 async function listSnapshots(token: string): Promise<SnapshotEntry[]> {
   const entries: SnapshotEntry[] = []
   let cursor: string | undefined
@@ -58,6 +62,7 @@ async function listSnapshots(token: string): Promise<SnapshotEntry[]> {
       cursor,
     })
     for (const blob of page.blobs) {
+      if (!isCmsBackupPathname(blob.pathname)) continue
       entries.push({
         pathname: blob.pathname,
         size: blob.size,
