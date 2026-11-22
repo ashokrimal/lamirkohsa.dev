@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { handleApiError } from './lib/error-handler';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Canonical lowercase path for the GitHub archive. Redirect sources are
   // matched case-insensitively, so this lives here rather than in next.config.
   if (request.nextUrl.pathname === '/about/GitHub') {
