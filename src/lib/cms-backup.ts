@@ -16,7 +16,31 @@
 export const CMS_BACKUP_FORMAT = 'lamirkohsa-cms-backup'
 export const CMS_BACKUP_VERSION = 1
 export const CMS_BACKUP_MAX_RECORDS = 20_000
-export const CMS_BACKUP_MAX_BYTES = 25 * 1024 * 1024
+
+/**
+ * Vercel refuses a serverless function whose request or response body exceeds
+ * 4.5 MB, and it does so before the handler's own checks run. A bigger backup
+ * therefore reaches the owner as an opaque platform error, so the studio keeps
+ * its own budget below that ceiling and explains itself instead.
+ */
+export const CMS_BACKUP_PLATFORM_LIMIT_BYTES = 4.5 * 1024 * 1024
+
+/**
+ * What the studio serves and accepts: 4 MB, which leaves half a megabyte of
+ * headroom under the platform cap for headers and JSON framing.
+ */
+export const CMS_BACKUP_MAX_BYTES = 4 * 1024 * 1024
+
+/** How many daily snapshots the scheduled job keeps before deleting the oldest. */
+export const CMS_BACKUP_KEEP = 14
+
+/** Human-readable byte size, used in the messages the owner actually reads. */
+export function formatCmsBackupBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'
+  if (bytes < 1024) return `${Math.round(bytes)} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+}
 
 /**
  * Collection names a backup may contain. Kept here rather than imported from

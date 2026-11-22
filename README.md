@@ -49,7 +49,9 @@ Open <http://localhost:3000>. The owner studio is at `/admin`.
 | `BETTER_AUTH_URL` | Public origin, e.g. `http://localhost:3000`. |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` | Optional one-time bootstrap for the first owner login. Once the database owner exists, it wins. |
 | `RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN`, `CONTACT_TO_EMAIL` | Contact-form email delivery. |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob uploads from the studio. Without it the studio keeps the paste-a-URL flow. |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob uploads from the studio, and where scheduled backups are stored. Without it the studio keeps the paste-a-URL flow. |
+| `CRON_SECRET` | Sent by Vercel Cron as `Authorization: Bearer …` to the daily backup route. Without it that route refuses to run. |
+| `CMS_BACKUP_BLOB_ACCESS` | Optional. `private` when the Blob store was created private; defaults to `public`, matching the media store. |
 | `SPOTIFY_*`, `LASTFM_API_KEY` | Music integrations. |
 | `GITHUB_TOKEN`, `GOOGLE_*` | Optional GitHub and Google Drive imports. |
 | `GEMINI_API_KEY` | Only if the Gemini integration is enabled. |
@@ -213,6 +215,40 @@ content not empty, legacy projects present, and the settings row populated. It
 exits non-zero only for missing or unusable seed output; reordering, disabled
 sections, re-copied content and owner-added sections are reported as warnings,
 because those are normal edits.
+
+### Backups
+
+Studio → **Backup & restore** (`/admin/backup`) saves one JSON file with every
+CMS record — drafts included — plus the studio pages, their sections, the case
+studies and the site settings. A restore validates the whole file first, then
+writes in one transaction, so a rejected or failed restore leaves the database
+untouched. The file never contains the owner account, sessions, inbox messages
+or newsletter subscribers.
+
+Vercel caps a function's request and response body at 4.5 MB, and enforces it
+before the handler runs. Both directions therefore use a 4 MB budget: a larger
+backup is refused with its measured size and the limit that applies, instead of
+surfacing as a platform error. `CMS_BACKUP_MAX_BYTES` and
+`CMS_BACKUP_PLATFORM_LIMIT_BYTES` in `src/lib/cms-backup.ts` are the only places
+those numbers live.
+
+The deployment also saves a copy without anyone clicking: `vercel.json`
+schedules `GET /api/cron/cms-backup` daily at 03:00 UTC. The route reads the same
+snapshot, stores it in Blob under `backups/cms-backup-<date>.json`, and deletes
+everything beyond the newest 14. A public store gets a random suffix on the name,
+so the URL is not guessable; a store created as private keeps its token-only
+access (`CMS_BACKUP_BLOB_ACCESS=private`). It needs two variables in the Vercel
+project (Production, and Preview if you want the schedule there too):
+
+| Variable | What it does |
+| --- | --- |
+| `CRON_SECRET` | Vercel sends it on every cron call. Without it the route answers 503 and saves nothing, so the URL can never be triggered anonymously. |
+| `BLOB_READ_WRITE_TOKEN` | Where the snapshot is written. Without it the route answers 503. |
+
+Sign in to the studio and open `/api/cron/cms-backup` in a tab — or call it with
+`Authorization: Bearer $CRON_SECRET` — to run the job once by hand. It returns
+the file name, its size, the record counts, and how many snapshots were kept or
+pruned. Browse stored snapshots in Vercel → Storage → the Blob store.
 
 [docs/](docs/README.md) indexes the runbooks — seeding, BugSmash, CMS sections
 on pages that predate the studio, and which checks need a database.

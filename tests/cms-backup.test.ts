@@ -4,7 +4,11 @@ import { CMS_COLLECTIONS } from '../src/lib/cms-schema'
 import {
   CMS_BACKUP_COLLECTIONS,
   CMS_BACKUP_FORMAT,
+  CMS_BACKUP_KEEP,
+  CMS_BACKUP_MAX_BYTES,
+  CMS_BACKUP_PLATFORM_LIMIT_BYTES,
   CMS_BACKUP_VERSION,
+  formatCmsBackupBytes,
   cmsBackupFileName,
   cmsRecordIdentity,
   countCmsBackup,
@@ -186,6 +190,24 @@ test('an empty backup is valid and covers nothing', () => {
   assert.deepEqual(result.backup.studio, { pages: [], projects: [], siteSettings: null })
   assert.deepEqual(planCmsRestore([], [], 'replace'), { insert: [], update: [], remove: [] })
   assert.equal(countCmsBackup(result.backup).total, 0)
+})
+
+test('the backup budget stays under the hosting platform body cap', () => {
+  assert.equal(CMS_BACKUP_PLATFORM_LIMIT_BYTES, 4.5 * 1024 * 1024)
+  assert.ok(
+    CMS_BACKUP_MAX_BYTES < CMS_BACKUP_PLATFORM_LIMIT_BYTES,
+    'the studio must refuse before Vercel rejects the request or response',
+  )
+  assert.ok(CMS_BACKUP_MAX_BYTES >= 3 * 1024 * 1024, 'the budget must stay useful')
+  assert.equal(CMS_BACKUP_KEEP, 14)
+})
+
+test('byte sizes read the same way in every message', () => {
+  assert.equal(formatCmsBackupBytes(0), '0 B')
+  assert.equal(formatCmsBackupBytes(512), '512 B')
+  assert.equal(formatCmsBackupBytes(2048), '2.0 KB')
+  assert.equal(formatCmsBackupBytes(CMS_BACKUP_MAX_BYTES), '4.00 MB')
+  assert.equal(formatCmsBackupBytes(CMS_BACKUP_PLATFORM_LIMIT_BYTES), '4.50 MB')
 })
 
 test('backup filenames sort chronologically and avoid filesystem punctuation', () => {

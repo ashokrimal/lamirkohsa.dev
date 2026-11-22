@@ -1,19 +1,26 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { AlertTriangle, Download, FileJson, ShieldCheck, Upload } from 'lucide-react'
+import { AlertTriangle, CalendarClock, Download, FileJson, ShieldCheck, Upload } from 'lucide-react'
+import {
+  CMS_BACKUP_MAX_BYTES,
+  CMS_BACKUP_PLATFORM_LIMIT_BYTES,
+  cmsBackupFileName,
+  formatCmsBackupBytes,
+} from '@/lib/cms-backup'
 
 /**
  * Backup & restore for the studio.
  *
- * The download is a plain link to the owner-only API route, so the browser's own
- * download handling saves the file. A restore is previewed locally first (the
- * server re-validates everything) and needs the word RESTORE typed before the
- * button unlocks: it can delete content in replace mode, and that should never
- * happen from a stray click.
+ * Both directions stay under Vercel's 4.5 MB function body cap, so a file that
+ * is too big is refused here with its real size instead of failing as a platform
+ * error. A restore is previewed locally first (the server re-validates
+ * everything) and needs the word RESTORE typed before the button unlocks: it can
+ * delete content in replace mode, and that should never happen from a stray click.
  */
 
-const MAX_BYTES = 25 * 1024 * 1024
+const MAX_LABEL = formatCmsBackupBytes(CMS_BACKUP_MAX_BYTES)
+const PLATFORM_LABEL = formatCmsBackupBytes(CMS_BACKUP_PLATFORM_LIMIT_BYTES)
 
 interface FilePreview {
   name: string
@@ -32,12 +39,6 @@ interface RestoreSummary {
   pageSections: number
   projects: { inserted: number; updated: number }
   siteSettings: boolean
-}
-
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
 }
 
 function summarise(summary: RestoreSummary) {
@@ -59,6 +60,10 @@ export default function BackupWorkspace() {
   const [mode, setMode] = useState<'merge' | 'replace'>('merge')
   const [confirmation, setConfirmation] = useState('')
   const [busy, setBusy] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [downloadStatus, setDownloadStatus] = useState<
+    { tone: 'success' | 'error'; text: string } | null
+  >(null)
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
 
   const resetFile = () => {
@@ -73,9 +78,12 @@ export default function BackupWorkspace() {
   const handleFile = async (file: File | undefined) => {
     setStatus(null)
     if (!file) return
-    if (file.size > MAX_BYTES) {
+    if (file.size > CMS_BACKUP_MAX_BYTES) {
       resetFile()
-      setStatus({ tone: 'error', text: `${file.name} is larger than the 25 MB restore limit.` })
+      setStatus({
+        tone: 'error',
+        text: `${file.name} is ${formatCmsBackupBytes(file.size)}. The studio accepts up to ${MAX_LABEL} because Vercel caps a function request at ${PLATFORM_LABEL}; nothing was sent. Split the file or trim the largest records and try again.`,
+      })
       return
     }
 
@@ -113,6 +121,46 @@ export default function BackupWorkspace() {
     }
   }
 
+  const handleDownload = async () => {
+    setDownloading(true)
+    setDownloadStatus(null)
+    try {
+      const response = await fetch('/api/admin/cms-backup', { cache: 'no-store' })
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { message?: string } | null
+        throw new Error(
+          payload?.message ||
+            (response.status === 413
+              ? `This snapshot is larger than the ${MAX_LABEL} the studio can send. Nothing was downloaded.`
+              : `Could not build the backup (${response.status}).`),
+        )
+      }
+
+      const blob = await response.blob()
+      const disposition = response.headers.get('content-disposition') ?? ''
+      const named = /filename="([^"]+)"/.exec(disposition)?.[1]
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = named || cmsBackupFileName()
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      setDownloadStatus({
+        tone: 'success',
+        text: `Downloaded ${link.download} (${formatCmsBackupBytes(blob.size)}). Keep it outside this project.`,
+      })
+    } catch (error) {
+      setDownloadStatus({
+        tone: 'error',
+        text: error instanceof Error ? error.message : 'Could not build the backup.',
+      })
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const handleRestore = async () => {
     if (!fileText || !preview) return
     setBusy(true)
@@ -127,7 +175,12 @@ export default function BackupWorkspace() {
         | { message?: string; summary?: RestoreSummary }
         | null
       if (!response.ok || !payload?.summary) {
-        throw new Error(payload?.message || `Restore failed (${response.status}).`)
+        throw new Error(
+          payload?.message ||
+            (response.status === 413
+              ? `The host rejected this upload before it reached the studio. The studio accepts up to ${MAX_LABEL}, so split the file and restore the parts one at a time.`
+              : `Restore failed (${response.status}).`),
+        )
       }
       setStatus({ tone: 'success', text: summarise(payload.summary) })
       setConfirmation('')
@@ -166,17 +219,40 @@ export default function BackupWorkspace() {
         </p>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
-          <p className="text-[11px] text-slate-500">Save it somewhere outside this project.</p>
-          {/* A plain link so the browser handles the download and its filename. */}
-          <a
-            href="/api/admin/cms-backup"
-            download
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700"
+          <p className="text-[11px] text-slate-500">
+            Save it somewhere outside this project. One file, up to {MAX_LABEL}.
+          </p>
+          <button
+            type="button"
+            onClick={() => void handleDownload()}
+            disabled={downloading}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             <Download className="h-3.5 w-3.5" aria-hidden="true" />
-            Download backup
-          </a>
+            {downloading ? 'Building backup…' : 'Download backup'}
+          </button>
         </div>
+
+        <p
+          role="status"
+          className={`mt-2 text-[11px] ${
+            downloadStatus?.tone === 'error' ? 'text-rose-600' : 'text-emerald-700'
+          }`}
+        >
+          {downloadStatus?.text ?? ''}
+        </p>
+
+        <p className="mt-3 flex items-start gap-2 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-[11px] leading-relaxed text-slate-500">
+          <CalendarClock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden="true" />
+          <span>
+            The deployment also saves a copy on its own: a scheduled job runs every day at 03:00
+            UTC and stores the newest 14 snapshots in Vercel Blob under{' '}
+            <code className="rounded bg-white px-1 py-0.5 text-[10px] text-slate-600">
+              backups/cms-backup-*.json
+            </code>
+            . Browse them in Vercel → Storage.
+          </span>
+        </p>
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
@@ -212,8 +288,8 @@ export default function BackupWorkspace() {
             </span>
             <span className="text-[11px] text-slate-500">
               {preview
-                ? `${formatBytes(preview.bytes)} · ${preview.records} records · ${preview.pages} pages · ${preview.projects} case studies`
-                : 'JSON, up to 25 MB. Nothing is written until you confirm.'}
+                ? `${formatCmsBackupBytes(preview.bytes)} · ${preview.records} records · ${preview.pages} pages · ${preview.projects} case studies`
+                : `JSON, up to ${MAX_LABEL}. Nothing is written until you confirm.`}
             </span>
           </label>
         </div>

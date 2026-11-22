@@ -4,7 +4,9 @@ import { getAdminActorId } from '@/lib/admin-auth'
 import { pool } from '@/lib/db'
 import {
   CMS_BACKUP_MAX_BYTES,
+  CMS_BACKUP_PLATFORM_LIMIT_BYTES,
   cmsBackupFileName,
+  formatCmsBackupBytes,
   parseCmsBackup,
   type CmsBackupRestoreMode,
 } from '@/lib/cms-backup'
@@ -40,6 +42,16 @@ function asQueryClient(client: unknown): BackupQueryClient {
   return client as BackupQueryClient
 }
 
+/** Names the real sizes, so the owner knows how far over the file is. */
+function tooLargeMessage(bytes: number) {
+  return (
+    `That backup is ${formatCmsBackupBytes(bytes)}, but the studio handles up to ` +
+    `${formatCmsBackupBytes(CMS_BACKUP_MAX_BYTES)}: Vercel caps a function request at ` +
+    `${formatCmsBackupBytes(CMS_BACKUP_PLATFORM_LIMIT_BYTES)}. Nothing was restored — ` +
+    'trim the largest records or split the file into smaller backups and try again.'
+  )
+}
+
 export async function GET() {
   const actorId = await getAdminActorId()
   if (!actorId) return jsonError('Sign in to the studio first.', 401)
@@ -48,6 +60,19 @@ export async function GET() {
   try {
     const backup = await readCmsBackup(asQueryClient(client), 'admin-download')
     const body = `${JSON.stringify(backup, null, 2)}\n`
+    const bytes = Buffer.byteLength(body, 'utf8')
+    // Sending more than the platform allows would be cut off by Vercel before
+    // the browser sees the file, so refuse here with the number it would have had.
+    if (bytes > CMS_BACKUP_MAX_BYTES) {
+      console.error(`[CMS] Backup download refused: ${bytes} bytes`)
+      return jsonError(
+        `This snapshot would be ${formatCmsBackupBytes(bytes)}, but the studio serves up to ` +
+          `${formatCmsBackupBytes(CMS_BACKUP_MAX_BYTES)} because Vercel caps a function response at ` +
+          `${formatCmsBackupBytes(CMS_BACKUP_PLATFORM_LIMIT_BYTES)}. Nothing was downloaded — ` +
+          'split the backup by collection or trim the largest records, then try again.',
+        413,
+      )
+    }
     return new NextResponse(body, {
       status: 200,
       headers: {
@@ -93,10 +118,16 @@ export async function POST(request: Request) {
   const rawMode = (request.headers.get('x-backup-mode') ?? 'merge').trim().toLowerCase()
   const mode: CmsBackupRestoreMode = rawMode === 'replace' ? 'replace' : 'merge'
 
+  const declaredLength = Number(request.headers.get('content-length') ?? '')
+  if (Number.isFinite(declaredLength) && declaredLength > CMS_BACKUP_MAX_BYTES) {
+    return jsonError(tooLargeMessage(declaredLength), 413)
+  }
+
   const text = await request.text()
   if (!text.trim()) return jsonError('Choose a backup file first.', 400)
-  if (text.length > CMS_BACKUP_MAX_BYTES) {
-    return jsonError('That file is larger than the 25 MB restore limit.', 413)
+  const textBytes = Buffer.byteLength(text, 'utf8')
+  if (textBytes > CMS_BACKUP_MAX_BYTES) {
+    return jsonError(tooLargeMessage(textBytes), 413)
   }
 
   let raw: unknown

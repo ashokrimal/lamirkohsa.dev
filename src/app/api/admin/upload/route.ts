@@ -1,21 +1,9 @@
 import { put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
 import { getAdminActorId } from '@/lib/admin-auth'
+import { blobToken } from '@/lib/blob'
 
 export const dynamic = 'force-dynamic'
-
-/**
- * Vercel Blob accepts either the store integration name or the legacy name,
- * depending on how the store was attached to the project.
- */
-function blobToken() {
-  return (
-    process.env.BLOB_READ_WRITE_TOKEN ||
-    process.env.VERCEL_BLOB_READ_WRITE_TOKEN ||
-    process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN ||
-    ''
-  )
-}
 
 export async function POST(request: Request) {
   const ownerId = await getAdminActorId()
