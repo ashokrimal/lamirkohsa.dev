@@ -4,7 +4,11 @@ import HomeContent from '@/components/pages/HomeContent';
 import { getPageMetadata } from '@/lib/studio/data';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
+// The homepage is the most-visited route and its content is CMS data that is
+// already cached under `cms-content`; render it statically and refresh it on the
+// same five-minute window as the other public pages. Studio mutations call
+// `revalidatePath('/')`, so an edit still shows up on the next request.
+export const revalidate = 300;
 
 const PAGE_TITLE = `${SITE_NAME} — Product Engineer & Creative Technologist`;
 const PAGE_DESCRIPTION =
