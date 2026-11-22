@@ -1,18 +1,22 @@
-'use client';
+'use client'
 
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
-import { AlertTriangle } from 'lucide-react';
+import { useRouter } from 'next/navigation'
+import { ErrorState } from '@/components/ui/ErrorState'
 
 interface ErrorPageProps {
-  statusCode?: number;
-  title?: string;
-  message?: string;
-  showRetry?: boolean;
-  retryText?: string;
-  onRetry?: () => void;
+  statusCode?: number
+  title?: string
+  message?: string
+  showRetry?: boolean
+  retryText?: string
+  onRetry?: () => void
 }
 
+/**
+ * Page-level error surface. It keeps its props for existing callers but hands
+ * the rendering to the shared error screen, so every failure offers the same
+ * retry, report-issue and back actions.
+ */
 export function ErrorPage({
   statusCode = 500,
   title = 'Something went wrong',
@@ -21,46 +25,24 @@ export function ErrorPage({
   retryText = 'Try again',
   onRetry,
 }: ErrorPageProps) {
-  const router = useRouter();
+  const router = useRouter()
 
   const handleRetry = () => {
     if (onRetry) {
-      onRetry();
+      onRetry()
     } else {
-      router.refresh();
+      router.refresh()
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center space-y-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600">
-          <AlertTriangle className="w-8 h-8" />
-        </div>
-        <div className="space-y-2">
-          {statusCode && (
-            <p className="text-sm font-medium text-gray-500">Error {statusCode}</p>
-          )}
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-            {title}
-          </h1>
-          <p className="text-gray-600">{message}</p>
-        </div>
-        {showRetry && (
-          <div className="flex items-center justify-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => router.back()}
-              className="px-4"
-            >
-              Go back
-            </Button>
-            <Button onClick={handleRetry} className="px-4">
-              {retryText}
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    <ErrorState
+      title={statusCode && statusCode !== 500 ? `${title} (${statusCode})` : title}
+      message={message}
+      error={{ name: 'PageError', message: `${title} (HTTP ${statusCode})` }}
+      onRetry={showRetry ? handleRetry : undefined}
+      retryLabel={retryText}
+      backLabel="Go back"
+    />
+  )
 }

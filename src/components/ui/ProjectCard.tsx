@@ -9,6 +9,7 @@ import { toSlug } from '@/lib/slug'
 import { useUiStrings } from '@/components/ui/UiCopyProvider'
 import { isRepositoryUrl } from '@/lib/urls'
 import type { CmsTechDefinition } from '@/lib/tech-metadata'
+import { getProjectStatusVisual } from '@/lib/project-status'
 
 export interface ProjectData {
   id?: number | string
@@ -55,6 +56,9 @@ export function ProjectCard({
   const sourceUrl = isRepositoryUrl(project.github) ? project.github : undefined
   const hasFooterActions = Boolean((project.live && project.live !== '#') || sourceUrl)
   const metrics = project.metrics ?? []
+  // The card and the project row show the same lifecycle pill, so a custom
+  // status is normalised instead of printed raw a second time.
+  const statusVisual = project.status ? getProjectStatusVisual(project.status) : null
 
   return (
     <Card3D maxTilt={6} className={isFeatured ? 'md:col-span-2' : ''}>
@@ -98,9 +102,13 @@ export function ProjectCard({
                   <span>{project.category}</span>
                 </div>
               )}
-              {project.status && (
-                <div className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md border border-black/15 text-[11px] font-medium text-emerald-700 shadow-[0_4px_14px_rgba(0,0,0,0.16)]">
-                  {project.status}
+              {statusVisual && (
+                <div className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md border border-black/15 text-[11px] font-medium shadow-[0_4px_14px_rgba(0,0,0,0.16)] inline-flex items-center gap-1.5 text-[#1d1d1f]">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${statusVisual.dotClass}`}
+                    aria-hidden="true"
+                  />
+                  {statusVisual.label}
                 </div>
               )}
             </div>

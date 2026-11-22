@@ -15,6 +15,7 @@ import { ProjectRow } from '@/components/ui/ProjectRow'
 import {
   ProjectFilterControls,
   ProjectFilterPanel,
+  ProjectStatusControls,
   filterProjects,
   normalizeFilterToken,
 } from '@/components/ui/ProjectFilter'
@@ -253,6 +254,13 @@ export default function ProjectsContent({
                 onToggleFilters={() => setIsFiltersOpen((open) => !open)}
                 onClearAll={handleClearFilters}
               />
+
+              <ProjectStatusControls
+                total={projects.length}
+                options={statusSummary}
+                selectedStatus={selectedStatus}
+                onSelectStatus={handleSelectStatus}
+              />
             </div>
           ) : undefined
         }
@@ -272,93 +280,6 @@ export default function ProjectsContent({
         <CmsErrorState message={error} />
       ) : projects.length ? (
         <div>
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <div
-              role="group"
-              aria-label="Project status summary and quick filter"
-              className="inline-flex flex-wrap items-center gap-1 rounded-2xl border border-line-subtle bg-overlay-faint px-2 py-1.5"
-            >
-              <button
-                type="button"
-                aria-pressed={!selectedStatus}
-                onClick={() => {
-                  if (!selectedStatus) return
-                  sensoryAudio.playToggle()
-                  handleSelectStatus(null)
-                }}
-                className={`relative inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-                  !selectedStatus ? 'text-ink' : 'text-muted hover:text-ink'
-                }`}
-              >
-                {!selectedStatus && (
-                  <motion.span
-                    layoutId="projects-status-pill"
-                    transition={
-                      reduceMotion
-                        ? { duration: 0.08 }
-                        : { type: 'spring', stiffness: 420, damping: 32 }
-                    }
-                    className="absolute inset-0 rounded-xl border border-line-subtle bg-surface shadow-xs"
-                    aria-hidden="true"
-                  />
-                )}
-                <span className="relative z-10">
-                  All{' '}
-                  <span className="font-mono text-[11px] text-muted tabular-nums">
-                    ({projects.length})
-                  </span>
-                </span>
-              </button>
-
-              {statusSummary.map((entry) => {
-                const isActive =
-                  selectedStatus !== null &&
-                  normalizeFilterToken(selectedStatus) === entry.normalized
-                return (
-                  <span key={entry.status} className="inline-flex items-center">
-                    <span className="mx-0.5 text-xs text-line-medium select-none" aria-hidden="true">
-                      |
-                    </span>
-                    <button
-                      type="button"
-                      aria-pressed={isActive}
-                      onClick={() => {
-                        sensoryAudio.playToggle()
-                        handleSelectStatus(isActive ? null : entry.status)
-                      }}
-                      className={`relative inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-                        isActive ? 'text-ink' : 'text-muted hover:text-ink'
-                      }`}
-                    >
-                      {isActive && (
-                        <motion.span
-                          layoutId="projects-status-pill"
-                          transition={
-                            reduceMotion
-                              ? { duration: 0.08 }
-                              : { type: 'spring', stiffness: 420, damping: 32 }
-                          }
-                          className="absolute inset-0 rounded-xl border border-line-subtle bg-surface shadow-xs"
-                          aria-hidden="true"
-                        />
-                      )}
-                      <span
-                        className={`relative z-10 h-2 w-2 rounded-full ${entry.visual.dotClass}`}
-                        aria-hidden="true"
-                      />
-                      <span className="relative z-10">
-                        {entry.status}{' '}
-                        <span className="font-mono text-[11px] text-muted tabular-nums">
-                          ({entry.count})
-                        </span>
-                      </span>
-                    </button>
-                  </span>
-                )
-              })}
-            </div>
-          </div>
-
           <ProjectFilterPanel
             projects={projects}
             cmsTechTags={techTags}

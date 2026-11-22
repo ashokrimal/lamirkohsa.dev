@@ -16,6 +16,7 @@ import {
   type SectionContent,
   type SectionFieldDefinition,
 } from '@/lib/studio/sections'
+import { SITE_NAME } from '@/lib/seo'
 
 interface AdminSection {
   id: number | null
@@ -269,7 +270,7 @@ export default function PagesManager({ pages }: { pages: AdminPage[] }) {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-surface p-4">
-        <label className="text-xs text-slate-700">
+        <label className="min-w-[220px] flex-1 text-xs text-slate-700">
           Page
           <select
             value={selectedId ?? ''}
@@ -337,6 +338,90 @@ export default function PagesManager({ pages }: { pages: AdminPage[] }) {
                 Published
               </label>
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-surface p-4 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-slate-900">Preview — what this changes</h2>
+              <a
+                href={slug}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700 hover:underline"
+              >
+                Open live page ↗
+              </a>
+            </div>
+
+            <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+              <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
+                Page header at {slug}
+              </p>
+              <p className="mt-1 text-lg font-semibold tracking-tight text-slate-900">
+                {title.trim() || 'Untitled page'}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                {metaDescription.trim() ||
+                  'No meta description yet — search results fall back to the site description.'}
+              </p>
+              <p className="mt-3 text-[11px] text-slate-400">
+                Browser tab title: {title.trim() || 'Untitled page'} · {SITE_NAME}
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-medium text-slate-600">
+                This record controls the page title, description and{' '}
+                {rows.length} section{rows.length === 1 ? '' : 's'} on{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[10px]">
+                  {slug}
+                </code>
+                {rows.some((row) => !row.isEnabled) && (
+                  <span className="text-slate-400">
+                    {' '}
+                    ({rows.filter((row) => !row.isEnabled).length} hidden)
+                  </span>
+                )}
+                :
+              </p>
+              {rows.length > 0 && (
+                <ol className="flex flex-wrap gap-1.5">
+                  {rows.map((row, index) => (
+                    <li
+                      key={`preview-${row.sectionKey}-${index}`}
+                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                        row.isEnabled
+                          ? 'border-slate-200 bg-white text-slate-600'
+                          : 'border-dashed border-slate-200 bg-transparent text-slate-400 line-through'
+                      }`}
+                    >
+                      <span className="font-mono text-slate-400">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      {isSectionKey(row.sectionKey)
+                        ? SECTION_DEFINITIONS[row.sectionKey].label
+                        : row.sectionKey}
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+
+            <p
+              className={`rounded-lg px-3 py-2 text-[11px] font-medium ${
+                isPublished
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'bg-amber-50 text-amber-700'
+              }`}
+            >
+              {isPublished
+                ? 'Published — pressing Publish page updates the live site immediately.'
+                : 'Draft — the public page stays hidden until you tick Published and save.'}
+            </p>
+            <p className="text-[11px] text-slate-500">
+              Edits stay on this screen until you press Publish page. Nothing changes on the
+              website while you are typing.
+            </p>
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-surface p-4 space-y-3">
@@ -436,7 +521,7 @@ export default function PagesManager({ pages }: { pages: AdminPage[] }) {
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="sticky bottom-0 z-10 -mx-1 flex flex-wrap items-center gap-3 rounded-xl bg-surface/95 px-1 py-3 backdrop-blur">
             <button
               type="button"
               onClick={save}

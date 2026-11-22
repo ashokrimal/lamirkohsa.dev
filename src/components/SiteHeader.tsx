@@ -9,6 +9,7 @@ import type { ContactDetails, SiteBrand, SiteNavigation } from '@/lib/site-conte
 import { SITE_NAME } from '@/lib/seo'
 import { useUiStrings } from '@/components/ui/UiCopyProvider'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { InstallAppButton } from '@/components/ui/InstallAppButton'
 
 export default function SiteHeader({
   brand,
@@ -138,6 +139,7 @@ export default function SiteHeader({
               )
             })}
 
+            <InstallAppButton />
             <ThemeToggle />
           </div>
 
@@ -212,6 +214,10 @@ export default function SiteHeader({
               )
             })}
           </ul>
+
+          <div className="mt-5 w-full">
+            <InstallAppButton className="w-full justify-center py-2.5 text-xs" />
+          </div>
         </div>
 
         {(contact.location || contact.availability || contact.timeZone) && (

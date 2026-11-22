@@ -1,0 +1,41 @@
+{
+  "name": "Ashok Rimal — Portfolio",
+  "short_name": "Ashok Rimal",
+  "description": "Projects, case studies, writing and media from Ashok Rimal's portfolio.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#f4f1eb",
+  "theme_color": "#161618",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["portfolio", "personal", "design"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Projects", "url": "/projects" },
+    { "name": "Blogs", "url": "/blogs" },
+    { "name": "Contact", "url": "/contact" }
+  ]
+}

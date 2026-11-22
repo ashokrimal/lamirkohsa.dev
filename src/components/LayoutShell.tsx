@@ -11,6 +11,7 @@ import DevConsoleHUD from '@/components/devmode/DevConsoleHUD';
 import DevModeTrigger from '@/components/devmode/DevModeTrigger';
 import OfflineFlappy from '@/components/OfflineFlappy';
 import CmsShell from '@/components/CmsShell';
+import { ServiceWorkerRegistration } from '@/components/ui/ServiceWorkerRegistration';
 import Preloader from '@/components/ui/Preloader';
 import type { SiteConfig } from '@/lib/site-content';
 
@@ -85,6 +86,7 @@ export default function LayoutShell({
           </div>
           <DevConsoleHUD />
           <OfflineFlappy />
+          <ServiceWorkerRegistration />
         </Suspense>
       </ErrorBoundary>
     </DevModeProvider>

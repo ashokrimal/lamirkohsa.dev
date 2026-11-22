@@ -1,39 +1,19 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import Link from 'next/link';
+import { useEffect } from 'react'
+import { ErrorState } from '@/components/ui/ErrorState'
 
+/** App-wide fallback used when the root layout's tree cannot render. */
 export default function GlobalErrorBoundary({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+  error: Error & { digest?: string }
+  reset: () => void
 }) {
   useEffect(() => {
-    console.error('Global error boundary caught:', error);
-  }, [error]);
+    console.error('Global error boundary caught:', error)
+  }, [error])
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="max-w-md w-full space-y-6 text-center">
-        <h2 className="text-4xl font-bold text-red-600">Oops! Something went wrong</h2>
-        <p className="text-xl text-gray-600">Something went wrong. Please try again.</p>
-        <div className="flex gap-4 justify-center pt-4">
-          <button
-            onClick={reset}
-            className="px-6 py-2 bg-blue-600 text-inverse rounded hover:bg-blue-700 transition-colors"
-          >
-            Try again
-          </button>
-          <Link
-            href="/"
-            className="px-6 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
-          >
-            Go Home
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+  return <ErrorState error={error} digest={error.digest} onRetry={reset} retryLabel="Reload the page" />
 }

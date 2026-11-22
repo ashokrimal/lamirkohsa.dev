@@ -7,6 +7,7 @@ import { ChevronDown, ListFilter, RotateCcw, Search, X } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
 import {
   PROJECT_LIFECYCLE_STATUSES,
+  getProjectStatusVisual,
   resolveProjectLifecycleStatus,
 } from '@/lib/project-status'
 import type { ProjectEntry, ProjectFilterTag } from '@/lib/projects'
@@ -20,6 +21,13 @@ export interface FilterOption {
   value: string
   normalized: string
   count: number
+}
+
+export interface ProjectStatusOption {
+  status: string
+  normalized: string
+  count: number
+  visual: ReturnType<typeof getProjectStatusVisual>
 }
 
 const DEFAULT_TECH_VISIBLE = 12
@@ -191,6 +199,109 @@ export function ProjectFilterControls({
         </button>
       )}
     </>
+  )
+}
+
+interface ProjectStatusControlsProps {
+  total: number
+  options: ProjectStatusOption[]
+  selectedStatus: string | null
+  onSelectStatus: (status: string | null) => void
+}
+
+/**
+ * Lifecycle filter (All / Active / Planning / Archived) that sits on the same
+ * line as the search field and the Filters button. The counts are the only
+ * numbers shown here; each project already carries its own status pill, so the
+ * controls never repeat a second status indicator per card.
+ */
+export function ProjectStatusControls({
+  total,
+  options,
+  selectedStatus,
+  onSelectStatus,
+}: ProjectStatusControlsProps) {
+  const reduceMotion = useReducedMotion()
+
+  return (
+    <div
+      role="group"
+      aria-label="Filter projects by status"
+      className="inline-flex h-9 shrink-0 flex-wrap items-center gap-0.5 rounded-xl border border-line-subtle bg-surface/85 px-1 shadow-xs"
+    >
+      <button
+        type="button"
+        aria-pressed={!selectedStatus}
+        onClick={() => {
+          if (!selectedStatus) return
+          sensoryAudio.playToggle()
+          onSelectStatus(null)
+        }}
+        className={`relative inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+          !selectedStatus ? 'text-ink' : 'text-muted hover:text-ink'
+        }`}
+      >
+        {!selectedStatus && (
+          <motion.span
+            layoutId="projects-status-pill"
+            transition={
+              reduceMotion ? { duration: 0.08 } : { type: 'spring', stiffness: 420, damping: 32 }
+            }
+            className="absolute inset-0 rounded-lg border border-line-subtle bg-surface shadow-xs"
+            aria-hidden="true"
+          />
+        )}
+        <span className="relative z-10">
+          All <span className="font-mono text-[10px] text-muted tabular-nums">({total})</span>
+        </span>
+      </button>
+
+      {options.map((entry) => {
+        const isActive =
+          selectedStatus !== null && normalizeFilterToken(selectedStatus) === entry.normalized
+        return (
+          <span key={entry.status} className="inline-flex items-center">
+            <span className="mx-0.5 text-[10px] text-line-medium select-none" aria-hidden="true">
+              |
+            </span>
+            <button
+              type="button"
+              aria-pressed={isActive}
+              onClick={() => {
+                sensoryAudio.playToggle()
+                onSelectStatus(isActive ? null : entry.status)
+              }}
+              className={`relative inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                isActive ? 'text-ink' : 'text-muted hover:text-ink'
+              }`}
+            >
+              {isActive && (
+                <motion.span
+                  layoutId="projects-status-pill"
+                  transition={
+                    reduceMotion
+                      ? { duration: 0.08 }
+                      : { type: 'spring', stiffness: 420, damping: 32 }
+                  }
+                  className="absolute inset-0 rounded-lg border border-line-subtle bg-surface shadow-xs"
+                  aria-hidden="true"
+                />
+              )}
+              <span
+                className={`relative z-10 h-2 w-2 rounded-full ${entry.visual.dotClass}`}
+                aria-hidden="true"
+              />
+              <span className="relative z-10">
+                {entry.status}{' '}
+                <span className="font-mono text-[10px] text-muted tabular-nums">
+                  ({entry.count})
+                </span>
+              </span>
+            </button>
+          </span>
+        )
+      })}
+    </div>
   )
 }
 
