@@ -31,6 +31,15 @@ const nextConfig = {
         { key: 'X-Content-Type-Options', value: 'nosniff' },
         { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         { key: 'Strict-Transport-Security', value: 'max-age=63072000' },
+        // Nothing on this site is meant to be framed by another origin; the
+        // legacy header and the CSP directive cover old and new browsers.
+        { key: 'X-Frame-Options', value: 'DENY' },
+        { key: 'Content-Security-Policy', value: "frame-ancestors 'self'" },
+        // The site asks for no device permissions, so deny them outright.
+        {
+          key: 'Permissions-Policy',
+          value: 'camera=(), microphone=(), geolocation=(), payment=()',
+        },
       ],
     }];
   },
