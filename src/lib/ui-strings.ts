@@ -304,6 +304,12 @@ export const uiStrings = {
     newsletterAlreadySubscribed: text("You're already subscribed—good to have you here."),
     newsletterInvalidEmail: text('Please enter a valid email address.'),
     newsletterFailed: text('Could not complete subscription. Please try again.'),
+    newsletterUnsubscribed: text(
+      "You've been unsubscribed. No more journal emails — you can subscribe again below.",
+    ),
+    newsletterUnsubscribeInvalid: text(
+      'That unsubscribe link is no longer valid. You may have already unsubscribed from this address.',
+    ),
   },
   projects: {
     featuredAria: text('Featured projects'),

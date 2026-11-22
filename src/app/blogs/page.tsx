@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowUpRight, Clock, NotebookPen } from 'lucide-react'
@@ -13,6 +14,7 @@ import { getPageCopy } from '@/lib/site-content'
 import { getUiCopy } from '@/lib/ui-copy'
 import { pageMetadata } from '@/lib/seo'
 import NewsletterForm from '@/components/blogs/NewsletterForm'
+import NewsletterNotice from '@/components/blogs/NewsletterNotice'
 
 export const revalidate = 300
 
@@ -206,7 +208,10 @@ export default async function BlogsPage() {
         </div>
       )}
 
-      <div className="mt-14 md:mt-20">
+      <div className="mt-14 md:mt-20 space-y-4">
+        <Suspense fallback={null}>
+          <NewsletterNotice />
+        </Suspense>
         <NewsletterForm />
       </div>
 
