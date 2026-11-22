@@ -10,6 +10,10 @@
  * fails the build, so a broken seed cannot ship. A database that has not been
  * seeded yet is only warned about, because the site falls back to fixtures and
  * the tables are created by the seed.
+ *
+ * Finally it ensures the unique cmsContent slug index. Vercel production
+ * builds create it once duplicates are gone; preview and local builds only
+ * report, and a failure here warns instead of blocking the deployment.
  */
 import { spawnSync } from 'node:child_process'
 import { resolveDatabaseUrl } from './db-env.mjs'
@@ -61,6 +65,20 @@ if (duplicateResult.status !== 0) {
     `[cms:check] Duplicate key check skipped (exit ${duplicateResult.status ?? 'unknown'}); database may not be reachable or migrated yet. Proceeding with build using ISR and fallbacks.`,
   )
   process.exit(0)
+}
+
+const slugIndex = spawnSync(
+  process.execPath,
+  ['scripts/index-cms-slugs.mjs', '--build'],
+  {
+    stdio: 'inherit',
+    env: childEnv,
+  },
+)
+if (slugIndex.status !== 0) {
+  console.warn(
+    `[cms:index] Slug index step exited ${slugIndex.status ?? 'unknown'}; continuing without it.`,
+  )
 }
 
 const result = spawnSync(process.execPath, ['scripts/check-site-content.mjs'], {

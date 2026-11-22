@@ -305,6 +305,15 @@ health check when `DATABASE_URL` is configured; that report is advisory for
 other content issues. Local builds without a database skip both checks with a
 warning.
 
+`pnpm cms:index:slugs` keeps `cmsContent` identity unique. It reports whether
+the unique index `cmsContent_user_collection_slug_key` over
+`(userId, collection, slug)` exists and which rows would block it; `--apply`
+creates the index and refuses while duplicate slugs remain. The prebuild runs it
+in `--build` mode, which creates the index only on a Vercel **production** build
+and warns instead of failing the build, so preview and local builds never change
+the schema and a data conflict cannot take the site down. Clear duplicates with
+`cms:dedupe` first, then run `pnpm cms:index:slugs -- --apply`.
+
 `.github/workflows/cms-duplicates.yml` runs the same duplicate gate for pushes
 to `main`, same-repository pull requests, and manual runs. Add `DATABASE_URL` as
 a repository Actions secret for the workflow. Fork pull requests skip the job
@@ -370,6 +379,7 @@ the following in the CMS after deploying:
 | `pnpm lint` | ESLint. |
 | `pnpm cms:check` | Validate published CMS content against the schema. |
 | `pnpm cms:check:duplicates` | Fail on duplicate published keys in keyed collections. |
+| `pnpm cms:index:slugs` | Report or create the unique `(userId, collection, slug)` index (`-- --apply`). |
 | `pnpm studio:seed` | Create and fill the studio CMS tables (`pages`, `page_sections`, `projects`, `site_settings`). |
 | `pnpm studio:seed:preflight` | Report the target, existing rows and planned inserts without writing. |
 | `pnpm studio:verify` | Check seeded pages, sections, projects and settings against the fixtures (read-only). |
