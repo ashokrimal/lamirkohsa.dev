@@ -13,7 +13,10 @@ const contentSecurityPolicy = [
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
   // Pretendard's stylesheet and font files come from jsDelivr (globals.css).
   "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-  "img-src 'self' data: blob: https:",
+  // Every public image is served through next/image from this origin. The only
+  // external images the site can render directly are CMS records whose URL is
+  // the seed media host (images.unsplash.com) and owner uploads in Vercel Blob.
+  "img-src 'self' data: blob: https://images.unsplash.com https://*.public.blob.vercel-storage.com",
   "font-src 'self' data: https://cdn.jsdelivr.net",
   "media-src 'self' blob: https:",
   "worker-src 'self' blob:",
