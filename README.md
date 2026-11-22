@@ -248,7 +248,14 @@ project (Production, and Preview if you want the schedule there too):
 Sign in to the studio and open `/api/cron/cms-backup` in a tab — or call it with
 `Authorization: Bearer $CRON_SECRET` — to run the job once by hand. It returns
 the file name, its size, the record counts, and how many snapshots were kept or
-pruned. Browse stored snapshots in Vercel → Storage → the Blob store.
+pruned.
+
+Studio → **Backup & restore** also lists the stored snapshots with their size and
+timestamp, newest first, each with **Download** and **Restore**. Restoring one
+replaces the CMS with that snapshot (the same key-or-slug matching as an uploaded
+file, pages and case studies never deleted) and needs `RESTORE` typed first. The
+list is served by `/api/admin/cms-backup/snapshots`, which only accepts the exact
+file names the job writes, so it can never read another blob from the store.
 
 [docs/](docs/README.md) indexes the runbooks — seeding, BugSmash, CMS sections
 on pages that predate the studio, and which checks need a database.

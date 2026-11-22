@@ -2,11 +2,12 @@ import { timingSafeEqual } from 'node:crypto'
 import { del, list, put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
 import { getAdminActorId } from '@/lib/admin-auth'
-import { blobToken } from '@/lib/blob'
+import { blobToken, cmsSnapshotAccess } from '@/lib/blob'
 import {
   CMS_BACKUP_KEEP,
   CMS_BACKUP_MAX_BYTES,
   CMS_BACKUP_PLATFORM_LIMIT_BYTES,
+  CMS_BACKUP_PREFIX,
   cmsBackupFileName,
   formatCmsBackupBytes,
 } from '@/lib/cms-backup'
@@ -30,17 +31,7 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
-const BACKUP_PREFIX = 'backups/'
-
-/**
- * A Blob store's access mode is fixed when it is created, and the SDK rejects a
- * mismatch. The store that serves studio media is public, so snapshots default
- * to public too and get a random suffix to keep the URL unguessable. A private
- * store is supported by setting CMS_BACKUP_BLOB_ACCESS=private.
- */
-function snapshotAccess(): 'public' | 'private' {
-  return process.env.CMS_BACKUP_BLOB_ACCESS === 'private' ? 'private' : 'public'
-}
+const BACKUP_PREFIX = CMS_BACKUP_PREFIX
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ message }, { status, headers: { 'cache-control': 'no-store' } })
@@ -117,7 +108,7 @@ export async function GET(request: Request) {
       )
     }
 
-    const access = snapshotAccess()
+    const access = cmsSnapshotAccess()
     const pathname = `${BACKUP_PREFIX}${cmsBackupFileName()}`
     const blob = await put(pathname, body, {
       access,

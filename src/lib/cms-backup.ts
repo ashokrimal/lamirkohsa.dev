@@ -34,6 +34,21 @@ export const CMS_BACKUP_MAX_BYTES = 4 * 1024 * 1024
 /** How many daily snapshots the scheduled job keeps before deleting the oldest. */
 export const CMS_BACKUP_KEEP = 14
 
+/** Blob path prefix the scheduled job writes under. */
+export const CMS_BACKUP_PREFIX = 'backups/'
+
+/**
+ * Only the file names the scheduled job writes may be read back. The check is a
+ * whitelist rather than a prefix test so a request can never reach another blob
+ * in the store, and it accepts the random suffix a public store appends.
+ */
+export function isCmsBackupPathname(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    /^backups\/cms-backup-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}[A-Za-z0-9._-]*\.json$/.test(value)
+  )
+}
+
 /** Human-readable byte size, used in the messages the owner actually reads. */
 export function formatCmsBackupBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'

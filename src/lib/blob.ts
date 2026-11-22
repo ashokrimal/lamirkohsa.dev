@@ -12,3 +12,13 @@ export function blobToken() {
     ''
   )
 }
+
+/**
+ * A store's access mode is fixed when it is created, and the SDK rejects a
+ * mismatch. The store that serves studio media is public, so scheduled
+ * snapshots default to public too; a store created as private needs
+ * CMS_BACKUP_BLOB_ACCESS=private.
+ */
+export function cmsSnapshotAccess(): 'public' | 'private' {
+  return process.env.CMS_BACKUP_BLOB_ACCESS === 'private' ? 'private' : 'public'
+}

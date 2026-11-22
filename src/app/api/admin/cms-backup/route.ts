@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { revalidatePath, revalidateTag } from 'next/cache'
 import { getAdminActorId } from '@/lib/admin-auth'
 import { pool } from '@/lib/db'
 import {
@@ -7,15 +6,10 @@ import {
   CMS_BACKUP_PLATFORM_LIMIT_BYTES,
   cmsBackupFileName,
   formatCmsBackupBytes,
-  parseCmsBackup,
   type CmsBackupRestoreMode,
 } from '@/lib/cms-backup'
-import {
-  applyCmsBackup,
-  readCmsBackup,
-  type BackupQueryClient,
-} from '@/lib/cms-backup-db'
-import { revalidateCmsCache } from '@/lib/cms-revalidation'
+import { readCmsBackup, type BackupQueryClient } from '@/lib/cms-backup-db'
+import { restoreCmsBackup } from '@/lib/cms-backup-restore'
 
 /**
  * CMS backup endpoints for the studio.
@@ -137,43 +131,11 @@ export async function POST(request: Request) {
     return jsonError('That file is not valid JSON.', 400)
   }
 
-  const parsed = parseCmsBackup(raw)
-  if (!parsed.ok) return jsonError(parsed.error, 400)
+  const result = await restoreCmsBackup(raw, { actorId, mode })
+  if (!result.ok) return jsonError(result.message, result.status)
 
-  const client = await pool.connect()
-  try {
-    await client.query('begin')
-    const summary = await applyCmsBackup(asQueryClient(client), parsed.backup, { actorId, mode })
-    await client.query('commit')
-
-    revalidateCmsCache()
-    revalidateTag('projects', { expire: 0 })
-    revalidateTag('site-settings', { expire: 0 })
-    for (const page of parsed.backup.studio.pages) {
-      revalidateTag(`page-${page.slug}`, { expire: 0 })
-      revalidatePath(page.slug === '/' ? '/' : page.slug)
-    }
-    revalidatePath('/work')
-    revalidatePath('/admin')
-
-    console.info(
-      `[CMS] Restore (${mode}): ${summary.cmsContent.inserted} inserted, ` +
-        `${summary.cmsContent.updated} updated, ${summary.cmsContent.removed} removed; ` +
-        `${summary.pages.inserted + summary.pages.updated} pages, ${summary.projects.inserted + summary.projects.updated} case studies.`,
-    )
-
-    return NextResponse.json(
-      { message: 'Backup restored.', summary },
-      { headers: { 'cache-control': 'no-store' } },
-    )
-  } catch (error) {
-    await client.query('rollback').catch(() => undefined)
-    console.error('[CMS] Restore failed:', error)
-    return jsonError(
-      error instanceof Error ? `Restore failed: ${error.message}` : 'Restore failed.',
-      500,
-    )
-  } finally {
-    client.release()
-  }
+  return NextResponse.json(
+    { message: 'Backup restored.', summary: result.summary },
+    { headers: { 'cache-control': 'no-store' } },
+  )
 }

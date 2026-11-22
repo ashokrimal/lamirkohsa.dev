@@ -11,6 +11,7 @@ import {
   formatCmsBackupBytes,
   cmsBackupFileName,
   cmsRecordIdentity,
+  isCmsBackupPathname,
   countCmsBackup,
   parseCmsBackup,
   planCmsRestore,
@@ -208,6 +209,26 @@ test('byte sizes read the same way in every message', () => {
   assert.equal(formatCmsBackupBytes(2048), '2.0 KB')
   assert.equal(formatCmsBackupBytes(CMS_BACKUP_MAX_BYTES), '4.00 MB')
   assert.equal(formatCmsBackupBytes(CMS_BACKUP_PLATFORM_LIMIT_BYTES), '4.50 MB')
+})
+
+test('only the scheduled snapshot names can be read back', () => {
+  assert.equal(isCmsBackupPathname('backups/cms-backup-2026-11-22-03-00.json'), true)
+  assert.equal(
+    isCmsBackupPathname('backups/cms-backup-2026-11-22-03-00-k3j9x2.json'),
+    true,
+    'a public store appends a random suffix',
+  )
+  assert.equal(isCmsBackupPathname('backups/other.json'), false)
+  assert.equal(isCmsBackupPathname('site/user/photo.png'), false)
+  assert.equal(isCmsBackupPathname('backups/cms-backup-2026-11-22-03-00.txt'), false)
+  assert.equal(
+    isCmsBackupPathname('backups/cms-backup-2026-11-22-03-00.json/../secret.json'),
+    false,
+    'traversal cannot escape the snapshot prefix',
+  )
+  assert.equal(isCmsBackupPathname('backups/cms-backup-latest.json'), false)
+  assert.equal(isCmsBackupPathname(undefined), false)
+  assert.equal(isCmsBackupPathname(null), false)
 })
 
 test('backup filenames sort chronologically and avoid filesystem punctuation', () => {

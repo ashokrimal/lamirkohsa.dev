@@ -1,8 +1,17 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { AlertTriangle, CalendarClock, Download, FileJson, ShieldCheck, Upload } from 'lucide-react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import {
+  AlertTriangle,
+  CalendarClock,
+  Download,
+  FileJson,
+  RefreshCw,
+  ShieldCheck,
+  Upload,
+} from 'lucide-react'
+import {
+  CMS_BACKUP_KEEP,
   CMS_BACKUP_MAX_BYTES,
   CMS_BACKUP_PLATFORM_LIMIT_BYTES,
   cmsBackupFileName,
@@ -32,6 +41,12 @@ interface FilePreview {
   total: number
 }
 
+interface Snapshot {
+  pathname: string
+  size: number
+  uploadedAt: string
+}
+
 interface RestoreSummary {
   mode: string
   cmsContent: { inserted: number; updated: number; removed: number }
@@ -39,6 +54,26 @@ interface RestoreSummary {
   pageSections: number
   projects: { inserted: number; updated: number }
   siteSettings: boolean
+}
+
+function snapshotName(pathname: string) {
+  return pathname.slice(pathname.lastIndexOf('/') + 1) || pathname
+}
+
+/** Hands a response body to the browser's own download handling. */
+async function saveResponse(response: Response, fallbackName: string) {
+  const blob = await response.blob()
+  const disposition = response.headers.get('content-disposition') ?? ''
+  const named = /filename="([^"]+)"/.exec(disposition)?.[1]
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = named || fallbackName
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+  return { name: link.download, size: blob.size }
 }
 
 function summarise(summary: RestoreSummary) {
@@ -65,6 +100,44 @@ export default function BackupWorkspace() {
     { tone: 'success' | 'error'; text: string } | null
   >(null)
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
+  const [snapshots, setSnapshots] = useState<Snapshot[] | null>(null)
+  const [loadingSnapshots, setLoadingSnapshots] = useState(true)
+  const [snapshotsError, setSnapshotsError] = useState<string | null>(null)
+  const [snapshotBusy, setSnapshotBusy] = useState<string | null>(null)
+  const [pendingSnapshot, setPendingSnapshot] = useState<Snapshot | null>(null)
+  const [snapshotConfirmation, setSnapshotConfirmation] = useState('')
+  const [snapshotStatus, setSnapshotStatus] = useState<
+    { tone: 'success' | 'error'; text: string } | null
+  >(null)
+
+  const loadSnapshots = async () => {
+    setLoadingSnapshots(true)
+    setSnapshotsError(null)
+    try {
+      const response = await fetch('/api/admin/cms-backup/snapshots', { cache: 'no-store' })
+      const payload = (await response.json().catch(() => null)) as
+        | { snapshots?: Snapshot[]; message?: string }
+        | null
+      if (!response.ok || !payload?.snapshots) {
+        throw new Error(
+          payload?.message || `Could not list the scheduled snapshots (${response.status}).`,
+        )
+      }
+      setSnapshots(payload.snapshots)
+    } catch (error) {
+      setSnapshots([])
+      setSnapshotsError(
+        error instanceof Error ? error.message : 'Could not list the scheduled snapshots.',
+      )
+    } finally {
+      setLoadingSnapshots(false)
+    }
+  }
+
+  useEffect(() => {
+    // One load on open; the refresh button calls the same loader.
+    void loadSnapshots()
+  }, [])
 
   const resetFile = () => {
     setPreview(null)
@@ -136,20 +209,10 @@ export default function BackupWorkspace() {
         )
       }
 
-      const blob = await response.blob()
-      const disposition = response.headers.get('content-disposition') ?? ''
-      const named = /filename="([^"]+)"/.exec(disposition)?.[1]
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = named || cmsBackupFileName()
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      URL.revokeObjectURL(url)
+      const saved = await saveResponse(response, cmsBackupFileName())
       setDownloadStatus({
         tone: 'success',
-        text: `Downloaded ${link.download} (${formatCmsBackupBytes(blob.size)}). Keep it outside this project.`,
+        text: `Downloaded ${saved.name} (${formatCmsBackupBytes(saved.size)}). Keep it outside this project.`,
       })
     } catch (error) {
       setDownloadStatus({
@@ -158,6 +221,65 @@ export default function BackupWorkspace() {
       })
     } finally {
       setDownloading(false)
+    }
+  }
+
+  const downloadSnapshot = async (snapshot: Snapshot) => {
+    setSnapshotBusy(snapshot.pathname)
+    setSnapshotStatus(null)
+    try {
+      const response = await fetch(
+        `/api/admin/cms-backup/snapshots?pathname=${encodeURIComponent(snapshot.pathname)}`,
+        { cache: 'no-store' },
+      )
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { message?: string } | null
+        throw new Error(payload?.message || `Could not download that snapshot (${response.status}).`)
+      }
+      const saved = await saveResponse(response, snapshotName(snapshot.pathname))
+      setSnapshotStatus({
+        tone: 'success',
+        text: `Downloaded ${saved.name} (${formatCmsBackupBytes(saved.size)}).`,
+      })
+    } catch (error) {
+      setSnapshotStatus({
+        tone: 'error',
+        text: error instanceof Error ? error.message : 'Could not download that snapshot.',
+      })
+    } finally {
+      setSnapshotBusy(null)
+    }
+  }
+
+  const restoreSnapshot = async (snapshot: Snapshot) => {
+    setSnapshotBusy(snapshot.pathname)
+    setSnapshotStatus(null)
+    try {
+      const response = await fetch('/api/admin/cms-backup/snapshots', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-backup-mode': 'replace' },
+        body: JSON.stringify({ pathname: snapshot.pathname, mode: 'replace' }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string; summary?: RestoreSummary }
+        | null
+      if (!response.ok || !payload?.summary) {
+        throw new Error(payload?.message || `Restore failed (${response.status}).`)
+      }
+      setSnapshotStatus({
+        tone: 'success',
+        text: `Restored ${snapshotName(snapshot.pathname)}. ${summarise(payload.summary)}`,
+      })
+      setPendingSnapshot(null)
+      setSnapshotConfirmation('')
+      await loadSnapshots()
+    } catch (error) {
+      setSnapshotStatus({
+        tone: 'error',
+        text: error instanceof Error ? error.message : 'Restore failed.',
+      })
+    } finally {
+      setSnapshotBusy(null)
     }
   }
 
@@ -250,8 +372,178 @@ export default function BackupWorkspace() {
             <code className="rounded bg-white px-1 py-0.5 text-[10px] text-slate-600">
               backups/cms-backup-*.json
             </code>
-            . Browse them in Vercel → Storage.
+            . They are listed below, newest first.
           </span>
+        </p>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+              <CalendarClock className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">Scheduled snapshots</h2>
+              <p className="text-[11px] text-slate-500">
+                Written automatically every day at 03:00 UTC; the newest {CMS_BACKUP_KEEP} are kept.
+                Download one to keep it somewhere else, or restore it to return the CMS to that
+                day&apos;s content.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => void loadSnapshots()}
+            disabled={loadingSnapshots}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+          >
+            <RefreshCw
+              className={`h-3 w-3 ${loadingSnapshots ? 'animate-spin' : ''}`}
+              aria-hidden="true"
+            />
+            Refresh
+          </button>
+        </div>
+
+        {loadingSnapshots && !snapshots ? (
+          <p className="mt-4 text-[11px] text-slate-500">Loading snapshots…</p>
+        ) : null}
+
+        {snapshotsError ? (
+          <p className="mt-4 rounded-xl border border-rose-100 bg-rose-50/60 p-3 text-[11px] text-rose-700">
+            {snapshotsError}
+          </p>
+        ) : null}
+
+        {!loadingSnapshots && !snapshotsError && snapshots?.length === 0 ? (
+          <p className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-3 text-[11px] text-slate-500">
+            No scheduled snapshots yet. The first one appears after the daily job runs; until then
+            use “Download backup” above.
+          </p>
+        ) : null}
+
+        {snapshots?.length ? (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[34rem] border-collapse text-left text-[11px]">
+              <thead>
+                <tr className="text-[10px] uppercase tracking-wide text-slate-400">
+                  <th scope="col" className="pb-2 font-semibold">
+                    Taken
+                  </th>
+                  <th scope="col" className="pb-2 font-semibold">
+                    Size
+                  </th>
+                  <th scope="col" className="pb-2 text-right font-semibold">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {snapshots.map((snapshot) => {
+                  const name = snapshotName(snapshot.pathname)
+                  const busy = snapshotBusy === snapshot.pathname
+                  const pending = pendingSnapshot?.pathname === snapshot.pathname
+                  return (
+                    <Fragment key={snapshot.pathname}>
+                      <tr className="border-t border-slate-100 align-top">
+                        <td className="py-2.5 pr-3">
+                          <span className="block text-xs font-medium text-slate-800">
+                            {new Date(snapshot.uploadedAt).toLocaleString(undefined, {
+                              dateStyle: 'medium',
+                              timeStyle: 'short',
+                            })}
+                          </span>
+                          <code className="mt-0.5 block truncate text-[10px] text-slate-400">
+                            {name}
+                          </code>
+                        </td>
+                        <td className="whitespace-nowrap py-2.5 pr-3 text-slate-600">
+                          {formatCmsBackupBytes(snapshot.size)}
+                        </td>
+                        <td className="py-2.5">
+                          <div className="flex flex-wrap items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => void downloadSnapshot(snapshot)}
+                              disabled={busy}
+                              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+                            >
+                              <Download className="h-3 w-3" aria-hidden="true" />
+                              Download
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSnapshotStatus(null)
+                                setSnapshotConfirmation('')
+                                setPendingSnapshot(pending ? null : snapshot)
+                              }}
+                              disabled={busy}
+                              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+                            >
+                              <ShieldCheck className="h-3 w-3" aria-hidden="true" />
+                              {pending ? 'Cancel' : 'Restore'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {pending ? (
+                        <tr className="bg-amber-50/40">
+                          <td colSpan={3} className="px-3 py-3">
+                            <p className="flex items-start gap-2 text-[11px] text-amber-900">
+                              <AlertTriangle
+                                className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                                aria-hidden="true"
+                              />
+                              Restoring {name} replaces the CMS with that day&apos;s snapshot: records
+                              added since then are deleted. Pages and case studies are matched by slug
+                              and never deleted. Download a fresh copy first if you are unsure.
+                            </p>
+                            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
+                              <label className="text-[11px] font-medium text-slate-600">
+                                Type RESTORE to confirm
+                                <input
+                                  type="text"
+                                  value={snapshotConfirmation}
+                                  onChange={(event) => setSnapshotConfirmation(event.target.value)}
+                                  placeholder="RESTORE"
+                                  autoComplete="off"
+                                  spellCheck={false}
+                                  className="mt-1 block w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-teal-500 sm:w-40"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => void restoreSnapshot(snapshot)}
+                                disabled={
+                                  busy ||
+                                  snapshotConfirmation.trim().toUpperCase() !== 'RESTORE'
+                                }
+                                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                              >
+                                <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                                {busy ? 'Restoring…' : 'Restore snapshot'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+
+        <p
+          role="status"
+          className={`mt-3 text-[11px] ${
+            snapshotStatus?.tone === 'error' ? 'text-rose-600' : 'text-emerald-700'
+          }`}
+        >
+          {snapshotStatus?.text ?? ''}
         </p>
       </section>
 
