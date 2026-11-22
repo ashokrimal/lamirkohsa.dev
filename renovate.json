@@ -1,0 +1,38 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "rangeStrategy": "replace",
+  "timezone": "Asia/Kathmandu",
+  "schedule": ["every weekend"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  },
+  "packageRules": [
+    {
+      "description": "Group routine dev-dependency bumps into one PR",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "dev dependencies (non-major)"
+    },
+    {
+      "description": "Group routine production patches into one PR",
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["patch"],
+      "groupName": "production patches"
+    },
+    {
+      "description": "React 19, Next 16 and the R3F stack are pinned together; land majors by hand",
+      "matchPackageNames": [
+        "next",
+        "react",
+        "react-dom",
+        "@react-three/fiber",
+        "@react-three/drei",
+        "@react-three/postprocessing"
+      ],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ]
+}

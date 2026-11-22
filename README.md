@@ -337,6 +337,16 @@ merge to `main`.
 Fork pull requests still skip this job because they do not receive repository
 secrets; the prebuild duplicate gate remains active for deployments.
 
+## Dependency updates
+
+`renovate.json` keeps pnpm dependencies current: routine dev-dependency and
+production-patch bumps arrive as grouped pull requests on the weekend, lockfile
+maintenance runs monthly, and major upgrades of Next.js, React and the
+react-three-fiber stack wait for approval in the dependency dashboard because
+they move together. Nothing runs until the Renovate app is installed on the
+repository (<https://github.com/apps/renovate>); after that, merge a dependency
+PR only when the Quality checks workflow passes.
+
 ## Adding a new collection
 
 1. Add the collection name to `CMS_COLLECTIONS` and a definition to
