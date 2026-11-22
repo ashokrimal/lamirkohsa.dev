@@ -31,6 +31,42 @@ export function readMailConfig(): MailConfig | null {
   }
 }
 
+export type MailEnvName = 'RESEND_API_KEY' | 'RESEND_EMAIL_DOMAIN' | 'CONTACT_TO_EMAIL'
+
+/**
+ * Names the mail variables that are missing, in the order the site needs them.
+ * `ADMIN_EMAIL` counts as a contact inbox, matching `readMailConfig`.
+ */
+export function findMissingMailEnv(
+  env: Record<string, string | undefined> = process.env,
+): MailEnvName[] {
+  const missing: MailEnvName[] = []
+  if (!env.RESEND_API_KEY?.trim()) missing.push('RESEND_API_KEY')
+  if (!env.RESEND_EMAIL_DOMAIN?.trim()) missing.push('RESEND_EMAIL_DOMAIN')
+  if (!(env.CONTACT_TO_EMAIL?.trim() || env.ADMIN_EMAIL?.trim())) {
+    missing.push('CONTACT_TO_EMAIL')
+  }
+  return missing
+}
+
+/**
+ * Startup check: says once, in the server log, which mail variables are missing
+ * so a deployment without them is visible instead of silently skipping email.
+ * Missing variables degrade mail, they do not stop the site.
+ */
+export function reportMailConfiguration(
+  env: Record<string, string | undefined> = process.env,
+): MailEnvName[] {
+  const missing = findMissingMailEnv(env)
+  if (missing.length > 0) {
+    console.warn(
+      `[mail] Email is not fully configured. Missing: ${missing.join(', ')}. ` +
+        'Contact acknowledgements, the journal welcome and blog announcements are skipped until these are set.',
+    )
+  }
+  return missing
+}
+
 export function noReplyAddress(domain: string) {
   return `Ashok Rimal <no-reply@${domain}>`
 }

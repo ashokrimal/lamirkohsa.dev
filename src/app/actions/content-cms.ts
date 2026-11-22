@@ -6,6 +6,7 @@ import { cmsContent, studioProject } from '@/lib/db/schema'
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
+import { after } from 'next/server'
 import { getAdminActorId } from '@/lib/admin-auth'
 import { CMS_CACHE_TAG, CMS_REVALIDATE_SECONDS, cmsCollectionTag } from '@/lib/cms-cache'
 import { revalidateCmsCache } from '@/lib/cms-revalidation'
@@ -17,7 +18,7 @@ import {
   type CmsResult,
 } from '@/lib/cms-schema'
 import { resolveProjectLifecycleStatus, type ProjectLifecycleStatus } from '@/lib/project-status'
-import { notifySubscribersOfPost } from '@/lib/blog-notifications'
+import { notifySubscribersOfPost, type PublishedPost } from '@/lib/blog-notifications'
 import { toSlug } from '@/lib/slug'
 
 export interface CmsRecord {
@@ -206,7 +207,21 @@ function blogExcerpt(payload: Record<string, unknown>): string | undefined {
  * Emails the journal newsletter when a blog post becomes published. Never
  * throws: a mail outage must not undo the save that triggered it.
  */
-async function announceBlogPost(
+async function announceBlogPost(post: PublishedPost) {
+  try {
+    await notifySubscribersOfPost(post)
+  } catch (error) {
+    console.warn('[CMS] Newsletter announcement failed:', (error as Error).message)
+  }
+}
+
+/**
+ * Queues the subscriber fan-out to run after the response is sent, so saving or
+ * publishing a post never waits on subscriber emails (one Resend batch per 100
+ * subscribers). Outside a request scope — scripts, tests — `after` throws, and
+ * the send is detached instead of skipped.
+ */
+function scheduleBlogAnnouncement(
   collection: string,
   status: string,
   post: { title: string; slug: string; payload: Record<string, unknown> },
@@ -214,14 +229,17 @@ async function announceBlogPost(
   if (collection.trim().toLowerCase() !== CMS_COLLECTIONS.blogs.trim().toLowerCase()) return
   if (status.trim().toLowerCase() !== 'published') return
   if (!post.title || !post.slug) return
+
+  const announcement: PublishedPost = {
+    title: post.title,
+    slug: post.slug,
+    excerpt: blogExcerpt(post.payload),
+  }
+
   try {
-    await notifySubscribersOfPost({
-      title: post.title,
-      slug: post.slug,
-      excerpt: blogExcerpt(post.payload),
-    })
-  } catch (error) {
-    console.warn('[CMS] Newsletter announcement failed:', (error as Error).message)
+    after(() => announceBlogPost(announcement))
+  } catch {
+    void announceBlogPost(announcement)
   }
 }
 
@@ -664,7 +682,7 @@ export async function createCmsContent(formData: FormData) {
   revalidateCms(collection)
 
   if (stored) {
-    await announceBlogPost(collection, status, {
+    scheduleBlogAnnouncement(collection, status, {
       title,
       slug: created.slug,
       payload: normalizedPayload,
@@ -762,7 +780,7 @@ export async function updateCmsContent(id: number, formData: FormData) {
     const wasPublished = (current?.status ?? '').trim().toLowerCase() === 'published'
     if (!wasPublished && status.trim().toLowerCase() === 'published') {
       const publishedTitle = title || current?.title || ''
-      await announceBlogPost(publishCollection, status, {
+      scheduleBlogAnnouncement(publishCollection, status, {
         title: publishedTitle,
         slug: current?.slug || toSlug(publishedTitle),
         payload: storedPayload,
