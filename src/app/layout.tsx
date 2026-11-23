@@ -9,7 +9,8 @@ import { EMPTY_SITE_CONFIG, getSiteConfig } from '@/lib/site-content';
 import { getSiteSettings } from '@/lib/studio/data';
 import { getUiCopyOverrides } from '@/lib/ui-copy';
 import { UiCopyProvider } from '@/components/ui/UiCopyProvider'
-import { ClientErrorReporter } from '@/components/ClientErrorReporter';
+import { ClientErrorReporter } from '@/components/ClientErrorReporter'
+import { WebVitalsReporter } from '@/components/WebVitalsReporter';
 import {
   DEFAULT_OG_IMAGE,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -134,6 +135,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body className="leading-relaxed tracking-wide">
         <ThemeProvider>
           <ClientErrorReporter />
+          <WebVitalsReporter />
           <UiCopyProvider overrides={uiCopyOverrides}>
           <ScrollProgress />
           <SmoothScroll />
