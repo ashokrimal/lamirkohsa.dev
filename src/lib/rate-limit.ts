@@ -2,8 +2,9 @@
  * Small in-memory sliding-window limiter for anonymous endpoints.
  *
  * Serverless instances are isolated, so this bounds bursts per instance rather
- * than globally. It is paired with a durable per-sender check in the contact
- * route; treat this as the cheap first gate, not the only one.
+ * than globally. The public write routes pair it with `consumeDurableLimit`
+ * (`rate-limit-db.ts`), which keeps the count in Postgres; treat this as the
+ * cheap first gate, not the only one.
  */
 
 export type RateLimitDecision = {

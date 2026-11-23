@@ -13,6 +13,7 @@ import {
 } from '@/lib/cms-backup'
 import { readCmsBackup, type BackupQueryClient } from '@/lib/cms-backup-db'
 import { pool } from '@/lib/db'
+import { pruneRateLimitHits } from '@/lib/rate-limit-db'
 
 /**
  * The scheduled CMS backup.
@@ -137,6 +138,9 @@ export async function GET(request: Request) {
       token,
     })
     const pruned = await pruneSnapshots(token)
+    // The daily job also clears spent rate-limit hits; it is the one task that is
+    // guaranteed to run every day, and the table only needs the last window.
+    await pruneRateLimitHits()
 
     console.info(
       `[CMS] Scheduled backup ${blob.pathname}: ${formatCmsBackupBytes(bytes)}, ` +

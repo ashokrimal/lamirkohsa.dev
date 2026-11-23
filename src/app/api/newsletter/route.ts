@@ -3,6 +3,7 @@ import { newsletterWelcome } from '@/lib/email-templates'
 import { journalAddress, readMailConfig, sendMail } from '@/lib/mailer'
 import { subscribeToNewsletter, unsubscribeUrlFor } from '@/lib/newsletter-store'
 import { createSlidingWindowLimiter } from '@/lib/rate-limit'
+import { consumeDurableLimit } from '@/lib/rate-limit-db'
 import { SITE_URL } from '@/lib/seo'
 
 /**
@@ -61,6 +62,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: 'Too many subscription attempts. Please try again shortly.' },
       { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
+    )
+  }
+
+  // Shared across instances, so rotating a cold start does not reset the count.
+  const durable = await consumeDurableLimit({
+    scope: 'newsletter',
+    identifier: clientKey(request),
+    limit: 5,
+    windowMs: 10 * 60 * 1000,
+  })
+  if (!durable.allowed) {
+    return NextResponse.json(
+      { error: 'Too many subscription attempts. Please try again shortly.' },
+      { status: 429, headers: { 'Retry-After': String(durable.retryAfterSeconds) } },
     )
   }
 

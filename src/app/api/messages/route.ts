@@ -13,6 +13,7 @@ import { planContactSubmission, type ContactSubmission } from '@/lib/contact-sub
 import { contactAcknowledgement } from '@/lib/email-templates'
 import { noReplyAddress, readMailConfig, sendMail } from '@/lib/mailer'
 import { createSlidingWindowLimiter } from '@/lib/rate-limit'
+import { consumeDurableLimit } from '@/lib/rate-limit-db'
 import { SITE_URL } from '@/lib/seo'
 
 /**
@@ -199,6 +200,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: 'Too many messages were sent from this connection. Please try again shortly.' },
       { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
+    )
+  }
+
+  // The in-memory window is per instance; this one is shared, so a burst spread
+  // over several instances still meets the same allowance.
+  const durable = await consumeDurableLimit({
+    scope: 'contact',
+    identifier: senderKey(request, submission),
+    limit: PER_IP_LIMIT,
+    windowMs: WINDOW_MS,
+  })
+  if (!durable.allowed) {
+    return NextResponse.json(
+      { error: 'Too many messages were sent from this connection. Please try again shortly.' },
+      { status: 429, headers: { 'Retry-After': String(durable.retryAfterSeconds) } },
     )
   }
 
