@@ -65,7 +65,8 @@ export default async function AdminSecurityPage() {
             Signed cookie, {sessionHours} hours
           </p>
           <p className="mt-2 text-xs leading-relaxed text-slate-500">
-            The cookie is HttpOnly, SameSite=Lax and signed with the owner's session secret. Signing
+            The cookie is HttpOnly, SameSite=Lax and signed with the owner&apos;s session secret.
+            Signing
             out clears it immediately; an expired cookie needs a new sign-in.
           </p>
         </div>
