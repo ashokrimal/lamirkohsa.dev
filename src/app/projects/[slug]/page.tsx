@@ -27,6 +27,8 @@ import { DownloadCaseStudyPdfButton } from '@/components/projects/DownloadCaseSt
 import { CmsErrorState } from '@/components/ui/CmsState'
 import type { CmsResult } from '@/lib/cms-schema'
 import { articleMetadata } from '@/lib/seo'
+import { breadcrumbJsonLd, caseStudyJsonLd } from '@/lib/structured-data'
+import { JsonLd } from '@/components/seo/JsonLd'
 import { isRepositoryUrl } from '@/lib/urls'
 import { getProjectStatusVisual } from '@/lib/project-status'
 
@@ -153,6 +155,24 @@ export default async function ProjectCaseStudyPage(
 
   return (
     <PageShell>
+      <JsonLd
+        data={caseStudyJsonLd({
+          title: project.title,
+          description: project.summary || project.description,
+          path: `/projects/${project.slug}`,
+          image: project.image,
+          modifiedTime: project.updatedAt ? new Date(project.updatedAt).toISOString() : undefined,
+          technologies: dossier.techDetails.map((tech) => tech.name),
+          liveUrl: project.live,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Projects', path: '/projects' },
+          { name: project.title, path: `/projects/${project.slug}` },
+        ])}
+      />
       <PageHero
         eyebrow={pageCopy?.eyebrow || project.category || 'Project Case Study'}
         krEyebrow={pageCopy?.krEyebrow}

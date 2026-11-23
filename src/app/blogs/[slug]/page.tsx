@@ -10,6 +10,8 @@ import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_COLLECTIONS, CMS_SCHEMA, type CmsResult } from '@/lib/cms-schema'
 import { getUiCopy } from '@/lib/ui-copy'
 import { articleMetadata } from '@/lib/seo'
+import { blogPostingJsonLd, breadcrumbJsonLd } from '@/lib/structured-data'
+import { JsonLd } from '@/components/seo/JsonLd'
 import { NotebookPen } from 'lucide-react'
 
 export const revalidate = 300
@@ -19,6 +21,7 @@ type Blog = {
   title: string
   slug?: string
   payload?: Record<string, unknown> | string
+  updatedAt?: string | Date
 }
 
 function readPayload(blog: Blog): Record<string, unknown> {
@@ -112,8 +115,36 @@ export default async function BlogArticlePage(props: { params: Promise<{ slug: s
     .map((paragraph) => paragraph.trim())
     .filter(Boolean)
 
+  const excerpt = typeof payload.excerpt === 'string' ? payload.excerpt : body
+  const description = excerpt.replace(/\s+/g, ' ').trim().slice(0, 160) || undefined
+  const coverImage =
+    (typeof payload.coverUrl === 'string' && payload.coverUrl) ||
+    (typeof payload.imageUrl === 'string' && payload.imageUrl) ||
+    undefined
+  const publishedTime =
+    date && !Number.isNaN(Date.parse(date)) ? new Date(date).toISOString() : undefined
+  const modifiedTime = blog.updatedAt ? new Date(blog.updatedAt).toISOString() : undefined
+  const slug = blog.slug || toSlug(blog.title)
+
   return (
     <PageShell>
+      <JsonLd
+        data={blogPostingJsonLd({
+          title: blog.title,
+          description,
+          path: `/blogs/${slug}`,
+          image: coverImage,
+          publishedTime,
+          modifiedTime,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Journal', path: '/blogs' },
+          { name: blog.title, path: `/blogs/${slug}` },
+        ])}
+      />
       <PageHero
         eyebrow={
           category ? uiStrings.journal.eyebrow(category) : uiStrings.journal.label.en

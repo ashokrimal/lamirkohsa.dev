@@ -6,6 +6,8 @@ import { isRepositoryUrl } from '@/lib/urls'
 import { getProjectStatusVisual } from '@/lib/project-status'
 import { PageHero, PageSection, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { caseStudyJsonLd } from '@/lib/structured-data'
 
 /**
  * Case study detail for a studio `projects` row that has no `cmsContent`
@@ -33,6 +35,17 @@ export function StudioCaseStudyView({
 
   return (
     <PageShell>
+      <JsonLd
+        data={caseStudyJsonLd({
+          title: project.title,
+          description: project.summary ?? undefined,
+          path: `/projects/${project.slug}`,
+          image: project.coverMediaUrl ?? undefined,
+          modifiedTime: project.updatedAt ? new Date(project.updatedAt).toISOString() : undefined,
+          technologies: project.techStack,
+          liveUrl: project.liveUrl ?? undefined,
+        })}
+      />
       <PageHero
         eyebrow={project.category || 'Project Case Study'}
         title={project.title}

@@ -77,7 +77,12 @@ const STRUCTURED_DATA = {
         addressLocality: 'Butwal',
         addressCountry: 'NP',
       },
-      sameAs: ['https://github.com/ashokrimal', 'https://www.linkedin.com'],
+      sameAs: [
+        'https://github.com/ashokrimal',
+        // The bare linkedin.com root identifies nothing; this is the profile the
+        // site's own social links point at.
+        'https://www.linkedin.com/in/lamirkohsa/',
+      ],
       knowsAbout: [
         'Next.js',
         'React',
