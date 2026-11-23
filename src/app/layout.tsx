@@ -74,6 +74,10 @@ export async function generateMetadata(): Promise<Metadata> {
     publisher: name,
     category: 'Portfolio',
     metadataBase: new URL(SITE_URL),
+    // Feed readers discover the journal through this, not by guessing a path.
+    alternates: {
+      types: { 'application/rss+xml': '/feed.xml' },
+    },
     robots: {
       index: true,
       follow: true,
