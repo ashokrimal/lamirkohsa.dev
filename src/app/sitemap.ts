@@ -10,7 +10,11 @@ import {
   toLastModified,
 } from '@/lib/sitemap'
 import { toSlug } from '@/lib/slug'
-import { getPublishedPagesForSitemap, normalizePageSlug } from '@/lib/studio/data'
+import {
+  getPublishedPagesForSitemap,
+  getPublishedProjects,
+  normalizePageSlug,
+} from '@/lib/studio/data'
 
 export const revalidate = 3600
 
@@ -40,10 +44,11 @@ const staticRoutes = [
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [projectsResult, blogsResult, pages] = await Promise.all([
+  const [projectsResult, blogsResult, pages, studioProjects] = await Promise.all([
     getProjectsResult(),
     getPublishedCmsContentResult(CMS_COLLECTIONS.blogs),
     getPublishedPagesForSitemap(),
+    getPublishedProjects(),
   ])
 
   const pageDates = new Map(
@@ -54,12 +59,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     projectsResult.status === 'ok'
       ? projectsResult.data.map((project) => toLastModified(project.updatedAt))
       : []
+  // A case study authored in the studio has no CMS record, but it still renders
+  // at /projects/<slug>, so it belongs in the sitemap too.
+  const studioProjectDates = studioProjects.map((project) => toLastModified(project.updatedAt))
 
   const routes: MetadataRoute.Sitemap = staticRoutes.map(({ path, priority }) => {
     // The case study index has no record of its own; its newest case study is
     // the honest signal for when the page last changed.
     const lastModified =
-      path === '/projects' ? newestOf(...projectDates) ?? pageDates.get(path) : pageDates.get(path)
+      path === '/projects'
+        ? newestOf(...projectDates, ...studioProjectDates) ?? pageDates.get(path)
+        : pageDates.get(path)
     return {
       url: `${SITE_URL}${path}`,
       ...(lastModified ? { lastModified } : {}),
@@ -68,8 +78,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   })
 
+  const listedProjectSlugs = new Set<string>()
+
   if (projectsResult.status === 'ok') {
     for (const project of projectsResult.data) {
+      listedProjectSlugs.add(project.slug)
       const lastModified = toLastModified(project.updatedAt)
       routes.push({
         url: `${SITE_URL}/projects/${project.slug}`,
@@ -78,6 +91,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
       })
     }
+  }
+
+  for (const project of studioProjects) {
+    if (listedProjectSlugs.has(project.slug)) continue
+    const lastModified = toLastModified(project.updatedAt)
+    routes.push({
+      url: `${SITE_URL}/projects/${project.slug}`,
+      ...(lastModified ? { lastModified } : {}),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    })
   }
 
   if (blogsResult.status === 'ok') {
