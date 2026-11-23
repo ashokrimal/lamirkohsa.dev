@@ -20,6 +20,13 @@ import {
 import { resolveProjectLifecycleStatus, type ProjectLifecycleStatus } from '@/lib/project-status'
 import { notifySubscribersOfPost, type PublishedPost } from '@/lib/blog-notifications'
 import { toSlug } from '@/lib/slug'
+import {
+  blogPath,
+  isSafeSlug,
+  normalizeSlugInput,
+  projectPath,
+  recordSlugRedirect,
+} from '@/lib/slug-history'
 
 export interface CmsRecord {
   id: number
@@ -716,6 +723,11 @@ export async function updateCmsContent(id: number, formData: FormData) {
 
   const imageUrl = String(formData.get('imageUrl') || '').trim()
 
+  // A slug can be corrected from the studio. The previous URL is remembered so
+  // links and search results that pointed at it still resolve.
+  const requestedSlug = normalizeSlugInput(formData.get('slug'))
+  const explicitSlug = isSafeSlug(requestedSlug) ? requestedSlug : undefined
+
   const previous = getMemoryRepo().getById(id)
   let payloadUpdates: Record<string, unknown> =
     replacement ?? ((previous?.payload as Record<string, unknown>) ?? {})
@@ -733,6 +745,7 @@ export async function updateCmsContent(id: number, formData: FormData) {
   if (collection) updates.collection = collection
   if (title) updates.title = title
   if (status) updates.status = status
+  if (explicitSlug) updates.slug = explicitSlug
 
   repo.update(id, updates)
 
@@ -765,16 +778,36 @@ export async function updateCmsContent(id: number, formData: FormData) {
       storedPayload,
     )
 
+    const slugChanged = Boolean(explicitSlug && current?.slug && explicitSlug !== current.slug)
+
     await db
       .update(cmsContent)
       .set({
         ...(title ? { title } : {}),
         ...(collection ? { collection } : {}),
         ...(status ? { status } : {}),
+        ...(slugChanged && explicitSlug ? { slug: explicitSlug } : {}),
         payload: storedPayload,
         updatedAt: new Date(),
       })
       .where(and(eq(cmsContent.id, id), eq(cmsContent.userId, userId)))
+
+    if (slugChanged && explicitSlug && current?.slug) {
+      const scope = (collection || current.collection || '').trim().toLowerCase()
+      const pathFor =
+        scope === CMS_COLLECTIONS.blogs.trim().toLowerCase()
+          ? blogPath
+          : scope === CMS_COLLECTIONS.projects.trim().toLowerCase()
+            ? projectPath
+            : null
+      if (pathFor) {
+        await recordSlugRedirect({
+          from: pathFor(current.slug),
+          to: pathFor(explicitSlug),
+          collection: scope,
+        })
+      }
+    }
 
     const publishCollection = collection || current?.collection || previous?.collection || ''
     const wasPublished = (current?.status ?? '').trim().toLowerCase() === 'published'

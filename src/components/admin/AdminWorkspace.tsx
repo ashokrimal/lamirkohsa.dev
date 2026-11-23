@@ -103,6 +103,7 @@ interface CmsRecordItem {
   id: number
   collection: string
   title: string
+  slug?: string
   payload?: any
   status: string
   createdAt?: Date | string
@@ -548,6 +549,7 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
       formData.set('payload', structured ? JSON.stringify(updated.payload ?? {}) : desc)
       formData.set('imageUrl', img)
       formData.set('status', updated.status)
+      if (typeof updated.slug === 'string') formData.set('slug', updated.slug)
       await updateCmsContent(updated.id, formData)
     } catch (err) {
       console.warn('Server sync error:', err)
@@ -1849,6 +1851,17 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
 
             <CmsFormField label="Collection">
               <CmsInput value={editingRecord.collection} disabled className="bg-slate-50 text-slate-500" />
+            </CmsFormField>
+
+            <CmsFormField
+              label="URL slug"
+              hint="Only blogs and projects use it. Changing it moves the page and keeps the old URL redirecting here."
+            >
+              <CmsInput
+                value={editingRecord.slug ?? ''}
+                onChange={(e) => setEditingRecord({ ...editingRecord, slug: e.target.value })}
+                placeholder="leave as it is"
+              />
             </CmsFormField>
 
             {isStructuredCollection(editingRecord.collection) ? (

@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { Clock } from 'lucide-react'
 import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
@@ -11,6 +11,7 @@ import { CMS_COLLECTIONS, CMS_SCHEMA, type CmsResult } from '@/lib/cms-schema'
 import { getUiCopy } from '@/lib/ui-copy'
 import { articleMetadata } from '@/lib/seo'
 import { blogPostingJsonLd, breadcrumbJsonLd } from '@/lib/structured-data'
+import { resolveSlugRedirect } from '@/lib/slug-history'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { NotebookPen } from 'lucide-react'
 
@@ -64,7 +65,11 @@ export async function generateMetadata(
   const params = await props.params;
   const result = await findBlog(params.slug)
   if (result.status === 'error') return { title: uiStrings.journal.label.en }
-  if (result.status !== 'ok' || !result.data) notFound()
+  if (result.status !== 'ok' || !result.data) {
+    const renamed = await resolveSlugRedirect(`/blogs/${params.slug}`)
+    if (renamed) permanentRedirect(renamed)
+    notFound()
+  }
   const blog = result.data
   const payload = readPayload(blog)
   const excerpt = typeof payload.excerpt === 'string' ? payload.excerpt : getBody(blog)
@@ -101,7 +106,12 @@ export default async function BlogArticlePage(props: { params: Promise<{ slug: s
       </PageShell>
     )
   }
-  if (result.status !== 'ok' || !result.data) notFound()
+  if (result.status !== 'ok' || !result.data) {
+    // A slug corrected in the studio keeps its old URL working.
+    const renamed = await resolveSlugRedirect(`/blogs/${params.slug}`)
+    if (renamed) permanentRedirect(renamed)
+    notFound()
+  }
   const blog = result.data
 
   const payload = readPayload(blog)

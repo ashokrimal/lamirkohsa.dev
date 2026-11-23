@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import {
   Clock,
@@ -28,6 +28,7 @@ import { CmsErrorState } from '@/components/ui/CmsState'
 import type { CmsResult } from '@/lib/cms-schema'
 import { articleMetadata } from '@/lib/seo'
 import { breadcrumbJsonLd, caseStudyJsonLd } from '@/lib/structured-data'
+import { resolveSlugRedirect } from '@/lib/slug-history'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { isRepositoryUrl } from '@/lib/urls'
 import { getProjectStatusVisual } from '@/lib/project-status'
@@ -79,7 +80,11 @@ export async function generateMetadata(
 
   if (result.status !== 'ok' || !result.data.project) {
     const studio = await findStudioProjectWithNeighbors(params.slug)
-    if (!studio) notFound()
+    if (!studio) {
+      const renamed = await resolveSlugRedirect(`/projects/${params.slug}`)
+      if (renamed) permanentRedirect(renamed)
+      notFound()
+    }
     return articleMetadata({
       title: studio.project.title,
       description: studio.project.summary?.slice(0, 160),
@@ -121,7 +126,12 @@ export default async function ProjectCaseStudyPage(
 
   if (lookupResult.status !== 'ok' || !lookupResult.data.project) {
     const studio = await findStudioProjectWithNeighbors(params.slug)
-    if (!studio) notFound()
+    if (!studio) {
+      // A slug corrected in the studio keeps its old URL working.
+      const renamed = await resolveSlugRedirect(`/projects/${params.slug}`)
+      if (renamed) permanentRedirect(renamed)
+      notFound()
+    }
     return <StudioCaseStudyView project={studio.project} nextProject={studio.nextProject} />
   }
 

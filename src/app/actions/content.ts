@@ -23,6 +23,7 @@ export async function getAdminContent() {
           id: cmsContent.id,
           collection: cmsContent.collection,
           title: cmsContent.title,
+          slug: cmsContent.slug,
           payload: cmsContent.payload,
           status: cmsContent.status,
           createdAt: cmsContent.createdAt,
