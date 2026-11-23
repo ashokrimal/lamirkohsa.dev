@@ -32,6 +32,7 @@ import {
   MoreHorizontal,
   Type,
   Archive,
+  Mails,
 } from 'lucide-react'
 import { CmsCommandPalette } from '@/components/admin/ui/CmsCommandPalette'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
@@ -90,6 +91,7 @@ const navGroups: NavGroup[] = [
     items: [
       { id: 'accounts', label: 'Accounts', icon: UserCog, href: '/admin/settings' },
       { id: 'backup', label: 'Backup & restore', icon: Archive, href: '/admin/backup' },
+      { id: 'newsletter', label: 'Newsletter', icon: Mails, href: '/admin/newsletter' },
       { id: 'support', label: 'Support & docs', icon: HelpCircle, action: 'support' },
     ],
   },
