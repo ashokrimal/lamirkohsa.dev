@@ -70,7 +70,13 @@ export function pageMetadata(
   return {
     ...(title ? { title } : {}),
     ...(description ? { description } : {}),
-    ...(canonicalPath ? { alternates: { canonical: canonicalPath } } : {}),
+    // A page that sets `alternates` replaces the layout's wholesale, so the feed
+    // has to be advertised here as well or only pages without a canonical would
+    // carry it.
+    alternates: {
+      ...(canonicalPath ? { canonical: canonicalPath } : {}),
+      types: { 'application/rss+xml': '/feed.xml' },
+    },
     openGraph: {
       ...(title ? { title } : {}),
       ...(description ? { description } : {}),
@@ -104,7 +110,10 @@ export function articleMetadata(input: {
   return {
     title: input.title,
     ...(input.description ? { description: input.description } : {}),
-    alternates: { canonical: input.path },
+    alternates: {
+      canonical: input.path,
+      types: { 'application/rss+xml': '/feed.xml' },
+    },
     openGraph: {
       type: 'article',
       title: input.title,
