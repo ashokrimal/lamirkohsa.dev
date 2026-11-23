@@ -14,27 +14,9 @@ import {
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CMS_SCHEMA } from '@/lib/cms-schema'
 import { sensoryAudio } from '@/lib/sensory-audio'
+import type { GitHubActivityData, SparklineDay } from '@/lib/github-activity'
 
-interface SparklineDay {
-  date: string
-  dayLabel: string
-  count: number
-}
-
-export interface GitHubActivityData {
-  username: string
-  publicRepos: number
-  totalStars: number
-  activeStreak: number
-  total30DayCommits: number
-  sparkline: SparklineDay[]
-  recentActivities: {
-    repo: string
-    message: string
-    date: string
-    url: string
-  }[]
-}
+export type { GitHubActivityData }
 
 interface GitHubActivitySparklineProps {
   username?: string
@@ -80,15 +62,14 @@ export function GitHubActivitySparkline({
     let mounted = true
     setStatus('loading')
 
+    // The site's own route does the GitHub calls and caches the result, so a
+    // visitor never spends the deployment's anonymous GitHub quota.
     const fetchGitHub = async () => {
       try {
-        const [profileRes, reposRes, eventsRes] = await Promise.all([
-          fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}`),
-          fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}/repos?sort=pushed&per_page=10`),
-          fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}/events/public?per_page=30`),
-        ])
-
-        if (!profileRes.ok || !eventsRes.ok) {
+        const response = await fetch(
+          `/api/github/activity?username=${encodeURIComponent(cleanUsername)}`,
+        )
+        if (!response.ok) {
           if (mounted) {
             setData(null)
             setStatus('unavailable')
@@ -96,73 +77,15 @@ export function GitHubActivitySparkline({
           return
         }
 
-        const profile = await profileRes.json()
-        const events = await eventsRes.json()
-        const repos = reposRes.ok ? await reposRes.json() : []
-
-        const daysMap = new Map<string, number>()
-        const now = new Date()
-        for (let i = 29; i >= 0; i--) {
-          const d = new Date()
-          d.setDate(now.getDate() - i)
-          const key = d.toISOString().slice(0, 10)
-          daysMap.set(key, 0)
+        const payload = (await response.json()) as GitHubActivityData
+        if (!mounted) return
+        if (!Array.isArray(payload.sparkline) || payload.username !== cleanUsername) {
+          setData(null)
+          setStatus('unavailable')
+          return
         }
-
-        let totalCommits = 0
-        const pushEvents: Array<{ repo: string; message: string; date: string; url: string }> = []
-
-        if (Array.isArray(events)) {
-          events.forEach((evt) => {
-            if (evt.type === 'PushEvent' && evt.created_at) {
-              const dateKey = evt.created_at.slice(0, 10)
-              const count = evt.payload?.commits?.length || 1
-              if (daysMap.has(dateKey)) {
-                daysMap.set(dateKey, (daysMap.get(dateKey) || 0) + count)
-                totalCommits += count
-              }
-              const firstMsg = evt.payload?.commits?.[0]?.message || 'Code commit'
-              if (pushEvents.length < 3) {
-                pushEvents.push({
-                  repo: evt.repo?.name || '',
-                  message: firstMsg.split('\n')[0].slice(0, 70),
-                  date: dateKey,
-                  url: `https://github.com/${evt.repo?.name || cleanUsername}`,
-                })
-              }
-            }
-          })
-        }
-
-        const sparklineList: SparklineDay[] = Array.from(daysMap.entries()).map(([date, count]) => {
-          const d = new Date(date)
-          const dayLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          return { date, dayLabel, count }
-        })
-
-        const stars = Array.isArray(repos)
-          ? repos.reduce((sum: number, r: { stargazers_count?: number }) => sum + (r.stargazers_count || 0), 0)
-          : 0
-
-        // Streak: consecutive days with commits, counting back from today.
-        let streak = 0
-        for (let i = sparklineList.length - 1; i >= 0; i--) {
-          if (sparklineList[i].count > 0) streak += 1
-          else break
-        }
-
-        if (mounted) {
-          setData({
-            username: cleanUsername,
-            publicRepos: profile.public_repos ?? 0,
-            totalStars: stars,
-            total30DayCommits: totalCommits,
-            activeStreak: streak,
-            sparkline: sparklineList,
-            recentActivities: pushEvents,
-          })
-          setStatus('ready')
-        }
+        setData(payload)
+        setStatus('ready')
       } catch {
         if (mounted) {
           setData(null)
@@ -217,7 +140,7 @@ export function GitHubActivitySparkline({
         eyebrow={`GitHub API · @${cleanUsername}`}
         icon={GitCommit}
         message={`Could not load live activity for @${cleanUsername}.`}
-        hint="GitHub's public REST API returned no recent activity right now, or public rate limits are temporarily active."
+        hint="Live GitHub activity could not be read just now. The card retries on its own; the profile link still works."
         className={className}
         footer={
           <>

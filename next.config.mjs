@@ -3,8 +3,8 @@ const isVercel = Boolean(process.env.VERCEL)
 const isDev = process.env.NODE_ENV === 'development' && !isVercel
 
 // The site ships no third-party scripts or fonts: everything is served from
-// this origin, images come through next/image, GitHub activity is read from the
-// public API in the browser, and the one embed is a SnapWidget iframe. Inline
+// this origin, images come through next/image, GitHub activity goes through this
+// site's own /api/github route, and the one embed is a SnapWidget iframe. Inline
 // scripts and styles stay allowed because the theme bootstrap, JSON-LD and
 // Next's hydration payload are all inline; the dev server also needs eval and
 // its HMR websocket.
@@ -20,7 +20,7 @@ const contentSecurityPolicy = [
   "font-src 'self' data: https://cdn.jsdelivr.net",
   "media-src 'self' blob: https:",
   "worker-src 'self' blob:",
-  `connect-src 'self' https://api.github.com${isDev ? ' ws: wss:' : ''}`,
+  `connect-src 'self'${isDev ? ' ws: wss:' : ''}`,
   "frame-src https://snapwidget.com",
   "object-src 'none'",
   "base-uri 'self'",
