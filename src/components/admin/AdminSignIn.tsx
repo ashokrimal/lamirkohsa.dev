@@ -10,10 +10,19 @@ import { setupOwnerAccount } from '@/app/actions/admin-auth'
  * server; nothing is compared in the browser. The setup form only appears while
  * no owner exists, and disappears for good once the account is created.
  */
-export default function AdminSignIn({ configured, returnTo = '/admin' }: { configured: boolean; returnTo?: string }) {
+export default function AdminSignIn({
+  configured,
+  returnTo = '/admin',
+  requiresSecondFactor = false,
+}: {
+  configured: boolean
+  returnTo?: string
+  requiresSecondFactor?: boolean
+}) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -28,7 +37,7 @@ export default function AdminSignIn({ configured, returnTo = '/admin' }: { confi
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, ...(requiresSecondFactor ? { code } : {}) }),
       })
 
       if (!response.ok) {
@@ -37,6 +46,7 @@ export default function AdminSignIn({ configured, returnTo = '/admin' }: { confi
       }
 
       setPassword('')
+      setCode('')
       router.replace(returnTo)
       router.refresh()
     } catch (err) {
@@ -110,6 +120,28 @@ export default function AdminSignIn({ configured, returnTo = '/admin' }: { confi
                 className={inputClassName}
               />
             </label>
+
+            {requiresSecondFactor && (
+              <label className="block text-xs text-muted">
+                Authenticator code
+                <input
+                  name="code"
+                  type="text"
+                  value={code}
+                  onChange={(event) => setCode(event.target.value)}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  placeholder="6 digits"
+                  required
+                  className={`${inputClassName} tracking-[0.3em] tabular-nums`}
+                />
+                <span className="mt-1 block text-[11px] text-muted">
+                  The six digits from the authenticator app enrolled for this studio.
+                </span>
+              </label>
+            )}
 
             <button
               type="submit"

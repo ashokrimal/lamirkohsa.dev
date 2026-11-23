@@ -4,8 +4,11 @@ import {
   ADMIN_SESSION_MAX_AGE,
   createAdminSessionToken,
   isAdminAuthConfigured,
+  isSecondFactorRequired,
   verifyAdminCredentials,
+  verifyAdminSecondFactor,
 } from '@/lib/admin-auth'
+import { describeCaller, recordAdminEvent } from '@/lib/admin-audit'
 
 /** Signs the admin in. Credentials are compared here, never in the browser. */
 export async function POST(request: NextRequest) {
@@ -21,16 +24,34 @@ export async function POST(request: NextRequest) {
 
   let email = ''
   let password = ''
+  let code = ''
   try {
-    const body = (await request.json()) as { email?: string; password?: string }
+    const body = (await request.json()) as { email?: string; password?: string; code?: string }
     email = String(body.email ?? '')
     password = String(body.password ?? '')
+    code = String(body.code ?? '')
   } catch {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
 
+  const caller = describeCaller(request.headers)
+
   if (!(await verifyAdminCredentials(email, password))) {
+    await recordAdminEvent({ action: 'sign-in-failed', detail: 'password rejected', caller })
     return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 })
+  }
+
+  // With ADMIN_TOTP_SECRET set, the password is only the first step.
+  if (isSecondFactorRequired() && !verifyAdminSecondFactor(code)) {
+    await recordAdminEvent({
+      action: 'second-factor-failed',
+      detail: 'authenticator code rejected',
+      caller,
+    })
+    return NextResponse.json(
+      { error: 'That authenticator code is not valid. Enter the current six digits.' },
+      { status: 401 },
+    )
   }
 
   const token = await createAdminSessionToken()
@@ -48,11 +69,14 @@ export async function POST(request: NextRequest) {
     path: '/',
     maxAge: ADMIN_SESSION_MAX_AGE,
   })
+
+  await recordAdminEvent({ action: 'sign-in', detail: 'studio session started', caller })
   return response
 }
 
 /** Signs the admin out by clearing the session cookie. */
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
+  await recordAdminEvent({ action: 'sign-out', caller: describeCaller(request.headers) })
   const response = NextResponse.json({ success: true })
   response.cookies.set({
     name: ADMIN_SESSION_COOKIE,

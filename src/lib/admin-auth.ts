@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { eq } from 'drizzle-orm'
 import { adminCredential } from '@/lib/db/schema'
 import { db, pool } from '@/lib/db'
+import { verifyTotp } from '@/lib/totp'
 
 /**
  * Server-side owner authentication for the admin studio.
@@ -248,6 +249,22 @@ export async function changeAdminPassword(currentPassword: string, newPassword: 
   }
 
   invalidateIdentityCache()
+}
+
+/**
+ * A second factor is an environment secret, not a database row: it is set once by
+ * the owner, never leaves the deployment, and cannot be reset by a database
+ * backup or an admin session.
+ */
+export function isSecondFactorRequired(): boolean {
+  return Boolean(process.env.ADMIN_TOTP_SECRET?.trim())
+}
+
+/** True when the submitted authenticator code is valid right now. */
+export function verifyAdminSecondFactor(code: string, now = Date.now()): boolean {
+  const secret = process.env.ADMIN_TOTP_SECRET?.trim()
+  if (!secret) return true
+  return verifyTotp(secret, code, { now })
 }
 
 /** Basic auth stays available for scripts; it is still checked against the owner. */

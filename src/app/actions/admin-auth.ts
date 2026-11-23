@@ -1,6 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
+import { recordAdminEvent } from '@/lib/admin-audit'
 import {
   ADMIN_PASSWORD_MIN_LENGTH,
   ADMIN_SESSION_COOKIE,
@@ -67,6 +68,7 @@ export async function changeOwnerPassword(formData: FormData): Promise<AdminAuth
 
   try {
     await changeAdminPassword(currentPassword, newPassword)
+    await recordAdminEvent({ action: 'password-change', detail: 'owner password changed' })
     return { ok: true }
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : 'The password could not be changed.' }

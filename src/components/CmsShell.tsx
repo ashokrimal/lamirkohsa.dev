@@ -92,6 +92,7 @@ const navGroups: NavGroup[] = [
       { id: 'accounts', label: 'Accounts', icon: UserCog, href: '/admin/settings' },
       { id: 'backup', label: 'Backup & restore', icon: Archive, href: '/admin/backup' },
       { id: 'newsletter', label: 'Newsletter', icon: Mails, href: '/admin/newsletter' },
+      { id: 'security', label: 'Security', icon: ShieldCheck, href: '/admin/security' },
       { id: 'support', label: 'Support & docs', icon: HelpCircle, action: 'support' },
     ],
   },
