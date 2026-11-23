@@ -8,7 +8,8 @@ import { SmoothScroll } from '@/components/SmoothScroll';
 import { EMPTY_SITE_CONFIG, getSiteConfig } from '@/lib/site-content';
 import { getSiteSettings } from '@/lib/studio/data';
 import { getUiCopyOverrides } from '@/lib/ui-copy';
-import { UiCopyProvider } from '@/components/ui/UiCopyProvider';
+import { UiCopyProvider } from '@/components/ui/UiCopyProvider'
+import { ClientErrorReporter } from '@/components/ClientErrorReporter';
 import {
   DEFAULT_OG_IMAGE,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -132,6 +133,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body className="leading-relaxed tracking-wide">
         <ThemeProvider>
+          <ClientErrorReporter />
           <UiCopyProvider overrides={uiCopyOverrides}>
           <ScrollProgress />
           <SmoothScroll />

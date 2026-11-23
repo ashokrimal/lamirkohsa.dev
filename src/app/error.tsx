@@ -16,6 +16,21 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error('Route error caught:', error)
+    // The boundary swallows the error before the global listener sees it, so it
+    // is reported here too. Nothing waits on the request.
+    try {
+      void fetch('/api/client-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'boundary',
+          message: error.message || 'Route error',
+          stack: error.stack,
+          url: window.location.pathname,
+        }),
+        keepalive: true,
+      }).catch(() => {})
+    } catch {}
   }, [error])
 
   return <ErrorState error={error} digest={error.digest} onRetry={reset} />
