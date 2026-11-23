@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Compass, Home } from 'lucide-react'
+import { Compass, Home, Search } from 'lucide-react'
 import { ReportIssueButton } from '@/components/ui/ReportIssueButton'
 
 export default function NotFound() {
@@ -24,6 +24,13 @@ export default function NotFound() {
           >
             <Home className="h-3.5 w-3.5" aria-hidden="true" />
             Return home
+          </Link>
+          <Link
+            href="/search"
+            className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle px-4 py-2 text-xs font-semibold text-ink-secondary transition-colors hover:border-line-medium hover:text-accent"
+          >
+            <Search className="h-3.5 w-3.5" aria-hidden="true" />
+            Search the site
           </Link>
           <ReportIssueButton
             context="404 page"
