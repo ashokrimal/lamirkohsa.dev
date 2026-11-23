@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { CMS_COLLECTIONS, CMS_KEYS } from '@/lib/cms-schema'
 import Link from 'next/link'
 import NextImage from 'next/image'
@@ -252,6 +252,10 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
   const [editingRecord, setEditingRecord] = useState<any | null>(null)
   const [editPayloadText, setEditPayloadText] = useState('')
   const [deleteConfirmItem, setDeleteConfirmItem] = useState<{ id: number; title: string; type: 'cms' | 'gallery' | 'music' | 'project' } | null>(null)
+  // A deleted record stays recoverable for a short while. On a phone the delete
+  // control sits next to the row title, so a mis-tap is easy; this is the way back.
+  const [undoState, setUndoState] = useState<{ title: string; record: CmsRecordItem } | null>(null)
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [lightboxImage, setLightboxImage] = useState<string | null>(null)
   const [inboxMessageModal, setInboxMessageModal] = useState<any | null>(null)
 
@@ -386,6 +390,11 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
         }),
     [cmsRecords],
   )
+
+  // Clear a pending undo timer if the workspace unmounts mid-countdown.
+  useEffect(() => () => {
+    if (undoTimer.current) clearTimeout(undoTimer.current)
+  }, [])
 
   // Keep the structured JSON editor in sync with the record being edited.
   useEffect(() => {
@@ -556,17 +565,64 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
     }
   }
 
+  /** Offers the just-deleted record back for 20 seconds. */
+  const offerUndo = (record: CmsRecordItem | undefined) => {
+    if (!record) return
+    if (undoTimer.current) clearTimeout(undoTimer.current)
+    setUndoState({ title: record.title, record })
+    undoTimer.current = setTimeout(() => setUndoState(null), 20_000)
+  }
+
+  /**
+   * Restores a deleted record. The row is recreated from the copy kept here, so
+   * it gets a new id but the same collection, title, payload and status; the
+   * public page shows it again after the CMS cache revalidates.
+   */
+  const handleUndoDelete = async () => {
+    const pending = undoState
+    if (!pending) return
+    setUndoState(null)
+    if (undoTimer.current) clearTimeout(undoTimer.current)
+
+    const restored = { ...pending.record, id: Date.now() }
+    setCmsRecords((prev) => [restored, ...prev])
+
+    try {
+      const formData = new FormData()
+      formData.set('collection', restored.collection)
+      formData.set('title', restored.title)
+      formData.set('payload', JSON.stringify(restored.payload ?? {}))
+      formData.set('status', restored.status)
+      await createCmsContent(formData)
+      toast({
+        title: 'Restored',
+        description: `"${restored.title}" is back in your workspace.`,
+        variant: 'success',
+      })
+    } catch {
+      toast({
+        title: 'Could not restore',
+        description: 'The record could not be recreated. Add it again from this screen.',
+        variant: 'error',
+      })
+    }
+  }
+
   const handleDeleteConfirmed = async () => {
     if (!deleteConfirmItem) return
     const { id, title, type } = deleteConfirmItem
 
     if (type === 'cms') {
+      const record = cmsRecords.find((item) => item.id === id)
       setCmsRecords((prev) => prev.filter((r) => r.id !== id))
+      offerUndo(record)
       try {
         await deleteCmsContent(id)
       } catch {}
     } else if (type === 'music') {
-      setCmsRecords((prev) => prev.filter((record) => record.id !== id))
+      const record = cmsRecords.find((item) => item.id === id)
+      setCmsRecords((prev) => prev.filter((item) => item.id !== id))
+      offerUndo(record)
       try {
         await deleteCmsContent(id)
       } catch {}
@@ -771,7 +827,9 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
           </button>
         </div>
       ),
-      className: 'text-right',
+      // Sticky so the delete control stays visible on a phone, where the table
+      // is wider than the screen and would otherwise need a sideways scroll.
+      className: 'text-right sticky right-0 bg-surface',
     },
   ]
 
@@ -833,6 +891,26 @@ function WorkspaceInner({ section, initialCategory, content, settings }: AdminWo
 
   return (
     <div className="space-y-6">
+      {/* Undo bar: fixed above the mobile chrome so the way back is always in
+          reach right after a delete, on any screen width. */}
+      {undoState && (
+        <div
+          role="status"
+          className="fixed inset-x-3 bottom-3 z-50 flex items-center justify-between gap-3 rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white shadow-lg sm:left-auto sm:right-4 sm:bottom-4 sm:w-80"
+        >
+          <span className="min-w-0 truncate">
+            Removed <strong className="font-semibold">{undoState.title}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={handleUndoDelete}
+            className="shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 hover:bg-slate-100"
+          >
+            Undo
+          </button>
+        </div>
+      )}
+
       {/* SECTION: HERO / FOOTER & NAVIGATION */}
       {['appearance', 'hero', 'footer'].includes(section) && (
         <div className="space-y-6">
