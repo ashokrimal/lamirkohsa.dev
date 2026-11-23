@@ -69,6 +69,23 @@ export async function GET(request: Request) {
   const ownerId = await getAdminActorId()
   const scheduled = hasCronSecret(request)
 
+  // The studio's "Run backup now" button calls this route. Vercel's cron has no
+  // Origin header, but a browser request does, so a cross-site page can never
+  // make the owner's session save a snapshot.
+  const origin = request.headers.get('origin')
+  if (ownerId && origin) {
+    let originHost: string | null = null
+    try {
+      originHost = new URL(origin).host
+    } catch {
+      originHost = null
+    }
+    const host = request.headers.get('host')
+    if (!originHost || !host || originHost !== host) {
+      return jsonError('Backup runs must be started from the studio itself.', 403)
+    }
+  }
+
   if (!ownerId && !scheduled) {
     if (!process.env.CRON_SECRET) {
       return jsonError(

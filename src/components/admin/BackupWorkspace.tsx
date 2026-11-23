@@ -6,6 +6,7 @@ import {
   CalendarClock,
   Download,
   FileJson,
+  Play,
   RefreshCw,
   ShieldCheck,
   Upload,
@@ -47,6 +48,24 @@ interface Snapshot {
   uploadedAt: string
 }
 
+interface BackupRunCounts {
+  cmsContent: number
+  pages: number
+  pageSections: number
+  projects: number
+  siteSettings: number
+  total: number
+}
+
+interface BackupRun {
+  file: string
+  bytes: number
+  counts: BackupRunCounts
+  kept: number
+  removed: number
+  truncated: boolean
+}
+
 interface RestoreSummary {
   mode: string
   cmsContent: { inserted: number; updated: number; removed: number }
@@ -74,6 +93,24 @@ async function saveResponse(response: Response, fallbackName: string) {
   link.remove()
   URL.revokeObjectURL(url)
   return { name: link.download, size: blob.size }
+}
+
+/** What the scheduled job saved, in the owner's words. */
+function describeRun(run: BackupRun) {
+  const counts = run.counts
+  const parts = [
+    `${counts.cmsContent} record${counts.cmsContent === 1 ? '' : 's'}`,
+    `${counts.pages} page${counts.pages === 1 ? '' : 's'}`,
+    `${counts.pageSections} section${counts.pageSections === 1 ? '' : 's'}`,
+    `${counts.projects} case stud${counts.projects === 1 ? 'y' : 'ies'}`,
+  ]
+  if (counts.siteSettings) parts.push('site settings')
+  const pruned = run.removed
+    ? ` ${run.removed} older snapshot${run.removed === 1 ? '' : 's'} deleted, ${run.kept} kept.`
+    : ''
+  return `Saved ${run.file} (${formatCmsBackupBytes(run.bytes)}): ${parts.join(', ')} — ${
+    counts.total
+  } items in total.${pruned}`
 }
 
 function summarise(summary: RestoreSummary) {
@@ -104,6 +141,9 @@ export default function BackupWorkspace() {
   const [loadingSnapshots, setLoadingSnapshots] = useState(true)
   const [snapshotsError, setSnapshotsError] = useState<string | null>(null)
   const [snapshotBusy, setSnapshotBusy] = useState<string | null>(null)
+  const [runningBackup, setRunningBackup] = useState(false)
+  const [backupRun, setBackupRun] = useState<BackupRun | null>(null)
+  const [backupRunError, setBackupRunError] = useState<string | null>(null)
   const [pendingSnapshot, setPendingSnapshot] = useState<Snapshot | null>(null)
   const [snapshotConfirmation, setSnapshotConfirmation] = useState('')
   const [snapshotStatus, setSnapshotStatus] = useState<
@@ -221,6 +261,31 @@ export default function BackupWorkspace() {
       })
     } finally {
       setDownloading(false)
+    }
+  }
+
+  /** Runs the scheduled job immediately, through the route the cron calls. */
+  const runBackupNow = async () => {
+    setRunningBackup(true)
+    setBackupRun(null)
+    setBackupRunError(null)
+    setSnapshotStatus(null)
+    try {
+      const response = await fetch('/api/cron/cms-backup', { cache: 'no-store' })
+      const payload = (await response.json().catch(() => null)) as
+        | (Partial<BackupRun> & { message?: string })
+        | null
+      if (!response.ok || !payload?.file || !payload.counts) {
+        throw new Error(payload?.message || `The backup job failed (${response.status}).`)
+      }
+      setBackupRun(payload as BackupRun)
+      await loadSnapshots()
+    } catch (error) {
+      setBackupRunError(
+        error instanceof Error ? error.message : 'The backup job could not be started.',
+      )
+    } finally {
+      setRunningBackup(false)
     }
   }
 
@@ -392,19 +457,54 @@ export default function BackupWorkspace() {
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => void loadSnapshots()}
-            disabled={loadingSnapshots}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
-          >
-            <RefreshCw
-              className={`h-3 w-3 ${loadingSnapshots ? 'animate-spin' : ''}`}
-              aria-hidden="true"
-            />
-            Refresh
-          </button>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => void runBackupNow()}
+              disabled={runningBackup}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              <Play className="h-3 w-3" aria-hidden="true" />
+              {runningBackup ? 'Backing up…' : 'Run backup now'}
+            </button>
+            <button
+              type="button"
+              onClick={() => void loadSnapshots()}
+              disabled={loadingSnapshots}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+            >
+              <RefreshCw
+                className={`h-3 w-3 ${loadingSnapshots ? 'animate-spin' : ''}`}
+                aria-hidden="true"
+              />
+              Refresh
+            </button>
+          </div>
         </div>
+
+        <p className="mt-2 text-[11px] text-slate-500">
+          “Run backup now” calls the same job as the 03:00 UTC cron, so you can check it without
+          waiting for the schedule.
+        </p>
+
+        {backupRun ? (
+          <p
+            role="status"
+            className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/60 p-3 text-[11px] text-emerald-800"
+          >
+            {describeRun(backupRun)}
+            {backupRun.truncated ? ' More snapshots exist than this run could list for pruning.' : ''}
+          </p>
+        ) : null}
+
+        {backupRunError ? (
+          <p
+            role="status"
+            className="mt-3 rounded-xl border border-rose-100 bg-rose-50/60 p-3 text-[11px] text-rose-700"
+          >
+            {backupRunError}
+          </p>
+        ) : null}
 
         {loadingSnapshots && !snapshots ? (
           <p className="mt-4 text-[11px] text-slate-500">Loading snapshots…</p>
@@ -418,8 +518,8 @@ export default function BackupWorkspace() {
 
         {!loadingSnapshots && !snapshotsError && snapshots?.length === 0 ? (
           <p className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-3 text-[11px] text-slate-500">
-            No scheduled snapshots yet. The first one appears after the daily job runs; until then
-            use “Download backup” above.
+            No scheduled snapshots yet. Use “Run backup now” above to create the first one, or wait
+            for the daily job.
           </p>
         ) : null}
 
