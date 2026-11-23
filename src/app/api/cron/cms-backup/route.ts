@@ -10,6 +10,7 @@ import {
   CMS_BACKUP_PREFIX,
   cmsBackupFileName,
   formatCmsBackupBytes,
+  verifyCmsBackupIntegrity,
 } from '@/lib/cms-backup'
 import { readCmsBackup, type BackupQueryClient } from '@/lib/cms-backup-db'
 import { pool } from '@/lib/db'
@@ -114,6 +115,17 @@ export async function GET(request: Request) {
       client as unknown as BackupQueryClient,
       scheduled ? 'vercel-cron' : 'studio-manual',
     )
+    // A snapshot that does not agree with itself is not a backup; refusing to
+    // upload it keeps the newest stored file a restorable one.
+    const integrity = verifyCmsBackupIntegrity(backup)
+    if (!integrity.ok) {
+      console.error('[CMS] Scheduled backup failed its integrity check:', integrity.problems)
+      return jsonError(
+        `The snapshot failed its integrity check, so nothing was saved: ${integrity.problems.join(' ')}`,
+        500,
+      )
+    }
+
     const body = `${JSON.stringify(backup)}\n`
     const bytes = Buffer.byteLength(body, 'utf8')
     if (bytes > CMS_BACKUP_MAX_BYTES) {
@@ -154,6 +166,7 @@ export async function GET(request: Request) {
         access,
         bytes,
         counts: backup.counts,
+        integrity: 'ok',
         kept: pruned.kept,
         removed: pruned.removed,
         truncated: pruned.truncated,

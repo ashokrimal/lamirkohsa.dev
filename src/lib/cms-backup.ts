@@ -270,6 +270,67 @@ export function countCmsBackup(backup: Pick<CmsBackupFile, 'cmsContent' | 'studi
   }
 }
 
+/**
+ * Checks that a snapshot is internally consistent, not merely recent.
+ *
+ * Age says a file exists; this says it is worth having. A snapshot built from a
+ * half-read database still has the right format, so the counts, statuses and
+ * page section keys are compared against what the file actually carries. The
+ * scheduled job runs this before it uploads, and the integrity route runs it on
+ * a stored blob, so "the backup ran" and "the backup is restorable" stay
+ * separate questions with separate answers.
+ */
+export interface CmsBackupIntegrity {
+  ok: boolean
+  problems: string[]
+}
+
+export function verifyCmsBackupIntegrity(backup: CmsBackupFile): CmsBackupIntegrity {
+  const problems: string[] = []
+
+  if (backup.format !== CMS_BACKUP_FORMAT) problems.push('The file is not a CMS backup.')
+  if (backup.version !== CMS_BACKUP_VERSION) {
+    problems.push(`The file is version ${backup.version}; this build reads ${CMS_BACKUP_VERSION}.`)
+  }
+
+  const actual = countCmsBackup(backup)
+  const declared = backup.counts
+  for (const key of Object.keys(actual) as Array<keyof CmsBackupCounts>) {
+    if (Number(declared?.[key] ?? -1) !== actual[key]) {
+      problems.push(`The snapshot declares ${declared?.[key] ?? 'no'} ${key} but carries ${actual[key]}.`)
+    }
+  }
+
+  const statuses = new Set(['published', 'draft'])
+  for (const record of backup.cmsContent) {
+    if (!statuses.has(record.status)) {
+      problems.push(`"${record.title}" has an unknown status (${record.status}).`)
+    }
+    if (!record.collection || !record.title) problems.push('A CMS record has no collection or title.')
+  }
+
+  const pageSlugs = new Set<string>()
+  for (const page of backup.studio.pages) {
+    if (!page.slug) problems.push('A studio page has no slug.')
+    if (pageSlugs.has(page.slug)) problems.push(`Two studio pages share the slug ${page.slug}.`)
+    pageSlugs.add(page.slug)
+    for (const section of page.sections) {
+      if (!section.sectionKey) problems.push(`Page ${page.slug} has a section with no key.`)
+    }
+  }
+
+  const projectSlugs = new Set<string>()
+  for (const project of backup.studio.projects) {
+    if (!project.slug) problems.push('A case study has no slug.')
+    if (projectSlugs.has(project.slug)) {
+      problems.push(`Two case studies share the slug ${project.slug}.`)
+    }
+    projectSlugs.add(project.slug)
+  }
+
+  return { ok: problems.length === 0, problems: problems.slice(0, 10) }
+}
+
 /** `cms-backup-2026-11-22-07-30.json` — sortable and safe on every filesystem. */
 export function cmsBackupFileName(now: Date = new Date()): string {
   const stamp = now.toISOString().slice(0, 16).replace(/[:T]/g, '-')
@@ -542,13 +603,31 @@ export function parseCmsBackup(input: unknown): CmsBackupParseResult {
     }
 
     const studio = parseStudio(input.studio)
+    const counts = countCmsBackup({ cmsContent, studio })
+
+    // A file that claims more records than it carries was truncated on the way
+    // here (a cut upload, a partial download, a broken snapshot). Restoring it
+    // would quietly lose the difference, so it is rejected instead.
+    if (isPlainObject(input.counts)) {
+      const declared = input.counts as Record<string, unknown>
+      for (const key of ['cmsContent', 'pages', 'projects', 'total'] as const) {
+        const value = declared[key]
+        if (typeof value !== 'number' || !Number.isFinite(value)) continue
+        if (Math.trunc(value) !== counts[key]) {
+          fail(
+            `The snapshot says it holds ${Math.trunc(value)} ${key} but carries ${counts[key]}; it looks truncated.`,
+          )
+        }
+      }
+    }
+
     const backup: CmsBackupFile = {
       format: CMS_BACKUP_FORMAT,
       version: CMS_BACKUP_VERSION,
       createdAt: readOptionalDate(input.createdAt) ?? new Date(0).toISOString(),
       source: typeof input.source === 'string' ? input.source.slice(0, 80) : 'unknown',
       collections: parseCollections(input.collections, cmsContent),
-      counts: countCmsBackup({ cmsContent, studio }),
+      counts,
       cmsContent,
       studio,
     }

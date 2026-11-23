@@ -8,6 +8,8 @@ import {
   cmsBackupFileName,
   formatCmsBackupBytes,
   isCmsBackupPathname,
+  parseCmsBackup,
+  verifyCmsBackupIntegrity,
   type CmsBackupRestoreMode,
 } from '@/lib/cms-backup'
 import { restoreCmsBackup } from '@/lib/cms-backup-restore'
@@ -17,6 +19,10 @@ import { restoreCmsBackup } from '@/lib/cms-backup-restore'
  *
  * GET                       lists them, newest first.
  * GET  ?pathname=…          downloads one file.
+ * GET  ?verify=newest       proves the newest stored snapshot still parses and
+ *                           agrees with its own counts (`verify=<pathname>`
+ *                           checks a specific file). Age alone only says a file
+ *                           exists; this says it could actually be restored.
  * POST { pathname, mode }   restores one, through the same transactional path
  *                           the upload restore uses.
  *
@@ -111,7 +117,64 @@ export async function GET(request: Request) {
   const token = blobToken()
   if (!token) return jsonError(missingStorageMessage(), 503)
 
-  const pathname = new URL(request.url).searchParams.get('pathname')
+  const params = new URL(request.url).searchParams
+  const pathname = params.get('pathname')
+  const verify = params.get('verify')
+
+  if (verify) {
+    let target = verify
+    if (verify === 'newest' || verify === '1') {
+      const snapshots = await listSnapshots(token).catch(() => [])
+      const newest = snapshots[0]
+      if (!newest) {
+        return NextResponse.json(
+          { ok: false, file: null, problems: ['No scheduled snapshot is stored yet.'] },
+          { headers: { 'cache-control': 'no-store' } },
+        )
+      }
+      target = newest.pathname
+    }
+    if (!isCmsBackupPathname(target)) {
+      return jsonError('That is not a scheduled CMS snapshot.', 400)
+    }
+
+    const snapshot = await readSnapshot(target, token)
+    if (!snapshot.ok) {
+      return NextResponse.json(
+        { ok: false, file: target, problems: [snapshot.message] },
+        { status: snapshot.status, headers: { 'cache-control': 'no-store' } },
+      )
+    }
+
+    let raw: unknown
+    try {
+      raw = JSON.parse(snapshot.text)
+    } catch {
+      return NextResponse.json(
+        { ok: false, file: target, problems: ['The stored snapshot is not valid JSON.'] },
+        { headers: { 'cache-control': 'no-store' } },
+      )
+    }
+
+    const parsed = parseCmsBackup(raw)
+    if (!parsed.ok) {
+      return NextResponse.json(
+        { ok: false, file: target, problems: [parsed.error] },
+        { headers: { 'cache-control': 'no-store' } },
+      )
+    }
+    const integrity = verifyCmsBackupIntegrity(parsed.backup)
+    return NextResponse.json(
+      {
+        ok: integrity.ok,
+        file: target,
+        problems: integrity.problems,
+        counts: parsed.backup.counts,
+        createdAt: parsed.backup.createdAt,
+      },
+      { headers: { 'cache-control': 'no-store' } },
+    )
+  }
 
   if (pathname) {
     if (!isCmsBackupPathname(pathname)) {
@@ -119,6 +182,20 @@ export async function GET(request: Request) {
     }
     const snapshot = await readSnapshot(pathname, token)
     if (!snapshot.ok) return jsonError(snapshot.message, snapshot.status)
+
+    // A download keeps working even when the file no longer validates — the
+    // owner may want to inspect it — but the response says which it is.
+    let integrityHeader = 'unknown'
+    try {
+      const parsed = parseCmsBackup(JSON.parse(snapshot.text))
+      integrityHeader = parsed.ok
+        ? verifyCmsBackupIntegrity(parsed.backup).ok
+          ? 'ok'
+          : 'invalid'
+        : 'invalid'
+    } catch {
+      integrityHeader = 'invalid'
+    }
 
     const name = pathname.slice(pathname.lastIndexOf('/') + 1) || cmsBackupFileName()
     return new NextResponse(snapshot.text, {
@@ -128,6 +205,7 @@ export async function GET(request: Request) {
         'content-disposition': `attachment; filename="${name}"`,
         'cache-control': 'no-store',
         'x-content-type-options': 'nosniff',
+        'x-backup-integrity': integrityHeader,
       },
     })
   }
