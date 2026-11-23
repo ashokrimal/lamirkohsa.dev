@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { ADMIN_SESSION_MAX_AGE, hasOwnerAccess, isSecondFactorRequired } from '@/lib/admin-auth'
 import { listAdminEvents } from '@/lib/admin-audit'
+import PasskeyManager from '@/components/admin/PasskeyManager'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,6 +72,8 @@ export default async function AdminSecurityPage() {
           </p>
         </div>
       </div>
+
+      <PasskeyManager />
 
       <section className="rounded-2xl border border-slate-200 bg-surface">
         <div className="border-b border-slate-100 px-5 py-3">

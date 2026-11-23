@@ -18,6 +18,9 @@ export type AdminAuditAction =
   | 'second-factor-failed'
   | 'sign-out'
   | 'password-change'
+  | 'passkey-sign-in'
+  | 'passkey-added'
+  | 'passkey-removed'
 
 export type AdminAuditEvent = {
   id: number

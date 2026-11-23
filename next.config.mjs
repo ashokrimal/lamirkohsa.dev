@@ -70,7 +70,10 @@ const nextConfig = {
         // The site asks for no device permissions, so deny them outright.
         {
           key: 'Permissions-Policy',
-          value: 'camera=(), microphone=(), geolocation=(), payment=()',
+          // publickey-credentials-get is how the studio's passkey sign-in reaches
+          // the device's fingerprint/face sensor; everything else stays denied.
+          value:
+            'camera=(), microphone=(), geolocation=(), payment=(), publickey-credentials-get=(self), publickey-credentials-create=(self)',
         },
       ],
     }];

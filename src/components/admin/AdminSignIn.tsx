@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { KeyRound, ShieldCheck } from 'lucide-react'
 import { setupOwnerAccount } from '@/app/actions/admin-auth'
+import PasskeySignInButton from '@/components/admin/PasskeySignInButton'
 
 /**
  * Sign-in and one-time setup for the admin studio. Credentials are posted to the
@@ -14,10 +15,12 @@ export default function AdminSignIn({
   configured,
   returnTo = '/admin',
   requiresSecondFactor = false,
+  passkeysAvailable = false,
 }: {
   configured: boolean
   returnTo?: string
   requiresSecondFactor?: boolean
+  passkeysAvailable?: boolean
 }) {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -151,6 +154,8 @@ export default function AdminSignIn({
               <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />
               {isSubmitting ? 'Checking…' : 'Sign in'}
             </button>
+
+            {passkeysAvailable && <PasskeySignInButton returnTo={returnTo} />}
 
             {error && <p className="text-xs text-red-600">{error}</p>}
           </form>

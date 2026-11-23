@@ -32,6 +32,8 @@
     "@react-three/drei": "9.122.0",
     "@react-three/fiber": "8.18.0",
     "@react-three/postprocessing": "2.19.1",
+    "@simplewebauthn/browser": "^14.0.0",
+    "@simplewebauthn/server": "^14.1.0",
     "@types/d3": "^7.4.3",
     "@vercel/blob": "^2.8.2",
     "@vercel/connect": "^2.8.0",

@@ -1,5 +1,6 @@
 import { boolean, integer, jsonb, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 
+
 export const user = pgTable('user', { id: text('id').primaryKey(), name: text('name').notNull(), email: text('email').notNull().unique(), emailVerified: boolean('emailVerified').notNull().default(false), image: text('image'), createdAt: timestamp('createdAt').notNull().defaultNow(), updatedAt: timestamp('updatedAt').notNull().defaultNow() })
 export const session = pgTable('session', { id: text('id').primaryKey(), expiresAt: timestamp('expiresAt').notNull(), token: text('token').notNull().unique(), createdAt: timestamp('createdAt').notNull().defaultNow(), updatedAt: timestamp('updatedAt').notNull().defaultNow(), ipAddress: text('ipAddress'), userAgent: text('userAgent'), userId: text('userId').notNull() })
 export const account = pgTable('account', { id: text('id').primaryKey(), accountId: text('accountId').notNull(), providerId: text('providerId').notNull(), userId: text('userId').notNull(), accessToken: text('accessToken'), refreshToken: text('refreshToken'), idToken: text('idToken'), accessTokenExpiresAt: timestamp('accessTokenExpiresAt'), refreshTokenExpiresAt: timestamp('refreshTokenExpiresAt'), scope: text('scope'), password: text('password'), createdAt: timestamp('createdAt').notNull().defaultNow(), updatedAt: timestamp('updatedAt').notNull().defaultNow() })
@@ -70,6 +71,26 @@ export const siteSetting = pgTable('site_settings', {
  * owner can be created on first run and can change their own password without
  * a redeploy. Passwords are scrypt hashes; the session secret signs cookies.
  */
+/**
+ * Passkeys (WebAuthn credentials) that can sign the owner in.
+ *
+ * Only the public key and credential id live here; the private key stays in the
+ * device's secure enclave, which is what makes fingerprint/face sign-in possible
+ * without a secret on the server.
+ */
+export const adminPasskey = pgTable('adminPasskey', {
+  id: serial('id').primaryKey(),
+  credentialId: text('credentialId').notNull().unique(),
+  publicKey: text('publicKey').notNull(),
+  counter: text('counter').notNull().default('0'),
+  transports: text('transports').array().notNull().default([]),
+  label: text('label').notNull().default('This device'),
+  deviceType: text('deviceType').notNull().default('singleDevice'),
+  backedUp: boolean('backedUp').notNull().default(false),
+  createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  lastUsedAt: timestamp('lastUsedAt', { withTimezone: true }),
+})
+
 export const adminCredential = pgTable('adminCredential', {
   id: serial('id').primaryKey(),
   email: text('email').notNull().unique(),
