@@ -310,8 +310,7 @@ html, body, * { -ms-overflow-style: none; scrollbar-width: none; }
 .apple-card {
   border-radius: 26px;
   background: var(--surface-glass);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
   border: 1px solid var(--color-border);
   box-shadow: none;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -356,8 +355,7 @@ html, body, * { -ms-overflow-style: none; scrollbar-width: none; }
 .apple-btn-secondary {
   border-radius: 9999px;
   background: rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   color: var(--color-foreground);
   padding: 10px 20px;
   font-size: 13px;
@@ -381,8 +379,7 @@ html, body, * { -ms-overflow-style: none; scrollbar-width: none; }
   background: rgb(var(--paper-rgb) / 0.86); 
   border-bottom: 1px solid var(--color-border); 
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); 
-  backdrop-filter: blur(20px); 
-  -webkit-backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); 
 }
 /* Mobile drawer: solid cream from the palette, never translucent, so the
    hamburger menu reads as its own surface over the page. */
@@ -394,8 +391,7 @@ html, body, * { -ms-overflow-style: none; scrollbar-width: none; }
   visibility: hidden;
   background-color: var(--paper, #f4f1eb);
   background-image: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 .mobile-menu.open { transform: translateX(0); visibility: visible; }
 /* Keep both inner sections on the same solid surface so nothing from
@@ -553,7 +549,7 @@ html, body, * { -ms-overflow-style: none; scrollbar-width: none; }
 .cms-nav-group a:hover, .cms-nav-group a.is-active { border-color: #d5e4e8; background: #edf6f7; color: #16727a; }
 .cms-public-link { margin-top: auto; border-top-color: #dce2e5; padding: 18px 12px 0; color: #16727a; }
 .cms-main { min-height: 100vh; margin-left: 270px; }
-.cms-topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 78px; border-bottom: 1px solid #dce2e5; background: rgba(255,255,255,.82); padding: 0 42px; backdrop-filter: blur(14px); }
+.cms-topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 78px; border-bottom: 1px solid #dce2e5; background: rgba(255,255,255,.82); padding: 0 42px; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .cms-topbar > div:first-child { display: grid; gap: 6px; }
 .cms-breadcrumb { color: #8a969c; font: 500 .62rem var(--mono); letter-spacing: .11em; text-transform: uppercase; }
 .cms-topbar strong { color: #172026; font-size: 1rem; letter-spacing: -.02em; }
@@ -1431,7 +1427,7 @@ em, .accent-text { font-style: normal; }
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.03),
     0 50px 120px -70px var(--home-glow);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
 .home-hero-frame::before {
   content: '';
@@ -1781,7 +1777,7 @@ em, .accent-text { font-style: normal; }
   border-radius: 0;
   border-right: 1px solid var(--home-line);
   background: rgba(var(--surface-rgb) / 0.32);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
 .home-awakening .hero-fact-card:last-child { border-right: 0; }
 .home-awakening .hero-fact-card strong { color: var(--ink); font-weight: 400; }
@@ -2112,8 +2108,7 @@ html.theme-transitioning *::after {
   padding: 2px 7px;
   border-radius: 999px;
   background: rgba(8, 10, 12, 0.62);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   color: #fff;
   font-family: var(--home-mono);
   font-size: 0.5rem;
@@ -2171,4 +2166,33 @@ html.theme-transitioning *::after {
 html[data-preloader-seen='1'] #site-preloader,
 html[data-preloader-reduced] #site-preloader {
   display: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Fallbacks for browsers that predate the newer CSS this design uses.
+
+   `color-mix()` arrived in Safari 16.2, Chrome 111 and Firefox 113. An older
+   browser drops the whole declaration rather than the function, which would
+   leave a card with no surface at all. Only the card surfaces are restated
+   here, in plain colours from the same palette; a browser that understands
+   `color-mix()` never parses this block.
+   ------------------------------------------------------------------------- */
+@supports not (color: color-mix(in srgb, white, black)) {
+  .empty-state-visual {
+    border-color: rgba(22, 114, 122, 0.32);
+    background-color: var(--surface);
+  }
+  .cms-workspace {
+    background-color: var(--surface);
+  }
+  .home-signal-grid article {
+    background-color: var(--surface);
+  }
+}
+
+/* Safari on iOS rewrites font sizes when a phone is turned sideways unless
+   this is stated; every other engine ignores it. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }

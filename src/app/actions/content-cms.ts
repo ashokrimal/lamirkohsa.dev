@@ -20,6 +20,8 @@ import {
 import { resolveProjectLifecycleStatus, type ProjectLifecycleStatus } from '@/lib/project-status'
 import { notifySubscribersOfPost, type PublishedPost } from '@/lib/blog-notifications'
 import { toSlug } from '@/lib/slug'
+import { SITE_URL } from '@/lib/seo'
+import { submitToIndexNow } from '@/lib/indexnow'
 import {
   blogPath,
   isSafeSlug,
@@ -247,6 +249,38 @@ function scheduleBlogAnnouncement(
     after(() => announceBlogPost(announcement))
   } catch {
     void announceBlogPost(announcement)
+  }
+}
+
+/**
+ * The public URL of a CMS record, or null for collections that have no page of
+ * their own (a skill, a certificate entry, the profile copy).
+ */
+function publicUrlFor(collection: string, slug: string): string | null {
+  const scope = collection.trim().toLowerCase()
+  if (!slug) return null
+  if (scope === CMS_COLLECTIONS.blogs.trim().toLowerCase()) return `${SITE_URL}${blogPath(slug)}`
+  if (scope === CMS_COLLECTIONS.projects.trim().toLowerCase()) return `${SITE_URL}${projectPath(slug)}`
+  return null
+}
+
+/**
+ * Tells Bing (and through it DuckDuckGo, Yahoo and Ecosia), Yandex, Seznam and
+ * Naver that a published page changed.
+ *
+ * It runs after the response is sent and never throws: a search-engine ping is
+ * not worth failing a save, and the sitemap still lists the page either way.
+ */
+function scheduleSearchEnginePing(collection: string, status: string, slug: string) {
+  if (status.trim().toLowerCase() !== 'published') return
+  const url = publicUrlFor(collection, slug)
+  if (!url) return
+
+  const ping = () => submitToIndexNow(url).catch(() => undefined)
+  try {
+    after(() => ping())
+  } catch {
+    void ping()
   }
 }
 
@@ -694,6 +728,7 @@ export async function createCmsContent(formData: FormData) {
       slug: created.slug,
       payload: normalizedPayload,
     })
+    scheduleSearchEnginePing(collection, status, created.slug)
   }
 }
 
@@ -819,6 +854,14 @@ export async function updateCmsContent(id: number, formData: FormData) {
         payload: storedPayload,
       })
     }
+
+    // Any edit to a live page, not only the publish transition, is worth a
+    // re-crawl: a changed title or body is what the snippet shows.
+    scheduleSearchEnginePing(
+      publishCollection,
+      status.trim() || current?.status || '',
+      explicitSlug || current?.slug || '',
+    )
 
     revalidateCms(collection || current?.collection || previous?.collection)
   } catch (err) {

@@ -80,6 +80,25 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       types: { 'application/rss+xml': '/feed.xml' },
     },
+    // Search Console and Bing Webmaster Tools prove ownership by reading a
+    // token from the page, so each engine's token is passed in as an environment
+    // variable rather than being edited into this file.
+    verification: {
+      ...(process.env.GOOGLE_SITE_VERIFICATION?.trim()
+        ? { google: process.env.GOOGLE_SITE_VERIFICATION.trim() }
+        : {}),
+      ...(process.env.YANDEX_SITE_VERIFICATION?.trim()
+        ? { yandex: process.env.YANDEX_SITE_VERIFICATION.trim() }
+        : {}),
+      other: {
+        ...(process.env.BING_SITE_VERIFICATION?.trim()
+          ? { 'msvalidate.01': process.env.BING_SITE_VERIFICATION.trim() }
+          : {}),
+        ...(process.env.PINTEREST_SITE_VERIFICATION?.trim()
+          ? { 'p:domain_verify': process.env.PINTEREST_SITE_VERIFICATION.trim() }
+          : {}),
+      },
+    },
     robots: {
       index: true,
       follow: true,

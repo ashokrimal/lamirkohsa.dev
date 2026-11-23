@@ -50,6 +50,8 @@ Open <http://localhost:3000>. The owner studio is at `/admin`.
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` | Optional one-time bootstrap for the first owner login. Once the database owner exists, it wins. |
 | `ADMIN_TOTP_SECRET` | Optional authenticator-code step for the studio. Generate it with `node scripts/admin-totp-setup.mjs`. |
 | `ADMIN_PASSKEY_SECRET`, `ADMIN_PASSKEY_RP_ID`, `ADMIN_PASSKEY_ORIGIN` | Optional overrides for passkey (fingerprint/face) sign-in. Not needed normally: challenges are signed with the session secret and the domain is derived from the request. |
+| `GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION`, `YANDEX_SITE_VERIFICATION`, `PINTEREST_SITE_VERIFICATION` | Optional ownership tokens. Each one is emitted as a `<meta>` verification tag so Search Console and Bing Webmaster Tools can verify the domain. |
+| `INDEXNOW_KEY` | Optional. Overrides the committed IndexNow key; a custom key needs a matching `public/<key>.txt`. Publishing pings IndexNow (Bing, DuckDuckGo, Yahoo, Yandex, Seznam, Naver) on its own. |
 | `RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN`, `CONTACT_TO_EMAIL` | Contact-form email delivery. |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob uploads from the studio, and where scheduled backups are stored. Without it the studio keeps the paste-a-URL flow. |
 | `CRON_SECRET` | Sent by Vercel Cron as `Authorization: Bearer …` to the daily backup route. Without it that route refuses to run. |
