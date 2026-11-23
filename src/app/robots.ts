@@ -12,6 +12,7 @@ export default function robots(): MetadataRoute.Robots {
           '/admin/',
           '/api/',
           '/search',
+          '/offline',
           '/sign-in',
           '/forgot-password',
           '/reset-password',

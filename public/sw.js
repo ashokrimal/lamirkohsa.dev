@@ -6,9 +6,15 @@
  * last good copy is only used when the network is unavailable. Static assets
  * are cache-first because Next fingerprints them.
  */
-const CACHE = 'lamirkohsa-shell-v1'
-const PRECACHE = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']
-const OFFLINE_FALLBACK = '/'
+const CACHE = 'lamirkohsa-shell-v2'
+const PRECACHE = [
+  '/',
+  '/offline',
+  '/manifest.webmanifest',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+]
+const OFFLINE_FALLBACK = '/offline'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
