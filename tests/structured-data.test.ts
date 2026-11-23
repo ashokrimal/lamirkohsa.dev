@@ -4,7 +4,13 @@ import {
   blogPostingJsonLd,
   breadcrumbJsonLd,
   caseStudyJsonLd,
+  cmsDate,
 } from '../src/lib/structured-data'
+
+type Publisher = {
+  '@type'?: string
+  logo?: { '@type'?: string; url?: string; width?: number; height?: number }
+}
 
 test('a blog post declares BlogPosting identity, author and dates', () => {
   const data = blogPostingJsonLd({
@@ -26,12 +32,32 @@ test('a blog post declares BlogPosting identity, author and dates', () => {
   assert.deepEqual((data.image as string[])[0].startsWith('http'), true)
 })
 
+test('the publisher is an Organization with a logo, as Article rich results require', () => {
+  const blogPublisher = blogPostingJsonLd({ title: 'Post', path: '/blogs/post' }).publisher as Publisher
+  const caseStudyPublisher = caseStudyJsonLd({ title: 'Study', path: '/projects/study' }).publisher as Publisher
+
+  for (const publisher of [blogPublisher, caseStudyPublisher]) {
+    assert.equal(publisher['@type'], 'Organization')
+    assert.equal(publisher.logo?.['@type'], 'ImageObject')
+    assert.match(String(publisher.logo?.url), /^https:\/\/.+\.png$/)
+    assert.ok((publisher.logo?.width ?? 0) >= 112)
+    assert.ok((publisher.logo?.height ?? 0) >= 112)
+  }
+})
+
+test('an article without a cover still carries the required image', () => {
+  const data = blogPostingJsonLd({ title: 'Untitled draft', path: '/blogs/draft' })
+
+  const images = data.image as string[]
+  assert.equal(images.length, 1)
+  assert.equal(images[0].startsWith('http'), true)
+})
+
 test('missing optional fields are omitted rather than invented', () => {
   const data = blogPostingJsonLd({ title: 'Untitled draft', path: '/blogs/draft' })
 
   assert.equal('datePublished' in data, false)
   assert.equal('description' in data, false)
-  assert.equal('image' in data, false)
 })
 
 test('a case study lists its technologies and live URL', () => {
@@ -47,7 +73,14 @@ test('a case study lists its technologies and live URL', () => {
   assert.equal(data['@type'], 'TechArticle')
   assert.equal(data.keywords, 'Next.js, Postgres')
   assert.equal((data.about as unknown[]).length, 2)
-  assert.deepEqual(data.sameAs, ['https://ashokrimal.com.np'])
+  assert.deepEqual(data.sameAs, ['https://ashokrimal.com.np/'])
+})
+
+test('a placeholder or relative live URL is dropped from sameAs', () => {
+  for (const liveUrl of ['#', '', '  ', '/projects/portfolio', 'javascript:void(0)']) {
+    const data = caseStudyJsonLd({ title: 'Study', path: '/projects/study', liveUrl })
+    assert.equal('sameAs' in data, false, `unexpected sameAs for ${JSON.stringify(liveUrl)}`)
+  }
 })
 
 test('a case study with no stack omits about and keywords', () => {
@@ -55,6 +88,28 @@ test('a case study with no stack omits about and keywords', () => {
 
   assert.equal('about' in data, false)
   assert.equal('keywords' in data, false)
+})
+
+test('a case study publish date comes from a real studio date', () => {
+  const monthOnly = caseStudyJsonLd({
+    title: 'Study',
+    path: '/projects/study',
+    publishedTime: '2025-03',
+  })
+  assert.equal(monthOnly.datePublished, '2025-03-01T00:00:00.000Z')
+
+  const prose = caseStudyJsonLd({ title: 'Study', path: '/projects/study', publishedTime: 'Q3 2025' })
+  assert.equal('datePublished' in prose, false)
+})
+
+test('cmsDate accepts ISO calendar dates and rejects anything ambiguous', () => {
+  assert.equal(cmsDate('2025-03-09'), '2025-03-09T00:00:00.000Z')
+  assert.equal(cmsDate('2025-03'), '2025-03-01T00:00:00.000Z')
+  assert.equal(cmsDate(' 2025-03 '), '2025-03-01T00:00:00.000Z')
+  assert.equal(cmsDate('2025-02-31'), undefined)
+  assert.equal(cmsDate('2025'), undefined)
+  assert.equal(cmsDate('March 2025'), undefined)
+  assert.equal(cmsDate(undefined), undefined)
 })
 
 test('breadcrumbs number their items in order', () => {

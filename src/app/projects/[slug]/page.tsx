@@ -171,6 +171,7 @@ export default async function ProjectCaseStudyPage(
           description: project.summary || project.description,
           path: `/projects/${project.slug}`,
           image: project.image,
+          publishedTime: project.completionDate,
           modifiedTime: project.updatedAt ? new Date(project.updatedAt).toISOString() : undefined,
           technologies: dossier.techDetails.map((tech) => tech.name),
           liveUrl: project.live,

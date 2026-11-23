@@ -3,6 +3,7 @@ import { PageLayout } from '@/components/layouts/PageLayout';
 import HomeContent from '@/components/pages/HomeContent';
 import { getPageMetadata } from '@/lib/studio/data';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
+import { organizationJsonLd } from '@/lib/structured-data';
 
 // The homepage is the most-visited route and its content is CMS data that is
 // already cached under `cms-content`; render it statically and refresh it on the
@@ -94,6 +95,9 @@ const STRUCTURED_DATA = {
         'Tailwind CSS',
       ],
     },
+    // The publisher every article on the site references by @id. Declaring it
+    // once here keeps the logo in one place instead of repeating it per page.
+    organizationJsonLd(),
     {
       '@type': 'SoftwareApplication',
       '@id': `${SITE_URL}/#software`,
