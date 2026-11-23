@@ -176,7 +176,7 @@ Then check the running site:
 - `/media` shows one block per media collection (the seeded `media` section uses
   `layout: index`).
 - `/contact` shows the channels form and details.
-- `/work` lists the seeded projects and `/work/<slug>` opens a case study.
+- `/projects` lists the seeded projects and `/projects/<slug>` opens a case study. `/work` and `/work/<slug>` 301 to those URLs.
 - Footer email, availability and socials come from `site_settings`.
 
 Pages are cached (`revalidate = 300`) and tagged `page-<slug>`, `projects`,

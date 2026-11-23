@@ -43,6 +43,11 @@ const nextConfig = {
   ...(isDev ? { distDir: '.next-dev' } : {}),
   async redirects() {
     return [
+      // `/projects` is the one canonical case-study route. `/work` was a second
+      // index over the same content, so both its URLs permanently redirect
+      // (301) rather than serving a duplicate page.
+      { source: '/work', destination: '/projects', statusCode: 301 },
+      { source: '/work/:slug', destination: '/projects/:slug', statusCode: 301 },
       { source: '/classic', destination: '/', permanent: true },
       { source: '/anime', destination: '/media/anime', permanent: true },
       { source: '/music', destination: '/media/music', permanent: true },

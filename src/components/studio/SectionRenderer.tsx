@@ -220,7 +220,8 @@ export async function ProjectsSectionBody({
           metrics: project.metrics,
         }))
 
-  const hrefFor = (slug: string) => (studioProjects.length > 0 ? `/work/${slug}` : `/projects/${slug}`)
+  // `/projects` is the canonical case study route; `/work` only redirects here.
+  const hrefFor = (slug: string) => `/projects/${slug}`
   const gridColsClass = cards.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'
 
   return (

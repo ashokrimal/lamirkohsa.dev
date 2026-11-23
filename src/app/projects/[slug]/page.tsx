@@ -19,6 +19,8 @@ import { ProjectDocumentation } from '@/components/projects/ProjectDocumentation
 import { ProjectGanttChart } from '@/components/projects/ProjectGanttChart'
 import { ProjectPhaseRoadmap } from '@/components/projects/ProjectPhaseRoadmap'
 import { CaseStudyHeroImage } from '@/components/projects/CaseStudyHeroImage'
+import { StudioCaseStudyView } from '@/components/projects/StudioCaseStudyView'
+import { getProjectBySlug, getPublishedProjects } from '@/lib/studio/data'
 import { CaseStudyLayerTooltip } from '@/components/projects/CaseStudyLayerTooltip'
 import { ShareProjectButton } from '@/components/projects/ShareProjectButton'
 import { DownloadCaseStudyPdfButton } from '@/components/projects/DownloadCaseStudyPdfButton'
@@ -49,6 +51,21 @@ async function findProjectWithNeighbors(slug: string): Promise<
   return { status: 'ok', data: { project, nextProject } }
 }
 
+/**
+ * A project created in Studio → Case studies has no `cmsContent` record, so the
+ * canonical route falls back to the studio row. Without this, retiring `/work`
+ * would have 404'd every studio-only case study.
+ */
+async function findStudioProjectWithNeighbors(slug: string) {
+  const project = await getProjectBySlug(slug)
+  if (!project) return undefined
+
+  const all = await getPublishedProjects()
+  const index = all.findIndex((entry) => entry.slug === project.slug)
+  const nextProject = all.length > 1 && index >= 0 ? all[(index + 1) % all.length] : undefined
+  return { project, nextProject }
+}
+
 export async function generateMetadata(
   props: {
     params: Promise<{ slug: string }>
@@ -57,7 +74,18 @@ export async function generateMetadata(
   const params = await props.params;
   const result = await findProjectWithNeighbors(params.slug)
   if (result.status === 'error') return {}
-  if (result.status !== 'ok' || !result.data.project) notFound()
+
+  if (result.status !== 'ok' || !result.data.project) {
+    const studio = await findStudioProjectWithNeighbors(params.slug)
+    if (!studio) notFound()
+    return articleMetadata({
+      title: studio.project.title,
+      description: studio.project.summary?.slice(0, 160),
+      path: `/projects/${studio.project.slug}`,
+      image: studio.project.coverMediaUrl,
+    })
+  }
+
   const project = result.data.project
   const description = (project.summary || project.description)?.replace(/\s+/g, ' ').trim().slice(0, 160) || undefined
 
@@ -89,7 +117,11 @@ export default async function ProjectCaseStudyPage(
     )
   }
 
-  if (lookupResult.status !== 'ok' || !lookupResult.data.project) notFound()
+  if (lookupResult.status !== 'ok' || !lookupResult.data.project) {
+    const studio = await findStudioProjectWithNeighbors(params.slug)
+    if (!studio) notFound()
+    return <StudioCaseStudyView project={studio.project} nextProject={studio.nextProject} />
+  }
 
   const { project, nextProject } = lookupResult.data
   const copy = copyResult.status === 'ok' ? copyResult.data : {}

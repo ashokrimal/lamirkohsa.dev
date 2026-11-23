@@ -1,52 +1,35 @@
-import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import { ArrowUpRight, Github, Globe, Target, Wrench } from 'lucide-react'
-import { getProjectBySlug, getPublishedProjects } from '@/lib/studio/data'
-import { articleMetadata } from '@/lib/seo'
+import type { StudioProject } from '@/lib/studio/data'
 import { isRepositoryUrl } from '@/lib/urls'
 import { getProjectStatusVisual } from '@/lib/project-status'
 import { PageHero, PageSection, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
 
-export const dynamic = 'force-dynamic'
-
-export async function generateMetadata(
-  props: {
-    params: Promise<{ slug: string }>
-  }
-): Promise<Metadata> {
-  const params = await props.params;
-  const project = await getProjectBySlug(params.slug)
-  if (!project) notFound()
-  return articleMetadata({
-    title: project.title,
-    description: project.summary?.slice(0, 160),
-    path: `/work/${project.slug}`,
-    image: project.coverMediaUrl,
-  })
-}
-
-/** Case study detail, fed entirely by the studio `projects` table. */
-export default async function WorkCaseStudyPage(
-  props: {
-    params: Promise<{ slug: string }>
-  }
-) {
-  const params = await props.params;
-  const project = await getProjectBySlug(params.slug)
-  if (!project) notFound()
-
-  const all = await getPublishedProjects()
-  const index = all.findIndex((entry) => entry.slug === project.slug)
-  const nextProject = all.length > 1 ? all[(index + 1) % all.length] : undefined
+/**
+ * Case study detail for a studio `projects` row that has no `cmsContent`
+ * Projects record.
+ *
+ * `/projects/[slug]` is the one canonical case study route: `/work/[slug]`
+ * permanently redirects here. A project created only in Studio → Case studies
+ * still resolves, but renders the studio fields it actually has instead of the
+ * richer CMS dossier, which would otherwise be invented.
+ */
+export function StudioCaseStudyView({
+  project,
+  nextProject,
+}: {
+  project: StudioProject
+  nextProject?: StudioProject
+}) {
   const repoUrl = isRepositoryUrl(project.repoUrl) ? project.repoUrl : undefined
   const statusVisual = getProjectStatusVisual(project.status)
 
-  const metaParts = [project.category, project.featuredOrder !== undefined ? 'Featured' : undefined].filter(
-    Boolean,
-  )
+  const metaParts = [
+    project.category,
+    project.featuredOrder !== undefined ? 'Featured' : undefined,
+  ].filter(Boolean)
 
   return (
     <PageShell>
@@ -187,9 +170,9 @@ export default async function WorkCaseStudyPage(
       </section>
 
       <PageNav
-        backHref="/work"
-        backLabel="All case studies"
-        nextHref={nextProject ? `/work/${nextProject.slug}` : undefined}
+        backHref="/projects"
+        backLabel="All projects"
+        nextHref={nextProject ? `/projects/${nextProject.slug}` : undefined}
         nextLabel={nextProject ? `Next case study: ${nextProject.title}` : undefined}
       />
     </PageShell>

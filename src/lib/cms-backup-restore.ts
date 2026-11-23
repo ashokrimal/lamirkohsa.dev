@@ -44,7 +44,7 @@ export async function restoreCmsBackup(
       revalidateTag(`page-${page.slug}`, { expire: 0 })
       revalidatePath(page.slug === '/' ? '/' : page.slug)
     }
-    revalidatePath('/work')
+    revalidatePath('/projects')
     revalidatePath('/admin')
 
     console.info(

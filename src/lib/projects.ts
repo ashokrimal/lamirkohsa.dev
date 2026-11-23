@@ -56,6 +56,8 @@ export interface ProjectEntry {
   featured: boolean
   github?: string
   live?: string
+  /** ISO timestamp of the CMS write, used for real sitemap dates. */
+  updatedAt?: string
 }
 
 export interface ProjectFilterTag {
@@ -331,7 +333,14 @@ export function mapProjectRecord(record: CmsRecord): ProjectEntry {
       optionalString(payload.liveUrl) ??
       optionalString(payload.demoUrl) ??
       optionalString(payload.url),
+    updatedAt: toIsoTimestamp(record.updatedAt),
   }
+}
+
+function toIsoTimestamp(value: Date | string | null | undefined): string | undefined {
+  if (!value) return undefined
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
 }
 
 export function mapProjectRecords(records: CmsRecord[]): ProjectEntry[] {

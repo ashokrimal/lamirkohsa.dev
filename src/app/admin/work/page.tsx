@@ -31,8 +31,8 @@ export default async function AdminWorkPage() {
           Full CRUD and lifecycle status toggles (<code className="rounded bg-slate-100 px-1">Active</code>,{' '}
           <code className="rounded bg-slate-100 px-1">Planning</code>,{' '}
           <code className="rounded bg-slate-100 px-1">Archived</code>) for projects published to{' '}
-          <code className="mx-1 rounded bg-slate-100 px-1">/work</code> and{' '}
-          <code className="mx-1 rounded bg-slate-100 px-1">/projects</code>.
+          <code className="mx-1 rounded bg-slate-100 px-1">/projects</code>, the one
+          canonical case study route.
         </p>
       </header>
 

@@ -202,8 +202,6 @@ export async function saveProject(input: ProjectInput) {
   revalidatePath('/')
   revalidatePath('/projects')
   revalidatePath(`/projects/${slug}`)
-  revalidatePath('/work')
-  revalidatePath(`/work/${slug}`)
   return { ok: true as const }
 }
 
@@ -241,13 +239,11 @@ export async function updateStudioProjectStatus(id: number, status: ProjectLifec
   if (updated?.slug) {
     await syncCmsProjectStatusBySlug(updated.slug, normalizedStatus)
     revalidateTag(`project-${updated.slug}`, { expire: 0 })
-    revalidatePath(`/work/${updated.slug}`)
     revalidatePath(`/projects/${updated.slug}`)
   }
   revalidateCmsCache(CMS_COLLECTIONS.projects)
   revalidatePath('/')
   revalidatePath('/projects')
-  revalidatePath('/work')
   return { ok: true as const, status: normalizedStatus }
 }
 
@@ -264,8 +260,7 @@ export async function deleteProject(id: number) {
   if (row?.slug) revalidateTag(`project-${row.slug}`, { expire: 0 })
   revalidatePath('/')
   revalidatePath('/projects')
-  revalidatePath('/work')
-  if (row?.slug) revalidatePath(`/work/${row.slug}`)
+  if (row?.slug) revalidatePath(`/projects/${row.slug}`)
   return { ok: true as const }
 }
 
@@ -295,7 +290,6 @@ export async function moveProject(id: number, direction: -1 | 1) {
   revalidateTag('projects', { expire: 0 })
   revalidatePath('/')
   revalidatePath('/projects')
-  revalidatePath('/work')
   return { ok: true as const }
 }
 

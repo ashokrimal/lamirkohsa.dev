@@ -27,6 +27,8 @@ export interface StudioPage {
   title: string
   metaDescription: string
   isPublished: boolean
+  /** ISO timestamp of the last studio write, used for real sitemap dates. */
+  updatedAt?: string
 }
 
 export interface StudioPageSection {
@@ -60,6 +62,8 @@ export interface StudioProject {
   featuredOrder?: number
   status: ProjectLifecycleStatus
   isPublished: boolean
+  /** ISO timestamp of the last studio write, used for real sitemap dates. */
+  updatedAt?: string
 }
 
 export interface StudioSiteSettings {
@@ -67,6 +71,13 @@ export interface StudioSiteSettings {
   availabilityStatus: string
   socialLinks: SocialLink[]
   source: 'database' | 'default'
+}
+
+/** Drizzle returns `Date` for these columns; keep the ISO form in the view model. */
+function rowTimestamp(value: Date | string | null | undefined): string | undefined {
+  if (!value) return undefined
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
 }
 
 export function normalizePageSlug(slug: string) {
@@ -199,6 +210,7 @@ async function readPage(slug: string): Promise<StudioPageWithSections> {
         title: pageRow.title,
         metaDescription: pageRow.metaDescription ?? '',
         isPublished: pageRow.isPublished,
+        updatedAt: rowTimestamp(pageRow.updatedAt),
       },
       sections: sectionRows.map((row) => ({
         id: row.id,
@@ -268,6 +280,7 @@ async function readPublishedProjects(): Promise<StudioProject[]> {
       featuredOrder: row.featuredOrder ?? undefined,
       status: resolveProjectLifecycleStatus(row.status),
       isPublished: row.isPublished,
+      updatedAt: rowTimestamp(row.updatedAt),
     }))
   } catch (error) {
     console.warn('[studio] projects read failed:', (error as Error).message)
@@ -304,6 +317,7 @@ async function readProjectBySlug(slug: string): Promise<StudioProject | null> {
       featuredOrder: row.featuredOrder ?? undefined,
       status: resolveProjectLifecycleStatus(row.status),
       isPublished: row.isPublished,
+      updatedAt: rowTimestamp(row.updatedAt),
     }
   } catch (error) {
     console.warn('[studio] project read failed:', (error as Error).message)
@@ -414,6 +428,29 @@ export async function getAllProjectsForAdmin(): Promise<StudioProject[]> {
     status: resolveProjectLifecycleStatus(row.status),
     isPublished: row.isPublished,
   }))
+}
+
+/**
+ * Published studio pages for the sitemap, with their real write timestamps.
+ * Read uncached: the sitemap route is itself revalidated hourly, and a page
+ * created in the studio should be discoverable before that tag expires.
+ */
+export async function getPublishedPagesForSitemap(): Promise<StudioPage[]> {
+  try {
+    await ensureStudioTables()
+    const rows = await db.select().from(sitePage).where(eq(sitePage.isPublished, true))
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      metaDescription: row.metaDescription ?? '',
+      isPublished: row.isPublished,
+      updatedAt: rowTimestamp(row.updatedAt),
+    }))
+  } catch (error) {
+    console.warn('[studio] sitemap page read failed:', (error as Error).message)
+    return []
+  }
 }
 
 export async function getSiteSettingsForAdmin(): Promise<StudioSiteSettings> {

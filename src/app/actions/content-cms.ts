@@ -950,8 +950,6 @@ export async function updateCmsProjectStatus(id: number, projectStatus: ProjectL
         .where(eq(studioProject.slug, current.slug))
       revalidateTag('projects', { expire: 0 })
       revalidateTag(`project-${current.slug}`, { expire: 0 })
-      revalidatePath('/work')
-      revalidatePath(`/work/${current.slug}`)
     } catch (err) {
       console.warn('[CMS] Could not mirror status to studioProject:', err)
     }
