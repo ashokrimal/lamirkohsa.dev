@@ -27,7 +27,7 @@ import { DownloadCaseStudyPdfButton } from '@/components/projects/DownloadCaseSt
 import { CmsErrorState } from '@/components/ui/CmsState'
 import type { CmsResult } from '@/lib/cms-schema'
 import { articleMetadata } from '@/lib/seo'
-import { breadcrumbJsonLd, caseStudyJsonLd } from '@/lib/structured-data'
+import { breadcrumbJsonLd, caseStudyJsonLd, cmsDate } from '@/lib/structured-data'
 import { resolveSlugRedirect } from '@/lib/slug-history'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { isRepositoryUrl } from '@/lib/urls'
@@ -85,22 +85,29 @@ export async function generateMetadata(
       if (renamed) permanentRedirect(renamed)
       notFound()
     }
+    // A studio-only case study has no completion date, so `article:published_time`
+    // stays absent instead of guessing one; the write timestamp is a real date.
     return articleMetadata({
       title: studio.project.title,
       description: studio.project.summary?.slice(0, 160),
       path: `/projects/${studio.project.slug}`,
       image: studio.project.coverMediaUrl,
+      modifiedTime: studio.project.updatedAt,
     })
   }
 
   const project = result.data.project
   const description = (project.summary || project.description)?.replace(/\s+/g, ' ').trim().slice(0, 160) || undefined
 
+  // The same dates the TechArticle JSON-LD uses, so the Open Graph tags and the
+  // structured data can never disagree about when the case study changed.
   return articleMetadata({
     title: project.title,
     description,
     path: `/projects/${project.slug}`,
     image: project.image,
+    publishedTime: cmsDate(project.completionDate),
+    modifiedTime: project.updatedAt ? new Date(project.updatedAt).toISOString() : undefined,
   })
 }
 
