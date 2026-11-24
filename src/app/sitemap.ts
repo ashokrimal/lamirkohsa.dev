@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
-import { CMS_COLLECTIONS, CMS_KEYS } from '@/lib/cms-schema'
+import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 import { getProjectsResult } from '@/lib/projects'
 import { SITE_URL } from '@/lib/seo'
 import {
@@ -23,11 +23,18 @@ export const revalidate = 3600
  * to `/projects`, so they are not listed.
  *
  * `lastModified` policy: a URL is dated only from a row that actually backs it,
- * and never from the crawl time. Code-driven pages qualify because their copy is
- * CMS content — `/about`, `/media/*`, `/contact` and the rest render a Page Copy
- * record, so editing that record really does change the page. A page with no CMS
- * record and no studio page row (nothing editable behind it) ships without the
- * field instead of inventing a date.
+ * and never from the crawl time.
+ *
+ * The code-driven routes (`/about`, `/media/*`, `/contact`, `/experience`, …)
+ * therefore ship without one. They are paired with Page Copy keys in
+ * `CMS_PAGE_COPY_KEYS`, but the production Page Copy collection holds no
+ * published records — those pages render their code defaults (the `/media` pages
+ * still show the default "Elsewhere" eyebrow, and `/about`'s description matches
+ * the studio fixture) — so there is no row to borrow a date from. Earlier this
+ * file read Page Copy anyway and produced nothing; that dead path was removed
+ * rather than kept for a collection nobody has filled. If copy is ever authored
+ * there, date those routes from `CMS_PAGE_COPY_KEYS` again — do not stamp them
+ * with the build or crawl time.
  */
 const staticRoutes = [
   { path: '/', priority: 1 },
@@ -48,54 +55,17 @@ const staticRoutes = [
   { path: '/contact', priority: 0.8 },
 ]
 
-/**
- * The Page Copy record each code-driven route renders. `CMS_KEYS.homepageSections`
- * etc. are the pieces the homepage itself is built from.
- */
-const routeCopyKeys: Record<string, string[]> = {
-  '/': [CMS_KEYS.hero, CMS_KEYS.homepageSections, CMS_KEYS.brand, CMS_KEYS.footer],
-  '/about': [CMS_KEYS.about],
-  '/about/gallery': [CMS_KEYS.gallery],
-  '/about/github': [CMS_KEYS.mediaGithub],
-  '/projects': [CMS_KEYS.projects],
-  '/blogs': [CMS_KEYS.journal],
-  '/media': [CMS_KEYS.media],
-  '/media/music': [CMS_KEYS.mediaMusic],
-  '/media/movies': [CMS_KEYS.mediaFilms],
-  '/media/anime': [CMS_KEYS.mediaAnime],
-  '/media/manga': [CMS_KEYS.mediaManga],
-  '/experience': [CMS_KEYS.experience],
-  '/education': [CMS_KEYS.education],
-  '/skills': [CMS_KEYS.skills],
-  '/certificates': [CMS_KEYS.certificates],
-  '/contact': [CMS_KEYS.contact],
-}
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [projectsResult, blogsResult, pages, studioProjects, copyResult] = await Promise.all([
+  const [projectsResult, blogsResult, pages, studioProjects] = await Promise.all([
     getProjectsResult(),
     getPublishedCmsContentResult(CMS_COLLECTIONS.blogs),
     getPublishedPagesForSitemap(),
     getPublishedProjects(),
-    getPublishedCmsContentResult(CMS_COLLECTIONS.pageCopy),
   ])
 
   const pageDates = new Map(
     pages.map((page) => [normalizePageSlug(page.slug), toLastModified(page.updatedAt)]),
   )
-
-  // Page Copy is keyed per page, so each route borrows only its own records.
-  const copyDates = new Map<string, Date>()
-  if (copyResult.status === 'ok') {
-    for (const record of copyResult.data) {
-      const key =
-        typeof record.payload?.key === 'string' ? record.payload.key.trim().toLowerCase() : ''
-      if (!key) continue
-      const next = toLastModified(record.updatedAt)
-      const newest = newestOf(copyDates.get(key), next)
-      if (newest) copyDates.set(key, newest)
-    }
-  }
 
   const projectDates =
     projectsResult.status === 'ok'
@@ -109,29 +79,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ? blogsResult.data.map((blog) => toLastModified(blog.updatedAt))
       : []
 
-  const routeDate = (path: string) => {
-    const copy = (routeCopyKeys[path] ?? []).map((key) => copyDates.get(key))
-    return newestOf(...copy, pageDates.get(path))
-  }
-
   const routes: MetadataRoute.Sitemap = staticRoutes.map(({ path, priority }) => {
     // Index pages borrow the newest row they render: the case studies for
     // /projects, the journal entries for /blogs, and everything for the homepage,
     // which lists recent activity.
     const lastModified =
       path === '/projects'
-        ? (newestOf(...projectDates, ...studioProjectDates, routeDate(path)) ?? undefined)
+        ? newestOf(...projectDates, ...studioProjectDates) ?? pageDates.get(path)
         : path === '/blogs'
-          ? (newestOf(...blogDates, routeDate(path)) ?? undefined)
+          ? newestOf(...blogDates) ?? pageDates.get(path)
           : path === '/'
-            ? (newestOf(
+            ? newestOf(
                 ...projectDates,
                 ...studioProjectDates,
                 ...blogDates,
-                ...[...pageDates.values()],
-                routeDate(path),
-              ) ?? undefined)
-            : routeDate(path)
+                ...pageDates.values(),
+              ) ?? pageDates.get(path)
+            : pageDates.get(path)
     return {
       url: `${SITE_URL}${path}`,
       ...(lastModified ? { lastModified } : {}),
