@@ -20,14 +20,17 @@ export async function generateMetadata(): Promise<Metadata> {
   // The page row owns the public title and description; the block below is the
   // structural default used before the studio has a record for `/`.
   const studio = await getPageMetadata('/')
-  const title = studio?.title ? { absolute: studio.title } : { absolute: PAGE_TITLE }
+  const title = studio?.title || PAGE_TITLE
   const description = studio?.description || PAGE_DESCRIPTION
+  // One image object carries the resolved title into both the Open Graph and
+  // Twitter alt text, so neither can describe a different title than the card.
+  const image = { url: '/og.png', width: 1200, height: 630, alt: title }
   return {
     ...BASE_METADATA,
-    title,
+    title: { absolute: title },
     description,
-    openGraph: { ...BASE_METADATA.openGraph, title: studio?.title || PAGE_TITLE, description },
-    twitter: { ...BASE_METADATA.twitter, title: studio?.title || PAGE_TITLE, description },
+    openGraph: { ...BASE_METADATA.openGraph, title, description, images: [image] },
+    twitter: { ...BASE_METADATA.twitter, title, description, images: [image] },
   }
 }
 
