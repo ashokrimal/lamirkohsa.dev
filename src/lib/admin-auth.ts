@@ -1,10 +1,18 @@
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { cookies, headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { eq } from 'drizzle-orm'
 import { adminCredential } from '@/lib/db/schema'
 import { db, pool } from '@/lib/db'
 import { verifyTotp } from '@/lib/totp'
+import {
+  ADMIN_REMEMBERED_SESSION_MAX_AGE,
+  ADMIN_SESSION_MAX_AGE,
+  createAdminSessionTokenValue,
+  verifyAdminSessionTokenValue,
+} from '@/lib/admin-session-token'
+
+export { ADMIN_REMEMBERED_SESSION_MAX_AGE, ADMIN_SESSION_MAX_AGE }
 
 /**
  * Server-side owner authentication for the admin studio.
@@ -19,14 +27,6 @@ import { verifyTotp } from '@/lib/totp'
  * a password, the session secret or which half of the credentials was wrong.
  */
 export const ADMIN_SESSION_COOKIE = 'admin_session'
-/** Session length when the owner signs in without asking to be remembered. */
-export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 8
-/**
- * Remembered session: the cookie outlives the browser, and every studio visit
- * slides the expiry forward, so the owner is only asked to sign in again after
- * this much inactivity — or immediately after a manual sign-out.
- */
-export const ADMIN_REMEMBERED_SESSION_MAX_AGE = 60 * 60 * 24 * 7
 
 /**
  * Owner id used for records created through the cookie-based admin session. It is
@@ -151,14 +151,10 @@ export async function verifyAdminCredentials(email: string, password: string) {
   return emailMatches && passwordMatches
 }
 
-function sign(payload: string, secret: string) {
-  return createHmac('sha256', secret).update(payload).digest('hex')
-}
-
 /**
- * Returns an `<expiry>.<remembered>.<signature>` token, or null when no owner is
- * configured. The remembered flag is inside the signed payload so a short
- * session cannot be extended by editing the cookie.
+ * Creates a session token for the configured owner, or null when none is set up.
+ * The token format itself lives in `admin-session-token.ts` so it can be tested
+ * without a database.
  */
 export async function createAdminSessionToken(
   now = Date.now(),
@@ -166,30 +162,17 @@ export async function createAdminSessionToken(
 ) {
   const identity = await getAdminIdentity()
   if (!identity?.sessionSecret) return null
-  const expiresAt = now + maxAgeSeconds * 1000
-  const remembered = maxAgeSeconds >= ADMIN_REMEMBERED_SESSION_MAX_AGE ? '1' : '0'
-  const payload = `${expiresAt}.${remembered}`
-  return `${payload}.${sign(payload, identity.sessionSecret)}`
+  return createAdminSessionTokenValue({
+    secret: identity.sessionSecret,
+    now,
+    maxAgeSeconds,
+  })
 }
 
 async function readToken(token: string | undefined, now: number) {
   const identity = await getAdminIdentity()
-  if (!identity?.sessionSecret || !token) return null
-
-  const parts = token.split('.')
-  // Sessions issued before the remembered flag existed carry two parts; they
-  // stay valid for their remaining lifetime and are reissued on the next visit.
-  const [expiresAt, rememberedOrSignature, signature] =
-    parts.length === 3 ? parts : [parts[0], '1', parts[1]]
-  if (!expiresAt || !signature) return null
-
-  const expiry = Number(expiresAt)
-  if (!Number.isFinite(expiry) || expiry < now) return null
-
-  const payload = parts.length === 3 ? `${expiresAt}.${rememberedOrSignature}` : expiresAt
-  if (!constantTimeEquals(signature, sign(payload, identity.sessionSecret))) return null
-
-  return { expiresAt: expiry, remembered: rememberedOrSignature === '1' }
+  if (!identity?.sessionSecret) return null
+  return verifyAdminSessionTokenValue({ secret: identity.sessionSecret, token, now })
 }
 
 export async function verifyAdminSessionToken(token: string | undefined, now = Date.now()) {
