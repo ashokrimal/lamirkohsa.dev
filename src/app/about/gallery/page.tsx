@@ -14,12 +14,19 @@ import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
 import { getPageCopy } from '@/lib/site-content'
 import { pageMetadata } from '@/lib/seo'
+import { PAGE_DEFAULTS } from '@/lib/page-defaults'
+import { breadcrumbJsonLd } from '@/lib/structured-data'
+import { JsonLd } from '@/components/seo/JsonLd'
 
 export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
-  return pageMetadata(copyResult.status === 'ok' ? copyResult.data.gallery : undefined, undefined, '/about/gallery')
+  return pageMetadata(
+    copyResult.status === 'ok' ? copyResult.data.gallery : undefined,
+    PAGE_DEFAULTS['/about/gallery'],
+    '/about/gallery',
+  )
 }
 
 export default async function GalleryPage() {
@@ -42,6 +49,13 @@ export default async function GalleryPage() {
 
   return (
     <PageShell>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'About', path: '/about' },
+          { name: PAGE_DEFAULTS['/about/gallery'].title, path: '/about/gallery' },
+        ])}
+      />
       <PageHero
         eyebrow={pageCopy?.eyebrow ?? ''}
         krEyebrow={pageCopy?.krEyebrow}
