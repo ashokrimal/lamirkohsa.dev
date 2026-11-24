@@ -28,6 +28,7 @@ import { CmsErrorState } from '@/components/ui/CmsState'
 import type { CmsResult } from '@/lib/cms-schema'
 import { articleMetadata } from '@/lib/seo'
 import { breadcrumbJsonLd, caseStudyJsonLd, cmsDate } from '@/lib/structured-data'
+import { snippet } from '@/lib/snippets'
 import { resolveSlugRedirect } from '@/lib/slug-history'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { isRepositoryUrl } from '@/lib/urls'
@@ -89,7 +90,7 @@ export async function generateMetadata(
     // stays absent instead of guessing one; the write timestamp is a real date.
     return articleMetadata({
       title: studio.project.title,
-      description: studio.project.summary?.slice(0, 160),
+      description: snippet(studio.project.summary),
       path: `/projects/${studio.project.slug}`,
       image: studio.project.coverMediaUrl,
       modifiedTime: studio.project.updatedAt,
@@ -97,7 +98,7 @@ export async function generateMetadata(
   }
 
   const project = result.data.project
-  const description = (project.summary || project.description)?.replace(/\s+/g, ' ').trim().slice(0, 160) || undefined
+  const description = snippet(project.summary || project.description)
 
   // The same dates the TechArticle JSON-LD uses, so the Open Graph tags and the
   // structured data can never disagree about when the case study changed.

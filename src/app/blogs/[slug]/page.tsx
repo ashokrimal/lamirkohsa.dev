@@ -10,6 +10,7 @@ import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_COLLECTIONS, CMS_SCHEMA, type CmsResult } from '@/lib/cms-schema'
 import { getUiCopy } from '@/lib/ui-copy'
 import { articleMetadata } from '@/lib/seo'
+import { snippet } from '@/lib/snippets'
 import { blogPostingJsonLd, breadcrumbJsonLd } from '@/lib/structured-data'
 import { resolveSlugRedirect } from '@/lib/slug-history'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -73,7 +74,7 @@ export async function generateMetadata(
   const blog = result.data
   const payload = readPayload(blog)
   const excerpt = typeof payload.excerpt === 'string' ? payload.excerpt : getBody(blog)
-  const description = excerpt.replace(/\s+/g, ' ').trim().slice(0, 160) || undefined
+  const description = snippet(excerpt)
   const image =
     (typeof payload.coverUrl === 'string' && payload.coverUrl) ||
     (typeof payload.imageUrl === 'string' && payload.imageUrl) ||
@@ -126,7 +127,7 @@ export default async function BlogArticlePage(props: { params: Promise<{ slug: s
     .filter(Boolean)
 
   const excerpt = typeof payload.excerpt === 'string' ? payload.excerpt : body
-  const description = excerpt.replace(/\s+/g, ' ').trim().slice(0, 160) || undefined
+  const description = snippet(excerpt)
   const coverImage =
     (typeof payload.coverUrl === 'string' && payload.coverUrl) ||
     (typeof payload.imageUrl === 'string' && payload.imageUrl) ||
