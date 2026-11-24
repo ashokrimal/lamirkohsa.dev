@@ -14,14 +14,14 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const [copyResult, studio] = await Promise.all([getPageCopy(), getPageMetadata('/media')])
-  const base = pageMetadata(
+  return pageMetadata(
     copyResult.status === 'ok' ? copyResult.data.media : undefined,
-    { title: CMS_SCHEMA.sections.pages.media.label, description: PAGE_DEFAULTS['/media'].description },
+    {
+      title: studio?.title ?? CMS_SCHEMA.sections.pages.media.label,
+      description: studio?.description ?? PAGE_DEFAULTS['/media'].description,
+    },
     '/media',
   )
-  return studio
-    ? { ...base, title: studio.title, description: studio.description || base.description }
-    : base
 }
 
 export default function MediaPage() {

@@ -11,14 +11,13 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [copyResult, studio] = await Promise.all([getPageCopy(), getPageMetadata('/projects')])
-  const base = pageMetadata(
+  // The studio page row is the fallback, not a patch applied afterwards: that
+  // keeps og:title, og:image:alt and the Twitter card on the same title.
+  return pageMetadata(
     copyResult.status === 'ok' ? copyResult.data.projects : undefined,
-    undefined,
+    { title: studio?.title, description: studio?.description },
     '/projects',
   )
-  return studio
-    ? { ...base, title: studio.title, description: studio.description || base.description }
-    : base
 }
 
 export default async function ProjectsPage() {

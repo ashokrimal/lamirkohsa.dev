@@ -11,14 +11,14 @@ export const revalidate = 300
 
 export async function generateMetadata(): Promise<Metadata> {
   const [copyResult, studio] = await Promise.all([getPageCopy(), getPageMetadata('/contact')])
-  const base = pageMetadata(
+  return pageMetadata(
     copyResult.status === 'ok' ? copyResult.data.contact : undefined,
-    { title: CMS_SCHEMA.sections.pages.contact.label },
+    {
+      title: studio?.title ?? CMS_SCHEMA.sections.pages.contact.label,
+      description: studio?.description,
+    },
     '/contact',
   )
-  return studio
-    ? { ...base, title: studio.title, description: studio.description || base.description }
-    : base
 }
 
 export default function ContactPage() {
