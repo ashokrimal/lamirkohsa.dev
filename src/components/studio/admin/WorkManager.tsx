@@ -30,6 +30,7 @@ function emptyDraft(): Draft {
     slug: '',
     title: '',
     category: '',
+    completionDate: '',
     summary: '',
     problem: '',
     solution: '',
@@ -49,6 +50,7 @@ function draftFrom(project: StudioProject): Draft {
     slug: project.slug,
     title: project.title,
     category: project.category ?? '',
+    completionDate: project.completionDate ?? '',
     summary: project.summary ?? '',
     problem: project.problem ?? '',
     solution: project.solution ?? '',
@@ -382,6 +384,19 @@ export default function WorkManager({
           <label className="block text-xs text-slate-700">
             Repo URL
             <input value={draft.repoUrl ?? ''} onChange={(e) => update({ repoUrl: e.target.value })} className={inputClass} />
+          </label>
+          <label className="block text-xs text-slate-700">
+            Completion date
+            <input
+              value={draft.completionDate ?? ''}
+              onChange={(e) => update({ completionDate: e.target.value })}
+              placeholder="2025-03-09 or 2025-03"
+              className={inputClass}
+            />
+            <span className="mt-1 block text-[11px] text-slate-500">
+              YYYY-MM-DD or YYYY-MM. Feeds datePublished and article:published_time on the
+              case study; other wording is ignored.
+            </span>
           </label>
           <label className="block text-xs text-slate-700">
             Project status

@@ -42,6 +42,8 @@ export const studioProject = pgTable('projects', {
   slug: text('slug').notNull().unique(),
   title: text('title').notNull(),
   category: text('category'),
+  /** When the work finished; feeds datePublished and article:published_time. */
+  completionDate: text('completion_date'),
   summary: text('summary'),
   problem: text('problem'),
   solution: text('solution'),

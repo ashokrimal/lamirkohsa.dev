@@ -41,6 +41,7 @@ export function StudioCaseStudyView({
           description: project.summary ?? undefined,
           path: `/projects/${project.slug}`,
           image: project.coverMediaUrl ?? undefined,
+          publishedTime: project.completionDate,
           modifiedTime: project.updatedAt ? new Date(project.updatedAt).toISOString() : undefined,
           technologies: project.techStack,
           liveUrl: project.liveUrl ?? undefined,

@@ -52,6 +52,8 @@ export interface StudioProject {
   slug: string
   title: string
   category?: string
+  /** YYYY-MM or YYYY-MM-DD; anything else is ignored by the metadata. */
+  completionDate?: string
   summary?: string
   problem?: string
   solution?: string
@@ -123,6 +125,7 @@ export async function ensureStudioTables() {
         "slug" text NOT NULL UNIQUE,
         "title" text NOT NULL,
         "category" text,
+        "completion_date" text,
         "summary" text,
         "problem" text,
         "solution" text,
@@ -136,6 +139,7 @@ export async function ensureStudioTables() {
         "updated_at" timestamptz NOT NULL DEFAULT now()
       );
       ALTER TABLE "projects" ADD COLUMN IF NOT EXISTS "status" text NOT NULL DEFAULT 'Active';
+      ALTER TABLE "projects" ADD COLUMN IF NOT EXISTS "completion_date" text;
       CREATE TABLE IF NOT EXISTS "site_settings" (
         "id" integer PRIMARY KEY DEFAULT 1,
         "contact_email" text,
@@ -270,6 +274,7 @@ async function readPublishedProjects(): Promise<StudioProject[]> {
       slug: row.slug,
       title: row.title,
       category: row.category ?? undefined,
+      completionDate: row.completionDate ?? undefined,
       summary: row.summary ?? undefined,
       problem: row.problem ?? undefined,
       solution: row.solution ?? undefined,
@@ -307,6 +312,7 @@ async function readProjectBySlug(slug: string): Promise<StudioProject | null> {
       slug: row.slug,
       title: row.title,
       category: row.category ?? undefined,
+      completionDate: row.completionDate ?? undefined,
       summary: row.summary ?? undefined,
       problem: row.problem ?? undefined,
       solution: row.solution ?? undefined,
@@ -417,6 +423,7 @@ export async function getAllProjectsForAdmin(): Promise<StudioProject[]> {
     slug: row.slug,
     title: row.title,
     category: row.category ?? undefined,
+    completionDate: row.completionDate ?? undefined,
     summary: row.summary ?? undefined,
     problem: row.problem ?? undefined,
     solution: row.solution ?? undefined,

@@ -147,6 +147,8 @@ export interface ProjectInput {
   slug: string
   title: string
   category?: string
+  /** YYYY-MM or YYYY-MM-DD; the case study metadata ignores other formats. */
+  completionDate?: string
   summary?: string
   problem?: string
   solution?: string
@@ -169,6 +171,7 @@ export async function saveProject(input: ProjectInput) {
     slug,
     title,
     category: input.category?.trim() || null,
+    completionDate: input.completionDate?.trim() || null,
     summary: input.summary?.trim() || null,
     problem: input.problem?.trim() || null,
     solution: input.solution?.trim() || null,

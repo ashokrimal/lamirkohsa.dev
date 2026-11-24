@@ -86,13 +86,12 @@ export async function generateMetadata(
       if (renamed) permanentRedirect(renamed)
       notFound()
     }
-    // A studio-only case study has no completion date, so `article:published_time`
-    // stays absent instead of guessing one; the write timestamp is a real date.
     return articleMetadata({
       title: studio.project.title,
       description: snippet(studio.project.summary),
       path: `/projects/${studio.project.slug}`,
       image: studio.project.coverMediaUrl,
+      publishedTime: cmsDate(studio.project.completionDate),
       modifiedTime: studio.project.updatedAt,
     })
   }
