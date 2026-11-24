@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
+import AdminSessionKeepAlive from '@/components/admin/AdminSessionKeepAlive'
 
 export const metadata: Metadata = {
   robots: {
@@ -10,5 +11,12 @@ export const metadata: Metadata = {
 }
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  return children
+  return (
+    <>
+      {/* Renews a remembered session on every studio visit, so the owner is not
+          sent back to sign-in while they keep using the studio. */}
+      <AdminSessionKeepAlive />
+      {children}
+    </>
+  )
 }

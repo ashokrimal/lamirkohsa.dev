@@ -1,5 +1,10 @@
 import { redirect } from 'next/navigation'
-import { ADMIN_SESSION_MAX_AGE, hasOwnerAccess, isSecondFactorRequired } from '@/lib/admin-auth'
+import {
+  ADMIN_REMEMBERED_SESSION_MAX_AGE,
+  ADMIN_SESSION_MAX_AGE,
+  hasOwnerAccess,
+  isSecondFactorRequired,
+} from '@/lib/admin-auth'
 import { listAdminEvents } from '@/lib/admin-audit'
 import PasskeyManager from '@/components/admin/PasskeyManager'
 
@@ -31,6 +36,7 @@ export default async function AdminSecurityPage() {
   const events = await listAdminEvents(50)
   const secondFactor = isSecondFactorRequired()
   const sessionHours = Math.round(ADMIN_SESSION_MAX_AGE / 3600)
+  const rememberedDays = Math.round(ADMIN_REMEMBERED_SESSION_MAX_AGE / (60 * 60 * 24))
 
   return (
     <div className="space-y-6">
@@ -63,12 +69,13 @@ export default async function AdminSecurityPage() {
         <div className="rounded-2xl border border-slate-200 bg-surface p-5">
           <p className="text-[11px] uppercase tracking-wide text-slate-500">Session</p>
           <p className="mt-1 text-sm font-semibold text-slate-900">
-            Signed cookie, {sessionHours} hours
+            Signed cookie, {rememberedDays} days remembered · {sessionHours} hours otherwise
           </p>
           <p className="mt-2 text-xs leading-relaxed text-slate-500">
             The cookie is HttpOnly, SameSite=Lax and signed with the owner&apos;s session secret.
-            Signing
-            out clears it immediately; an expired cookie needs a new sign-in.
+            Signing out clears it immediately. A remembered session extends on every studio visit
+            and ends after {rememberedDays} days without one; an unremembered session ends when the
+            browser closes.
           </p>
         </div>
       </div>

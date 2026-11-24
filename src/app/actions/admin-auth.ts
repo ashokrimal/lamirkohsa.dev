@@ -4,8 +4,8 @@ import { cookies } from 'next/headers'
 import { recordAdminEvent } from '@/lib/admin-audit'
 import {
   ADMIN_PASSWORD_MIN_LENGTH,
+  ADMIN_REMEMBERED_SESSION_MAX_AGE,
   ADMIN_SESSION_COOKIE,
-  ADMIN_SESSION_MAX_AGE,
   changeAdminPassword,
   createAdminSessionToken,
   hasAdminSession,
@@ -15,7 +15,8 @@ import {
 export type AdminAuthActionState = { ok: true } | { ok: false; error: string }
 
 async function startSession() {
-  const token = await createAdminSessionToken()
+  // Creating the owner account happens once, on the owner's own device.
+  const token = await createAdminSessionToken(Date.now(), ADMIN_REMEMBERED_SESSION_MAX_AGE)
   if (!token) {
     throw new Error('The owner account could not start a session.')
   }
@@ -26,7 +27,7 @@ async function startSession() {
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
-    maxAge: ADMIN_SESSION_MAX_AGE,
+    maxAge: ADMIN_REMEMBERED_SESSION_MAX_AGE,
   })
 }
 

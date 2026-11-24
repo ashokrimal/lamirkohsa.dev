@@ -19,7 +19,14 @@ import { verifyTotp } from '@/lib/totp'
  * a password, the session secret or which half of the credentials was wrong.
  */
 export const ADMIN_SESSION_COOKIE = 'admin_session'
+/** Session length when the owner signs in without asking to be remembered. */
 export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 8
+/**
+ * Remembered session: the cookie outlives the browser, and every studio visit
+ * slides the expiry forward, so the owner is only asked to sign in again after
+ * this much inactivity — or immediately after a manual sign-out.
+ */
+export const ADMIN_REMEMBERED_SESSION_MAX_AGE = 60 * 60 * 24 * 7
 
 /**
  * Owner id used for records created through the cookie-based admin session. It is
@@ -148,25 +155,58 @@ function sign(payload: string, secret: string) {
   return createHmac('sha256', secret).update(payload).digest('hex')
 }
 
-/** Returns a `<expiry>.<signature>` token, or null when no owner is configured. */
-export async function createAdminSessionToken(now = Date.now()) {
+/**
+ * Returns an `<expiry>.<remembered>.<signature>` token, or null when no owner is
+ * configured. The remembered flag is inside the signed payload so a short
+ * session cannot be extended by editing the cookie.
+ */
+export async function createAdminSessionToken(
+  now = Date.now(),
+  maxAgeSeconds = ADMIN_SESSION_MAX_AGE,
+) {
   const identity = await getAdminIdentity()
   if (!identity?.sessionSecret) return null
-  const expiresAt = now + ADMIN_SESSION_MAX_AGE * 1000
-  return `${expiresAt}.${sign(String(expiresAt), identity.sessionSecret)}`
+  const expiresAt = now + maxAgeSeconds * 1000
+  const remembered = maxAgeSeconds >= ADMIN_REMEMBERED_SESSION_MAX_AGE ? '1' : '0'
+  const payload = `${expiresAt}.${remembered}`
+  return `${payload}.${sign(payload, identity.sessionSecret)}`
+}
+
+async function readToken(token: string | undefined, now: number) {
+  const identity = await getAdminIdentity()
+  if (!identity?.sessionSecret || !token) return null
+
+  const parts = token.split('.')
+  // Sessions issued before the remembered flag existed carry two parts; they
+  // stay valid for their remaining lifetime and are reissued on the next visit.
+  const [expiresAt, rememberedOrSignature, signature] =
+    parts.length === 3 ? parts : [parts[0], '1', parts[1]]
+  if (!expiresAt || !signature) return null
+
+  const expiry = Number(expiresAt)
+  if (!Number.isFinite(expiry) || expiry < now) return null
+
+  const payload = parts.length === 3 ? `${expiresAt}.${rememberedOrSignature}` : expiresAt
+  if (!constantTimeEquals(signature, sign(payload, identity.sessionSecret))) return null
+
+  return { expiresAt: expiry, remembered: rememberedOrSignature === '1' }
 }
 
 export async function verifyAdminSessionToken(token: string | undefined, now = Date.now()) {
-  const identity = await getAdminIdentity()
-  if (!identity?.sessionSecret || !token) return false
+  return (await readToken(token, now)) !== null
+}
 
-  const [expiresAt, signature] = token.split('.')
-  if (!expiresAt || !signature) return false
-
-  const expiry = Number(expiresAt)
-  if (!Number.isFinite(expiry) || expiry < now) return false
-
-  return constantTimeEquals(signature, sign(expiresAt, identity.sessionSecret))
+/**
+ * The session behind the current request, or null. Used to slide a remembered
+ * session forward without ever extending one the owner asked to keep short.
+ */
+export async function readAdminSession(now = Date.now()) {
+  try {
+    const store = await cookies()
+    return await readToken(store.get(ADMIN_SESSION_COOKIE)?.value, now)
+  } catch {
+    return null
+  }
 }
 
 /** True when the current request carries a valid, unexpired admin session cookie. */

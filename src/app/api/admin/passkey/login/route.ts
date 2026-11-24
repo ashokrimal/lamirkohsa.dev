@@ -5,8 +5,8 @@ import {
 } from '@simplewebauthn/server'
 import type { AuthenticationResponseJSON, AuthenticatorTransport } from '@simplewebauthn/server'
 import {
+  ADMIN_REMEMBERED_SESSION_MAX_AGE,
   ADMIN_SESSION_COOKIE,
-  ADMIN_SESSION_MAX_AGE,
   createAdminSessionToken,
   isAdminAuthConfigured,
 } from '@/lib/admin-auth'
@@ -171,7 +171,9 @@ export async function POST(request: NextRequest) {
 
     await touchAdminPasskey(passkey.credentialId, verification.authenticationInfo.newCounter)
 
-    const token = await createAdminSessionToken()
+    // A passkey is already bound to this device, so the session it starts is a
+    // remembered one.
+    const token = await createAdminSessionToken(Date.now(), ADMIN_REMEMBERED_SESSION_MAX_AGE)
     if (!token) {
       return NextResponse.json({ error: 'Admin sign-in is not configured.' }, { status: 503 })
     }
@@ -184,7 +186,7 @@ export async function POST(request: NextRequest) {
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       path: '/',
-      maxAge: ADMIN_SESSION_MAX_AGE,
+      maxAge: ADMIN_REMEMBERED_SESSION_MAX_AGE,
     })
     response.cookies.set(clearedPasskeyChallengeCookie())
 

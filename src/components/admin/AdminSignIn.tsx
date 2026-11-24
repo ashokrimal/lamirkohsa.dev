@@ -27,6 +27,7 @@ export default function AdminSignIn({
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [remember, setRemember] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -40,7 +41,12 @@ export default function AdminSignIn({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ email, password, ...(requiresSecondFactor ? { code } : {}) }),
+        body: JSON.stringify({
+          email,
+          password,
+          remember,
+          ...(requiresSecondFactor ? { code } : {}),
+        }),
       })
 
       if (!response.ok) {
@@ -145,6 +151,19 @@ export default function AdminSignIn({
                 </span>
               </label>
             )}
+
+            <label className="flex items-start gap-2 text-xs text-muted">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(event) => setRemember(event.target.checked)}
+                className="mt-0.5 h-3.5 w-3.5 accent-current"
+              />
+              <span>
+                Keep me signed in on this device. Stays signed in for seven days after your last
+                visit, until you sign out.
+              </span>
+            </label>
 
             <button
               type="submit"
