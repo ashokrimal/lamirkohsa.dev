@@ -213,6 +213,14 @@ const projectFields: VaultField[] = [
     ],
   },
   { key: 'summary', label: 'Short summary', type: 'text', span: 'full' },
+  {
+    key: 'completionDate',
+    label: 'Completion date',
+    type: 'date',
+    // The case study's structured data and its Open Graph tags both read this
+    // one field, so leaving it empty is what keeps article:published_time out.
+    help: 'Feeds datePublished and article:published_time on the case study. Set a real date (YYYY-MM-DD); prose such as “Q3 2025” is ignored.',
+  },
   { key: 'techStack', label: 'Tech stack', type: 'tags', span: 'full' },
   { key: 'liveUrl', label: 'Live URL', type: 'url' },
   { key: 'githubUrl', label: 'Repository URL', type: 'url' },

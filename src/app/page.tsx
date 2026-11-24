@@ -44,6 +44,7 @@ const BASE_METADATA: Metadata = {
     description: PAGE_DESCRIPTION,
     url: SITE_URL,
     siteName: SITE_NAME,
+    locale: 'en_US',
     images: [
       {
         url: '/og.png',
