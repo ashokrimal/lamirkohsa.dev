@@ -2,10 +2,10 @@
 
 import { cookies } from 'next/headers'
 import { recordAdminEvent } from '@/lib/admin-audit'
+import { adminSessionCookie } from '@/lib/admin-session-cookie'
 import {
   ADMIN_PASSWORD_MIN_LENGTH,
   ADMIN_REMEMBERED_SESSION_MAX_AGE,
-  ADMIN_SESSION_COOKIE,
   changeAdminPassword,
   createAdminSessionToken,
   hasAdminSession,
@@ -20,15 +20,12 @@ async function startSession() {
   if (!token) {
     throw new Error('The owner account could not start a session.')
   }
-  (await cookies()).set({
-    name: ADMIN_SESSION_COOKIE,
-    value: token,
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: ADMIN_REMEMBERED_SESSION_MAX_AGE,
-  })
+  (await cookies()).set(
+    adminSessionCookie(token, {
+      maxAgeSeconds: ADMIN_REMEMBERED_SESSION_MAX_AGE,
+      secure: process.env.NODE_ENV === 'production',
+    }),
+  )
 }
 
 /** One-time creation of the owner account, then signs them in. */

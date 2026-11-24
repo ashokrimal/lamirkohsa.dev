@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {
   ADMIN_REMEMBERED_SESSION_MAX_AGE,
-  ADMIN_SESSION_COOKIE,
   ADMIN_SESSION_MAX_AGE,
   createAdminSessionToken,
   isAdminAuthConfigured,
@@ -11,19 +10,9 @@ import {
   verifyAdminSecondFactor,
 } from '@/lib/admin-auth'
 import { describeCaller, recordAdminEvent } from '@/lib/admin-audit'
+import { adminSessionCookie } from '@/lib/admin-session-cookie'
 
-function sessionCookie(value: string, maxAgeSeconds?: number) {
-  return {
-    name: ADMIN_SESSION_COOKIE,
-    value,
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    // No maxAge means a browser-session cookie: closing the browser ends it.
-    ...(maxAgeSeconds === undefined ? {} : { maxAge: maxAgeSeconds }),
-  }
-}
+const secureCookie = process.env.NODE_ENV === 'production'
 
 /**
  * Keeps a remembered session alive.
@@ -46,7 +35,12 @@ export async function GET() {
     remembered: session.remembered,
     expiresAt: new Date(Date.now() + maxAge * 1000).toISOString(),
   })
-  response.cookies.set(sessionCookie(token, session.remembered ? maxAge : undefined))
+  response.cookies.set(
+    adminSessionCookie(token, {
+      maxAgeSeconds: session.remembered ? maxAge : undefined,
+      secure: secureCookie,
+    }),
+  )
   return response
 }
 
@@ -110,7 +104,9 @@ export async function POST(request: NextRequest) {
   }
 
   const response = NextResponse.json({ success: true, remembered: remember })
-  response.cookies.set(sessionCookie(token, remember ? maxAge : undefined))
+  response.cookies.set(
+    adminSessionCookie(token, { maxAgeSeconds: remember ? maxAge : undefined, secure: secureCookie }),
+  )
 
   await recordAdminEvent({
     action: 'sign-in',
@@ -124,6 +120,6 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   await recordAdminEvent({ action: 'sign-out', caller: describeCaller(request.headers) })
   const response = NextResponse.json({ success: true })
-  response.cookies.set(sessionCookie('', 0))
+  response.cookies.set(adminSessionCookie('', { maxAgeSeconds: 0, secure: secureCookie }))
   return response
 }

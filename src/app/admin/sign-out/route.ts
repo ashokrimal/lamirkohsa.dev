@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { ADMIN_SESSION_COOKIE } from '@/lib/admin-auth'
+import { adminSessionCookie } from '@/lib/admin-session-cookie'
 
 /** Ends both kinds of admin session and returns to the sign-in screen. */
 export async function GET(request: NextRequest) {
@@ -11,14 +11,11 @@ export async function GET(request: NextRequest) {
   }
 
   const response = NextResponse.redirect(new URL('/admin', request.url))
-  response.cookies.set({
-    name: ADMIN_SESSION_COOKIE,
-    value: '',
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: 0,
-  })
+  response.cookies.set(
+    adminSessionCookie('', {
+      maxAgeSeconds: 0,
+      secure: process.env.NODE_ENV === 'production',
+    }),
+  )
   return response
 }

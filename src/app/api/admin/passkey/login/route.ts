@@ -6,11 +6,11 @@ import {
 import type { AuthenticationResponseJSON, AuthenticatorTransport } from '@simplewebauthn/server'
 import {
   ADMIN_REMEMBERED_SESSION_MAX_AGE,
-  ADMIN_SESSION_COOKIE,
   createAdminSessionToken,
   isAdminAuthConfigured,
 } from '@/lib/admin-auth'
 import { describeCaller, recordAdminEvent } from '@/lib/admin-audit'
+import { adminSessionCookie } from '@/lib/admin-session-cookie'
 import {
   findAdminPasskey,
   getChallengeSecret,
@@ -179,15 +179,12 @@ export async function POST(request: NextRequest) {
     }
 
     const response = NextResponse.json({ success: true })
-    response.cookies.set({
-      name: ADMIN_SESSION_COOKIE,
-      value: token,
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-      maxAge: ADMIN_REMEMBERED_SESSION_MAX_AGE,
-    })
+    response.cookies.set(
+      adminSessionCookie(token, {
+        maxAgeSeconds: ADMIN_REMEMBERED_SESSION_MAX_AGE,
+        secure: process.env.NODE_ENV === 'production',
+      }),
+    )
     response.cookies.set(clearedPasskeyChallengeCookie())
 
     await recordAdminEvent({
