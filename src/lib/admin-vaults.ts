@@ -216,7 +216,10 @@ const projectFields: VaultField[] = [
   {
     key: 'completionDate',
     label: 'Completion date',
-    type: 'date',
+    // Deliberately not type 'date': the picker only offers a full day, while
+    // month precision (2025-03) is valid. The editor validates it as a date.
+    type: 'text',
+    placeholder: '2025-03-09 or 2025-03',
     // The case study's structured data and its Open Graph tags both read this
     // one field, so leaving it empty is what keeps article:published_time out.
     help: 'Feeds datePublished and article:published_time on the case study. Set a real date (YYYY-MM-DD); prose such as “Q3 2025” is ignored.',

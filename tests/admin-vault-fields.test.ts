@@ -14,9 +14,11 @@ const completionDateField = VAULTS.projects.fields.find((field) => field.key ===
 
 test('the Projects vault exposes the Completion date field', () => {
   assert.ok(completionDateField, 'completionDate is missing from VAULTS.projects.fields')
-  assert.equal(completionDateField.type, 'date')
+  // Text, not 'date': the picker cannot express the valid month-only form.
+  assert.equal(completionDateField.type, 'text')
   assert.equal(completionDateField.label, 'Completion date')
   assert.ok(completionDateField.help?.includes('datePublished'))
+  assert.match(completionDateField.placeholder ?? '', /2025-03-09 or 2025-03/)
 })
 
 test('the field reaches the tab the editor renders, not just the vault list', () => {

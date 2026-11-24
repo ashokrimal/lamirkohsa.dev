@@ -1,4 +1,5 @@
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from '@/lib/seo'
+import { parseDateInput } from '@/lib/cms-date-input'
 
 /**
  * Structured data for the pages that can appear in search results on their own:
@@ -84,16 +85,13 @@ function webUrl(value?: string): string | undefined {
  * are rejected rather than silently rolled forward.
  */
 export function cmsDate(value?: string): string | undefined {
-  const trimmed = value?.trim()
-  if (!trimmed) return undefined
-  const match = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(trimmed)
-  if (!match) return undefined
-  const iso = trimmed.length === 7 ? `${trimmed}-01` : trimmed
+  // Same parser the editors validate with, so what a save accepts is exactly
+  // what the page can publish.
+  const parsedInput = parseDateInput(value)
+  if (!parsedInput.ok || !parsedInput.value) return undefined
+  const iso = parsedInput.value.length === 7 ? `${parsedInput.value}-01` : parsedInput.value.slice(0, 10)
   const parsed = new Date(`${iso}T00:00:00.000Z`)
-  if (Number.isNaN(parsed.getTime())) return undefined
-  if (parsed.getUTCMonth() + 1 !== Number(match[2])) return undefined
-  if (match[3] && parsed.getUTCDate() !== Number(match[3])) return undefined
-  return parsed.toISOString()
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString()
 }
 
 export function breadcrumbJsonLd(items: Array<{ name: string; path: string }>): JsonLd {

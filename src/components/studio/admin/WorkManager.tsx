@@ -19,6 +19,7 @@ import {
 } from '@/lib/project-status'
 import type { ProjectEntry } from '@/lib/projects'
 import type { StudioProject } from '@/lib/studio/data'
+import { parseDateInput } from '@/lib/cms-date-input'
 
 const inputClass =
   'mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-teal-400'
@@ -104,12 +105,19 @@ export default function WorkManager({
 
   const update = (patch: Partial<Draft>) => setDraft((current) => ({ ...current, ...patch }))
 
+  const completionDateCheck = parseDateInput(draft.completionDate)
+
   const save = async () => {
+    if (!completionDateCheck.ok) {
+      setStatus(completionDateCheck.message)
+      return
+    }
     setBusy(true)
     setStatus(null)
     try {
       await saveProject({
         ...draft,
+        completionDate: completionDateCheck.value ?? '',
         techStack: techText.split(',').map((tech) => tech.trim()).filter(Boolean),
       })
       setStatus('Project published.')
@@ -393,10 +401,17 @@ export default function WorkManager({
               placeholder="2025-03-09 or 2025-03"
               className={inputClass}
             />
-            <span className="mt-1 block text-[11px] text-slate-500">
-              YYYY-MM-DD or YYYY-MM. Feeds datePublished and article:published_time on the
-              case study; other wording is ignored.
-            </span>
+            {completionDateCheck.ok ? (
+              <span className="mt-1 block text-[11px] text-slate-500">
+                {completionDateCheck.value
+                  ? `Publishes as ${completionDateCheck.value}. Feeds datePublished and article:published_time.`
+                  : 'YYYY-MM-DD or YYYY-MM. Leave empty and the case study publishes no date.'}
+              </span>
+            ) : (
+              <span className="mt-1 block text-[11px] font-medium text-rose-600">
+                {completionDateCheck.message}
+              </span>
+            )}
           </label>
           <label className="block text-xs text-slate-700">
             Project status

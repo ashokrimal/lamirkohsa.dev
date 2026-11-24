@@ -18,6 +18,7 @@ import {
   type CmsResult,
 } from '@/lib/cms-schema'
 import { resolveProjectLifecycleStatus, type ProjectLifecycleStatus } from '@/lib/project-status'
+import { parseDateInput } from '@/lib/cms-date-input'
 import { notifySubscribersOfPost, type PublishedPost } from '@/lib/blog-notifications'
 import { toSlug } from '@/lib/slug'
 import { SITE_URL } from '@/lib/seo'
@@ -184,6 +185,26 @@ function getLastKnownPublishedMap(): Map<string, CmsRecord[]> {
 }
 
 // --- CMS QUERY FUNCTIONS FOR FRONTEND & ADMIN ---
+
+/**
+ * The vault editor validates before saving and the public site silently ignores
+ * unparseable dates, so an invalid value must be refused here as well rather
+ * than stored and quietly dropped later.
+ */
+function assertValidProjectCompletionDate(
+  collection: string,
+  payload: Record<string, unknown>,
+) {
+  if (collection.trim().toLowerCase() !== CMS_COLLECTIONS.projects) return
+  if (!('completionDate' in payload)) return
+  const raw = payload.completionDate
+  if (raw === null || raw === undefined || raw === '') return
+  if (typeof raw !== 'string') {
+    throw new Error('Completion date must be text, such as 2025-03-09 or 2025-03.')
+  }
+  const parsed = parseDateInput(raw)
+  if (!parsed.ok) throw new Error(`Completion date: ${parsed.message}`)
+}
 
 function normalizeCmsProjectPayload(
   collection: string,
@@ -697,6 +718,7 @@ export async function createCmsContent(formData: FormData) {
       .map((item) => item.trim())
       .filter(Boolean)
   }
+  assertValidProjectCompletionDate(collection, payload)
   const normalizedPayload = normalizeCmsProjectPayload(collection, payload)
   const status = String(formData.get('status') || 'published')
 
@@ -773,6 +795,7 @@ export async function updateCmsContent(id: number, formData: FormData) {
   if (imageUrl) payloadUpdates = { ...payloadUpdates, imageUrl }
 
   const resolvedCollection = collection || previous?.collection || ''
+  assertValidProjectCompletionDate(resolvedCollection, payloadUpdates)
   payloadUpdates = normalizeCmsProjectPayload(resolvedCollection, payloadUpdates)
 
   const repo = getMemoryRepo()

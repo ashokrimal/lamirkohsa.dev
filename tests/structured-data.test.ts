@@ -122,13 +122,17 @@ test('a case study publish date comes from a real studio date', () => {
   assert.equal('datePublished' in prose, false)
 })
 
-test('cmsDate accepts ISO calendar dates and rejects anything ambiguous', () => {
+test('cmsDate applies the same parser the editors validate with', () => {
   assert.equal(cmsDate('2025-03-09'), '2025-03-09T00:00:00.000Z')
   assert.equal(cmsDate('2025-03'), '2025-03-01T00:00:00.000Z')
   assert.equal(cmsDate(' 2025-03 '), '2025-03-01T00:00:00.000Z')
+  // The editors accept a month name and store it normalized, so reading it back
+  // has to agree; vaguer or impossible values still publish nothing.
+  assert.equal(cmsDate('March 2025'), '2025-03-01T00:00:00.000Z')
   assert.equal(cmsDate('2025-02-31'), undefined)
   assert.equal(cmsDate('2025'), undefined)
-  assert.equal(cmsDate('March 2025'), undefined)
+  assert.equal(cmsDate('Spring 2025'), undefined)
+  assert.equal(cmsDate('next spring'), undefined)
   assert.equal(cmsDate(undefined), undefined)
 })
 

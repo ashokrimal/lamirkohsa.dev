@@ -21,6 +21,7 @@ import {
   type SocialLink,
 } from '@/lib/studio/sections'
 import { resolveProjectLifecycleStatus, type ProjectLifecycleStatus } from '@/lib/project-status'
+import { parseDateInput } from '@/lib/cms-date-input'
 
 /**
  * Admin Studio mutations for the studio CMS.
@@ -167,11 +168,16 @@ export async function saveProject(input: ProjectInput) {
   const slug = input.slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
   if (!title || !slug) throw new Error('A project needs a title and a slug.')
 
+  // A date that cannot be published must not be stored: the editor shows this
+  // message inline, and this guards direct action calls too.
+  const completionDate = parseDateInput(input.completionDate)
+  if (!completionDate.ok) throw new Error(completionDate.message)
+
   const values = {
     slug,
     title,
     category: input.category?.trim() || null,
-    completionDate: input.completionDate?.trim() || null,
+    completionDate: completionDate.value,
     summary: input.summary?.trim() || null,
     problem: input.problem?.trim() || null,
     solution: input.solution?.trim() || null,

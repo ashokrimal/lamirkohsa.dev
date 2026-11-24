@@ -14,10 +14,26 @@ import {
 import ImageUploadField from '@/components/admin/ImageUploadField'
 import { createCmsContent, updateCmsContent } from '@/app/actions/content-cms'
 import type { VaultDefinition, VaultField, VaultRecord } from '@/lib/admin-vaults'
+import { parseDateInput } from '@/lib/cms-date-input'
 import AudioUploadField from '@/components/admin/vaults/AudioUploadField'
 import MarkdownField from '@/components/admin/vaults/MarkdownField'
 
 type FieldValue = string | boolean | number | string[]
+
+/**
+ * Vault date fields are edited with a picker (type 'date') or as text when month
+ * precision matters (the case study completion date). Both are validated here so
+ * a value the site cannot publish is refused at save time.
+ */
+function isDateField(field: VaultField) {
+  return field.type === 'date' || field.key === 'completionDate'
+}
+
+function dateInputError(field: VaultField, value: FieldValue): string | null {
+  if (!isDateField(field)) return null
+  const parsed = parseDateInput(typeof value === 'string' ? value : '')
+  return parsed.ok ? null : parsed.message
+}
 
 function initialValue(field: VaultField, payload: Record<string, unknown>, record?: VaultRecord): FieldValue {
   if (field.type === 'json') return JSON.stringify(record?.payload ?? {}, null, 2)
@@ -61,6 +77,7 @@ export default function VaultEditor({
   const [keyValue, setKeyValue] = useState(typeof payload.key === 'string' ? payload.key : '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const setField = (key: string, value: FieldValue) =>
     setValues((current) => ({ ...current, [key]: value }))
@@ -68,6 +85,16 @@ export default function VaultEditor({
   const save = async () => {
     if (!title.trim()) {
       setError('Give this item a title before saving.')
+      return
+    }
+    const dateErrors: Record<string, string> = {}
+    for (const field of fields) {
+      const message = dateInputError(field, values[field.key])
+      if (message) dateErrors[field.key] = message
+    }
+    setFieldErrors(dateErrors)
+    if (Object.keys(dateErrors).length > 0) {
+      setError('Fix the highlighted dates before saving.')
       return
     }
     setSaving(true)
@@ -94,6 +121,12 @@ export default function VaultEditor({
           continue
         }
         if (field.type === 'key') continue
+        if (isDateField(field)) {
+          // Store the normalized form, so "9 Mar 2025" becomes 2025-03-09.
+          const parsed = parseDateInput(typeof value === 'string' ? value : '')
+          nextPayload[field.key] = parsed.ok ? (parsed.value ?? '') : value
+          continue
+        }
         if (field.type === 'number') {
           nextPayload[field.key] = value === '' ? undefined : Number(value)
         } else {
@@ -223,7 +256,12 @@ export default function VaultEditor({
           return (
             <div key={field.key} className={field.span === 'full' ? 'sm:col-span-2' : ''}>
               {field.type === 'text' && (
-                <CmsFormField label={field.label} hint={field.help} required={field.required}>
+                <CmsFormField
+                  label={field.label}
+                  hint={field.help}
+                  required={field.required}
+                  error={fieldErrors[field.key]}
+                >
                   <CmsInput
                     value={String(value ?? '')}
                     onChange={(event) => setField(field.key, event.target.value)}
@@ -267,7 +305,7 @@ export default function VaultEditor({
               )}
 
               {field.type === 'date' && (
-                <CmsFormField label={field.label} hint={field.help}>
+                <CmsFormField label={field.label} hint={field.help} error={fieldErrors[field.key]}>
                   <CmsInput
                     type="datetime-local"
                     value={String(value ?? '')}
