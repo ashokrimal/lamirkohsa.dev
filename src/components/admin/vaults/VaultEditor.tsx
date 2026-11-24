@@ -79,8 +79,17 @@ export default function VaultEditor({
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  const setField = (key: string, value: FieldValue) =>
+  const setField = (key: string, value: FieldValue) => {
     setValues((current) => ({ ...current, [key]: value }))
+    // Clear a date error as soon as the field is touched; waiting for the next
+    // save would leave a red message against a value the owner just corrected.
+    setFieldErrors((current) => {
+      if (!(key in current)) return current
+      const next = { ...current }
+      delete next[key]
+      return next
+    })
+  }
 
   const save = async () => {
     if (!title.trim()) {

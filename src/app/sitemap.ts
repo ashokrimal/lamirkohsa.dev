@@ -62,14 +62,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // A case study authored in the studio has no CMS record, but it still renders
   // at /projects/<slug>, so it belongs in the sitemap too.
   const studioProjectDates = studioProjects.map((project) => toLastModified(project.updatedAt))
+  const blogDates =
+    blogsResult.status === 'ok'
+      ? blogsResult.data.map((blog) => toLastModified(blog.updatedAt))
+      : []
+  const sitemapPageDates = pages.map((page) => toLastModified(page.updatedAt))
 
   const routes: MetadataRoute.Sitemap = staticRoutes.map(({ path, priority }) => {
-    // The case study index has no record of its own; its newest case study is
-    // the honest signal for when the page last changed.
+    // Index pages have no record of their own, so each one borrows the newest row
+    // it actually renders: the case studies for /projects, the journal entries
+    // for /blogs, and everything for the homepage, which lists recent activity.
     const lastModified =
       path === '/projects'
-        ? newestOf(...projectDates, ...studioProjectDates) ?? pageDates.get(path)
-        : pageDates.get(path)
+        ? (newestOf(...projectDates, ...studioProjectDates) ?? pageDates.get(path))
+        : path === '/blogs'
+          ? (newestOf(...blogDates) ?? pageDates.get(path))
+          : path === '/'
+            ? (newestOf(...projectDates, ...studioProjectDates, ...blogDates, ...sitemapPageDates) ??
+              pageDates.get(path))
+            : pageDates.get(path)
     return {
       url: `${SITE_URL}${path}`,
       ...(lastModified ? { lastModified } : {}),
