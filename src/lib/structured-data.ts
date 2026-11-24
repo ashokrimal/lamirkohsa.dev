@@ -135,7 +135,33 @@ export function blogPostingJsonLd(input: {
     ...(input.modifiedTime ? { dateModified: input.modifiedTime } : {}),
     author,
     publisher: organizationJsonLd(input.siteName),
-    isPartOf: { '@type': 'Blog', name: `${input.siteName ?? SITE_NAME} journal`, url: absolute('/blogs') },
+    // `@id` ties every article to the Blog node the journal index declares, so
+    // the collection is one entity instead of a URL repeated per page.
+    isPartOf: {
+      '@type': 'Blog',
+      '@id': absolute('/blogs'),
+      name: `${input.siteName ?? SITE_NAME} journal`,
+      url: absolute('/blogs'),
+    },
+    inLanguage: 'en',
+  }
+}
+
+export function blogIndexJsonLd(input: {
+  name: string
+  description?: string
+  path?: string
+}): JsonLd {
+  const url = absolute(input.path ?? '/blogs')
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    '@id': url,
+    name: input.name,
+    url,
+    ...(input.description ? { description: input.description } : {}),
+    publisher: organizationJsonLd(),
     inLanguage: 'en',
   }
 }

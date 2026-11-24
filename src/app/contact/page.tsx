@@ -4,6 +4,8 @@ import { CMS_SCHEMA } from '@/lib/cms-schema'
 import { getPageCopy } from '@/lib/site-content'
 import { getPageMetadata } from '@/lib/studio/data'
 import { pageMetadata } from '@/lib/seo'
+import { breadcrumbJsonLd } from '@/lib/structured-data'
+import { JsonLd } from '@/components/seo/JsonLd'
 
 export const revalidate = 300
 
@@ -20,5 +22,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function ContactPage() {
-  return <ContactContent />
+  return (
+    <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: CMS_SCHEMA.sections.pages.contact.label, path: '/contact' },
+        ])}
+      />
+      <ContactContent />
+    </>
+  )
 }

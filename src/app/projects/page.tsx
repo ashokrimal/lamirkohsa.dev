@@ -4,6 +4,8 @@ import { extractProjectTechTags, getProjectsResult } from '@/lib/projects'
 import { getPageCopy } from '@/lib/site-content'
 import { getPageMetadata } from '@/lib/studio/data'
 import { pageMetadata } from '@/lib/seo'
+import { breadcrumbJsonLd } from '@/lib/structured-data'
+import { JsonLd } from '@/components/seo/JsonLd'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,11 +33,19 @@ export default async function ProjectsPage() {
   const techTags = extractProjectTechTags(projects)
 
   return (
-    <ProjectsContent
-      projects={projects}
-      techTags={techTags}
-      copy={copy}
-      error={projectsResult.status === 'error' ? projectsResult.message : undefined}
-    />
+    <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: copy?.title ?? 'Projects & Case Studies', path: '/projects' },
+        ])}
+      />
+      <ProjectsContent
+        projects={projects}
+        techTags={techTags}
+        copy={copy}
+        error={projectsResult.status === 'error' ? projectsResult.message : undefined}
+      />
+    </>
   )
 }

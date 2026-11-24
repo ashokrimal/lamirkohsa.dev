@@ -13,6 +13,8 @@ import { toSlug } from '@/lib/slug'
 import { getPageCopy } from '@/lib/site-content'
 import { getUiCopy } from '@/lib/ui-copy'
 import { pageMetadata } from '@/lib/seo'
+import { blogIndexJsonLd, breadcrumbJsonLd } from '@/lib/structured-data'
+import { JsonLd } from '@/components/seo/JsonLd'
 import NewsletterForm from '@/components/blogs/NewsletterForm'
 import NewsletterNotice from '@/components/blogs/NewsletterNotice'
 
@@ -114,6 +116,19 @@ export default async function BlogsPage() {
 
   return (
     <PageShell>
+      <JsonLd
+        data={blogIndexJsonLd({
+          name: pageCopy?.title ?? CMS_SCHEMA.sections.pages.blogs.label,
+          description: pageCopy?.description,
+          path: '/blogs',
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: pageCopy?.title ?? CMS_SCHEMA.sections.pages.blogs.label, path: '/blogs' },
+        ])}
+      />
       <PageHero
         eyebrow={pageCopy?.eyebrow ?? ''}
         krEyebrow={pageCopy?.krEyebrow}

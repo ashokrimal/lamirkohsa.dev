@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  blogIndexJsonLd,
   blogPostingJsonLd,
   breadcrumbJsonLd,
   caseStudyJsonLd,
@@ -43,6 +44,25 @@ test('the publisher is an Organization with a logo, as Article rich results requ
     assert.ok((publisher.logo?.width ?? 0) >= 112)
     assert.ok((publisher.logo?.height ?? 0) >= 112)
   }
+})
+
+test('the journal index declares the Blog node its articles belong to', () => {
+  const index = blogIndexJsonLd({
+    name: 'Journal',
+    description: 'Notes on building software.',
+    path: '/blogs',
+  })
+
+  assert.equal(index['@type'], 'Blog')
+  assert.match(String(index['@id']), /\/blogs$/)
+  assert.equal(index.name, 'Journal')
+  assert.equal(index.description, 'Notes on building software.')
+  assert.equal((index.publisher as Publisher)['@type'], 'Organization')
+
+  const article = blogPostingJsonLd({ title: 'Post', path: '/blogs/post' })
+  const belongsTo = article.isPartOf as Record<string, unknown>
+  assert.equal(belongsTo['@id'], index['@id'])
+  assert.equal(belongsTo.url, index['@id'])
 })
 
 test('an article without a cover still carries the required image', () => {
