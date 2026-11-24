@@ -20,11 +20,20 @@ import NewsletterNotice from '@/components/blogs/NewsletterNotice'
 
 export const revalidate = 300
 
+// The journal has no Page Copy record yet, so this keeps its description from
+// falling through to the site-wide tagline, which every other uncopied page
+// already repeats.
+const JOURNAL_DESCRIPTION =
+  'Engineering notes from Ashok Rimal on interface design, offline-first architecture, developer teaching and the craft of building calm software.'
+
 export async function generateMetadata(): Promise<Metadata> {
   const copyResult = await getPageCopy()
   return pageMetadata(
     copyResult.status === 'ok' ? copyResult.data.journal : undefined,
-    { title: CMS_SCHEMA.sections.pages.blogs.label },
+    {
+      title: CMS_SCHEMA.sections.pages.blogs.label,
+      description: JOURNAL_DESCRIPTION,
+    },
     '/blogs',
   )
 }
