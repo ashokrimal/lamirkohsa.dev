@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PLAIN_SECTION_COPY } from '@/lib/plain-copy'
 
 /**
  * The typed section registry for studio-managed pages.
@@ -125,10 +126,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
     schema: SECTION_CONTENT_SCHEMAS.introduction,
     fields: baseFields,
     defaults: {
-      eyebrow: '01 / About Me',
-      title: 'Useful by design.',
-      accent: 'Quietly ambitious.',
-      description: 'A short introduction, pulled from the same story the About page tells.',
+      ...PLAIN_SECTION_COPY.introduction,
       ctaLabel: 'Read the full story',
       ctaHref: '/about',
       animation: { enabled: true, intensity: 0.5 },
@@ -144,10 +142,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
       { key: 'previewCount', label: 'Cards to show', type: 'number' },
     ],
     defaults: {
-      eyebrow: '02 / Selected Work',
-      title: 'Shipped systems,',
-      accent: 'documented.',
-      description: 'Featured case studies with the problem, the approach and the result.',
+      ...PLAIN_SECTION_COPY.projects,
       ctaLabel: 'All projects',
       ctaHref: '/projects',
       previewCount: 3,
@@ -170,9 +165,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
       },
     ],
     defaults: {
-      eyebrow: '03 / Media',
-      title: 'What I am',
-      accent: 'listening to.',
+      ...PLAIN_SECTION_COPY.media,
       ctaLabel: 'Open media',
       ctaHref: '/media',
       layout: 'shelf',
@@ -189,9 +182,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
       { key: 'username', label: 'GitHub username override', type: 'text' },
     ],
     defaults: {
-      eyebrow: '04 / Activity',
-      title: 'Recent',
-      accent: 'commits.',
+      ...PLAIN_SECTION_COPY.github,
       ctaLabel: 'GitHub activity',
       ctaHref: '/about/github',
       animation: { enabled: false, intensity: 0.2 },
@@ -204,11 +195,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
     schema: SECTION_CONTENT_SCHEMAS.education,
     fields: baseFields.filter((field) => field.key !== 'body'),
     defaults: {
-      eyebrow: '01 / Education',
-      title: 'Learning with',
-      accent: 'intention.',
-      description:
-        'Academic foundation in computer applications, distributed software, and algorithmic thinking.',
+      ...PLAIN_SECTION_COPY.education,
       animation: { enabled: false, intensity: 0.2 },
     },
   },
@@ -219,11 +206,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
     schema: SECTION_CONTENT_SCHEMAS.experience,
     fields: baseFields.filter((field) => field.key !== 'body'),
     defaults: {
-      eyebrow: '02 / Work Experience',
-      title: 'Work in',
-      accent: 'practice.',
-      description:
-        'Professional roles and teaching commitments where curiosity became practical impact.',
+      ...PLAIN_SECTION_COPY.experience,
       animation: { enabled: false, intensity: 0.2 },
     },
   },
@@ -234,11 +217,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
     schema: SECTION_CONTENT_SCHEMAS.skills,
     fields: baseFields.filter((field) => field.key !== 'body'),
     defaults: {
-      eyebrow: '03 / Engineering Stack',
-      title: 'Tools for turning',
-      accent: 'ideas real.',
-      description:
-        'A practical, modern stack spanning frontend systems, backend services, and embedded hardware.',
+      ...PLAIN_SECTION_COPY.skills,
       animation: { enabled: false, intensity: 0.2 },
     },
   },
@@ -249,10 +228,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
     schema: SECTION_CONTENT_SCHEMAS.interests,
     fields: baseFields.filter((field) => field.key !== 'body'),
     defaults: {
-      eyebrow: '04 / Interests',
-      title: 'Beyond the',
-      accent: 'editor.',
-      description: 'Creative pursuits and study areas outside the day job.',
+      ...PLAIN_SECTION_COPY.interests,
       animation: { enabled: false, intensity: 0.2 },
     },
   },
@@ -263,9 +239,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
     schema: SECTION_CONTENT_SCHEMAS.socials,
     fields: baseFields.filter((field) => field.key !== 'body'),
     defaults: {
-      eyebrow: '05 / Social Channels',
-      title: 'Elsewhere',
-      accent: 'online.',
+      ...PLAIN_SECTION_COPY.socials,
       animation: { enabled: false, intensity: 0.2 },
     },
   },
@@ -276,9 +250,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
     schema: SECTION_CONTENT_SCHEMAS.technology,
     fields: baseFields.filter((field) => field.key !== 'body'),
     defaults: {
-      eyebrow: '07 / Telemetry',
-      title: 'Technology',
-      accent: 'distribution.',
+      ...PLAIN_SECTION_COPY.technology,
       ctaLabel: 'All projects',
       ctaHref: '/projects',
       animation: { enabled: true, intensity: 0.4 },
@@ -301,9 +273,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
       },
     ],
     defaults: {
-      eyebrow: 'Social',
-      title: 'Latest from Instagram',
-      description: 'New frames and outtakes, posted between gallery updates.',
+      ...PLAIN_SECTION_COPY.instagram,
       ctaLabel: 'Follow on Instagram',
       animation: { enabled: false, intensity: 0.2 },
     },
@@ -315,10 +285,7 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
     schema: SECTION_CONTENT_SCHEMAS.contact,
     fields: baseFields.filter((field) => field.key !== 'body'),
     defaults: {
-      eyebrow: '01 / Direct Dispatch',
-      title: "Let's build something",
-      accent: 'thoughtful.',
-      description: 'Open to software engineering roles, client contracts, and collaborative builds.',
+      ...PLAIN_SECTION_COPY.contact,
       animation: { enabled: false, intensity: 0.2 },
     },
   },
