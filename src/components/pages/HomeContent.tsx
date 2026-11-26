@@ -9,6 +9,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { getUiCopy } from '@/lib/ui-copy'
+import { getCurrentlyEntries } from '@/lib/currently'
+import { CurrentlyStrip } from '@/components/home/CurrentlyStrip'
 
 /**
  * The homepage.
@@ -19,12 +21,13 @@ import { getUiCopy } from '@/lib/ui-copy'
  * all come from the database — nothing below the hero is hardcoded.
  */
 export default async function HomeContent() {
-  const [pageResult, heroResult, profileResult, siteResult, settings] = await Promise.all([
+  const [pageResult, heroResult, profileResult, siteResult, settings, currently] = await Promise.all([
     getPageWithSections('/'),
     getHeroSectionConfigResult(),
     getProfileContentResult(),
     getSiteConfig(),
     getSiteSettings(),
+    getCurrentlyEntries(),
   ])
 
   const heroData = heroResult.status === 'ok' ? heroResult.data : {}
@@ -95,6 +98,8 @@ export default async function HomeContent() {
           }
         />
       )}
+
+      <CurrentlyStrip entries={currently} label={uiStrings.home.currently.en} />
 
       <SectionRenderer sections={pageResult.sections} />
     </PageShell>

@@ -6,6 +6,7 @@ import {
   CMS_BACKUP_MAX_BYTES,
   CMS_BACKUP_PREFIX,
   cmsBackupFileName,
+  diffCmsBackups,
   formatCmsBackupBytes,
   isCmsBackupPathname,
   parseCmsBackup,
@@ -13,6 +14,8 @@ import {
   type CmsBackupRestoreMode,
 } from '@/lib/cms-backup'
 import { restoreCmsBackup } from '@/lib/cms-backup-restore'
+import { readCmsBackup, type BackupQueryClient } from '@/lib/cms-backup-db'
+import { pool } from '@/lib/db'
 
 /**
  * The scheduled snapshots, as the studio sees them.
@@ -120,6 +123,37 @@ export async function GET(request: Request) {
   const params = new URL(request.url).searchParams
   const pathname = params.get('pathname')
   const verify = params.get('verify')
+  const diff = params.get('diff')
+
+  // What a restore of this snapshot would change relative to the live CMS.
+  // Read-only: nothing is written, and the response is a summary, not content.
+  if (diff) {
+    if (!isCmsBackupPathname(diff)) {
+      return jsonError('That is not a scheduled CMS snapshot.', 400)
+    }
+    const snapshot = await readSnapshot(diff, token)
+    if (!snapshot.ok) return jsonError(snapshot.message, snapshot.status)
+
+    let raw: unknown
+    try {
+      raw = JSON.parse(snapshot.text)
+    } catch {
+      return jsonError('That snapshot is not valid JSON.', 400)
+    }
+    const parsed = parseCmsBackup(raw)
+    if (!parsed.ok) return jsonError(parsed.error, 400)
+
+    const client = await pool.connect()
+    try {
+      const current = await readCmsBackup(client as unknown as BackupQueryClient, 'snapshot-diff')
+      return NextResponse.json(
+        { file: diff, diff: diffCmsBackups(current, parsed.backup) },
+        { headers: { 'cache-control': 'no-store' } },
+      )
+    } finally {
+      client.release()
+    }
+  }
 
   if (verify) {
     let target = verify

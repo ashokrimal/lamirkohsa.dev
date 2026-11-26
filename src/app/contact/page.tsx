@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import ContactContent from '@/components/pages/ContactContent'
 import { CMS_SCHEMA } from '@/lib/cms-schema'
-import { getPageCopy } from '@/lib/site-content'
+import { getPageCopy, getSiteConfig } from '@/lib/site-content'
 import { getPageMetadata } from '@/lib/studio/data'
 import { pageMetadata } from '@/lib/seo'
-import { breadcrumbJsonLd } from '@/lib/structured-data'
+import { breadcrumbJsonLd, contactPageJsonLd } from '@/lib/structured-data'
 import { JsonLd } from '@/components/seo/JsonLd'
 
 export const revalidate = 300
@@ -21,7 +21,11 @@ export async function generateMetadata(): Promise<Metadata> {
   )
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const site = await getSiteConfig()
+  const email = site.status === 'ok' ? site.data.contact.email : undefined
+  const contact = contactPageJsonLd({ path: '/contact', email })
+
   return (
     <>
       <JsonLd
@@ -30,6 +34,7 @@ export default function ContactPage() {
           { name: CMS_SCHEMA.sections.pages.contact.label, path: '/contact' },
         ])}
       />
+      {contact ? <JsonLd data={contact} /> : null}
       <ContactContent />
     </>
   )

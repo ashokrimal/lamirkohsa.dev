@@ -178,6 +178,10 @@ function VaultCard({
   const tags = [...list(record.payload.tags), ...list(record.payload.techStack), ...list(record.payload.skills)].slice(0, 4)
   const published = record.status === 'published'
   const path = publicPathForCollection(record.collection)
+  // Journal entries preview through the owner-only route so a draft can be read
+  // in its final layout before it is published.
+  const previewPath =
+    vault.id === 'blogs' && record.slug ? `/admin/preview/blogs/${record.slug}` : null
   const category = text(record.payload.category) || text(record.payload.playlist)
   const platform = text(record.payload.platform)
   const platformUrl = text(record.payload.platformUrl)
@@ -305,14 +309,26 @@ function VaultCard({
 
         <div className="mt-auto flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
           <a
-            href={path}
+            href={previewPath ?? path}
             target="_blank"
             rel="noreferrer"
             className="inline-flex min-w-0 items-center gap-1 text-[10px] font-medium text-slate-500 hover:text-teal-700"
-            title={published ? `Live on ${path}` : `Draft targeted at ${path}`}
+            title={
+              previewPath
+                ? 'Owner-only preview of this entry — drafts included'
+                : published
+                  ? `Live on ${path}`
+                  : `Draft targeted at ${path}`
+            }
           >
             <Globe2 className="h-3 w-3 shrink-0" />
-            <span className="truncate">{published ? `Live · ${path}` : `Draft · ${path}`}</span>
+            <span className="truncate">
+              {previewPath
+                ? `Preview · ${path}`
+                : published
+                  ? `Live · ${path}`
+                  : `Draft · ${path}`}
+            </span>
           </a>
           <div className="flex shrink-0 items-center gap-0.5">
             <button type="button" onClick={onEdit} aria-label={`Edit ${record.title}`} title="Edit" className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800">

@@ -29,7 +29,7 @@ import type { CmsResult } from '@/lib/cms-schema'
 import { articleMetadata } from '@/lib/seo'
 import { breadcrumbJsonLd, caseStudyJsonLd, cmsDate } from '@/lib/structured-data'
 import { snippet } from '@/lib/snippets'
-import { resolveSlugRedirect } from '@/lib/slug-history'
+import { bumpSlugRedirectHit, resolveSlugRedirect } from '@/lib/slug-history'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { isRepositoryUrl } from '@/lib/urls'
 import { getProjectStatusVisual } from '@/lib/project-status'
@@ -136,7 +136,10 @@ export default async function ProjectCaseStudyPage(
     if (!studio) {
       // A slug corrected in the studio keeps its old URL working.
       const renamed = await resolveSlugRedirect(`/projects/${params.slug}`)
-      if (renamed) permanentRedirect(renamed)
+      if (renamed) {
+        await bumpSlugRedirectHit(`/projects/${params.slug}`)
+        permanentRedirect(renamed)
+      }
       notFound()
     }
     return <StudioCaseStudyView project={studio.project} nextProject={studio.nextProject} />

@@ -10,6 +10,7 @@ import {
   toLastModified,
 } from '@/lib/sitemap'
 import { toSlug } from '@/lib/slug'
+import { blogsWithTag, collectBlogTags } from '@/lib/blog-article'
 import {
   getPublishedPagesForSitemap,
   getPublishedProjects,
@@ -138,6 +139,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ...(lastModified ? { lastModified } : {}),
         changeFrequency: 'monthly',
         priority: 0.7,
+      })
+    }
+  }
+
+  if (blogsResult.status === 'ok') {
+    // A tag page exists only while a published entry carries the tag, and its
+    // date is the newest entry that does.
+    for (const tag of collectBlogTags(blogsResult.data)) {
+      const lastModified = newestOf(
+        ...blogsWithTag(blogsResult.data, tag.slug).map((blog) => blog.updatedAt),
+      )
+      routes.push({
+        url: `${SITE_URL}/blogs/tag/${tag.slug}`,
+        ...(lastModified ? { lastModified } : {}),
+        changeFrequency: 'monthly',
+        priority: 0.5,
       })
     }
   }

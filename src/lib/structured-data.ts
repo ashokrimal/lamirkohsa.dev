@@ -164,6 +164,68 @@ export function blogIndexJsonLd(input: {
   }
 }
 
+/**
+ * The case-study index as one ordered collection. Google uses it to understand
+ * that /projects lists the same works each detail page describes, rather than
+ * treating each card as an unrelated link.
+ */
+export function itemListJsonLd(input: {
+  name: string
+  path: string
+  items: Array<{ name: string; path: string; description?: string }>
+}): JsonLd | null {
+  const items = input.items.filter((item) => item.name?.trim() && item.path?.trim())
+  if (items.length === 0) return null
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: input.name,
+    url: absolute(input.path),
+    numberOfItems: items.length,
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      url: absolute(item.path),
+      ...(item.description ? { description: item.description } : {}),
+    })),
+  }
+}
+
+/**
+ * The contact page as a real entity with a reachable contact point. Only an
+ * address the site already publishes is emitted; when there is none the node is
+ * omitted rather than filled with placeholder data.
+ */
+export function contactPageJsonLd(input: {
+  path: string
+  email?: string
+  name?: string
+}): JsonLd | null {
+  const email = input.email?.trim()
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null
+
+  const url = absolute(input.path)
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    url,
+    name: input.name ?? `Contact ${SITE_NAME}`,
+    mainEntity: {
+      '@type': 'Person',
+      name: SITE_NAME,
+      url: SITE_URL,
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'professional',
+        email,
+        url,
+      },
+    },
+  }
+}
+
 export function caseStudyJsonLd(input: {
   title: string
   description?: string

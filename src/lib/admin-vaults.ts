@@ -79,6 +79,8 @@ export interface VaultRecord {
   id: number
   collection: string
   title: string
+  /** Present on studio rows; the public URL segment for this record. */
+  slug?: string
   status: string
   payload: Record<string, unknown>
   createdAt?: Date | string

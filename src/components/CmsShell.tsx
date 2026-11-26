@@ -34,6 +34,8 @@ import {
   Archive,
   Mails,
   HardDrive,
+  Route as RouteIcon,
+  Activity,
 } from 'lucide-react'
 import { CmsCommandPalette } from '@/components/admin/ui/CmsCommandPalette'
 import { CmsModal } from '@/components/admin/ui/CmsModal'
@@ -92,6 +94,8 @@ const navGroups: NavGroup[] = [
     items: [
       { id: 'accounts', label: 'Accounts', icon: UserCog, href: '/admin/settings' },
       { id: 'backup', label: 'Backup & restore', icon: Archive, href: '/admin/backup' },
+      { id: 'redirects', label: 'Slug redirects', icon: RouteIcon, href: '/admin/redirects' },
+      { id: 'status', label: 'Site status', icon: Activity, href: '/admin/status' },
       { id: 'newsletter', label: 'Newsletter', icon: Mails, href: '/admin/newsletter' },
       { id: 'security', label: 'Security', icon: ShieldCheck, href: '/admin/security' },
       { id: 'storage', label: 'Upload storage', icon: HardDrive, href: '/admin/storage' },

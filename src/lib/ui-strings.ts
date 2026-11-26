@@ -125,6 +125,12 @@ const GENERATED_COPY: Record<string, GeneratedCopySpec> = {
       },
     ],
   },
+  'journal.tagDescription': {
+    args: ['count', 'tag'],
+    variants: [
+      { key: 'journal.tagDescription', template: '{count} {count:note|notes} tagged {tag}.' },
+    ],
+  },
   'projects.showingCount': {
     args: ['visible', 'total'],
     variants: [
@@ -291,6 +297,10 @@ export const uiStrings = {
     minRead: generated('journal.minRead'),
     words: generated('journal.words'),
     readingTimeTitle: generated('journal.readingTimeTitle'),
+    tagsLabel: text('Tags', '태그'),
+    tagEyebrow: text('Journal / Tag', '저널 / 태그'),
+    tagDescription: generated('journal.tagDescription'),
+    backToJournal: text('Back to the journal'),
     newsletterEyebrow: text('Newsletter', '뉴스레터'),
     newsletterTitle: text('Get new posts by email'),
     newsletterDescription: text(
@@ -352,6 +362,7 @@ export const uiStrings = {
   home: {
     viewAllPhotographs: text('View all photographs'),
     viewAllMedia: text('View all media'),
+    currently: text('Currently', '현재'),
   },
   cmsState: {
     defaultMessage: text('This content is temporarily unavailable.'),

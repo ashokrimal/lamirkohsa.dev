@@ -10,6 +10,7 @@ import { getSiteSettings } from '@/lib/studio/data';
 import { getUiCopyOverrides } from '@/lib/ui-copy';
 import { UiCopyProvider } from '@/components/ui/UiCopyProvider'
 import { ClientErrorReporter } from '@/components/ClientErrorReporter'
+import { OwnerEditBar } from '@/components/owner/OwnerEditBar'
 import { WebVitalsReporter } from '@/components/WebVitalsReporter';
 import {
   DEFAULT_OG_IMAGE,
@@ -166,6 +167,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           >
             {children}
           </LayoutShell>
+          <OwnerEditBar />
           </UiCopyProvider>
         </ThemeProvider>
       </body>

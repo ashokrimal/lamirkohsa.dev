@@ -40,6 +40,28 @@ function absoluteUrl(path: string) {
   return new URL(path, SITE_URL).toString()
 }
 
+/**
+ * A share card drawn from the record itself. Used only when a CMS record has no
+ * `ogImage` of its own, so an unset field never means an identical card for every
+ * page. The `/og` route renders this URL.
+ */
+export function generatedOgImage(input: {
+  title: string
+  eyebrow?: string
+  tags?: string[]
+}): string {
+  const title = input.title.replace(/\s+/g, ' ').trim().slice(0, 140)
+  if (!title) return DEFAULT_OG_IMAGE
+
+  const params = new URLSearchParams({ title })
+  const eyebrow = input.eyebrow?.replace(/\s+/g, ' ').trim()
+  if (eyebrow) params.set('eyebrow', eyebrow.slice(0, 60))
+  const tags = (input.tags ?? []).map((tag) => tag.trim()).filter(Boolean).slice(0, 4)
+  if (tags.length) params.set('tags', tags.join(','))
+
+  return `/og?${params.toString()}`
+}
+
 function socialImage(image: string | undefined, alt: string) {
   if (image) return { url: image, alt }
   return {
@@ -63,7 +85,7 @@ export function pageMetadata(
 ): Metadata {
   const title = copy?.seoTitle ?? copy?.title ?? fallback?.title
   const description = copy?.seoDescription ?? copy?.description ?? fallback?.description
-  const image = copy?.ogImage
+  const image = copy?.ogImage ?? (title ? generatedOgImage({ title }) : undefined)
   const socialTitle = title ?? SITE_NAME
   const images = [socialImage(image, socialTitle)]
 
@@ -102,10 +124,14 @@ export function articleMetadata(input: {
   description?: string
   path: string
   image?: string
+  tags?: string[]
   publishedTime?: string
   modifiedTime?: string
 }): Metadata {
-  const image = socialImage(input.image, input.title)
+  const image = socialImage(
+    input.image ?? generatedOgImage({ title: input.title, tags: input.tags }),
+    input.title,
+  )
 
   return {
     title: input.title,

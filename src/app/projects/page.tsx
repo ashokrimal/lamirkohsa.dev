@@ -4,7 +4,7 @@ import { extractProjectTechTags, getProjectsResult } from '@/lib/projects'
 import { getPageCopy } from '@/lib/site-content'
 import { getPageMetadata } from '@/lib/studio/data'
 import { pageMetadata } from '@/lib/seo'
-import { breadcrumbJsonLd } from '@/lib/structured-data'
+import { breadcrumbJsonLd, itemListJsonLd } from '@/lib/structured-data'
 import { JsonLd } from '@/components/seo/JsonLd'
 
 export const dynamic = 'force-dynamic'
@@ -30,6 +30,15 @@ export default async function ProjectsPage() {
   const projects = projectsResult.status === 'ok' ? projectsResult.data : []
   const copy = copyResult.status === 'ok' ? copyResult.data.projects : undefined
   const techTags = extractProjectTechTags(projects)
+  const projectList = itemListJsonLd({
+    name: copy?.title ?? 'Projects & Case Studies',
+    path: '/projects',
+    items: projects.map((project) => ({
+      name: project.title,
+      path: `/projects/${project.slug}`,
+      description: project.summary,
+    })),
+  })
 
   return (
     <>
@@ -39,6 +48,7 @@ export default async function ProjectsPage() {
           { name: copy?.title ?? 'Projects & Case Studies', path: '/projects' },
         ])}
       />
+      {projectList ? <JsonLd data={projectList} /> : null}
       <ProjectsContent
         projects={projects}
         techTags={techTags}

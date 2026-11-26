@@ -6,6 +6,7 @@ import {
   CalendarClock,
   Download,
   FileJson,
+  GitCompare,
   Play,
   RefreshCw,
   ShieldCheck,
@@ -46,6 +47,24 @@ interface Snapshot {
   pathname: string
   size: number
   uploadedAt: string
+}
+
+interface SnapshotDiffEntry {
+  collection: string
+  title: string
+  identity: string
+  change: 'added' | 'removed' | 'changed'
+  fields: string[]
+}
+
+interface SnapshotDiff {
+  added: number
+  removed: number
+  changed: number
+  unchanged: number
+  entries: SnapshotDiffEntry[]
+  pagesAdded: string[]
+  pagesRemoved: string[]
 }
 
 interface BackupRunCounts {
@@ -149,6 +168,8 @@ export default function BackupWorkspace() {
   const [snapshotStatus, setSnapshotStatus] = useState<
     { tone: 'success' | 'error'; text: string } | null
   >(null)
+  const [diff, setDiff] = useState<{ file: string; data: SnapshotDiff } | null>(null)
+  const [diffError, setDiffError] = useState<string | null>(null)
 
   const loadSnapshots = async () => {
     setLoadingSnapshots(true)
@@ -311,6 +332,32 @@ export default function BackupWorkspace() {
         tone: 'error',
         text: error instanceof Error ? error.message : 'Could not download that snapshot.',
       })
+    } finally {
+      setSnapshotBusy(null)
+    }
+  }
+
+  /** Compares a snapshot with the live CMS without writing anything. */
+  const compareSnapshot = async (snapshot: Snapshot) => {
+    setSnapshotBusy(snapshot.pathname)
+    setDiff(null)
+    setDiffError(null)
+    try {
+      const response = await fetch(
+        `/api/admin/cms-backup/snapshots?diff=${encodeURIComponent(snapshot.pathname)}`,
+        { cache: 'no-store' },
+      )
+      const payload = (await response.json().catch(() => null)) as
+        | { file?: string; diff?: SnapshotDiff; message?: string }
+        | null
+      if (!response.ok || !payload?.diff) {
+        throw new Error(payload?.message || `Could not compare that snapshot (${response.status}).`)
+      }
+      setDiff({ file: snapshotName(snapshot.pathname), data: payload.diff })
+    } catch (error) {
+      setDiffError(
+        error instanceof Error ? error.message : 'Could not compare that snapshot.',
+      )
     } finally {
       setSnapshotBusy(null)
     }
@@ -574,6 +621,15 @@ export default function BackupWorkspace() {
                             </button>
                             <button
                               type="button"
+                              onClick={() => void compareSnapshot(snapshot)}
+                              disabled={busy}
+                              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+                            >
+                              <GitCompare className="h-3 w-3" aria-hidden="true" />
+                              Compare
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => {
                                 setSnapshotStatus(null)
                                 setSnapshotConfirmation('')
@@ -634,6 +690,81 @@ export default function BackupWorkspace() {
                 })}
               </tbody>
             </table>
+          </div>
+        ) : null}
+
+        {diffError ? (
+          <p role="status" className="mt-3 rounded-xl border border-rose-100 bg-rose-50/60 p-3 text-[11px] text-rose-700">
+            {diffError}
+          </p>
+        ) : null}
+
+        {diff ? (
+          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-xs font-semibold text-slate-900">
+                Restoring {diff.file} would
+              </h3>
+              <button
+                type="button"
+                onClick={() => setDiff(null)}
+                className="text-[11px] font-medium text-slate-500 hover:text-slate-800"
+              >
+                Close
+              </button>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-semibold">
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-800">
+                +{diff.data.added} added
+              </span>
+              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-rose-800">
+                −{diff.data.removed} removed
+              </span>
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-900">
+                {diff.data.changed} changed
+              </span>
+              <span className="rounded-full bg-slate-200 px-2 py-0.5 text-slate-700">
+                {diff.data.unchanged} unchanged
+              </span>
+            </div>
+            {diff.data.pagesAdded.length > 0 && (
+              <p className="mt-2 text-[11px] text-slate-600">
+                Pages restored: {diff.data.pagesAdded.join(', ')}
+              </p>
+            )}
+            {diff.data.entries.length > 0 ? (
+              <ul className="mt-2 max-h-56 space-y-1.5 overflow-y-auto text-[11px]">
+                {diff.data.entries.slice(0, 60).map((entry) => (
+                  <li key={`${entry.identity}-${entry.change}`} className="flex flex-wrap gap-1.5">
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase ${
+                        entry.change === 'added'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : entry.change === 'removed'
+                            ? 'bg-rose-100 text-rose-800'
+                            : 'bg-amber-100 text-amber-900'
+                      }`}
+                    >
+                      {entry.change}
+                    </span>
+                    <span className="font-medium text-slate-700">{entry.title}</span>
+                    <span className="text-slate-400">({entry.collection})</span>
+                    {entry.fields.length > 0 && (
+                      <span className="text-slate-500">— {entry.fields.join(', ')}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-[11px] text-emerald-700">
+                No record differences. Restoring this snapshot would not change the CMS content.
+              </p>
+            )}
+            {diff.data.entries.length > 60 && (
+              <p className="mt-1 text-[10px] text-slate-500">
+                Showing the first 60 of {diff.data.entries.length} differences.
+              </p>
+            )}
           </div>
         ) : null}
 

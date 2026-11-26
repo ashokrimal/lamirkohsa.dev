@@ -9,6 +9,12 @@ import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
 import { nextPageNav } from '@/lib/page-nav'
 import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
+import {
+  blogTagPath,
+  blogTagSlug,
+  blogTags,
+  collectBlogTags,
+} from '@/lib/blog-article'
 import { toSlug } from '@/lib/slug'
 import { getPageCopy } from '@/lib/site-content'
 import { getUiCopy } from '@/lib/ui-copy'
@@ -122,6 +128,7 @@ export default async function BlogsPage() {
   ])
   const blogs = (blogsResult.status === 'ok' ? blogsResult.data : []) as Blog[]
   const pageCopy = copyResult.status === 'ok' ? copyResult.data.journal : undefined
+  const tags = collectBlogTags(blogs)
 
   return (
     <PageShell>
@@ -151,6 +158,23 @@ export default async function BlogsPage() {
         }
       />
 
+      {tags.length > 0 && (
+        <div className="mt-8 flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted">
+            {uiStrings.journal.tagsLabel.en}
+          </span>
+          {tags.map((tag) => (
+            <Link
+              key={tag.slug}
+              href={`/blogs/tag/${tag.slug}`}
+              className="rounded-full border border-line-subtle bg-surface/70 px-3 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:border-line-medium hover:text-accent"
+            >
+              #{tag.tag}
+            </Link>
+          ))}
+        </div>
+      )}
+
       {blogsResult.status === 'error' ? (
         <div className="mt-10 md:mt-14">
           <CmsErrorState message={blogsResult.message} />
@@ -167,6 +191,9 @@ export default async function BlogsPage() {
             const category = getBlogCategory(blog)
             const date = getBlogDate(blog)
             const href = `/blogs/${blog.slug || toSlug(blog.title)}`
+            const linkedTags = blogTags(blog)
+              .filter((tag) => blogTagSlug(tag))
+              .slice(0, 3)
 
             return (
               <article
@@ -200,6 +227,20 @@ export default async function BlogsPage() {
                     <p className="mt-3 text-xs md:text-sm text-muted leading-relaxed line-clamp-4">
                       {body}
                     </p>
+                  )}
+
+                  {linkedTags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {linkedTags.map((tag) => (
+                        <Link
+                          key={tag}
+                          href={blogTagPath(tag)}
+                          className="rounded-full border border-line-subtle bg-overlay px-2.5 py-1 text-[10px] font-medium text-muted transition-colors hover:border-line-medium hover:text-accent"
+                        >
+                          #{tag}
+                        </Link>
+                      ))}
+                    </div>
                   )}
                 </div>
 

@@ -17,6 +17,7 @@ import type { VaultDefinition, VaultField, VaultRecord } from '@/lib/admin-vault
 import { parseDateInput } from '@/lib/cms-date-input'
 import AudioUploadField from '@/components/admin/vaults/AudioUploadField'
 import MarkdownField from '@/components/admin/vaults/MarkdownField'
+import { SuggestAltTextButton } from '@/components/admin/vaults/SuggestAltTextButton'
 
 type FieldValue = string | boolean | number | string[]
 
@@ -69,6 +70,11 @@ export default function VaultEditor({
   onSaved: (record: VaultRecord) => void
 }) {
   const payload = record?.payload ?? {}
+  // An image field can borrow the record's alt-text field when it has one, so
+  // the suggestion lands in the editable value rather than being saved blind.
+  const altField = fields.find(
+    (candidate) => candidate.key === 'altText' || candidate.key === 'imageAlt',
+  )
   const [title, setTitle] = useState(record?.title ?? '')
   const [status, setStatus] = useState(record?.status === 'published' ? 'published' : 'draft')
   const [values, setValues] = useState<Record<string, FieldValue>>(() =>
@@ -340,12 +346,21 @@ export default function VaultEditor({
               )}
 
               {field.type === 'image' && (
-                <ImageUploadField
-                  label={field.label}
-                  value={String(value ?? '')}
-                  onChange={(next) => setField(field.key, next)}
-                  hint={field.help}
-                />
+                <div>
+                  <ImageUploadField
+                    label={field.label}
+                    value={String(value ?? '')}
+                    onChange={(next) => setField(field.key, next)}
+                    hint={field.help}
+                  />
+                  {altField && String(value ?? '').trim() && (
+                    <SuggestAltTextButton
+                      imageUrl={String(value ?? '')}
+                      title={title}
+                      onApply={(text) => setField(altField.key, text)}
+                    />
+                  )}
+                </div>
               )}
 
               {field.type === 'document' && (

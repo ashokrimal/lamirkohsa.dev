@@ -207,6 +207,25 @@ export async function newsletterCounts(): Promise<{ subscribed: number; unsubscr
   }
 }
 
+/** How many addresses joined since `since`, counted in Postgres.
+ *
+ * The digest reports this weekly; counting rows the studio can display would
+ * undercount a busy week once the list outgrows one page.
+ */
+export async function countSubscribersSince(since: Date): Promise<number> {
+  try {
+    await ensureNewsletterTable()
+    const result = await pool.query<{ count: string }>(
+      `SELECT count(*)::text AS count FROM "newsletterSubscriber" WHERE "createdAt" >= $1`,
+      [since],
+    )
+    return Number(result.rows[0]?.count ?? 0) || 0
+  } catch (error) {
+    console.warn('[newsletter] Could not count new subscribers:', (error as Error).message)
+    throw error
+  }
+}
+
 /**
  * Claims the right to announce one post. Returns true only for the first caller,
  * so a duplicate publish, a retried request or two instances racing still send

@@ -17,6 +17,132 @@ export const CMS_BACKUP_FORMAT = 'lamirkohsa-cms-backup'
 export const CMS_BACKUP_VERSION = 1
 export const CMS_BACKUP_MAX_RECORDS = 20_000
 
+export interface CmsBackupDiffEntry {
+  collection: string
+  title: string
+  identity: string
+  change: 'added' | 'removed' | 'changed'
+  /** Names of the fields that differ; empty for an add or a remove. */
+  fields: string[]
+}
+
+export interface CmsBackupDiff {
+  /** Records a restore of the snapshot would put back. */
+  added: number
+  /** Records a restore would drop because the snapshot does not have them. */
+  removed: number
+  changed: number
+  unchanged: number
+  entries: CmsBackupDiffEntry[]
+  /** Studio pages present in one side only. */
+  pagesAdded: string[]
+  pagesRemoved: string[]
+}
+
+function shallowValue(value: unknown): string {
+  try {
+    return JSON.stringify(value ?? null)
+  } catch {
+    return String(value)
+  }
+}
+
+/** Field names whose content differs between the snapshot and the live record. */
+function changedFields(snapshot: CmsBackupRecord, current: CmsBackupRecord): string[] {
+  const fields: string[] = []
+  if (shallowValue(snapshot.title) !== shallowValue(current.title)) fields.push('title')
+  if (shallowValue(snapshot.slug) !== shallowValue(current.slug)) fields.push('slug')
+  if (shallowValue(snapshot.status) !== shallowValue(current.status)) fields.push('status')
+
+  const snapshotPayload = snapshot.payload ?? {}
+  const currentPayload = current.payload ?? {}
+  const keys = new Set([...Object.keys(snapshotPayload), ...Object.keys(currentPayload)])
+  for (const key of keys) {
+    if (shallowValue(snapshotPayload[key]) !== shallowValue(currentPayload[key])) {
+      fields.push(`payload.${key}`)
+    }
+  }
+  return fields
+}
+
+/**
+ * What restoring a snapshot would change, in the snapshot's direction: an
+ * `added` record exists in the snapshot but not now, so a restore puts it back.
+ * Read-only and independent of storage, so the comparison is testable.
+ */
+export function diffCmsBackups(current: CmsBackupFile, snapshot: CmsBackupFile): CmsBackupDiff {
+  const currentByIdentity = new Map<string, CmsBackupRecord>()
+  for (const record of current.cmsContent) {
+    currentByIdentity.set(
+      cmsRecordIdentity(record.collection, record.slug, record.payload),
+      record,
+    )
+  }
+
+  const entries: CmsBackupDiffEntry[] = []
+  let added = 0
+  let changed = 0
+  let unchanged = 0
+  const seen = new Set<string>()
+
+  for (const record of snapshot.cmsContent) {
+    const identity = cmsRecordIdentity(record.collection, record.slug, record.payload)
+    seen.add(identity)
+    const live = currentByIdentity.get(identity)
+    if (!live) {
+      added += 1
+      entries.push({
+        collection: record.collection,
+        title: record.title,
+        identity,
+        change: 'added',
+        fields: [],
+      })
+      continue
+    }
+
+    const fields = changedFields(record, live)
+    if (fields.length) {
+      changed += 1
+      entries.push({
+        collection: record.collection,
+        title: record.title,
+        identity,
+        change: 'changed',
+        fields,
+      })
+    } else {
+      unchanged += 1
+    }
+  }
+
+  let removed = 0
+  for (const [identity, record] of currentByIdentity) {
+    if (seen.has(identity)) continue
+    removed += 1
+    entries.push({
+      collection: record.collection,
+      title: record.title,
+      identity,
+      change: 'removed',
+      fields: [],
+    })
+  }
+
+  const snapshotPages = new Set(snapshot.studio.pages.map((page) => page.slug))
+  const currentPages = new Set(current.studio.pages.map((page) => page.slug))
+
+  return {
+    added,
+    removed,
+    changed,
+    unchanged,
+    entries,
+    pagesAdded: [...snapshotPages].filter((slug) => !currentPages.has(slug)),
+    pagesRemoved: [...currentPages].filter((slug) => !snapshotPages.has(slug)),
+  }
+}
+
 /**
  * Vercel refuses a serverless function whose request or response body exceeds
  * 4.5 MB, and it does so before the handler's own checks run. A bigger backup
