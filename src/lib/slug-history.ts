@@ -131,45 +131,6 @@ export async function resolveSlugRedirect(path: string, lookup = lookupRedirect)
   return followSlugRedirect(path, lookup)
 }
 
-/**
- * The whole rename table, cached for a few seconds.
- *
- * The proxy resolves a renamed path before the page renders, because a redirect
- * thrown during the streamed render is downgraded to a 200 with a meta refresh
- * instead of a real 3xx. Querying per request is wasteful for a table this
- * small, so it is read once and reused briefly; a rename made in the studio is
- * live within `REDIRECT_CACHE_MS`.
- */
-const REDIRECT_CACHE_MS = 15_000
-let redirectCache: { at: number; rows: Map<string, string> } | null = null
-
-async function cachedSlugRedirects(): Promise<Map<string, string>> {
-  if (redirectCache && Date.now() - redirectCache.at < REDIRECT_CACHE_MS) {
-    return redirectCache.rows
-  }
-  try {
-    await ensureSlugRedirectTable()
-    const result = await pool.query<{ from: string; to: string }>(
-      `SELECT "from", "to" FROM "slugRedirect" LIMIT 1000`,
-    )
-    redirectCache = {
-      at: Date.now(),
-      rows: new Map(result.rows.map((row) => [row.from, row.to])),
-    }
-    return redirectCache.rows
-  } catch (error) {
-    // Not cached: the next request retries, and the page-level lookup still runs.
-    console.warn('[slug-history] Could not cache the rename table:', (error as Error).message)
-    return new Map()
-  }
-}
-
-/** The live path for a request path, resolved from the cached table. */
-export async function resolveRenamedPath(path: string): Promise<string | null> {
-  const rows = await cachedSlugRedirects()
-  return followSlugRedirect(path, async (from) => rows.get(from) ?? null)
-}
-
 export interface SlugRedirectRow {
   from: string
   to: string

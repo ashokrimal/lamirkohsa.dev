@@ -37,6 +37,17 @@ export function hasDatabaseConfig() {
   return Boolean(resolveConnectionString())
 }
 
+/**
+ * Workers closes a request's sockets when the request ends, so any client kept
+ * idle in the pool is a dead connection: the next query on it never resolves
+ * and the runtime cancels the request as hung. Idle timers do not fire while
+ * an isolate is suspended either, so the pool cannot evict them itself. There
+ * every client is ended after a single use (`maxUses: 1`); on Node the pool is
+ * kept warm as usual.
+ */
+const isWorkersRuntime =
+  typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers'
+
 const globalForDb = globalThis as unknown as {
   pool?: Pool
   poolErrorListenerAttached?: boolean
@@ -49,13 +60,18 @@ export const pool =
     ssl: needsSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
     connectionTimeoutMillis: 15000,
     idleTimeoutMillis: 30000,
-    keepAlive: true,
+    keepAlive: !isWorkersRuntime,
+    maxUses: isWorkersRuntime ? 1 : Infinity,
     allowExitOnIdle: true,
     max: process.env.NODE_ENV === 'production' ? 6 : 10,
   })
 
 if (!globalForDb.poolErrorListenerAttached) {
   pool.on('error', (err) => {
+    // On Workers the runtime closes every socket when the request ends, so a
+    // client that is being discarded reports a closed socket as it goes. Real
+    // query failures surface from the query itself.
+    if (isWorkersRuntime) return
     console.warn('[DB] Idle pool client error:', err instanceof Error ? err.message : String(err))
   })
   globalForDb.poolErrorListenerAttached = true

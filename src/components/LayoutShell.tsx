@@ -1,11 +1,10 @@
 'use client';
 
-import { Suspense, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import ErrorBoundary from '@/components/ErrorBoundaryWrapper';
-import { Loading } from '@/components/Loading';
 import { DevModeProvider } from '@/contexts/DevModeContext';
 import DevConsoleHUD from '@/components/devmode/DevConsoleHUD';
 import DevModeTrigger from '@/components/devmode/DevModeTrigger';
@@ -53,7 +52,12 @@ export default function LayoutShell({
   return (
     <DevModeProvider>
       <ErrorBoundary>
-        <Suspense fallback={<Loading />}>
+        {/*
+          No Suspense boundary here on purpose. A boundary begins the streamed
+          response, which commits a 200 before the page can 404 or redirect; the
+          per-route loading.tsx files cover the sections that want a skeleton.
+        */}
+        <>
           {showCmsShell ? (
             <CmsShell>{children}</CmsShell>
           ) : isAdminSignIn ? (
@@ -87,7 +91,7 @@ export default function LayoutShell({
           <DevConsoleHUD />
           <OfflineFlappy />
           <ServiceWorkerRegistration />
-        </Suspense>
+        </>
       </ErrorBoundary>
     </DevModeProvider>
   );
