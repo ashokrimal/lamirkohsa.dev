@@ -99,10 +99,7 @@ export default function SiteFooter({
         {/* Sign-off: the one loud line on the page, with the live status pills. */}
         <div className="grid gap-10 py-14 md:py-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div className="max-w-2xl">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-              {uiStrings.footer.elsewhere.en}
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold leading-[1.04] tracking-[-0.045em] text-ink md:text-5xl">
+            <h2 className="text-3xl font-semibold leading-[1.04] tracking-[-0.045em] text-ink md:text-5xl">
               {footer.tagline || 'Let’s build something worth keeping.'}
             </h2>
             <div className="mt-6 flex flex-wrap items-center gap-2">
