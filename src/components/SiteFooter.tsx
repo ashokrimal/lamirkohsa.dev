@@ -1,7 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowUp, ArrowUpRight, Github, Globe, Linkedin, Mail, Twitter } from 'lucide-react'
+import {
+  ArrowUp,
+  ArrowUpRight,
+  Github,
+  Globe,
+  Linkedin,
+  Mail,
+  MapPin,
+  Twitter,
+} from 'lucide-react'
 import type {
   ContactDetails,
   SiteBrand,
@@ -37,9 +46,11 @@ export interface FooterSocialLink {
 
 /**
  * The footer closes every page: a sign-off with the studio-managed contact
- * channels and availability, the navigation columns, then a slim legal bar.
- * Brand, tagline, availability, CTA, email and socials all come from the CMS;
- * the copy that frames them comes from UI copy.
+ * channels and availability, the navigation columns, a slim legal bar, and the
+ * over-sized brand wordmark that bleeds off the bottom edge. Brand, tagline,
+ * availability, CTA, email and socials all come from the CMS; the copy that
+ * frames them comes from UI copy. Every colour here is a palette token, so the
+ * footer follows the light palette on cream and the dark palette on warm ink.
  */
 export default function SiteFooter({
   brand,
@@ -74,17 +85,24 @@ export default function SiteFooter({
   const resolvedAvailability = availabilityStatus || footer.availabilityText
   const ctaHref = footer.ctaHref && footer.ctaLabel ? footer.ctaHref : '/contact'
   const ctaLabel = footer.ctaLabel || 'Start a conversation'
+  const brandName = brand.name || SITE_NAME
 
   return (
-    <footer className="mt-20 md:mt-28 border-t border-line bg-surface">
-      <div className="shell-width">
+    <footer className="relative mt-20 border-t border-line bg-surface md:mt-28">
+      {/* Faint dot grain behind the sign-off, masked so it never reaches the columns. */}
+      <div
+        aria-hidden="true"
+        className="footer-texture pointer-events-none absolute inset-x-0 top-0 h-[420px]"
+      />
+
+      <div className="relative shell-width">
         {/* Sign-off: the one loud line on the page, with the live status pills. */}
-        <div className="flex flex-col gap-8 py-14 md:flex-row md:items-end md:justify-between md:py-20">
+        <div className="grid gap-10 py-14 md:py-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div className="max-w-2xl">
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
               {uiStrings.footer.elsewhere.en}
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] leading-[1.05] text-ink md:text-5xl">
+            <h2 className="mt-4 text-3xl font-semibold leading-[1.04] tracking-[-0.045em] text-ink md:text-5xl">
               {footer.tagline || 'Let’s build something worth keeping.'}
             </h2>
             <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -123,43 +141,28 @@ export default function SiteFooter({
           </div>
         </div>
 
-        {/* Columns: identity and socials, then the two navigation groups. */}
-        <div className="grid grid-cols-1 gap-10 border-t border-line py-10 sm:grid-cols-2 md:py-12 lg:grid-cols-[1.5fr_1fr_1fr]">
+        {/* Columns: identity, then the navigation groups, then the channels. */}
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 border-t border-line py-10 sm:grid-cols-2 md:py-14 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div className="max-w-sm">
             <Link
               href="/"
-              className="inline-flex items-baseline gap-2 text-base font-semibold tracking-[-0.04em] text-ink transition-colors hover:text-accent"
+              className="inline-flex items-baseline gap-2 text-lg font-semibold tracking-[-0.04em] text-ink transition-colors hover:text-accent"
             >
-              {brand.name || SITE_NAME}
+              {brandName}
               <span className="text-accent">.</span>
-              {brand.korean && (
-                <span lang="ko" className="font-korean text-[11px] font-normal text-muted">
-                  {brand.korean}
-                </span>
-              )}
             </Link>
-
-            {brand.role && <p className="mt-3 text-sm text-muted">{brand.role}</p>}
-
-            {resolvedSocials.length > 0 && (
-              <div className="mt-5 flex flex-wrap items-center gap-2">
-                {resolvedSocials.map((social) => {
-                  const Icon = iconFor(social.kind, social.label)
-                  return (
-                    <a
-                      key={`${social.label}-${social.href}`}
-                      href={social.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={social.label}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle px-3 py-1.5 text-[11px] font-medium text-muted transition-colors hover:border-line-strong hover:text-accent"
-                    >
-                      <Icon className="h-3 w-3" aria-hidden="true" />
-                      {social.label}
-                    </a>
-                  )
-                })}
-              </div>
+            {brand.korean && (
+              <p lang="ko" className="mt-1 font-korean text-[11px] text-muted">
+                {brand.korean}
+              </p>
+            )}
+            <p className="mt-4 text-sm leading-relaxed text-muted">
+              {brand.role || 'Full-Stack Software Engineer & Product Designer'}
+            </p>
+            {brand.domain && (
+              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+                {brand.domain}
+              </p>
             )}
           </div>
 
@@ -212,15 +215,48 @@ export default function SiteFooter({
               </ul>
             </nav>
           )}
+
+          <div>
+            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
+              {uiStrings.footer.elsewhere.en}
+            </h3>
+            <ul className="mt-4 space-y-2.5 text-sm">
+              {resolvedSocials.map((social) => {
+                const Icon = iconFor(social.kind, social.label)
+                return (
+                  <li key={`${social.label}-${social.href}`}>
+                    <a
+                      href={social.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group inline-flex items-center gap-2 text-ink-secondary transition-colors hover:text-accent"
+                    >
+                      <Icon
+                        className="h-3.5 w-3.5 text-muted transition-colors group-hover:text-accent"
+                        aria-hidden="true"
+                      />
+                      {social.label}
+                    </a>
+                  </li>
+                )
+              })}
+              {contact.location && (
+                <li className="inline-flex items-center gap-2 text-muted">
+                  <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                  {contact.location}
+                </li>
+              )}
+            </ul>
+          </div>
         </div>
 
         {/* Legal bar */}
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-line py-6 text-[11px] font-mono uppercase tracking-[0.12em] text-muted sm:flex-row">
+        <div className="flex flex-col gap-4 border-t border-line py-6 text-[11px] font-mono uppercase tracking-[0.12em] text-muted md:flex-row md:items-center md:justify-between">
           <p>
-            &copy; {year} {footer.copyrightName || brand.name || SITE_NAME}
+            &copy; {year} {footer.copyrightName || brandName} &middot; All rights reserved
           </p>
-          <div className="flex items-center gap-4">
-            {footer.canonical && <p className="text-center">{footer.canonical}</p>}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+            {footer.canonical && <p>{footer.canonical}</p>}
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -231,6 +267,14 @@ export default function SiteFooter({
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Sign-off wordmark: bleeds off the bottom edge like a printed poster. */}
+      <div className="relative overflow-hidden border-t border-line-subtle">
+        <p aria-hidden="true" className="footer-wordmark pt-8 md:pt-10">
+          {brandName}
+          <span className="mark">.</span>
+        </p>
       </div>
     </footer>
   )

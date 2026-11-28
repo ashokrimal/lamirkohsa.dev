@@ -112,14 +112,14 @@
   color-scheme: dark;
 
   /* ---- Layer 1: primitives ---- */
-  --paper-rgb: 22 22 24;               /* #161618 — Apple dark space gray */
-  --surface-rgb: 30 30 32;             /* #1e1e20 — Apple dark squircle card */
-  --ink-rgb: 245 245 247;              /* #f5f5f7 — bright crisp white/ivory */
-  --ink-secondary-rgb: 161 161 166;    /* #a1a1a6 — secondary muted */
-  --muted-rgb: 142 142 147;           /* #8e8e93 — tertiary neutral */
-  --accent-rgb: 110 178 135;          /* #6eb287 — luminous sage green for dark mode */
-  --accent-secondary-rgb: 110 178 135;
-  --inverse-rgb: 22 22 24;             /* #161618 */
+  --paper-rgb: 23 22 20;               /* #171614 — warm ink, the dark twin of cream */
+  --surface-rgb: 33 31 27;             /* #211f1b — warm raised card */
+  --ink-rgb: 244 240 232;              /* #f4f0e8 — warm ivory, cream read back */
+  --ink-secondary-rgb: 169 163 154;    /* #a9a39a — secondary warm grey */
+  --muted-rgb: 148 141 132;           /* #948d84 — tertiary warm grey */
+  --accent-rgb: 116 181 140;          /* #74b58c — the same sage, lifted for warm ink */
+  --accent-secondary-rgb: 116 181 140;
+  --inverse-rgb: 23 22 20;             /* #171614 */
   --scrim-rgb: 255 255 255;            /* #ffffff (used for translucent white borders/overlays on dark) */
 
   --paper: rgb(var(--paper-rgb));
@@ -130,60 +130,60 @@
   --accent: rgb(var(--accent-rgb));
   --accent-blue: var(--accent);
   --accent-secondary: rgb(var(--accent-secondary-rgb));
-  --accent-soft: rgba(110, 178, 135, 0.18);
-  --surface-glass: rgba(30, 30, 32, 0.85);
-  --line: rgba(255, 255, 255, 0.08);
+  --accent-soft: rgba(116, 181, 140, 0.16);
+  --surface-glass: rgb(33 31 27 / 0.86);
+  --line: rgb(244 240 232 / 0.09);
 
   /* ---- Layer 2: semantic roles ---- */
   --color-background: var(--paper);
   --color-surface: var(--surface);
   --color-surface-glass: var(--surface-glass);
-  --color-surface-dark: #121817;
-  --color-surface-dark-deep: #090c0e;
-  --color-surface-sunken: #141416;
-  --color-surface-tinted: #1a221e;
+  --color-surface-dark: #131110;
+  --color-surface-dark-deep: #0a0908;
+  --color-surface-sunken: #16140f;
+  --color-surface-tinted: #1c231d;
 
   /* Text */
   --color-foreground: var(--ink);
   --color-foreground-secondary: var(--ink-secondary);
   --color-foreground-muted: var(--muted);
   --color-foreground-inverse: rgb(var(--paper-rgb));
-  --color-foreground-on-dark: #f8fbfa;
-  --color-foreground-on-dark-muted: #b8c9c0;
+  --color-foreground-on-dark: #f7f2e9;
+  --color-foreground-on-dark-muted: #bdb7ab;
 
   /* Primary (dark action) */
-  --color-primary: #f5f5f7;
-  --color-primary-hover: #ffffff;
-  --color-primary-foreground: #121214;
+  --color-primary: #f4f0e8;
+  --color-primary-hover: #fffdf8;
+  --color-primary-foreground: #131110;
 
   /* Secondary */
-  --color-secondary: #2c2c2e;
-  --color-secondary-foreground: #f5f5f7;
+  --color-secondary: #2b2925;
+  --color-secondary-foreground: #f4f0e8;
 
   /* Accents */
   --color-accent: var(--accent);
   --color-accent-secondary: var(--accent-secondary);
   --color-accent-soft: var(--accent-soft);
-  --color-accent-foreground: #121214;
+  --color-accent-foreground: #131110;
 
   /* Borders — lightened scrim on dark surfaces */
-  --color-border-hairline: rgba(255, 255, 255, 0.04);
-  --color-border-faint: rgba(255, 255, 255, 0.06);
-  --color-border-soft: rgba(255, 255, 255, 0.07);
-  --color-border-subtle: rgba(255, 255, 255, 0.09);
-  --color-border: rgba(255, 255, 255, 0.10);
-  --color-border-medium: rgba(255, 255, 255, 0.14);
-  --color-border-strong: rgba(255, 255, 255, 0.22);
+  --color-border-hairline: rgb(244 240 232 / 0.04);
+  --color-border-faint: rgb(244 240 232 / 0.06);
+  --color-border-soft: rgb(244 240 232 / 0.07);
+  --color-border-subtle: rgb(244 240 232 / 0.09);
+  --color-border: rgb(244 240 232 / 0.10);
+  --color-border-medium: rgb(244 240 232 / 0.14);
+  --color-border-strong: rgb(244 240 232 / 0.22);
 
   /* States & overlays */
-  --color-overlay-faint: rgba(255, 255, 255, 0.03);
-  --color-overlay-hairline: rgba(255, 255, 255, 0.04);
-  --color-overlay: rgba(255, 255, 255, 0.06);
-  --color-overlay-soft: rgba(255, 255, 255, 0.08);
-  --color-overlay-subtle: rgba(255, 255, 255, 0.10);
-  --color-overlay-medium: rgba(255, 255, 255, 0.14);
-  --color-overlay-strong: rgba(255, 255, 255, 0.18);
-  --color-overlay-heavy: rgba(255, 255, 255, 0.24);
+  --color-overlay-faint: rgb(244 240 232 / 0.03);
+  --color-overlay-hairline: rgb(244 240 232 / 0.04);
+  --color-overlay: rgb(244 240 232 / 0.06);
+  --color-overlay-soft: rgb(244 240 232 / 0.08);
+  --color-overlay-subtle: rgb(244 240 232 / 0.10);
+  --color-overlay-medium: rgb(244 240 232 / 0.14);
+  --color-overlay-strong: rgb(244 240 232 / 0.18);
+  --color-overlay-heavy: rgb(244 240 232 / 0.24);
   --color-hover: var(--color-overlay);
   --color-active: var(--color-overlay-subtle);
   --color-scrim: #000000;
@@ -193,14 +193,14 @@
   :root:not(.light):not([data-theme="light"]) {
     color-scheme: dark;
 
-    --paper-rgb: 22 22 24;
-    --surface-rgb: 30 30 32;
-    --ink-rgb: 245 245 247;
-    --ink-secondary-rgb: 161 161 166;
-    --muted-rgb: 142 142 147;
-    --accent-rgb: 110 178 135;
-    --accent-secondary-rgb: 110 178 135;
-    --inverse-rgb: 22 22 24;
+    --paper-rgb: 23 22 20;
+    --surface-rgb: 33 31 27;
+    --ink-rgb: 244 240 232;
+    --ink-secondary-rgb: 169 163 154;
+    --muted-rgb: 148 141 132;
+    --accent-rgb: 116 181 140;
+    --accent-secondary-rgb: 116 181 140;
+    --inverse-rgb: 23 22 20;
     --scrim-rgb: 255 255 255;
 
     --paper: rgb(var(--paper-rgb));
@@ -211,53 +211,53 @@
     --accent: rgb(var(--accent-rgb));
     --accent-blue: var(--accent);
     --accent-secondary: rgb(var(--accent-secondary-rgb));
-    --accent-soft: rgba(110, 178, 135, 0.18);
-    --surface-glass: rgba(30, 30, 32, 0.85);
-    --line: rgba(255, 255, 255, 0.08);
+    --accent-soft: rgba(116, 181, 140, 0.16);
+    --surface-glass: rgb(33 31 27 / 0.86);
+    --line: rgb(244 240 232 / 0.09);
 
     --color-background: var(--paper);
     --color-surface: var(--surface);
     --color-surface-glass: var(--surface-glass);
-    --color-surface-dark: #121817;
-    --color-surface-dark-deep: #090c0e;
-    --color-surface-sunken: #141416;
-    --color-surface-tinted: #1a221e;
+    --color-surface-dark: #131110;
+    --color-surface-dark-deep: #0a0908;
+    --color-surface-sunken: #16140f;
+    --color-surface-tinted: #1c231d;
 
     --color-foreground: var(--ink);
     --color-foreground-secondary: var(--ink-secondary);
     --color-foreground-muted: var(--muted);
     --color-foreground-inverse: rgb(var(--paper-rgb));
-    --color-foreground-on-dark: #f8fbfa;
-    --color-foreground-on-dark-muted: #b8c9c0;
+    --color-foreground-on-dark: #f7f2e9;
+    --color-foreground-on-dark-muted: #bdb7ab;
 
-    --color-primary: #f5f5f7;
-    --color-primary-hover: #ffffff;
-    --color-primary-foreground: #121214;
+    --color-primary: #f4f0e8;
+    --color-primary-hover: #fffdf8;
+    --color-primary-foreground: #131110;
 
-    --color-secondary: #2c2c2e;
-    --color-secondary-foreground: #f5f5f7;
+    --color-secondary: #2b2925;
+    --color-secondary-foreground: #f4f0e8;
 
     --color-accent: var(--accent);
     --color-accent-secondary: var(--accent-secondary);
     --color-accent-soft: var(--accent-soft);
-    --color-accent-foreground: #121214;
+    --color-accent-foreground: #131110;
 
-    --color-border-hairline: rgba(255, 255, 255, 0.04);
-    --color-border-faint: rgba(255, 255, 255, 0.06);
-    --color-border-soft: rgba(255, 255, 255, 0.07);
-    --color-border-subtle: rgba(255, 255, 255, 0.09);
-    --color-border: rgba(255, 255, 255, 0.10);
-    --color-border-medium: rgba(255, 255, 255, 0.14);
-    --color-border-strong: rgba(255, 255, 255, 0.22);
+    --color-border-hairline: rgb(244 240 232 / 0.04);
+    --color-border-faint: rgb(244 240 232 / 0.06);
+    --color-border-soft: rgb(244 240 232 / 0.07);
+    --color-border-subtle: rgb(244 240 232 / 0.09);
+    --color-border: rgb(244 240 232 / 0.10);
+    --color-border-medium: rgb(244 240 232 / 0.14);
+    --color-border-strong: rgb(244 240 232 / 0.22);
 
-    --color-overlay-faint: rgba(255, 255, 255, 0.03);
-    --color-overlay-hairline: rgba(255, 255, 255, 0.04);
-    --color-overlay: rgba(255, 255, 255, 0.06);
-    --color-overlay-soft: rgba(255, 255, 255, 0.08);
-    --color-overlay-subtle: rgba(255, 255, 255, 0.10);
-    --color-overlay-medium: rgba(255, 255, 255, 0.14);
-    --color-overlay-strong: rgba(255, 255, 255, 0.18);
-    --color-overlay-heavy: rgba(255, 255, 255, 0.24);
+    --color-overlay-faint: rgb(244 240 232 / 0.03);
+    --color-overlay-hairline: rgb(244 240 232 / 0.04);
+    --color-overlay: rgb(244 240 232 / 0.06);
+    --color-overlay-soft: rgb(244 240 232 / 0.08);
+    --color-overlay-subtle: rgb(244 240 232 / 0.10);
+    --color-overlay-medium: rgb(244 240 232 / 0.14);
+    --color-overlay-strong: rgb(244 240 232 / 0.18);
+    --color-overlay-heavy: rgb(244 240 232 / 0.24);
     --color-hover: var(--color-overlay);
     --color-active: var(--color-overlay-subtle);
     --color-scrim: #000000;
@@ -288,6 +288,28 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .shell-width { width: min(1280px, calc(100% - 48px)); margin-inline: auto; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Footer texture: a dot matrix that fades out and the over-sized sign-off
+   wordmark. Both draw from palette channels only, so they read as paper grain
+   on cream and as faint light on warm ink — no extra colour is introduced. */
+.footer-texture {
+  background-image: radial-gradient(rgb(var(--scrim-rgb) / 0.09) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(115% 100% at 78% 0%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(115% 100% at 78% 0%, #000 0%, transparent 72%);
+}
+.footer-wordmark {
+  color: rgb(var(--ink-rgb) / 0.07);
+  font-size: clamp(3.25rem, 15vw, 15rem);
+  font-weight: 600;
+  line-height: 0.78;
+  letter-spacing: -0.055em;
+  white-space: nowrap;
+  user-select: none;
+}
+.footer-wordmark .mark { color: rgb(var(--accent-rgb) / 0.45); }
+.dark .footer-wordmark,
+[data-theme="dark"] .footer-wordmark { color: rgb(var(--ink-rgb) / 0.10); }
 
 /* Scrollbars stay hidden on every page and every scrollable section. The
    content still scrolls by wheel, trackpad, touch and keyboard. */
