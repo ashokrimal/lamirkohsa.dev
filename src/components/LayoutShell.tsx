@@ -10,6 +10,9 @@ import DevModeTrigger from '@/components/devmode/DevModeTrigger';
 import OfflineFlappy from '@/components/OfflineFlappy';
 import { ServiceWorkerRegistration } from '@/components/ui/ServiceWorkerRegistration';
 import Preloader from '@/components/ui/Preloader';
+import { AppBottomNav } from '@/components/ui/AppBottomNav';
+import { AppShellChooser } from '@/components/ui/AppShellPrefs';
+import { useAppShellState } from '@/lib/app-shell';
 import type { SiteConfig } from '@/lib/site-content';
 
 interface LayoutShellProps {
@@ -35,6 +38,11 @@ export default function LayoutShell({
   footerContactEmail,
   footerAvailability,
 }: LayoutShellProps) {
+  const shell = useAppShellState()
+  // Only an installed app that picked the app layout gets bottom tabs, and the
+  // page keeps room for them so the last section is never covered.
+  const appLayout = shell.installed && shell.mode === 'app'
+
   return (
     <DevModeProvider>
       <ErrorBoundary>
@@ -54,7 +62,9 @@ export default function LayoutShell({
             />
             <SiteHeader brand={site.brand} navigation={site.navigation} contact={site.contact} />
             {/* Pages own their own <main> landmark; wrapping them in another nested one. */}
-            <div className="min-h-screen">{children}</div>
+            <div className={appLayout ? 'min-h-screen pb-24 xl:pb-0' : 'min-h-screen'}>
+              {children}
+            </div>
             <SiteFooter
               brand={site.brand}
               navigation={site.navigation}
@@ -68,6 +78,8 @@ export default function LayoutShell({
           <div className="fixed bottom-6 right-6 z-40">
             <DevModeTrigger />
           </div>
+          <AppBottomNav navigation={site.navigation} />
+          <AppShellChooser />
           <DevConsoleHUD />
           <OfflineFlappy />
           <ServiceWorkerRegistration />

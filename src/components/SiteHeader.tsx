@@ -10,6 +10,7 @@ import { SITE_NAME } from '@/lib/seo'
 import { useUiStrings } from '@/components/ui/UiCopyProvider'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { InstallAppButton } from '@/components/ui/InstallAppButton'
+import { AppShellLayoutToggle } from '@/components/ui/AppShellPrefs'
 
 export default function SiteHeader({
   brand,
@@ -218,6 +219,10 @@ export default function SiteHeader({
           <div className="mt-5 w-full">
             <InstallAppButton className="w-full justify-center py-2.5 text-xs" />
           </div>
+
+          {/* Installed apps can move between the website and the bottom-tab
+              layout without reinstalling. */}
+          <AppShellLayoutToggle />
         </div>
 
         {(contact.location || contact.availability || contact.timeZone) && (
