@@ -41,6 +41,15 @@ function mapRecord(record: CmsRecord): MediaPosterData {
       text(payload, 'coverUrl') || text(payload, 'imageUrl') || text(payload, 'posterUrl'),
     rating: text(payload, 'rating') || text(payload, 'score'),
     status: text(payload, 'status'),
+    // The "last listened/watched/read" stamp: the owner's date when set, or when
+    // the record itself was last published.
+    date:
+      text(payload, 'date') ||
+      text(payload, 'lastListened') ||
+      text(payload, 'lastWatched') ||
+      text(payload, 'lastRead') ||
+      (record.updatedAt ? new Date(record.updatedAt).toISOString() : undefined) ||
+      (record.createdAt ? new Date(record.createdAt).toISOString() : undefined),
     href: text(payload, 'externalUrl') || text(payload, 'href'),
   }
 }

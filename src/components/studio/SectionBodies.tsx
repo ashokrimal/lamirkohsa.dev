@@ -1,12 +1,9 @@
 import { ArrowUpRight, Clock, Globe, Heart, Link2, Mail, MapPin, PieChart } from 'lucide-react'
 import { getProfileContentResult, getPublishedCmsContentResult } from '@/app/actions/content-cms'
 import { getSiteConfig } from '@/lib/site-content'
-import { getPublishedProjects } from '@/lib/studio/data'
-import { getProjectsResult } from '@/lib/projects'
 import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { SkillDisplay } from '@/components/ui/SkillDisplay'
-import { TechDistributionChart } from '@/components/projects/TechDistributionChart'
 import ContactForm from '@/components/ContactForm'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
@@ -177,43 +174,6 @@ export async function SocialsSectionBody() {
       ))}
     </ul>
   )
-}
-
-export async function TechnologySectionBody() {
-  const studioProjects = await getPublishedProjects()
-  const legacyResult = studioProjects.length > 0 ? null : await getProjectsResult()
-  if (legacyResult?.status === 'error') return <CmsErrorState message={legacyResult.message} />
-
-  const projects =
-    studioProjects.length > 0
-      ? studioProjects.map((project) => ({
-          id: project.id,
-          slug: project.slug,
-          title: project.title,
-          techStack: project.techStack,
-          category: project.category,
-          phases: [],
-          features: [],
-          featured: project.featuredOrder !== undefined,
-        }))
-      : legacyResult?.status === 'ok'
-        ? legacyResult.data
-        : []
-
-  if (projects.length === 0) {
-    return (
-      <EmptyState
-        eyebrow="Stack Telemetry"
-        icon={PieChart}
-        message="No technology distribution data yet."
-        hint="Technology shares and stack categories will appear here once published projects declare stack tags."
-      />
-    )
-  }
-
-  // TechDistributionChart only reads id/title/techStack; the wider shape is
-  // accepted so the legacy and studio project lists share the same chart.
-  return <TechDistributionChart projects={projects as Parameters<typeof TechDistributionChart>[0]['projects']} />
 }
 
 function iconFor(label: string) {

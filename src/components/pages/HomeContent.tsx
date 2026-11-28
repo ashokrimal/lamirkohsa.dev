@@ -77,6 +77,8 @@ export default async function HomeContent() {
           eyebrow={heroEyebrow}
           title={heroHeading.replace(/\.$/, '')}
           description={heroSubtitle}
+          imageUrl={heroData.imageUrl?.trim() || undefined}
+          imageAlt={heroData.imageAlt?.trim() || heroHeading}
           meta={
             heroLocation || availability ? (
               <>

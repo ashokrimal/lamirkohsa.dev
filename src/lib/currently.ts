@@ -4,11 +4,12 @@ import { getPublicProfileSettingsResult } from '@/app/actions/media'
 import { summarizeGitHubActivity } from '@/lib/github-activity'
 
 /**
- * The "currently" row: one line of what is on the desk right now.
+ * The "currently" deck: one card per activity — what is playing, being watched,
+ * being read, and the latest public commit.
  *
  * Everything here already exists elsewhere on the site — the newest published
  * item in each media collection and the latest public push on GitHub. Nothing is
- * invented, and a source with no data simply leaves its column out.
+ * invented, and a source with no data simply leaves its card out.
  */
 
 export interface CurrentlyEntry {
@@ -16,12 +17,45 @@ export interface CurrentlyEntry {
   label: string
   value: string
   meta?: string
+  imageUrl?: string
+  /** "Last listened 2 days ago", and so on. */
+  timeLabel?: string
   href?: string
 }
 
 const GITHUB_HEADERS: Record<string, string> = {
   Accept: 'application/vnd.github+json',
   'User-Agent': 'ashokrimal-portfolio-currently',
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** Human-friendly elapsed time, e.g. "2 days ago". Falls back to the date. */
+function relativeTime(value?: string | Date): string | undefined {
+  if (!value) return undefined
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return undefined
+
+  const elapsed = Date.now() - date.getTime()
+  if (elapsed < 60_000) return 'just now'
+
+  const minutes = Math.round(elapsed / 60_000)
+  if (minutes < 60) return `${minutes} min ago`
+
+  const hours = Math.round(elapsed / (60 * 60_000))
+  if (hours < 24) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
+
+  const days = Math.round(elapsed / DAY_MS)
+  if (days < 7) return `${days} ${days === 1 ? 'day' : 'days'} ago`
+
+  const weeks = Math.round(days / 7)
+  if (weeks < 5) return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`
+
+  const months = Math.round(days / 30)
+  if (months < 12) return `${months} ${months === 1 ? 'month' : 'months'} ago`
+
+  const years = Math.round(days / 365)
+  return `${years} ${years === 1 ? 'year' : 'years'} ago`
 }
 
 async function latestCommit(username: string): Promise<CurrentlyEntry | null> {
@@ -46,11 +80,14 @@ async function latestCommit(username: string): Promise<CurrentlyEntry | null> {
     const latest = summary.recentActivities[0]
     if (!latest) return null
 
+    const elapsed = relativeTime(latest.date)
     return {
       key: 'commit',
       label: 'Last commit',
       value: latest.message || latest.repo || 'A push to GitHub',
       meta: latest.repo || undefined,
+      imageUrl: `https://github.com/${encodeURIComponent(username)}.png?size=200`,
+      timeLabel: elapsed ? `Committed ${elapsed}` : undefined,
       href: latest.url,
     }
   } catch {
@@ -72,16 +109,26 @@ export async function getCurrentlyEntries(): Promise<CurrentlyEntry[]> {
     anime: 'Now watching',
     manga: 'Now reading',
   }
+  const timeVerbs: Record<string, string> = {
+    music: 'Last listened',
+    movies: 'Last watched',
+    anime: 'Last watched',
+    manga: 'Last read',
+  }
 
   const entries: CurrentlyEntry[] = []
   for (const section of sections) {
     const item = section.items[0]
     if (!item) continue
+    const elapsed = relativeTime(item.date)
+    const verb = timeVerbs[section.kind]
     entries.push({
       key: section.kind,
       label: labels[section.kind] ?? section.label,
       value: item.title,
       meta: item.subtitle,
+      imageUrl: item.imageUrl,
+      timeLabel: elapsed && verb ? `${verb} ${elapsed}` : undefined,
       href: item.href ?? section.href,
     })
   }

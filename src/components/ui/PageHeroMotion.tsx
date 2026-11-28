@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import Image from 'next/image'
 import { motion, useReducedMotion } from 'framer-motion'
 
 const HERO_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
@@ -13,6 +14,8 @@ interface PageHeroMotionProps {
   description?: string
   meta?: ReactNode
   actions?: ReactNode
+  imageUrl?: string
+  imageAlt?: string
 }
 
 /**
@@ -28,6 +31,8 @@ export function PageHeroMotion({
   description,
   meta,
   actions,
+  imageUrl,
+  imageAlt,
 }: PageHeroMotionProps) {
   const reduceMotion = useReducedMotion()
 
@@ -41,7 +46,33 @@ export function PageHeroMotion({
 
   return (
     <header className="border-b border-line pb-10 md:pb-14">
-      <div className="max-w-3xl space-y-3">
+      <div
+        className={
+          imageUrl
+            ? 'grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] md:items-center md:gap-10'
+            : ''
+        }
+      >
+        {imageUrl && (
+          <motion.div
+            className="relative aspect-[16/10] w-full overflow-hidden rounded-[24px] border border-line-subtle bg-overlay-faint md:order-last md:aspect-[4/3]"
+            initial={initialOffset}
+            animate={visibleState}
+            transition={stageTransition(0.1)}
+          >
+            <Image
+              src={imageUrl}
+              alt={imageAlt || title}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 40vw"
+              className="object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </motion.div>
+        )}
+
+        <div className="max-w-3xl space-y-3">
         {(eyebrow || krEyebrow) && (
           <motion.div
             className="flex flex-wrap items-center gap-2"
@@ -101,6 +132,7 @@ export function PageHeroMotion({
             {actions}
           </motion.div>
         )}
+        </div>
       </div>
     </header>
   )

@@ -191,7 +191,7 @@ export default function SiteAppearanceEditor({
           name="imageUrl"
           value={heroImage}
           onChange={setHeroImage}
-          hint="Shown behind the hero copy. Upload a portrait or wide image."
+          hint="Shown above the hero copy on mobile and beside it on desktop. Upload a portrait or wide image."
         />
 
         <label className="block text-xs text-slate-700">

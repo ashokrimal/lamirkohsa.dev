@@ -628,6 +628,7 @@ export const CMS_SCHEMA: CmsSchema = {
         text('imageUrl', 'Image'),
         text('rating', 'Rating'),
         text('status', 'Status'),
+        text('date', 'Last listened / watched / read'),
         url('externalUrl', 'External link'),
       ],
       emptyState: {

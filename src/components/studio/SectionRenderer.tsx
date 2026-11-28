@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, Code2, Compass, Film, FolderGit2, Github, PieChart, Sparkles, TrendingUp, User } from 'lucide-react'
+import { ArrowUpRight, Code2, Compass, Film, FolderGit2, Github, Sparkles, TrendingUp, User } from 'lucide-react'
 import { getProfileContentResult } from '@/app/actions/content-cms'
 import { getPublicProfileSettingsResult } from '@/app/actions/media'
 import { getMediaCollections, getSiteConfig, instagramProfileHref } from '@/lib/site-content'
@@ -13,7 +13,6 @@ import { ProgressiveImage } from '@/components/ui/ProgressiveImage'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
-import { HomeTechDistribution } from '@/components/projects/HomeTechDistribution'
 import { MetaChip, PageSection } from '@/components/ui/PageChrome'
 import { Reveal } from '@/components/ui/Reveal'
 import type { SectionContent } from '@/lib/studio/sections'
@@ -26,7 +25,6 @@ import {
   InterestsSectionBody,
   SkillsSectionBody,
   SocialsSectionBody,
-  TechnologySectionBody,
 } from '@/components/studio/SectionBodies'
 
 /**
@@ -61,15 +59,11 @@ export async function InstagramSectionBody({
 }
 
 export async function IntroductionSectionBody({ content }: { content: SectionContent }) {
-  const [profileResult, projectsResult] = await Promise.all([
-    getProfileContentResult(),
-    getProjectsResult(),
-  ])
+  const profileResult = await getProfileContentResult()
 
   if (profileResult.status === 'error') return <CmsErrorState message={profileResult.message} />
 
   const profile = (profileResult.status === 'ok' ? profileResult.data : {}) as Record<string, unknown>
-  const projects = projectsResult.status === 'ok' ? projectsResult.data : []
   const portrait = profileValue(profile, 'avatarUrl') || profileValue(profile, 'imageUrl') || content.imageUrl
   const summary = profileValue(profile, 'summary')
   const bio = profileValue(profile, 'bio')
@@ -121,16 +115,6 @@ export async function IntroductionSectionBody({ content }: { content: SectionCon
         </div>
       </div>
 
-      {projects.length > 0 && content.animation?.enabled !== false ? (
-        <HomeTechDistribution projects={projects} />
-      ) : projectsResult.status !== 'error' ? (
-        <EmptyState
-          eyebrow="Stack Telemetry"
-          icon={PieChart}
-          message="No technology distribution data yet."
-          hint="Technology weights appear once published projects include stack tags."
-        />
-      ) : null}
     </div>
   )
 }
@@ -366,7 +350,7 @@ export async function GithubSectionBody({ content }: { content: SectionContent }
 export async function SectionRenderer({ sections }: { sections: StudioPageSection[] }) {
   const uiStrings = await getUiCopy()
   const visible = sections
-    .filter((section) => section.isEnabled)
+    .filter((section) => section.isEnabled && section.sectionKey !== 'technology')
     .slice()
     .sort((a, b) => a.sortOrder - b.sortOrder)
 
@@ -424,8 +408,6 @@ export async function SectionRenderer({ sections }: { sections: StudioPageSectio
               return <InterestsSectionBody />
             case 'socials':
               return <SocialsSectionBody />
-            case 'technology':
-              return <TechnologySectionBody />
             case 'contact':
               return <ContactSectionBody />
             case 'instagram':

@@ -72,12 +72,6 @@ export const PLAIN_SECTION_COPY: Record<string, PlainSectionCopy> = {
     title: 'Elsewhere online',
     accent: '',
   },
-  technology: {
-    eyebrow: 'Technology',
-    title: 'Technologies I use',
-    accent: '',
-    description: 'How the published projects are built, by the stack each one declares.',
-  },
   instagram: {
     eyebrow: 'Social',
     title: 'Latest from Instagram',

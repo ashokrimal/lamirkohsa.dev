@@ -21,6 +21,8 @@ export function PageHero({
   description,
   meta,
   actions,
+  imageUrl,
+  imageAlt,
 }: {
   eyebrow: string
   krEyebrow?: string
@@ -29,6 +31,8 @@ export function PageHero({
   description?: string
   meta?: ReactNode
   actions?: ReactNode
+  imageUrl?: string
+  imageAlt?: string
 }) {
   return (
     <PageHeroMotion
@@ -39,6 +43,8 @@ export function PageHero({
       description={description}
       meta={meta}
       actions={actions}
+      imageUrl={imageUrl}
+      imageAlt={imageAlt}
     />
   )
 }

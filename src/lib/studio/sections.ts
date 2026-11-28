@@ -21,7 +21,6 @@ export const SECTION_KEYS = [
   'skills',
   'interests',
   'socials',
-  'technology',
   'contact',
   'instagram',
 ] as const
@@ -72,7 +71,6 @@ export const SECTION_CONTENT_SCHEMAS = {
   skills: baseSectionSchema,
   interests: baseSectionSchema,
   socials: baseSectionSchema,
-  technology: baseSectionSchema,
   contact: baseSectionSchema,
   instagram: instagramSchema,
 } satisfies Record<SectionKey, z.ZodType>
@@ -241,19 +239,6 @@ export const SECTION_DEFINITIONS: Record<SectionKey, SectionDefinition> = {
     defaults: {
       ...PLAIN_SECTION_COPY.socials,
       animation: { enabled: false, intensity: 0.2 },
-    },
-  },
-  technology: {
-    key: 'technology',
-    label: 'Technology distribution',
-    source: 'Stack tags across published projects.',
-    schema: SECTION_CONTENT_SCHEMAS.technology,
-    fields: baseFields.filter((field) => field.key !== 'body'),
-    defaults: {
-      ...PLAIN_SECTION_COPY.technology,
-      ctaLabel: 'All projects',
-      ctaHref: '/projects',
-      animation: { enabled: true, intensity: 0.4 },
     },
   },
   instagram: {

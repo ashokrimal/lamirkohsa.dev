@@ -217,20 +217,6 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, DefaultSectionSeed[]> = {
         ctaHref: '/about/github',
       },
     },
-    {
-      sectionKey: 'technology',
-      sortOrder: 7,
-      isEnabled: true,
-      content: {
-        eyebrow: 'Technology',
-        title: 'Technologies I use',
-        accent: '',
-        description: 'How the published projects are built, by the stack each one declares.',
-        ctaLabel: 'All projects',
-        ctaHref: '/projects',
-        animation: { enabled: true, intensity: 0.4 },
-      },
-    },
   ],
   '/projects': [],
   '/media': [

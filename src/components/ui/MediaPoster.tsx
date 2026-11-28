@@ -13,6 +13,8 @@ export interface MediaPosterData {
   /** Rating or score, shown as a small pill when present. */
   rating?: string
   status?: string
+  /** When the item was last listened to, watched or read. */
+  date?: string
   href?: string
   altText?: string
 }
