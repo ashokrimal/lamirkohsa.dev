@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult } from '@/lib/cms-content'
 import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 import { getProjectsResult } from '@/lib/projects'
 import { SITE_URL } from '@/lib/seo'

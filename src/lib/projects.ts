@@ -2,7 +2,7 @@ import {
   getFreshPublishedCmsContentResult,
   getPublishedCmsContentResult,
   type CmsRecord,
-} from '@/app/actions/content-cms'
+} from '@/lib/cms-content'
 import { CMS_COLLECTIONS, type CmsResult } from '@/lib/cms-schema'
 import { toSlug } from '@/lib/slug'
 import {

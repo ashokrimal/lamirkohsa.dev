@@ -8,7 +8,7 @@ import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
 import { nextPageNav } from '@/lib/page-nav'
-import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult } from '@/lib/cms-content'
 import {
   blogTagPath,
   blogTagSlug,

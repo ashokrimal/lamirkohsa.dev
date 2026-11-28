@@ -1,23 +1,39 @@
 # lamirkohsa.dev
 
-Personal portfolio and content studio for [ashokrimal.com.np](https://ashokrimal.com.np).
+Personal portfolio for [ashokrimal.com.np](https://ashokrimal.com.np).
 
 The site is a Next.js App Router application. Every public value comes from a
 Postgres-backed CMS; the shape of the site (pages, sections, routes and empty
 states) is code. If a CMS value is missing, the page shows a deliberate empty
 state, never placeholder copy such as "N/A" or "Untitled".
 
+## Two repositories
+
+| Project | Repository | Responsibility |
+| --- | --- | --- |
+| Public site (this repo) | `ashokrimal/lamirkohsa.dev` | Every public route. Reads the database, never writes. |
+| Admin studio | `ashokrimal/lamirkohsa.cms` | `/admin` studio, authentication, uploads, backups, every write. |
+
+There is no `/admin` here. Both Vercel projects use the **same Postgres
+`DATABASE_URL`**: the studio writes and this site reads, so there is no API
+to keep in sync. After a save the studio calls `POST /api/revalidate` with the
+shared `REVALIDATE_SECRET` so the edit is visible immediately instead of after
+the five-minute cache window.
+
+The studio sections further down this document describe the admin app's
+internals (auth, uploads, backups, vaults). Its setup, environment variables and
+deployment now live in the `lamirkohsa.cms` repository.
+
 ## Stack
 
 - **Framework:** Next.js 14 (App Router), React 18, TypeScript
 - **Styling:** Tailwind CSS with design tokens in `src/app/globals.css`
 - **Database:** PostgreSQL (Neon/Vercel Postgres) through Drizzle ORM
-- **Auth:** Better Auth for the owner account, plus the first-owner bootstrap
-- **Cache:** Next.js tagged cache (`src/lib/cms-cache.ts`), invalidated per
-  collection after every admin mutation
+- **Cache:** Next.js tagged cache (`src/lib/cms-cache.ts`), invalidated by the
+  studio's `POST /api/revalidate` webhook per saved collection
 - **Hosting:** Vercel
-- **Media/uploads:** Vercel Blob, plus optional Spotify, Last.fm, ListenBrainz,
-  MyAnimeList, AniList, GitHub, Google Drive and Resend integrations
+- **Media:** optional Spotify, Last.fm, ListenBrainz, MyAnimeList, AniList and
+  GitHub integrations; uploads belong to the studio deployment
 
 ## Local setup
 
@@ -31,12 +47,13 @@ cd lamirkohsa.dev
 pnpm install --frozen-lockfile
 
 cp .env.example .env.local
-# Fill in DATABASE_URL and BETTER_AUTH_SECRET at minimum.
+# Fill in DATABASE_URL at minimum.
 
 pnpm dev
 ```
 
-Open <http://localhost:3000>. The owner studio is at `/admin`.
+Open <http://localhost:3000>. The owner studio runs from the separate
+`lamirkohsa.cms` deployment, not from this origin.
 
 ## Environment variables
 

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowUpRight, Clock } from 'lucide-react'
-import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult } from '@/lib/cms-content'
 import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
 import {
   blogDate,

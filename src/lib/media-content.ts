@@ -1,4 +1,4 @@
-import { getPublishedCmsContentResult, type CmsRecord } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult, type CmsRecord } from '@/lib/cms-content'
 import type { MediaKind, MediaPosterData } from '@/components/ui/MediaPoster'
 import type { MediaCollection } from '@/lib/site-content'
 import { CMS_MEDIA_RECORDS, CMS_SCHEMA } from '@/lib/cms-schema'

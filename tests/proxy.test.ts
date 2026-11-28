@@ -3,12 +3,8 @@ import { describe, it } from 'node:test'
 import { NextRequest } from 'next/server'
 import { proxy } from '../src/proxy'
 
-function request(path: string, cookies: Record<string, string> = {}) {
-  const nextRequest = new NextRequest(new URL(path, 'http://localhost'))
-  for (const [name, value] of Object.entries(cookies)) {
-    nextRequest.cookies.set(name, value)
-  }
-  return nextRequest
+function request(path: string) {
+  return new NextRequest(new URL(path, 'http://localhost'))
 }
 
 function isPassThrough(response: Response) {
@@ -22,39 +18,14 @@ describe('proxy request gate', () => {
     assert.equal(new URL(response.headers.get('location') ?? '').pathname, '/about/github')
   })
 
-  it('sends signed-out visitors to the sign-in page', async () => {
-    const response = await proxy(request('/admin'))
-    assert.equal(response.status, 307)
-    const location = new URL(response.headers.get('location') ?? '')
-    assert.equal(location.pathname, '/admin/sign-in')
-    assert.equal(location.searchParams.get('returnTo'), '/admin')
-  })
-
-  it('keeps the query string in the returnTo path', async () => {
-    const response = await proxy(request('/admin/inbox?tab=read'))
-    const location = new URL(response.headers.get('location') ?? '')
-    assert.equal(location.searchParams.get('returnTo'), '/admin/inbox?tab=read')
-  })
-
-  it('lets the sign-in and sign-out pages through without a session', async () => {
-    for (const path of ['/admin/sign-in', '/admin/sign-out']) {
-      assert.ok(isPassThrough(await proxy(request(path))), `${path} should pass through`)
-    }
-  })
-
-  it('lets a visitor with an admin cookie reach the studio shell', async () => {
-    assert.ok(isPassThrough(await proxy(request('/admin', { admin_session: 'token' }))))
-  })
-
-  it('accepts a Better Auth session cookie', async () => {
-    const response = await proxy(
-      request('/admin/inbox', { 'better-auth.session_token': 'token' }),
-    )
-    assert.ok(isPassThrough(response))
-  })
-
-  it('does not gate routes outside the admin area', async () => {
+  it('does not gate public routes', async () => {
     assert.ok(isPassThrough(await proxy(request('/api/newsletter'))))
     assert.ok(isPassThrough(await proxy(request('/about'))))
+    assert.ok(isPassThrough(await proxy(request('/'))))
+  })
+
+  it('does not gate the former admin path: the studio is another deployment', async () => {
+    assert.ok(isPassThrough(await proxy(request('/admin'))))
+    assert.ok(isPassThrough(await proxy(request('/admin/inbox?tab=read'))))
   })
 })

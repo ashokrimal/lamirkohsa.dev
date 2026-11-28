@@ -13,7 +13,7 @@ import {
   Star,
   Users,
 } from 'lucide-react'
-import { getGitHubData, type GitHubEventItem, type GitHubRepoItem } from '@/app/actions/media'
+import { getGitHubData, type GitHubEventItem, type GitHubRepoItem } from '@/lib/profile-content'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { EmptyState } from '@/components/ui/EmptyState'
 import {

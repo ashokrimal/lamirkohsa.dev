@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { hasOwnerAccess } from '@/lib/admin-auth'
 import { submitToIndexNow } from '@/lib/indexnow'
 import sitemap from '@/app/sitemap'
 
@@ -12,16 +11,15 @@ export const dynamic = 'force-dynamic'
  *
  * Publishing a page already pings its own URL; this endpoint is the catch-up for
  * a deployment that has been offline, a bulk import, or a deliberate resubmit
- * after a sitemap change. It is callable by Vercel Cron with CRON_SECRET, or by
- * the signed-in owner.
+ * after a sitemap change. It is callable by Vercel Cron with CRON_SECRET; the
+ * admin studio lives in another deployment and has no access here.
  */
 export async function POST(request: NextRequest) {
   const secret = process.env.CRON_SECRET
   const authorization = request.headers.get('authorization')
   const authorizedByCron = Boolean(secret) && authorization === `Bearer ${secret}`
-  const authorizedByOwner = !authorizedByCron && (await hasOwnerAccess())
 
-  if (!authorizedByCron && !authorizedByOwner) {
+  if (!authorizedByCron) {
     return NextResponse.json({ error: 'Not authorized.' }, { status: 401 })
   }
 

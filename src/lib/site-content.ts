@@ -1,4 +1,4 @@
-import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult } from '@/lib/cms-content'
 import {
   CMS_COLLECTIONS,
   CMS_KEYS,

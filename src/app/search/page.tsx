@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Search as SearchIcon } from 'lucide-react'
-import { getPublishedCmsContent } from '@/app/actions/content-cms'
+import { getPublishedCmsContent } from '@/lib/cms-content'
 import { getProjectsResult } from '@/lib/projects'
 import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 import { getPublishedPagesForSitemap } from '@/lib/studio/data'

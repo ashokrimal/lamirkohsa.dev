@@ -2,7 +2,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Clock } from 'lucide-react'
-import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult } from '@/lib/cms-content'
 import {
   blogBody,
   blogExcerpt,

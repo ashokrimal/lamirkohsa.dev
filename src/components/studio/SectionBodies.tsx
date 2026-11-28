@@ -1,5 +1,5 @@
 import { ArrowUpRight, Clock, Globe, Heart, Link2, Mail, MapPin, PieChart } from 'lucide-react'
-import { getProfileContentResult, getPublishedCmsContentResult } from '@/app/actions/content-cms'
+import { getProfileContentResult, getPublishedCmsContentResult } from '@/lib/cms-content'
 import { getSiteConfig } from '@/lib/site-content'
 import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'

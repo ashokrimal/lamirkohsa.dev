@@ -1,4 +1,4 @@
-import { getPublishedCmsContentResult, type CmsRecord } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult, type CmsRecord } from '@/lib/cms-content'
 import { CMS_COLLECTIONS, type CmsResult } from '@/lib/cms-schema'
 
 export interface GalleryPhoto {

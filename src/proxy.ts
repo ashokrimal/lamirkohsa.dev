@@ -3,7 +3,10 @@ import type { NextRequest } from 'next/server';
 import { handleApiError } from './lib/error-handler';
 
 /**
- * The request boundary in front of the app.
+ * The request boundary in front of the public site.
+ *
+ * The admin studio is a separate deployment (`lamirkohsa.cms`) and is never
+ * served from this origin, so nothing here guards `/admin`.
  *
  * It stays free of the database and of app libraries on purpose: on Cloudflare
  * this file is bundled into its own worker, where a bundled `pg` fails with a
@@ -17,31 +20,6 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/about/github'
     return NextResponse.redirect(url, 308)
-  }
-
-  // The studio is owner-only. Page components validate the signed cookie; this
-  // early check turns "not signed in" into a real HTTP redirect instead of a
-  // streamed client redirect, and keeps signed-out visitors off the page shell.
-  const { pathname } = request.nextUrl
-  const hasAdminCookie = Boolean(request.cookies.get('admin_session')?.value)
-  const hasBetterAuthCookie = request.cookies
-    .getAll()
-    .some((cookie) => cookie.name.includes('better-auth.session_token'))
-
-  // Do not bounce /admin/sign-in back to /admin based on cookie presence alone.
-  // A stale or invalid admin cookie would otherwise alternate between the page
-  // guard and this redirect forever. The sign-in page validates the real session
-  // server-side and redirects only when it is still valid.
-
-  if (pathname.startsWith('/admin') && pathname !== '/admin/sign-in' && pathname !== '/admin/sign-out') {
-    if (!hasAdminCookie && !hasBetterAuthCookie) {
-      const url = request.nextUrl.clone()
-      const returnTo = `${pathname}${request.nextUrl.search}`
-      url.pathname = '/admin/sign-in'
-      url.search = ''
-      url.searchParams.set('returnTo', returnTo)
-      return NextResponse.redirect(url, 307)
-    }
   }
 
   try {
@@ -62,5 +40,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/:path*', '/about/:path*', '/admin/:path*'],
+  matcher: ['/api/:path*', '/about/:path*'],
 };

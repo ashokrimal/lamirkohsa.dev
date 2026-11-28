@@ -1,7 +1,7 @@
 import {
   getPublishedCmsContentResult,
   type CmsRecord,
-} from '@/app/actions/content-cms'
+} from '@/lib/cms-content'
 import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { SkillDisplay } from '@/components/ui/SkillDisplay'
 import { CertificateCard } from '@/components/ui/CertificateCard'

@@ -19,7 +19,9 @@ test('structural and unlisted routes are excluded', () => {
   for (const route of ['/', '/about', '/about/gallery', '/media/music', '/contact', '/projects']) {
     assert.equal(isSitemapPageSlug(route), false, `${route} is covered elsewhere`)
   }
-  for (const route of ['/admin', '/sign-in', '/reset-password', '/classic']) {
+  // The studio moved to its own deployment, so only the site's own private
+  // surfaces and the retired classic page remain here.
+  for (const route of ['/api', '/api/revalidate', '/classic']) {
     assert.equal(isSitemapPageSlug(route), false, `${route} must not be indexable`)
   }
 })

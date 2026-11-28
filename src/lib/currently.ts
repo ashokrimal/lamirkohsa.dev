@@ -1,6 +1,6 @@
 import { getMediaCollections } from '@/lib/site-content'
 import { getMediaSections } from '@/lib/media-content'
-import { getPublicProfileSettingsResult } from '@/app/actions/media'
+import { getPublicProfileSettingsResult } from '@/lib/profile-content'
 import { summarizeGitHubActivity } from '@/lib/github-activity'
 
 /**

@@ -58,9 +58,9 @@ const nextConfig = {
   },
   async headers() {
     return [{
-      // The studio and the APIs are not content: keep them out of every index,
-      // including engines that ignore robots.txt.
-      source: '/(admin|api)/:path*',
+      // The APIs are not content: keep them out of every index, including
+      // engines that ignore robots.txt.
+      source: '/api/:path*',
       headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }],
     }, {
       source: '/(.*)',

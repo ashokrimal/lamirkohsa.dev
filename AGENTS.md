@@ -1,5 +1,9 @@
 # Working notes for this repository
 
+This repository is the public site only. The admin studio (`/admin`, auth,
+uploads, backups) lives in the separate `lamirkohsa.cms` repository and shares
+the same Postgres database. Do not add admin routes here.
+
 ## Commit and push after checks
 
 After a change's checks pass, commit it and push it to the current branch

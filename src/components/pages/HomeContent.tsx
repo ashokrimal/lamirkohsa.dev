@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowUpRight, Compass, Sparkles } from 'lucide-react'
-import { getHeroSectionConfigResult, getProfileContentResult } from '@/app/actions/content-cms'
+import { getHeroSectionConfigResult, getProfileContentResult } from '@/lib/cms-content'
 import { getPageWithSections, getSiteSettings } from '@/lib/studio/data'
 import { SectionRenderer } from '@/components/studio/SectionRenderer'
 import { EMPTY_SITE_CONFIG, getSiteConfig } from '@/lib/site-content'

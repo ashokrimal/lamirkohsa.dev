@@ -1,4 +1,4 @@
-import { getPublishedCmsContentResult } from '@/app/actions/content-cms'
+import { getPublishedCmsContentResult } from '@/lib/cms-content'
 import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 import { buildRssFeed, type FeedItem } from '@/lib/rss'
 import { SITE_NAME, SITE_URL } from '@/lib/seo'

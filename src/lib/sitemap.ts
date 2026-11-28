@@ -13,16 +13,10 @@ import { NAV_ROUTES } from '@/lib/cms-schema'
 export const CASE_STUDY_REDIRECT_SOURCES = ['/work'] as const
 
 /** Real pages that are deliberately excluded from search indexes. */
-const UNLISTED_ROUTES = [
-  '/admin',
-  '/sign-in',
-  '/forgot-password',
-  '/reset-password',
-  '/classic',
-]
+const UNLISTED_ROUTES = ['/classic']
 
 /** Private prefixes: a studio page row must never expose these. */
-const PRIVATE_PREFIXES = ['/admin', '/api']
+const PRIVATE_PREFIXES = ['/api']
 
 /**
  * Dynamic segments are listed from the collection they render, so a page row

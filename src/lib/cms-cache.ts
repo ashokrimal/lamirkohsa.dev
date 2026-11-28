@@ -33,5 +33,4 @@ export const CMS_PUBLIC_REVALIDATE_PATHS = [
   '/media/manga',
   '/blogs',
   '/contact',
-  '/admin',
 ] as const

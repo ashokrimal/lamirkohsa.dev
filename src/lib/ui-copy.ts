@@ -1,5 +1,5 @@
 import { cache } from 'react'
-import { getPublishedCmsContent } from '@/app/actions/content-cms'
+import { getPublishedCmsContent } from '@/lib/cms-content'
 import { CMS_COLLECTIONS } from '@/lib/cms-schema'
 import { resolveUiStrings, type UiCopyOverrides } from '@/lib/ui-strings'
 

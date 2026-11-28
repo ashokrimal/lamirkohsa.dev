@@ -9,6 +9,13 @@ import {
 } from '@/lib/cms-cache'
 import type { CmsResult } from '@/lib/cms-schema'
 
+/**
+ * Public profile settings and GitHub data.
+ *
+ * The studio writes the single `profile_settings` row; this module only reads
+ * it, plus the public GitHub API, for the about, media and activity pages.
+ */
+
 export type PublicProfileSettings = typeof profileSettings.$inferSelect
 
 export interface GitHubRepoItem {
@@ -87,7 +94,7 @@ const getCachedPublicProfileSettings = unstable_cache(
 /**
  * Result-aware profile settings read. Cached via Next.js ISR (`unstable_cache` +
  * `revalidateTag`) so public pages remain statically cacheable while updates
- * saved in `/admin` invalidate immediately.
+ * saved in the studio invalidate immediately.
  */
 export async function getPublicProfileSettingsResult(): Promise<
   CmsResult<PublicProfileSettings>
@@ -102,7 +109,10 @@ export async function getPublicProfileSettingsResult(): Promise<
     return { status: 'ok', data: settings }
   } catch (error) {
     const code =
-      error && typeof error === 'object' && 'code' in error && typeof (error as { code?: unknown }).code === 'string'
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      typeof (error as { code?: unknown }).code === 'string'
         ? ` (${(error as { code: string }).code})`
         : ''
     console.error(`[Profile] Could not read public profile settings${code}.`)
@@ -128,16 +138,31 @@ export async function getGitHubStatus(username?: string) {
     const [profileResponse, reposResponse, eventsResponse] = await Promise.all([
       fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, {
         headers,
-        next: { revalidate: 1800, tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)] },
+        next: {
+          revalidate: 1800,
+          tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)],
+        },
       }),
-      fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=pushed&per_page=100`, {
-        headers,
-        next: { revalidate: 1800, tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)] },
-      }),
-      fetch(`https://api.github.com/users/${encodeURIComponent(username)}/events/public?per_page=30`, {
-        headers,
-        next: { revalidate: 1800, tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)] },
-      }),
+      fetch(
+        `https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=pushed&per_page=100`,
+        {
+          headers,
+          next: {
+            revalidate: 1800,
+            tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)],
+          },
+        },
+      ),
+      fetch(
+        `https://api.github.com/users/${encodeURIComponent(username)}/events/public?per_page=30`,
+        {
+          headers,
+          next: {
+            revalidate: 1800,
+            tags: [CMS_CACHE_TAG, cmsCollectionTag(CMS_PROFILE_SETTINGS_COLLECTION)],
+          },
+        },
+      ),
     ])
     if (!profileResponse.ok) return null
     const profile = (await profileResponse.json()) as GitHubProfileData
@@ -145,9 +170,7 @@ export async function getGitHubStatus(username?: string) {
     const events: GitHubEventItem[] = eventsResponse.ok ? await eventsResponse.json() : []
 
     const eventDays = new Set(
-      events
-        .map((event) => event.created_at?.slice(0, 10))
-        .filter((d): d is string => Boolean(d)),
+      events.map((event) => event.created_at?.slice(0, 10)).filter((d): d is string => Boolean(d)),
     )
     let activeStreak = 0
     for (let offset = 0; offset < 30; offset++) {
@@ -199,14 +222,8 @@ export async function getGitHubStatus(username?: string) {
         percentage: Math.max(1, Math.round((count / langTotal) * 100)),
       }))
 
-    const totalStars = repos.reduce(
-      (sum, repo) => sum + (repo.stargazers_count ?? 0),
-      0,
-    )
-    const totalForks = repos.reduce(
-      (sum, repo) => sum + (repo.forks_count ?? 0),
-      0,
-    )
+    const totalStars = repos.reduce((sum, repo) => sum + (repo.stargazers_count ?? 0), 0)
+    const totalForks = repos.reduce((sum, repo) => sum + (repo.forks_count ?? 0), 0)
 
     return {
       profile,
