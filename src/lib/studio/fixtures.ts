@@ -200,29 +200,6 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, DefaultSectionSeed[]> = {
         description: 'Things I do when I am not working.',
       },
     },
-    {
-      sectionKey: 'socials',
-      sortOrder: 5,
-      isEnabled: true,
-      content: {
-        eyebrow: 'Elsewhere',
-        title: 'Elsewhere online',
-        accent: '',
-      },
-    },
-    {
-      sectionKey: 'github',
-      sortOrder: 6,
-      isEnabled: true,
-      content: {
-        eyebrow: 'Activity',
-        krEyebrow: '깃허브',
-        title: 'Recent activity',
-        accent: '',
-        ctaLabel: 'GitHub activity',
-        ctaHref: '/about/github',
-      },
-    },
   ],
   '/projects': [],
   '/media': [
