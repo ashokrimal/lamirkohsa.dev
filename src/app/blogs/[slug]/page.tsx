@@ -142,8 +142,6 @@ export default async function BlogArticlePage(props: { params: Promise<{ slug: s
         ])}
       />
       <PageHero
-        backHref="/blogs"
-        backLabel={uiStrings.journal.allNotes.en}
         eyebrow={
           category ? uiStrings.journal.eyebrow(category) : uiStrings.journal.label.en
         }

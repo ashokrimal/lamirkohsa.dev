@@ -23,8 +23,6 @@ export function PageHero({
   actions,
   imageUrl,
   imageAlt,
-  backHref,
-  backLabel,
 }: {
   eyebrow: string
   krEyebrow?: string
@@ -35,9 +33,6 @@ export function PageHero({
   actions?: ReactNode
   imageUrl?: string
   imageAlt?: string
-  /** Parent route; the back link renders above the title, never at the bottom. */
-  backHref?: string
-  backLabel?: string
 }) {
   return (
     <PageHeroMotion
@@ -50,8 +45,6 @@ export function PageHero({
       actions={actions}
       imageUrl={imageUrl}
       imageAlt={imageAlt}
-      backHref={backHref}
-      backLabel={backLabel}
     />
   )
 }

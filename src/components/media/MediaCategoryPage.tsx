@@ -42,8 +42,6 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
   return (
     <PageShell>
       <PageHero
-        backHref="/media"
-        backLabel="Back to media"
         eyebrow={pageCopy?.eyebrow ?? ''}
         krEyebrow={pageCopy?.krEyebrow}
         title={pageCopy?.title ?? section.label}

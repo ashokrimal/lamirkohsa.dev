@@ -50,8 +50,6 @@ export function StudioCaseStudyView({
         })}
       />
       <PageHero
-        backHref="/projects"
-        backLabel="All projects"
         eyebrow={project.category || 'Project Case Study'}
         title={project.title}
         description={project.summary}

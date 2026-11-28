@@ -126,8 +126,6 @@ function DetailShell({
   return (
     <PageShell>
       <PageHero
-        backHref="/about"
-        backLabel="Back to about"
         eyebrow={copy?.eyebrow || 'Open Source & Commits'}
         krEyebrow={copy?.krEyebrow || '깃허브'}
         title={copy?.title || 'GitHub'}
@@ -140,6 +138,7 @@ function DetailShell({
         actions={actions}
       />
       <div className="mt-8 md:mt-10">{children}</div>
+      <PageNav backHref="/about" backLabel="Back to about" />
     </PageShell>
   )
 }

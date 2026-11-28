@@ -208,8 +208,6 @@ export default async function ProjectCaseStudyPage(
         ])}
       />
       <PageHero
-        backHref="/projects"
-        backLabel="All projects"
         eyebrow={pageCopy?.eyebrow || project.category || 'Project Case Study'}
         krEyebrow={pageCopy?.krEyebrow}
         title={project.title}

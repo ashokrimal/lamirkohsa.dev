@@ -58,8 +58,6 @@ export default async function GalleryPage() {
         ])}
       />
       <PageHero
-        backHref="/about"
-        backLabel="Back to about"
         eyebrow={pageCopy?.eyebrow ?? ''}
         krEyebrow={pageCopy?.krEyebrow}
         title={pageCopy?.title ?? PAGE_DEFAULTS['/about/gallery'].title}
