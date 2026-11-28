@@ -2,26 +2,29 @@
 const isVercel = Boolean(process.env.VERCEL)
 const isDev = process.env.NODE_ENV === 'development' && !isVercel
 
-// The site ships no third-party scripts or fonts: everything is served from
-// this origin, images come through next/image, GitHub activity goes through this
-// site's own /api/github route, and the one embed is a SnapWidget iframe. Inline
-// scripts and styles stay allowed because the theme bootstrap, JSON-LD and
-// Next's hydration payload are all inline; the dev server also needs eval and
-// its HMR websocket.
+// Everything is served from this origin, images come through next/image, GitHub
+// activity goes through this site's own /api/github route, and the one embed is
+// a SnapWidget iframe. Google AdSense is the exception: its loader and ad frames
+// are only loaded after a visitor allows ads, and they need the Google ad hosts
+// listed below. Inline scripts and styles stay allowed because the theme
+// bootstrap, JSON-LD and Next's hydration payload are all inline; the dev server
+// also needs eval and its HMR websocket.
+const adsenseScriptSources =
+  'https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://www.google.com'
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
+  `script-src 'self' 'unsafe-inline' ${adsenseScriptSources}${isDev ? " 'unsafe-eval'" : ''}`,
   // Pretendard's stylesheet and font files come from jsDelivr (globals.css).
   "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
   // Every public image is served through next/image from this origin. The only
   // external images the site can render directly are CMS records whose URL is
   // the seed media host (images.unsplash.com) and owner uploads in Vercel Blob.
-  "img-src 'self' data: blob: https://images.unsplash.com https://*.public.blob.vercel-storage.com",
+  "img-src 'self' data: blob: https://images.unsplash.com https://*.public.blob.vercel-storage.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.google.com",
   "font-src 'self' data: https://cdn.jsdelivr.net",
   "media-src 'self' blob: https:",
   "worker-src 'self' blob:",
-  `connect-src 'self'${isDev ? ' ws: wss:' : ''}`,
-  "frame-src https://snapwidget.com",
+  `connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://www.google.com${isDev ? ' ws: wss:' : ''}`,
+  "frame-src https://snapwidget.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://ep2.adtrafficquality.google",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

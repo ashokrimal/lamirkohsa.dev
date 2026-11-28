@@ -23,6 +23,7 @@ import { blogIndexJsonLd, breadcrumbJsonLd } from '@/lib/structured-data'
 import { JsonLd } from '@/components/seo/JsonLd'
 import NewsletterForm from '@/components/blogs/NewsletterForm'
 import NewsletterNotice from '@/components/blogs/NewsletterNotice'
+import AdUnit from '@/components/ads/AdUnit'
 
 export const revalidate = 300
 
@@ -174,6 +175,8 @@ export default async function BlogsPage() {
           ))}
         </div>
       )}
+
+      <AdUnit className="mt-10 border-y border-line-subtle py-6 md:mt-14" />
 
       {blogsResult.status === 'error' ? (
         <div className="mt-10 md:mt-14">

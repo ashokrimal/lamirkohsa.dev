@@ -18,6 +18,7 @@ import type {
   SiteNavigation,
 } from '@/lib/site-content'
 import { SITE_NAME } from '@/lib/seo'
+import { setAdConsent } from '@/lib/ads-consent'
 import { useUiStrings } from '@/components/ui/UiCopyProvider'
 
 const icons = {
@@ -254,6 +255,14 @@ export default function SiteFooter({
           </p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
             {footer.canonical && <p>{footer.canonical}</p>}
+            {/* Clearing the stored answer makes the ad prompt ask again. */}
+            <button
+              type="button"
+              onClick={() => setAdConsent(null)}
+              className="transition-colors hover:text-accent"
+            >
+              Ad settings
+            </button>
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}

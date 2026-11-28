@@ -8,6 +8,9 @@ import { SmoothScroll } from '@/components/SmoothScroll';
 import { EMPTY_SITE_CONFIG, getSiteConfig } from '@/lib/site-content';
 import { getSiteSettings } from '@/lib/studio/data';
 import { getUiCopyOverrides } from '@/lib/ui-copy';
+import { ADSENSE_CLIENT } from '@/lib/adsense';
+import AdSenseScript from '@/components/ads/AdSenseScript'
+import AdConsentBanner from '@/components/ads/AdConsentBanner'
 import { UiCopyProvider } from '@/components/ui/UiCopyProvider'
 import { ClientErrorReporter } from '@/components/ClientErrorReporter'
 import { WebVitalsReporter } from '@/components/WebVitalsReporter';
@@ -91,6 +94,8 @@ export async function generateMetadata(): Promise<Metadata> {
         ? { yandex: process.env.YANDEX_SITE_VERIFICATION.trim() }
         : {}),
       other: {
+        // AdSense proves ownership of the publisher ID with this meta tag.
+        'google-adsense-account': ADSENSE_CLIENT,
         ...(process.env.BING_SITE_VERIFICATION?.trim()
           ? { 'msvalidate.01': process.env.BING_SITE_VERIFICATION.trim() }
           : {}),
@@ -152,6 +157,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         />
       </head>
       <body className="leading-relaxed tracking-wide">
+        <AdSenseScript />
         <ThemeProvider>
           <ClientErrorReporter />
           <WebVitalsReporter />
@@ -166,6 +172,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           >
             {children}
           </LayoutShell>
+          <AdConsentBanner />
           </UiCopyProvider>
         </ThemeProvider>
       </body>

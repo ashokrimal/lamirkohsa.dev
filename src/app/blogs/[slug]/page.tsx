@@ -17,6 +17,7 @@ import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { BlogArticleBody } from '@/components/blogs/BlogArticleBody'
+import AdUnit from '@/components/ads/AdUnit'
 import { CMS_COLLECTIONS, CMS_SCHEMA, type CmsResult } from '@/lib/cms-schema'
 import { getUiCopy } from '@/lib/ui-copy'
 import { articleMetadata } from '@/lib/seo'
@@ -162,6 +163,8 @@ export default async function BlogArticlePage(props: { params: Promise<{ slug: s
         emptyMessage={CMS_SCHEMA.sections.home.blogArticle.emptyState.message}
         emptyHint={CMS_SCHEMA.sections.home.blogArticle.emptyState.hint}
       />
+
+      <AdUnit className="mt-10 border-y border-line-subtle py-6 md:mt-14" />
 
       {tags.length > 0 && (
         <div className="mt-8 flex flex-wrap items-center gap-2">
