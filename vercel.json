@@ -3,16 +3,8 @@
   "framework": "nextjs",
   "crons": [
     {
-      "path": "/api/cron/cms-backup",
-      "schedule": "0 3 * * *"
-    },
-    {
       "path": "/api/indexnow",
       "schedule": "0 4 * * 1"
-    },
-    {
-      "path": "/api/cron/owner-digest",
-      "schedule": "0 6 * * 1"
     }
   ]
 }
