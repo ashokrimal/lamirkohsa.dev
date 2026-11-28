@@ -142,6 +142,8 @@ export default async function BlogArticlePage(props: { params: Promise<{ slug: s
         ])}
       />
       <PageHero
+        backHref="/blogs"
+        backLabel={uiStrings.journal.allNotes.en}
         eyebrow={
           category ? uiStrings.journal.eyebrow(category) : uiStrings.journal.label.en
         }
@@ -181,8 +183,6 @@ export default async function BlogArticlePage(props: { params: Promise<{ slug: s
       )}
 
       <PageNav
-        backHref="/blogs"
-        backLabel={uiStrings.journal.allNotes.en}
         nextHref="/contact"
         nextLabel={uiStrings.journal.startConversation.en}
       />

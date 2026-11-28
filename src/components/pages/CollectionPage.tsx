@@ -6,7 +6,6 @@ import { ExperienceTimeline } from '@/components/ui/ExperienceTimeline'
 import { SkillDisplay } from '@/components/ui/SkillDisplay'
 import { CertificateCard } from '@/components/ui/CertificateCard'
 import { PageHero, PageShell } from '@/components/ui/PageChrome'
-import { PageNav } from '@/components/ui/PageNav'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
@@ -81,6 +80,8 @@ export default async function CollectionPage({
   return (
     <PageShell>
       <PageHero
+        backHref="/about"
+        backLabel="Back to about"
         eyebrow={copy?.eyebrow ?? ''}
         krEyebrow={copy?.krEyebrow}
         title={copy?.title ?? CMS_SCHEMA.sections.pages[kind]?.label ?? ''}
@@ -156,7 +157,6 @@ export default async function CollectionPage({
           ))}
       </div>
 
-      <PageNav backHref="/about" backLabel="Back to about" />
     </PageShell>
   )
 }

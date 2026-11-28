@@ -1,5 +1,4 @@
 import { PageHero, PageShell } from '@/components/ui/PageChrome'
-import { PageNav } from '@/components/ui/PageNav'
 import { MediaPoster, type MediaKind } from '@/components/ui/MediaPoster'
 import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSection } from '@/lib/media-content'
@@ -40,6 +39,8 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
   return (
     <PageShell>
       <PageHero
+        backHref="/media"
+        backLabel="Back to media"
         eyebrow={pageCopy?.eyebrow ?? ''}
         krEyebrow={pageCopy?.krEyebrow}
         title={pageCopy?.title ?? section.label}
@@ -80,7 +81,6 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
         </div>
       )}
 
-      <PageNav backHref="/media" backLabel="Back to media" />
     </PageShell>
   )
 }

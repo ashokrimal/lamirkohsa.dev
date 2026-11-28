@@ -96,6 +96,8 @@ export default async function BlogTagPage(props: { params: Promise<{ tag: string
         ])}
       />
       <PageHero
+        backHref="/blogs"
+        backLabel={uiStrings.journal.backToJournal.en}
         eyebrow={uiStrings.journal.tagEyebrow.en}
         krEyebrow={uiStrings.journal.krEyebrow.en}
         title={label}
@@ -159,7 +161,6 @@ export default async function BlogTagPage(props: { params: Promise<{ tag: string
         })}
       </div>
 
-      <PageNav backHref="/blogs" backLabel={uiStrings.journal.backToJournal.en} />
     </PageShell>
   )
 }

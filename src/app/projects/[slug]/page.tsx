@@ -195,6 +195,8 @@ export default async function ProjectCaseStudyPage(
         ])}
       />
       <PageHero
+        backHref="/projects"
+        backLabel="All projects"
         eyebrow={pageCopy?.eyebrow || project.category || 'Project Case Study'}
         krEyebrow={pageCopy?.krEyebrow}
         title={project.title}
@@ -613,8 +615,6 @@ export default async function ProjectCaseStudyPage(
       </PageSection>
 
       <PageNav
-        backHref="/projects"
-        backLabel="All projects"
         nextHref={nextProject ? `/projects/${nextProject.slug}` : undefined}
         nextLabel={nextProject ? `Next case study: ${nextProject.title}` : undefined}
       />

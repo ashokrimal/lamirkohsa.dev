@@ -48,6 +48,8 @@ export function StudioCaseStudyView({
         })}
       />
       <PageHero
+        backHref="/projects"
+        backLabel="All projects"
         eyebrow={project.category || 'Project Case Study'}
         title={project.title}
         description={project.summary}
@@ -184,8 +186,6 @@ export function StudioCaseStudyView({
       </section>
 
       <PageNav
-        backHref="/projects"
-        backLabel="All projects"
         nextHref={nextProject ? `/projects/${nextProject.slug}` : undefined}
         nextLabel={nextProject ? `Next case study: ${nextProject.title}` : undefined}
       />

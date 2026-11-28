@@ -44,6 +44,8 @@ export default async function StudioManagedPage(props: { params: Promise<{ slug:
   return (
     <PageShell>
       <PageHero
+        backHref="/"
+        backLabel="Back to home"
         eyebrow="Studio"
         title={result.page.title}
         description={result.page.metaDescription || undefined}

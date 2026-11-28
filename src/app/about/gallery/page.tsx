@@ -11,7 +11,6 @@ import { SectionRenderer } from '@/components/studio/SectionRenderer'
 import { getPageWithSections } from '@/lib/studio/data'
 import { getSiteConfig, instagramProfileHref } from '@/lib/site-content'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
-import { PageNav } from '@/components/ui/PageNav'
 import { getPageCopy } from '@/lib/site-content'
 import { pageMetadata } from '@/lib/seo'
 import { PAGE_DEFAULTS } from '@/lib/page-defaults'
@@ -57,9 +56,11 @@ export default async function GalleryPage() {
         ])}
       />
       <PageHero
+        backHref="/about"
+        backLabel="Back to about"
         eyebrow={pageCopy?.eyebrow ?? ''}
         krEyebrow={pageCopy?.krEyebrow}
-        title={pageCopy?.title ?? ''}
+        title={pageCopy?.title ?? PAGE_DEFAULTS['/about/gallery'].title}
         accent={pageCopy?.accent}
         description={pageCopy?.description}
         meta={
@@ -97,7 +98,6 @@ export default async function GalleryPage() {
         />
       )}
 
-      <PageNav backHref="/about" />
     </PageShell>
   )
 }

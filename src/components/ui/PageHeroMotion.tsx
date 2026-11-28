@@ -2,6 +2,8 @@
 
 import type { ReactNode } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 
 const HERO_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
@@ -16,6 +18,9 @@ interface PageHeroMotionProps {
   actions?: ReactNode
   imageUrl?: string
   imageAlt?: string
+  /** Parent route; rendered above the title so it is reachable without scrolling. */
+  backHref?: string
+  backLabel?: string
 }
 
 /**
@@ -33,6 +38,8 @@ export function PageHeroMotion({
   actions,
   imageUrl,
   imageAlt,
+  backHref,
+  backLabel,
 }: PageHeroMotionProps) {
   const reduceMotion = useReducedMotion()
 
@@ -46,6 +53,27 @@ export function PageHeroMotion({
 
   return (
     <header className="border-b border-line pb-10 md:pb-14">
+      {/* The back link sits above the title on every nested page, in the same
+          spot, so it is visible without scrolling to the end of the page. */}
+      {backHref && (
+        <motion.div
+          className="mb-5 md:mb-6"
+          initial={initialOffset}
+          animate={visibleState}
+          transition={stageTransition(0)}
+        >
+          <Link
+            href={backHref}
+            className="group inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface/70 px-3 py-1.5 text-[11px] font-medium text-muted transition-colors hover:border-line-strong hover:text-ink"
+          >
+            <ArrowLeft
+              className="h-3 w-3 transition-transform group-hover:-translate-x-0.5"
+              aria-hidden="true"
+            />
+            {backLabel || 'Back'}
+          </Link>
+        </motion.div>
+      )}
       <div
         className={
           imageUrl
