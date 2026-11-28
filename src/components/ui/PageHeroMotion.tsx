@@ -1,10 +1,17 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useEffect, useSyncExternalStore, type ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
+import {
+  getSubpageChrome,
+  getSubpageChromeOnServer,
+  setSubpageChrome,
+  subscribeSubpageChrome,
+} from '@/lib/page-chrome'
 
 const HERO_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
@@ -42,6 +49,25 @@ export function PageHeroMotion({
   backLabel,
 }: PageHeroMotionProps) {
   const reduceMotion = useReducedMotion()
+  const pathname = usePathname()
+  const subpageChrome = useSyncExternalStore(
+    subscribeSubpageChrome,
+    getSubpageChrome,
+    getSubpageChromeOnServer,
+  )
+  // On nested routes the fixed header turns into the page bar with the back
+  // link, so the hero does not repeat it. The pill stays for the server render
+  // (and for top-level pages, where the header keeps the main navigation).
+  const isNestedRoute = pathname.split('/').filter(Boolean).length >= 2
+  const headerShowsPageBar = isNestedRoute && Boolean(subpageChrome)
+  const showInlineBack = Boolean(backHref) && !headerShowsPageBar
+
+  // A page with a parent hands its title to the fixed header, which swaps the
+  // default navigation for a sticky back + title bar on that route.
+  useEffect(() => {
+    setSubpageChrome(backHref ? { title, backHref, backLabel: backLabel || 'Back' } : null)
+    return () => setSubpageChrome(null)
+  }, [title, backHref, backLabel])
 
   const stageTransition = (delay: number) =>
     reduceMotion
@@ -55,7 +81,7 @@ export function PageHeroMotion({
     <header className="border-b border-line pb-10 md:pb-14">
       {/* The back link sits above the title on every nested page, in the same
           spot, so it is visible without scrolling to the end of the page. */}
-      {backHref && (
+      {showInlineBack && backHref && (
         <motion.div
           className="mb-5 md:mb-6"
           initial={initialOffset}
