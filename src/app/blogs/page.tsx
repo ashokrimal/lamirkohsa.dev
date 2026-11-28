@@ -7,7 +7,7 @@ import { CmsErrorState } from '@/components/ui/CmsState'
 import { CMS_COLLECTIONS, CMS_SCHEMA } from '@/lib/cms-schema'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
-import { nextPageNav } from '@/lib/page-nav'
+import { nextPageNav, previousPageNav } from '@/lib/page-nav'
 import { getPublishedCmsContentResult } from '@/lib/cms-content'
 import {
   blogTagPath,
@@ -280,7 +280,7 @@ export default async function BlogsPage() {
         <NewsletterForm />
       </div>
 
-      <PageNav {...nextPageNav('/blogs')} />
+      <PageNav {...previousPageNav('/blogs')} {...nextPageNav('/blogs')} />
     </PageShell>
   )
 }

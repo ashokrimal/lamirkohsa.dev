@@ -39,6 +39,7 @@ export const dynamic = 'force-dynamic'
 async function findProjectWithNeighbors(slug: string): Promise<
   CmsResult<{
     project?: ProjectEntry
+    previousProject?: ProjectEntry
     nextProject?: ProjectEntry
   }>
 > {
@@ -51,8 +52,12 @@ async function findProjectWithNeighbors(slug: string): Promise<
   const project = result.data[index]
   const nextProject =
     result.data.length > 1 ? result.data[(index + 1) % result.data.length] : undefined
+  const previousProject =
+    result.data.length > 1
+      ? result.data[(index - 1 + result.data.length) % result.data.length]
+      : undefined
 
-  return { status: 'ok', data: { project, nextProject } }
+  return { status: 'ok', data: { project, previousProject, nextProject } }
 }
 
 /**
@@ -67,7 +72,9 @@ async function findStudioProjectWithNeighbors(slug: string) {
   const all = await getPublishedProjects()
   const index = all.findIndex((entry) => entry.slug === project.slug)
   const nextProject = all.length > 1 && index >= 0 ? all[(index + 1) % all.length] : undefined
-  return { project, nextProject }
+  const previousProject =
+    all.length > 1 && index >= 0 ? all[(index - 1 + all.length) % all.length] : undefined
+  return { project, previousProject, nextProject }
 }
 
 export async function generateMetadata(
@@ -142,10 +149,16 @@ export default async function ProjectCaseStudyPage(
       }
       notFound()
     }
-    return <StudioCaseStudyView project={studio.project} nextProject={studio.nextProject} />
+    return (
+      <StudioCaseStudyView
+        project={studio.project}
+        previousProject={studio.previousProject}
+        nextProject={studio.nextProject}
+      />
+    )
   }
 
-  const { project, nextProject } = lookupResult.data
+  const { project, previousProject, nextProject } = lookupResult.data
   const copy = copyResult.status === 'ok' ? copyResult.data : {}
   const pageCopy = copy['project-case-study']
   const sections = pageCopy?.sections
@@ -615,6 +628,10 @@ export default async function ProjectCaseStudyPage(
       </PageSection>
 
       <PageNav
+        previousHref={previousProject ? `/projects/${previousProject.slug}` : undefined}
+        previousLabel={
+          previousProject ? `Previous case study: ${previousProject.title}` : undefined
+        }
         nextHref={nextProject ? `/projects/${nextProject.slug}` : undefined}
         nextLabel={nextProject ? `Next case study: ${nextProject.title}` : undefined}
       />

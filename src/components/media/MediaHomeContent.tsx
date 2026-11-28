@@ -1,6 +1,6 @@
 import { PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
-import { nextPageNav } from '@/lib/page-nav'
+import { nextPageNav, previousPageNav } from '@/lib/page-nav'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { HorizontalCollection } from '@/components/ui/HorizontalCollection'
 import { MediaPoster, type MediaKind } from '@/components/ui/MediaPoster'
@@ -121,7 +121,7 @@ export default async function MediaHomeContent() {
 
       <SectionRenderer sections={pageResult.sections} />
 
-      <PageNav {...nextPageNav('/media')} />
+      <PageNav {...previousPageNav('/media')} {...nextPageNav('/media')} />
     </PageShell>
   )
 }

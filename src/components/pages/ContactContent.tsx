@@ -2,7 +2,7 @@ import { Clock, MapPin } from 'lucide-react'
 import ScrollObserver from '@/components/ScrollObserver'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
-import { nextPageNav } from '@/lib/page-nav'
+import { nextPageNav, previousPageNav } from '@/lib/page-nav'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { getPageCopy, getSiteConfig } from '@/lib/site-content'
 import { getPageWithSections } from '@/lib/studio/data'
@@ -59,7 +59,7 @@ export default async function ContactContent() {
 
       <SectionRenderer sections={pageResult.sections} />
 
-      <PageNav {...nextPageNav('/contact')} />
+      <PageNav {...previousPageNav('/contact')} {...nextPageNav('/contact')} />
     </PageShell>
   )
 }

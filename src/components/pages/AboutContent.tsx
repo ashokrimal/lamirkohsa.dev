@@ -1,6 +1,6 @@
 import { PageHero, PageShell } from '@/components/ui/PageChrome'
 import { PageNav } from '@/components/ui/PageNav'
-import { nextPageNav } from '@/lib/page-nav'
+import { nextPageNav, previousPageNav } from '@/lib/page-nav'
 import { getPageCopy } from '@/lib/site-content'
 import { getPageWithSections } from '@/lib/studio/data'
 import { SectionRenderer } from '@/components/studio/SectionRenderer'
@@ -30,7 +30,7 @@ export default async function AboutContent() {
 
       <SectionRenderer sections={pageResult.sections} path="/about" />
 
-      <PageNav {...nextPageNav('/about')} />
+      <PageNav {...previousPageNav('/about')} {...nextPageNav('/about')} />
     </PageShell>
   )
 }

@@ -1,4 +1,6 @@
 import { PageHero, PageShell } from '@/components/ui/PageChrome'
+import { PageNav } from '@/components/ui/PageNav'
+import { nextPageNav, previousPageNav } from '@/lib/page-nav'
 import { MediaPoster, type MediaKind } from '@/components/ui/MediaPoster'
 import { getMediaCollections, getPageCopy } from '@/lib/site-content'
 import { getMediaSection } from '@/lib/media-content'
@@ -35,6 +37,7 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
   const pageCopy = copyResult.status === 'ok' ? copyResult.data[COPY_KEY[kind]] : undefined
   const emptyState = CMS_MEDIA_RECORDS[kind].emptyState
   const EmptyIcon = MEDIA_ICONS[kind]
+  const route = `/media/${kind}`
 
   return (
     <PageShell>
@@ -81,6 +84,7 @@ export default async function MediaCategoryPage({ kind }: { kind: MediaKind }) {
         </div>
       )}
 
+      <PageNav {...previousPageNav(route)} {...nextPageNav(route)} />
     </PageShell>
   )
 }

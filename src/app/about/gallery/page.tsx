@@ -11,6 +11,8 @@ import { SectionRenderer } from '@/components/studio/SectionRenderer'
 import { getPageWithSections } from '@/lib/studio/data'
 import { getSiteConfig, instagramProfileHref } from '@/lib/site-content'
 import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
+import { PageNav } from '@/components/ui/PageNav'
+import { nextPageNav, previousPageNav } from '@/lib/page-nav'
 import { getPageCopy } from '@/lib/site-content'
 import { pageMetadata } from '@/lib/seo'
 import { PAGE_DEFAULTS } from '@/lib/page-defaults'
@@ -98,6 +100,7 @@ export default async function GalleryPage() {
         />
       )}
 
+      <PageNav {...previousPageNav('/about/gallery')} {...nextPageNav('/about/gallery')} />
     </PageShell>
   )
 }

@@ -20,9 +20,11 @@ import { caseStudyJsonLd } from '@/lib/structured-data'
  */
 export function StudioCaseStudyView({
   project,
+  previousProject,
   nextProject,
 }: {
   project: StudioProject
+  previousProject?: StudioProject
   nextProject?: StudioProject
 }) {
   const repoUrl = isRepositoryUrl(project.repoUrl) ? project.repoUrl : undefined
@@ -186,6 +188,10 @@ export function StudioCaseStudyView({
       </section>
 
       <PageNav
+        previousHref={previousProject ? `/projects/${previousProject.slug}` : undefined}
+        previousLabel={
+          previousProject ? `Previous case study: ${previousProject.title}` : undefined
+        }
         nextHref={nextProject ? `/projects/${nextProject.slug}` : undefined}
         nextLabel={nextProject ? `Next case study: ${nextProject.title}` : undefined}
       />

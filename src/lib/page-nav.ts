@@ -12,9 +12,27 @@ export interface NextPageNav {
   nextLabel: string
 }
 
+export interface PreviousPageNav {
+  previousHref: string
+  previousLabel: string
+}
+
 export interface ParentPageNav {
   backHref: string
   backLabel: string
+}
+
+/**
+ * The registry route before `route`, for the "previous" link at the end of a
+ * page. Home is skipped: the logo already returns there, and a home link at the
+ * bottom of /about read like a dead end.
+ */
+export function previousPageNav(route: string): PreviousPageNav | undefined {
+  const index = NAV_PAGES.findIndex((page) => page.route === route)
+  if (index <= 0) return undefined
+  const previous = NAV_PAGES[index - 1]
+  if (!previous || previous.route === '/') return undefined
+  return { previousHref: previous.route, previousLabel: `Previous · ${previous.label}` }
 }
 
 /** The registry route after `route`, for a "next" link at the end of a page. */
