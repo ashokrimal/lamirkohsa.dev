@@ -80,8 +80,6 @@ export async function MediaCollectionsBody() {
                     <MediaPoster key={item.id} kind={section.kind} item={item} />
                   ))}
                   previewCount={config?.previewCount || PREVIEW_COUNT}
-                  viewAllHref={section.href}
-                  viewAllLabel={uiStrings.media.viewAllCategory(section.label)}
                   ariaLabel={uiStrings.media.collectionAria(section.label)}
                 />
               )}

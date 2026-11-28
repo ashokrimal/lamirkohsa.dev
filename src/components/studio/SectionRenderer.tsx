@@ -443,6 +443,13 @@ export async function SectionRenderer({
 
         if (!body) return null
 
+        // The media index layout is the whole page body: its category blocks
+        // carry their own headings, so an outer "Media" heading would repeat
+        // the hero title and repeat the first archive link.
+        if (section.sectionKey === 'media' && content.layout === 'index') {
+          return <div key={section.sectionKey}>{body}</div>
+        }
+
         const isInstagram = section.sectionKey === 'instagram'
         const ctaHref = content.ctaHref?.trim() || (isInstagram ? instagramHref : undefined)
         const linkHref = ctaHref && path && ctaHref === path ? undefined : ctaHref

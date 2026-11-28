@@ -213,8 +213,6 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, DefaultSectionSeed[]> = {
         title: 'Media',
         accent: '',
         description: 'Music, films, anime and manga I keep coming back to.',
-        ctaLabel: 'Open music archive',
-        ctaHref: '/media/music',
         layout: 'index',
         animation: { enabled: false, intensity: 0.2 },
       },
