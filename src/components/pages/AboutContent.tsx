@@ -4,6 +4,7 @@ import { nextPageNav } from '@/lib/page-nav'
 import { getPageCopy } from '@/lib/site-content'
 import { getPageWithSections } from '@/lib/studio/data'
 import { SectionRenderer } from '@/components/studio/SectionRenderer'
+import { DEFAULT_PROFILE } from '@/lib/site-defaults'
 
 /**
  * About page. The hero copy still comes from the Page Copy record; every block
@@ -22,12 +23,12 @@ export default async function AboutContent() {
       <PageHero
         eyebrow={copy?.eyebrow ?? ''}
         krEyebrow={copy?.krEyebrow}
-        title={copy?.title ?? pageResult.page.title}
+        title={copy?.title ?? (pageResult.page.title || 'About me')}
         accent={copy?.accent}
-        description={copy?.description ?? (pageResult.page.metaDescription || undefined)}
+        description={copy?.description ?? DEFAULT_PROFILE.summary}
       />
 
-      <SectionRenderer sections={pageResult.sections} />
+      <SectionRenderer sections={pageResult.sections} path="/about" />
 
       <PageNav {...nextPageNav('/about')} />
     </PageShell>

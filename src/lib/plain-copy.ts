@@ -21,7 +21,7 @@ export interface PlainSectionCopy {
 export const PLAIN_SECTION_COPY: Record<string, PlainSectionCopy> = {
   introduction: {
     eyebrow: 'Introduction',
-    title: 'A short introduction',
+    title: 'About Me',
     accent: '',
     description: 'Who I am, what I build, and how to reach me.',
   },

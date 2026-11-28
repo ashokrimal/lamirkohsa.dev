@@ -11,6 +11,12 @@ import { MetaChip, PageHero, PageShell } from '@/components/ui/PageChrome'
 import { getUiCopy } from '@/lib/ui-copy'
 import { getCurrentlyEntries } from '@/lib/currently'
 import { CurrentlyStrip } from '@/components/home/CurrentlyStrip'
+import {
+  DEFAULT_AVAILABILITY,
+  DEFAULT_HERO_EYEBROW,
+  DEFAULT_LOCATION,
+  DEFAULT_PROFILE,
+} from '@/lib/site-defaults'
 
 /**
  * The homepage.
@@ -40,9 +46,9 @@ export default async function HomeContent() {
 
   const uiStrings = await getUiCopy()
 
-  const displayName = profileText('fullName') || site.brand.name || ''
+  const displayName = profileText('fullName') || site.brand.name || DEFAULT_PROFILE.fullName
   const heroHeading = heroData.heading?.trim() || displayName
-  const heroSummary = heroData.subtitle?.trim()
+  const heroSummary = heroData.subtitle?.trim() || DEFAULT_PROFILE.summary
   const heroSpecialization = uiStrings.hero.specialization.en
   // The hero always states the specialization; existing CMS copy follows it.
   const heroSubtitle = !heroSummary
@@ -50,14 +56,21 @@ export default async function HomeContent() {
     : heroSummary.includes(heroSpecialization)
       ? heroSummary
       : `${heroSpecialization} — ${heroSummary}`
-  const heroEyebrow = profileText('headline') || site.brand.role || 'Portfolio'
+  const heroEyebrow =
+    profileText('headline') || site.brand.role || DEFAULT_HERO_EYEBROW
+  // Location and availability are pills in the hero; every value is CMS-first and
+  // falls back to the shipped defaults so the hero is never half-empty.
   const heroLocation =
-    heroData.location?.trim() || profileText('location') || site.contact.location || ''
+    heroData.location?.trim() ||
+    profileText('location') ||
+    site.contact.location ||
+    DEFAULT_LOCATION
   const availability =
     settings.availabilityStatus ||
     profileText('availability') ||
     site.contact.availability ||
-    site.footer.availabilityText
+    site.footer.availabilityText ||
+    DEFAULT_AVAILABILITY
 
   return (
     <PageShell>
@@ -103,7 +116,7 @@ export default async function HomeContent() {
 
       <CurrentlyStrip entries={currently} label={uiStrings.home.currently.en} />
 
-      <SectionRenderer sections={pageResult.sections} />
+      <SectionRenderer sections={pageResult.sections} path="/" />
     </PageShell>
   )
 }

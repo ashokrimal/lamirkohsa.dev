@@ -1,2 +1,5 @@
-import { Skeleton } from '@/components/Skeleton'
-export default function Loading() { return <main className="about-page shell-width" aria-label="Loading about page"><section className="about-intro"><Skeleton className="h-3 w-36" /><Skeleton className="mt-5 h-24 w-80 max-w-full" /><Skeleton className="mt-6 h-4 w-full max-w-xl" /><Skeleton className="mt-3 h-4 w-4/5 max-w-lg" /></section><section className="profile-section"><div className="section-heading"><div><Skeleton className="h-3 w-28" /><Skeleton className="mt-4 h-12 w-64" /></div><Skeleton className="h-4 w-48" /></div><div className="about-timeline-skeleton">{Array.from({ length: 3 }).map((_, index) => <div className="about-timeline-item" key={index}><Skeleton className="h-3 w-24" /><Skeleton className="h-24 w-px" /><div><Skeleton className="h-7 w-56" /><Skeleton className="mt-3 h-3 w-32" /><Skeleton className="mt-4 h-4 w-full max-w-lg" /></div></div>)}</div></section><section className="profile-section"><div className="section-heading"><Skeleton className="h-12 w-64" /></div><div className="toolkit-card-grid">{Array.from({ length: 6 }).map((_, index) => <Skeleton className="h-48" rounded="lg" key={index} />)}</div></section></main> }
+import { PageSkeleton } from '@/components/ui/LoadingSkeletons'
+
+export default function Loading() {
+  return <PageSkeleton variant="rows" label="Loading about page" />
+}

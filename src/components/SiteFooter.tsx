@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowUpRight, Github, Globe, Linkedin, Mail, Twitter } from 'lucide-react'
+import { ArrowUp, ArrowUpRight, Github, Globe, Linkedin, Mail, Twitter } from 'lucide-react'
 import type {
   ContactDetails,
   SiteBrand,
@@ -35,6 +35,12 @@ export interface FooterSocialLink {
   sort_order: number
 }
 
+/**
+ * The footer closes every page: a sign-off with the studio-managed contact
+ * channels and availability, the navigation columns, then a slim legal bar.
+ * Brand, tagline, availability, CTA, email and socials all come from the CMS;
+ * the copy that frames them comes from UI copy.
+ */
 export default function SiteFooter({
   brand,
   navigation,
@@ -66,16 +72,63 @@ export default function SiteFooter({
       : navigation.socials
   const resolvedEmail = contactEmail || contact.email
   const resolvedAvailability = availabilityStatus || footer.availabilityText
-  const hasContactCard = Boolean(resolvedAvailability || footer.ctaLabel)
+  const ctaHref = footer.ctaHref && footer.ctaLabel ? footer.ctaHref : '/contact'
+  const ctaLabel = footer.ctaLabel || 'Start a conversation'
 
   return (
     <footer className="mt-20 md:mt-28 border-t border-line bg-surface">
-      <div className="shell-width py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_0.8fr_0.9fr] gap-10 md:gap-12">
+      <div className="shell-width">
+        {/* Sign-off: the one loud line on the page, with the live status pills. */}
+        <div className="flex flex-col gap-8 py-14 md:flex-row md:items-end md:justify-between md:py-20">
+          <div className="max-w-2xl">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
+              {uiStrings.footer.elsewhere.en}
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] leading-[1.05] text-ink md:text-5xl">
+              {footer.tagline || 'Let’s build something worth keeping.'}
+            </h2>
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              {resolvedAvailability && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-line-subtle bg-overlay-faint px-3 py-1.5 text-[11px] font-medium text-ink-secondary">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+                  {resolvedAvailability}
+                </span>
+              )}
+              {contact.location && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-line-subtle bg-overlay-faint px-3 py-1.5 text-[11px] font-medium text-ink-secondary">
+                  <Globe className="h-3 w-3 text-accent" aria-hidden="true" />
+                  {contact.location}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href={ctaHref}
+              className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-surface transition-opacity hover:opacity-85"
+            >
+              {ctaLabel}
+              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            {resolvedEmail && (
+              <a
+                href={`mailto:${resolvedEmail}`}
+                className="inline-flex items-center gap-2 rounded-full border border-line-subtle px-5 py-3 font-mono text-xs text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
+              >
+                <Mail className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+                {resolvedEmail}
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Columns: identity and socials, then the two navigation groups. */}
+        <div className="grid grid-cols-1 gap-10 border-t border-line py-10 sm:grid-cols-2 md:py-12 lg:grid-cols-[1.5fr_1fr_1fr]">
           <div className="max-w-sm">
             <Link
               href="/"
-              className="inline-flex items-baseline gap-2 text-base font-semibold tracking-[-0.04em] text-ink hover:text-accent transition-colors"
+              className="inline-flex items-baseline gap-2 text-base font-semibold tracking-[-0.04em] text-ink transition-colors hover:text-accent"
             >
               {brand.name || SITE_NAME}
               <span className="text-accent">.</span>
@@ -86,12 +139,10 @@ export default function SiteFooter({
               )}
             </Link>
 
-            {footer.tagline && (
-              <p className="mt-3 text-sm text-muted leading-relaxed">{footer.tagline}</p>
-            )}
+            {brand.role && <p className="mt-3 text-sm text-muted">{brand.role}</p>}
 
             {resolvedSocials.length > 0 && (
-              <div className="mt-5 flex items-center gap-2">
+              <div className="mt-5 flex flex-wrap items-center gap-2">
                 {resolvedSocials.map((social) => {
                   const Icon = iconFor(social.kind, social.label)
                   return (
@@ -101,9 +152,10 @@ export default function SiteFooter({
                       target="_blank"
                       rel="noreferrer"
                       aria-label={social.label}
-                      className="p-2 rounded-full border border-line-subtle bg-overlay text-muted hover:text-accent hover:border-line-medium transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle px-3 py-1.5 text-[11px] font-medium text-muted transition-colors hover:border-line-strong hover:text-accent"
                     >
-                      <Icon className="h-3.5 w-3.5" />
+                      <Icon className="h-3 w-3" aria-hidden="true" />
+                      {social.label}
                     </a>
                   )
                 })}
@@ -113,15 +165,15 @@ export default function SiteFooter({
 
           {navigation.footer.length > 0 && (
             <nav aria-label={uiStrings.footer.footerNavigation.en}>
-              <h2 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
+              <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
                 {uiStrings.footer.navigate.en}
-              </h2>
+              </h3>
               <ul className="mt-4 space-y-2.5 text-sm">
                 {navigation.footer.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="inline-flex items-baseline gap-1.5 text-ink-secondary hover:text-accent transition-colors"
+                      className="inline-flex items-baseline gap-1.5 text-ink-secondary transition-colors hover:text-accent"
                     >
                       <span>{link.label}</span>
                       {link.kr && (
@@ -138,15 +190,15 @@ export default function SiteFooter({
 
           {navigation.collections.length > 0 && (
             <nav aria-label={uiStrings.footer.footerCollections.en}>
-              <h2 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
+              <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
                 {uiStrings.footer.collections.en}
-              </h2>
+              </h3>
               <ul className="mt-4 space-y-2.5 text-sm">
                 {navigation.collections.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="inline-flex items-baseline gap-1.5 text-ink-secondary hover:text-accent transition-colors"
+                      className="inline-flex items-baseline gap-1.5 text-ink-secondary transition-colors hover:text-accent"
                     >
                       <span>{link.label}</span>
                       {link.kr && (
@@ -160,47 +212,24 @@ export default function SiteFooter({
               </ul>
             </nav>
           )}
-
-          {hasContactCard && (
-            <div>
-              <h2 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
-                {uiStrings.footer.elsewhere.en}
-              </h2>
-              <div className="mt-4 apple-card p-5">
-                {footer.availabilityLabel && (
-                  <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted">
-                    {footer.availabilityLabel}
-                  </p>
-                )}
-                {resolvedAvailability && (
-                  <p className="mt-2 text-sm text-ink leading-relaxed">{resolvedAvailability}</p>
-                )}
-                {footer.ctaLabel && footer.ctaHref && (
-                  <Link
-                    href={footer.ctaHref}
-                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
-                  >
-                    {footer.ctaLabel}
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
         </div>
-      </div>
 
-      <div className="border-t border-line">
-        <div className="shell-width py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono uppercase tracking-[0.12em] text-muted">
+        {/* Legal bar */}
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-line py-6 text-[11px] font-mono uppercase tracking-[0.12em] text-muted sm:flex-row">
           <p>
             &copy; {year} {footer.copyrightName || brand.name || SITE_NAME}
           </p>
-          {footer.canonical && <p className="text-center">{footer.canonical}</p>}
-          {resolvedEmail && (
-            <a href={`mailto:${resolvedEmail}`} className="hover:text-accent transition-colors">
-              {resolvedEmail}
-            </a>
-          )}
+          <div className="flex items-center gap-4">
+            {footer.canonical && <p className="text-center">{footer.canonical}</p>}
+            <button
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle px-3 py-1.5 transition-colors hover:border-line-strong hover:text-accent"
+            >
+              Back to top
+              <ArrowUp className="h-3 w-3" aria-hidden="true" />
+            </button>
+          </div>
         </div>
       </div>
     </footer>

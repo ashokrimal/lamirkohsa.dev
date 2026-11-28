@@ -48,7 +48,7 @@ export default async function StudioManagedPage(props: { params: Promise<{ slug:
         title={result.page.title}
         description={result.page.metaDescription || undefined}
       />
-      <SectionRenderer sections={result.sections} />
+      <SectionRenderer sections={result.sections} path={slug} />
     </PageShell>
   )
 }

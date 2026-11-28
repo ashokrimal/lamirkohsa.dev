@@ -78,9 +78,12 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, DefaultSectionSeed[]> = {
       content: {
         eyebrow: 'Introduction',
         krEyebrow: '소개 및 철학',
-        title: 'A short introduction',
+        title: 'About Me',
         accent: '',
         description: 'Who I am, what I build, and how to reach me.',
+        body: 'I care about the parts nobody screenshots: schema design that survives real data, error states that explain themselves, and pages that open before you notice. Mostly TypeScript, Next.js and Postgres, shipped on Vercel.',
+        imageUrl: '/images/hero-ashok.png',
+        imageAlt: 'Ashok Rimal',
         ctaLabel: 'Read the full story',
         ctaHref: '/about',
         animation: { enabled: true, intensity: 0.5 },
@@ -141,9 +144,12 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, DefaultSectionSeed[]> = {
       content: {
         eyebrow: 'Introduction',
         krEyebrow: '소개 및 철학',
-        title: 'A short introduction',
+        title: 'About Me',
         accent: '',
         description: 'Who I am, what I build, and how to reach me.',
+        body: 'I care about the parts nobody screenshots: schema design that survives real data, error states that explain themselves, and pages that open before you notice. Mostly TypeScript, Next.js and Postgres, shipped on Vercel.',
+        imageUrl: '/images/hero-ashok.png',
+        imageAlt: 'Ashok Rimal',
         animation: { enabled: false, intensity: 0.2 },
       },
     },
@@ -256,7 +262,7 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, DefaultSectionSeed[]> = {
 
 export const DEFAULT_SITE_SETTINGS = {
   contactEmail: 'contact@lamirkohsa.com',
-  availabilityStatus: 'Available for select work',
+  availabilityStatus: 'Available',
   socialLinks: [
     {
       id: 'github',

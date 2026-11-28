@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, Code2, Compass, Film, FolderGit2, Github, Sparkles, TrendingUp, User } from 'lucide-react'
+import { ArrowUpRight, Code2, Compass, Film, FolderGit2, Github, Sparkles, TrendingUp } from 'lucide-react'
 import { getProfileContentResult } from '@/lib/cms-content'
 import { getPublicProfileSettingsResult } from '@/lib/profile-content'
 import { getMediaCollections, getSiteConfig, instagramProfileHref } from '@/lib/site-content'
@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { CmsErrorState } from '@/components/ui/CmsState'
 import { GitHubActivitySparkline } from '@/components/ui/GitHubActivitySparkline'
 import { MetaChip, PageSection } from '@/components/ui/PageChrome'
+import { DEFAULT_PROFILE } from '@/lib/site-defaults'
 import { Reveal } from '@/components/ui/Reveal'
 import type { SectionContent } from '@/lib/studio/sections'
 import type { StudioPageSection } from '@/lib/studio/data'
@@ -58,30 +59,28 @@ export async function InstagramSectionBody({
   )
 }
 
+/**
+ * The introduction reads the studio profile record first, then the section's
+ * own payload, then the shipped defaults. The section heading already prints
+ * `content.description`, so the body never repeats it.
+ */
 export async function IntroductionSectionBody({ content }: { content: SectionContent }) {
   const profileResult = await getProfileContentResult()
 
   if (profileResult.status === 'error') return <CmsErrorState message={profileResult.message} />
 
   const profile = (profileResult.status === 'ok' ? profileResult.data : {}) as Record<string, unknown>
-  const portrait = profileValue(profile, 'avatarUrl') || profileValue(profile, 'imageUrl') || content.imageUrl
-  const summary = profileValue(profile, 'summary')
-  const bio = profileValue(profile, 'bio')
-  const headline = profileValue(profile, 'headline')
-  const location = profileValue(profile, 'location')
-  const availability = profileValue(profile, 'availability')
-  const displayName = profileValue(profile, 'fullName') || ''
-
-  if (!summary && !bio && !portrait && !content.description) {
-    return (
-      <EmptyState
-        eyebrow="Introduction"
-        icon={User}
-        message="No introduction published yet."
-        hint="Publish a biography in the studio to fill this section."
-      />
-    )
-  }
+  const portrait =
+    profileValue(profile, 'avatarUrl') ||
+    profileValue(profile, 'imageUrl') ||
+    content.imageUrl?.trim() ||
+    DEFAULT_PROFILE.avatarUrl
+  const displayName = profileValue(profile, 'fullName') || DEFAULT_PROFILE.fullName
+  const lead = profileValue(profile, 'summary') || DEFAULT_PROFILE.summary
+  const body = content.body?.trim() || profileValue(profile, 'bio') || DEFAULT_PROFILE.bio
+  const headline = profileValue(profile, 'headline') || DEFAULT_PROFILE.headline
+  const location = profileValue(profile, 'location') || DEFAULT_PROFILE.location
+  const availability = profileValue(profile, 'availability') || DEFAULT_PROFILE.availability
 
   return (
     <div className="space-y-10 md:space-y-12">
@@ -100,21 +99,17 @@ export async function IntroductionSectionBody({ content }: { content: SectionCon
         )}
 
         <div className="space-y-5 text-sm leading-relaxed text-muted md:text-base">
-          {summary && (
-            <p className="text-lg leading-relaxed tracking-tight text-ink md:text-2xl">{summary}</p>
+          {lead && (
+            <p className="text-lg leading-relaxed tracking-tight text-ink md:text-2xl">{lead}</p>
           )}
-          {content.description && content.description !== summary && <p>{content.description}</p>}
-          {bio && <p>{bio}</p>}
-          {(headline || location || availability) && (
-            <div className="flex flex-wrap gap-2.5 pt-1">
-              {headline && <MetaChip icon={Code2}>{headline}</MetaChip>}
-              {location && <MetaChip icon={Compass}>{location}</MetaChip>}
-              {availability && <MetaChip icon={Sparkles}>{availability}</MetaChip>}
-            </div>
-          )}
+          {body && <p>{body}</p>}
+          <div className="flex flex-wrap gap-2.5 pt-1">
+            {headline && <MetaChip icon={Code2}>{headline}</MetaChip>}
+            {location && <MetaChip icon={Compass}>{location}</MetaChip>}
+            {availability && <MetaChip icon={Sparkles}>{availability}</MetaChip>}
+          </div>
         </div>
       </div>
-
     </div>
   )
 }
@@ -157,6 +152,9 @@ export async function ProjectsSectionBody({
   previewCount?: number
 }) {
   const targetCount = clampHomeCardCount(previewCount ?? content.previewCount, 4)
+  // A section-level image set in the studio covers rows that have no cover of
+  // their own and gives the section a lead image above the grid.
+  const sectionImage = content.imageUrl?.trim() || undefined
   const studioProjects = await getPublishedProjects()
   // Before the seed has run, keep showing the case studies the site already has.
   const legacyResult = studioProjects.length === 0 ? await getProjectsResult() : null
@@ -191,7 +189,10 @@ export async function ProjectsSectionBody({
 
   const cards: ProjectCardEntry[] =
     orderedStudio.length > 0
-      ? orderedStudio.slice(0, targetCount).map(studioToCard)
+      ? orderedStudio
+          .slice(0, targetCount)
+          .map(studioToCard)
+          .map((card) => ({ ...card, image: card.image || sectionImage }))
       : orderedLegacy.slice(0, targetCount).map((project) => ({
           id: project.id,
           title: project.title,
@@ -199,7 +200,7 @@ export async function ProjectsSectionBody({
           category: project.category,
           summary: project.summary ?? project.description,
           techStack: project.techStack,
-          image: project.image,
+          image: project.image || sectionImage,
           featured: project.featured,
           metrics: project.metrics,
         }))
@@ -209,7 +210,20 @@ export async function ProjectsSectionBody({
   const gridColsClass = cards.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'
 
   return (
-    <div className={`grid grid-cols-1 gap-5 ${gridColsClass}`}>
+    <div className="space-y-5">
+      {sectionImage && (
+        <div className="relative aspect-[16/7] w-full overflow-hidden rounded-[20px] border border-line-subtle bg-overlay-faint md:aspect-[16/5]">
+          <ProgressiveImage
+            src={sectionImage}
+            alt={content.imageAlt?.trim() || content.title?.trim() || 'Selected work'}
+            fill
+            sizes="(max-width: 768px) 100vw, 1120px"
+            className="object-cover"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      )}
+      <div className={`grid grid-cols-1 gap-5 ${gridColsClass}`}>
       {cards.map((project) => {
         const metrics = project.metrics ?? []
         return (
@@ -276,6 +290,7 @@ export async function ProjectsSectionBody({
         </Link>
         )
       })}
+      </div>
     </div>
   )
 }
@@ -347,7 +362,14 @@ export async function GithubSectionBody({ content }: { content: SectionContent }
  * Renders enabled sections in `sort_order`, skipping unknown keys. The heading
  * chrome always carries a CTA, so every section has a working next step.
  */
-export async function SectionRenderer({ sections }: { sections: StudioPageSection[] }) {
+export async function SectionRenderer({
+  sections,
+  path,
+}: {
+  sections: StudioPageSection[]
+  /** The route rendering these sections, so a CTA never links to its own page. */
+  path?: string
+}) {
   const uiStrings = await getUiCopy()
   const visible = sections
     .filter((section) => section.isEnabled && section.sectionKey !== 'technology')
@@ -422,6 +444,8 @@ export async function SectionRenderer({ sections }: { sections: StudioPageSectio
         if (!body) return null
 
         const isInstagram = section.sectionKey === 'instagram'
+        const ctaHref = content.ctaHref?.trim() || (isInstagram ? instagramHref : undefined)
+        const linkHref = ctaHref && path && ctaHref === path ? undefined : ctaHref
         const sectionNode = (
           <PageSection
             key={section.sectionKey}
@@ -432,7 +456,7 @@ export async function SectionRenderer({ sections }: { sections: StudioPageSectio
             title={content.title ?? section.sectionKey}
             accent={content.accent}
             description={content.description}
-            linkHref={content.ctaHref?.trim() || (isInstagram ? instagramHref : undefined)}
+            linkHref={linkHref}
             linkLabel={
               content.ctaLabel ||
               (isInstagram
