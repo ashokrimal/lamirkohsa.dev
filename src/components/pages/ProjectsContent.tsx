@@ -228,8 +228,6 @@ export default function ProjectsContent({
       className="pt-0"
     >
       <PageHero
-        backHref="/"
-        backLabel="Back to home"
         eyebrow={copy?.eyebrow ?? ''}
         krEyebrow={copy?.krEyebrow}
         title={copy?.title ?? CMS_SCHEMA.sections.pages.projects.label}

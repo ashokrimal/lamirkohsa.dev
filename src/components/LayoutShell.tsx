@@ -10,6 +10,7 @@ import DevModeTrigger from '@/components/devmode/DevModeTrigger';
 import OfflineFlappy from '@/components/OfflineFlappy';
 import { ServiceWorkerRegistration } from '@/components/ui/ServiceWorkerRegistration';
 import Preloader from '@/components/ui/Preloader';
+import { SubpageBar } from '@/components/ui/SubpageBar';
 import type { SiteConfig } from '@/lib/site-content';
 
 interface LayoutShellProps {
@@ -53,6 +54,9 @@ export default function LayoutShell({
               studioLabel={site.brand.domain || 'ashokrimal.com.np'}
             />
             <SiteHeader brand={site.brand} navigation={site.navigation} contact={site.contact} />
+            {/* On a nested page the hero publishes its title here; the strip
+                pins under the navbar once the hero scrolls away. */}
+            <SubpageBar />
             {/* Pages own their own <main> landmark; wrapping them in another nested one. */}
             <div className="min-h-screen">{children}</div>
             <SiteFooter

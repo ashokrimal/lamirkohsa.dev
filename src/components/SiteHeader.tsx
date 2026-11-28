@@ -2,14 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect, useSyncExternalStore } from 'react'
-import { ArrowLeft, Menu, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Menu, X } from 'lucide-react'
 import { sensoryAudio } from '@/lib/sensory-audio'
-import {
-  getSubpageChrome,
-  getSubpageChromeOnServer,
-  subscribeSubpageChrome,
-} from '@/lib/page-chrome'
 import type { ContactDetails, SiteBrand, SiteNavigation } from '@/lib/site-content'
 import { SITE_NAME } from '@/lib/seo'
 import { useUiStrings } from '@/components/ui/UiCopyProvider'
@@ -29,17 +24,8 @@ export default function SiteHeader({
   const [isOpen, setIsOpen] = useState(false)
   const [localTime, setLocalTime] = useState<string>('')
   const pathname = usePathname()
-  const subpageChrome = useSyncExternalStore(
-    subscribeSubpageChrome,
-    getSubpageChrome,
-    getSubpageChromeOnServer,
-  )
 
   const navLinks = navigation.primary
-  // Nested routes (a page of a page) swap the navigation for their own title,
-  // so the back link stays reachable wherever the reader has scrolled to.
-  const isNestedRoute = pathname.split('/').filter(Boolean).length >= 2
-  const subpage = isNestedRoute ? subpageChrome : null
 
   const isCurrent = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href)
@@ -90,51 +76,6 @@ export default function SiteHeader({
 
   return (
     <>
-      {subpage && (
-        <header className="fixed top-0 inset-x-0 w-full z-50 glass-nav">
-          <nav
-            className="w-full max-w-[1400px] mx-auto px-5 sm:px-8 lg:px-12 h-14 flex items-center gap-3"
-            aria-label={subpage.title}
-          >
-            <Link
-              href={subpage.backHref}
-              onClick={handleNavClick}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line-subtle bg-overlay-faint px-3 py-1.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
-            >
-              <ArrowLeft className="h-3 w-3" aria-hidden="true" />
-              <span>{subpage.backLabel}</span>
-            </Link>
-
-            <span className="hidden h-4 w-px shrink-0 bg-line-subtle sm:block" aria-hidden="true" />
-
-            <p className="min-w-0 flex-1 truncate text-sm font-semibold tracking-tight text-ink">
-              {subpage.title}
-            </p>
-
-            <div className="hidden items-center gap-2 md:flex">
-              <InstallAppButton />
-              <ThemeToggle />
-            </div>
-            <div className="flex items-center gap-2 md:hidden">
-              <ThemeToggle />
-              <button
-                type="button"
-                onClick={() => {
-                  sensoryAudio.playToggle()
-                  setIsOpen((open) => !open)
-                }}
-                className="p-2 rounded-full bg-overlay-soft text-ink transition-transform active:scale-90"
-                aria-expanded={isOpen}
-                aria-label={isOpen ? uiStrings.nav.closeMenu.en : uiStrings.nav.openMenu.en}
-              >
-                {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            </div>
-          </nav>
-        </header>
-      )}
-
-      {!subpage && (
       <header className="fixed top-0 inset-x-0 w-full z-50 glass-nav transition-all duration-300">
         <nav
           className="w-full max-w-[1400px] mx-auto px-5 sm:px-8 lg:px-12 h-14 flex items-center justify-between"
@@ -219,7 +160,6 @@ export default function SiteHeader({
           </div>
         </nav>
       </header>
-      )}
 
       <div
         id="mobile-navigation"

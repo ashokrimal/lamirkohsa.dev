@@ -151,8 +151,6 @@ export default async function SearchPage(props: {
   return (
     <PageShell>
       <PageHero
-        backHref="/"
-        backLabel="Back to home"
         eyebrow="Search"
         title={query ? `Results for “${query}”` : 'Search the site'}
         description={

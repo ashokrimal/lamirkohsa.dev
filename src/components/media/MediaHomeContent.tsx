@@ -108,8 +108,6 @@ export default async function MediaHomeContent() {
   return (
     <PageShell>
       <PageHero
-        backHref="/"
-        backLabel="Back to home"
         eyebrow={pageCopy?.eyebrow ?? ''}
         krEyebrow={pageCopy?.krEyebrow}
         title={pageCopy?.title ?? CMS_SCHEMA.sections.pages.media.label}

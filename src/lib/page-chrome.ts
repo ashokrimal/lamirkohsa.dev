@@ -1,18 +1,19 @@
 'use client'
 
 /**
- * The page title published by the hero, so the fixed site header can turn into
- * a sticky page bar on nested routes.
+ * The page title published by the hero, used by the sticky subpage strip.
  *
- * Nested pages (a page of a page) render `PageHero` with a parent link. The
- * hero publishes its title here; `SiteHeader` subscribes and replaces the
- * default navigation with a back button and that title, which keeps the way out
- * reachable at any scroll position. The entry is cleared when the page unmounts.
+ * Only pages with a parent (a page of a page) publish here. The strip sits
+ * under the main navigation and shows `← Back  <title>` once the hero title
+ * has scrolled out of view, so the way back stays reachable at any depth
+ * without replacing the main navbar.
  */
 export interface SubpageChrome {
   title: string
   backHref: string
   backLabel: string
+  /** True once the hero has scrolled past the navbar. */
+  heroHidden: boolean
 }
 
 let current: SubpageChrome | null = null
@@ -23,17 +24,14 @@ function emit() {
 }
 
 export function setSubpageChrome(next: SubpageChrome | null) {
-  if (
-    current === next ||
-    (current &&
-      next &&
-      current.title === next.title &&
-      current.backHref === next.backHref &&
-      current.backLabel === next.backLabel)
-  ) {
-    return
-  }
+  if (current === next) return
   current = next
+  emit()
+}
+
+export function setSubpageHeroHidden(heroHidden: boolean) {
+  if (!current || current.heroHidden === heroHidden) return
+  current = { ...current, heroHidden }
   emit()
 }
 
@@ -48,7 +46,7 @@ export function subscribeSubpageChrome(listener: () => void) {
   }
 }
 
-/** Server snapshot: the header renders its default navigation during SSR. */
+/** Server snapshot: the strip is client-only, so nothing renders during SSR. */
 export function getSubpageChromeOnServer(): SubpageChrome | null {
   return null
 }

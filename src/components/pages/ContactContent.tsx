@@ -28,8 +28,6 @@ export default async function ContactContent() {
     <PageShell>
       <ScrollObserver />
       <PageHero
-        backHref="/"
-        backLabel="Back to home"
         eyebrow={copy?.eyebrow ?? ''}
         krEyebrow={copy?.krEyebrow}
         title={copy?.title ?? CMS_SCHEMA.sections.pages.contact.label}

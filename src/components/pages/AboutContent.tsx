@@ -21,8 +21,6 @@ export default async function AboutContent() {
   return (
     <PageShell>
       <PageHero
-        backHref="/"
-        backLabel="Back to home"
         eyebrow={copy?.eyebrow ?? ''}
         krEyebrow={copy?.krEyebrow}
         title={copy?.title ?? (pageResult.page.title || 'About me')}
